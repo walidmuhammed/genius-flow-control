@@ -126,7 +126,7 @@ const Settings: React.FC = () => {
                     <Label className="text-base">Default Currency for Transactions</Label>
                     <RadioGroup 
                       defaultValue={defaultCurrency}
-                      onChange={(e) => setDefaultCurrency(e.target.value as CurrencyType)}
+                      onValueChange={handleCurrencyChange}
                       className="flex flex-col space-y-1"
                     >
                       <div className="flex items-center space-x-2">
