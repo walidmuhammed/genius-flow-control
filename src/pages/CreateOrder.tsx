@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { X, Info, Check, Plus } from 'lucide-react';
+import { X, Info, Check, Plus, ChevronDown } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

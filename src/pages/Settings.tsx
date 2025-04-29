@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { User, Lock, Building2, Receipt, Users, ServerCog, Plugin, FileCheck, ShieldAlert } from 'lucide-react';
+import { User, Lock, Building2, Receipt, Users, ServerCog, Plug, FileCheck, ShieldAlert } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -24,8 +24,13 @@ const Settings: React.FC = () => {
     { icon: <Receipt className="h-5 w-5" />, label: 'Payout Methods', value: 'payout' },
     { icon: <Users className="h-5 w-5" />, label: 'Team Members', value: 'team' },
     { icon: <ServerCog className="h-5 w-5" />, label: 'API Integration', value: 'api' },
-    { icon: <Plugin className="h-5 w-5" />, label: 'Plugins', value: 'plugins' },
+    { icon: <Plug className="h-5 w-5" />, label: 'Plugins', value: 'plugins' },
   ];
+
+  // Fix the onChange handler for RadioGroup
+  const handleCurrencyChange = (value: string) => {
+    setDefaultCurrency(value as CurrencyType);
+  };
 
   return (
     <MainLayout className="p-0">
