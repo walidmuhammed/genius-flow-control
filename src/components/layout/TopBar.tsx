@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, User, Plus } from 'lucide-react';
+import { Bell, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
@@ -19,7 +19,7 @@ const TopBar: React.FC = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 flex h-2 w-2 rounded-full bg-primary"></span>
+              <span className="absolute top-1 right-1 flex h-2 w-2 rounded-full bg-red-600"></span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
@@ -31,42 +31,23 @@ const TopBar: React.FC = () => {
           </DropdownMenuContent>
         </DropdownMenu>
         
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="h-8 gap-2 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
-            >
-              <span>Create</span>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link to="/orders/new">
-                Single Order
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/orders/bulk">
-                Multiple Orders
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/pickups/new">
-                Schedule Pickup
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button 
+          variant="default" 
+          size="sm"
+          className="bg-red-600 hover:bg-red-700 text-white"
+          asChild
+        >
+          <Link to="/orders/new" className="flex items-center gap-1">
+            Create <Plus className="h-4 w-4" />
+          </Link>
+        </Button>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button 
               variant="outline" 
               size="sm"
-              className="h-8 w-8 rounded-full bg-primary/10 text-primary border-primary/20"
+              className="h-8 w-8 rounded-full bg-red-50 text-red-600 border-red-200"
             >
               {userName}
             </Button>

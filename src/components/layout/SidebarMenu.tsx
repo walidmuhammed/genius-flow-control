@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, Home, Package, Clock, Box, Wallet, BarChart, Archive, LifeBuoy, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,10 +17,11 @@ interface SidebarMenuProps {
 }
 
 const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
+  const location = useLocation();
   const [openDropdowns, setOpenDropdowns] = React.useState<Record<string, boolean>>({
-    orders: false,
-    pickups: false,
-    wallet: false,
+    orders: location.pathname.startsWith('/orders'),
+    pickups: location.pathname.startsWith('/pickups'),
+    wallet: location.pathname.startsWith('/wallet'),
   });
 
   const toggleDropdown = (key: string) => {
@@ -30,67 +31,69 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
     }));
   };
 
+  // Check if the current path matches the route or is a child route
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path);
+  };
+
   const menuItems: SidebarItemType[] = [
     {
       icon: <Home className="h-5 w-5" />,
       label: 'Home',
       href: '/',
-      isActive: true,
+      isActive: isActive('/'),
     },
     {
       icon: <Package className="h-5 w-5" />,
       label: 'Orders',
       href: '/orders',
+      isActive: isActive('/orders'),
       children: [
-        { label: 'New Orders', href: '/orders/new' },
-        { label: 'In Progress Orders', href: '/orders/in-progress' },
-        { label: 'Heading to Customer', href: '/orders/heading-to-customer' },
-        { label: 'Awaiting Action', href: '/orders/awaiting-action' },
-        { label: 'Detailed Orders List', href: '/orders/list' },
+        { label: 'Domestic', href: '/orders/domestic', isActive: isActive('/orders/domestic') },
       ],
     },
     {
       icon: <Clock className="h-5 w-5" />,
       label: 'Pickups',
       href: '/pickups',
-      children: [
-        { label: 'Upcoming Pickups', href: '/pickups/upcoming' },
-        { label: 'Pickup History', href: '/pickups/history' },
-      ],
+      isActive: isActive('/pickups'),
     },
     {
       icon: <Box className="h-5 w-5" />,
       label: 'Products',
       href: '/products',
+      isActive: isActive('/products'),
     },
     {
       icon: <Wallet className="h-5 w-5" />,
       label: 'Wallet',
       href: '/wallet',
-      children: [
-        { label: 'Overview', href: '/wallet' },
-        { label: 'Transactions', href: '/wallet/transactions' },
-      ],
+      isActive: isActive('/wallet'),
     },
     {
       icon: <BarChart className="h-5 w-5" />,
       label: 'Analytics',
       href: '/analytics',
+      isActive: isActive('/analytics'),
     },
     {
       icon: <Archive className="h-5 w-5" />,
       label: 'Packaging',
       href: '/packaging',
+      isActive: isActive('/packaging'),
     },
     {
       icon: <LifeBuoy className="h-5 w-5" />,
       label: 'Support',
       href: '/support',
+      isActive: isActive('/support'),
     },
     {
       icon: <Settings className="h-5 w-5" />,
       label: 'Settings',
       href: '/settings',
+      isActive: isActive('/settings'),
     },
   ];
 
@@ -99,22 +102,26 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
       {menuItems.map((item) => {
         const hasChildren = item.children && item.children.length > 0;
         const isOpen = hasChildren && openDropdowns[item.label.toLowerCase()];
+        const isItemActive = item.isActive || (hasChildren && item.children?.some(child => child.isActive));
 
         return (
-          <div key={item.href}>
+          <div key={item.href} className="mb-1">
             <Link
               to={!hasChildren ? item.href : '#'}
-              onClick={hasChildren ? () => toggleDropdown(item.label.toLowerCase()) : undefined}
+              onClick={hasChildren ? (e) => {
+                e.preventDefault();
+                toggleDropdown(item.label.toLowerCase());
+              } : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
-                item.isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                isItemActive
+                  ? "bg-red-50 text-red-600 font-medium"
+                  : "text-gray-700 hover:bg-gray-100"
               )}
             >
               <div className={cn(
                 "flex items-center justify-center rounded-md",
-                item.isActive ? "text-primary" : "text-muted-foreground"
+                isItemActive ? "text-red-600" : "text-gray-500"
               )}>
                 {item.icon}
               </div>
@@ -130,6 +137,9 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
                   )}
                 </>
               )}
+              {item.label === 'Settings' && !collapsed && (
+                <span className="bg-red-600 text-white text-xs px-1.5 py-0.5 rounded">NEW</span>
+              )}
             </Link>
             {!collapsed && hasChildren && isOpen && (
               <div className="pl-11 mt-1 space-y-1">
@@ -140,8 +150,8 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
                     className={cn(
                       "flex items-center rounded-lg px-3 py-2 text-sm transition-all",
                       child.isActive
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                        : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                        ? "bg-red-50 text-red-600 font-medium"
+                        : "text-gray-700 hover:bg-gray-100"
                     )}
                   >
                     {child.label}
