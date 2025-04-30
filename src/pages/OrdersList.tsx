@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, Filter, Download, MoreHorizontal, Eye, Printer, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Filter, Download, MoreHorizontal, Eye, Printer, ChevronDown, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

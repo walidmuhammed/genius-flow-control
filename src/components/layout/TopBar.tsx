@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Bell, Plus, Search, Settings, LifeBuoy, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -119,6 +120,3 @@ const TopBar: React.FC = () => {
 };
 
 export default TopBar;
-
-// Adding missing import
-import { LogOut, LifeBuoy } from 'lucide-react';
