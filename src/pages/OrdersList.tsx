@@ -11,8 +11,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CurrencyType } from '@/components/dashboard/CurrencySelector';
 import { Badge } from '@/components/ui/badge';
+import { CurrencyType } from '@/components/dashboard/CurrencySelector';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 type OrderStatus = 'Successful' | 'Returned' | 'Delayed';
 type OrderType = 'Deliver' | 'Cash Collection';
@@ -123,11 +133,11 @@ const OrdersList: React.FC = () => {
   const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
       case 'Successful':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Successful</Badge>;
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-medium">Successful</Badge>;
       case 'Returned':
-        return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">Returned</Badge>;
+        return <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 font-medium">Returned</Badge>;
       case 'Delayed':
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Delayed</Badge>;
+        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 font-medium">Delayed</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -137,36 +147,56 @@ const OrdersList: React.FC = () => {
     const [current, total] = attempts.split('/').map(Number);
     
     if (current === 1) {
-      return <span className="flex items-center"><span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>{attempts}</span>;
+      return <span className="flex items-center"><span className="w-2.5 h-2.5 bg-green-500 rounded-full mr-2"></span>{attempts}</span>;
     } else if (current === 2) {
-      return <span className="flex items-center"><span className="w-3 h-3 bg-amber-500 rounded-full mr-2"></span>{attempts}</span>;
+      return <span className="flex items-center"><span className="w-2.5 h-2.5 bg-amber-500 rounded-full mr-2"></span>{attempts}</span>;
     } else {
-      return <span className="flex items-center"><span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>{attempts}</span>;
+      return <span className="flex items-center"><span className="w-2.5 h-2.5 bg-red-500 rounded-full mr-2"></span>{attempts}</span>;
     }
   };
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-[1400px] mx-auto">
         <div>
-          <h1 className="text-2xl font-bold">Orders</h1>
+          <h1 className="text-2xl font-bold text-foreground">Orders</h1>
           <p className="text-muted-foreground">Track all your created orders.</p>
         </div>
 
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid grid-cols-4 md:grid-cols-8 lg:w-fit">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="new">New</TabsTrigger>
-            <TabsTrigger value="in-progress">In progress</TabsTrigger>
-            <TabsTrigger value="heading">Heading to customer</TabsTrigger>
-            <TabsTrigger value="awaiting">Awaiting action</TabsTrigger>
-            <TabsTrigger value="successful">Successful</TabsTrigger>
-            <TabsTrigger value="unsuccessful">Unsuccessful</TabsTrigger>
-            <TabsTrigger value="returns">Rejected Returns</TabsTrigger>
-          </TabsList>
+          <div className="border-b">
+            <div className="overflow-auto scrollbar-none pb-1">
+              <TabsList className="bg-transparent p-0 h-auto">
+                <TabsTrigger value="all" className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  All
+                </TabsTrigger>
+                <TabsTrigger value="new" className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  New
+                </TabsTrigger>
+                <TabsTrigger value="in-progress" className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  In progress
+                </TabsTrigger>
+                <TabsTrigger value="heading" className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  Heading to customer
+                </TabsTrigger>
+                <TabsTrigger value="awaiting" className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  Awaiting action
+                </TabsTrigger>
+                <TabsTrigger value="successful" className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  Successful
+                </TabsTrigger>
+                <TabsTrigger value="unsuccessful" className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  Unsuccessful
+                </TabsTrigger>
+                <TabsTrigger value="returns" className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  Rejected Returns
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
           
-          <div className="flex flex-col sm:flex-row justify-between gap-4 mt-4">
-            <div className="relative flex-1">
+          <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6">
+            <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input 
                 placeholder="Search by Phone (Separate multiple phones by a space or a comma)." 
@@ -176,54 +206,94 @@ const OrdersList: React.FC = () => {
               />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="icon">
-                <Filter className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="gap-2 h-10">
+                    <Filter className="h-4 w-4" />
+                    <span>Filter</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Date Range</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Input type="date" placeholder="From" />
+                        </div>
+                        <div>
+                          <Input type="date" placeholder="To" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Status</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="success" />
+                          <label htmlFor="success">Successful</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="returned" />
+                          <label htmlFor="returned">Returned</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="delayed" />
+                          <label htmlFor="delayed">Delayed</label>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <Button size="sm">Apply Filters</Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Button variant="outline">
                 <Download className="h-4 w-4" />
               </Button>
             </div>
           </div>
           
-          <TabsContent value="all" className="mt-4">
+          <TabsContent value="all" className="mt-6 p-0">
             <div className="rounded-lg border shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-muted/50">
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Order ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Customer Info</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Location</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Attempts</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Last Update</th>
-                      <th className="px-6 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50 hover:bg-muted/50">
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase">Order ID</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase">Type</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase">Customer Info</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase">Location</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase">Amount</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase">Status</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase">Attempts</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase">Last Update</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase text-center">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {mockOrders.map((order) => (
-                      <tr key={order.id} className="hover:bg-muted/30">
-                        <td className="px-6 py-4 whitespace-nowrap text-primary">
+                      <TableRow key={order.id} className="hover:bg-muted/30">
+                        <TableCell className="font-medium text-primary">
                           {order.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        </TableCell>
+                        <TableCell>
                           {order.type}
-                        </td>
-                        <td className="px-6 py-4">
+                        </TableCell>
+                        <TableCell>
                           <div className="flex flex-col">
                             <span className="font-medium">{order.customer.name}</span>
-                            <span className="text-muted-foreground">{order.customer.phone}</span>
+                            <span className="text-muted-foreground text-sm">{order.customer.phone}</span>
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
+                        </TableCell>
+                        <TableCell>
                           <div className="flex flex-col">
                             <span className="font-medium">{order.location.city}</span>
                             <span className="text-muted-foreground text-xs">{order.location.area}</span>
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        </TableCell>
+                        <TableCell>
                           {order.amount.value > 0 ? (
                             <div className="flex items-center">
                               <span className="text-green-600 font-medium">
@@ -236,20 +306,20 @@ const OrdersList: React.FC = () => {
                           ) : (
                             <span className="text-muted-foreground">No Cash Collection</span>
                           )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        </TableCell>
+                        <TableCell>
                           {getStatusBadge(order.status)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        </TableCell>
+                        <TableCell>
                           {getAttemptsBadge(order.attempts)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-muted-foreground">{order.lastUpdate}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-muted-foreground text-sm">{order.lastUpdate}</span>
+                        </TableCell>
+                        <TableCell className="text-center">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -259,11 +329,11 @@ const OrdersList: React.FC = () => {
                               <DropdownMenuItem>Print Label</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
               <div className="bg-white border-t px-6 py-4 flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">

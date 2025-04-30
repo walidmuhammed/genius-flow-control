@@ -15,12 +15,12 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   return (
     <aside
       className={cn(
-        "flex flex-col border-r bg-sidebar h-screen transition-all duration-300",
+        "flex flex-col border-r border-border/40 bg-white h-screen transition-all duration-300",
         collapsed ? "w-16" : "w-64",
         className
       )}
     >
-      <div className="flex h-16 items-center justify-between px-4 border-b">
+      <div className="flex h-16 items-center justify-between px-4 border-b border-border/40">
         <Link to="/" className="flex items-center gap-2">
           {!collapsed && (
             <span className="text-xl font-bold text-primary">Genius</span>
@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         </Link>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="rounded-lg p-1.5 hover:bg-sidebar-accent text-sidebar-foreground"
+          className="rounded-lg p-1.5 hover:bg-muted text-muted-foreground"
         >
           <ChevronLeft className={cn(
             "h-5 w-5 transition-transform",
