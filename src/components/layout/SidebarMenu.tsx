@@ -1,14 +1,13 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, Home, Package, Clock, Box, Wallet, BarChart, Archive, LifeBuoy, Settings } from 'lucide-react';
+import { Home, Package, Clock, Box, Wallet, BarChart, Archive, LifeBuoy, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type SidebarItemType = {
   icon: React.ReactNode;
   label: string;
   href: string;
-  children?: Omit<SidebarItemType, 'children' | 'icon'>[];
 };
 
 interface SidebarMenuProps {
@@ -16,21 +15,8 @@ interface SidebarMenuProps {
 }
 
 const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
-  const [openDropdowns, setOpenDropdowns] = React.useState<Record<string, boolean>>({
-    orders: false,
-    pickups: false,
-    wallet: false,
-  });
-  
   const location = useLocation();
   
-  const toggleDropdown = (key: string) => {
-    setOpenDropdowns(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
-
   const menuItems: SidebarItemType[] = [
     {
       icon: <Home className="h-5 w-5" />,
@@ -80,33 +66,35 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
   ];
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       {menuItems.map((item) => {
         const isActive = location.pathname === item.href || 
                         (item.href !== '/' && location.pathname.startsWith(item.href));
         
         return (
-          <div key={item.href}>
-            <Link
-              to={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
-                isActive
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <div className={cn(
-                "flex items-center justify-center",
-                isActive ? "text-primary" : "text-muted-foreground"
-              )}>
-                {item.icon}
-              </div>
-              {!collapsed && (
-                <span className="flex-1">{item.label}</span>
-              )}
-            </Link>
-          </div>
+          <Link
+            key={item.href}
+            to={item.href}
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
+              isActive
+                ? "bg-primary/10 text-primary font-medium shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <div className={cn(
+              "flex items-center justify-center",
+              isActive ? "text-primary" : "text-muted-foreground"
+            )}>
+              {item.icon}
+            </div>
+            {!collapsed && (
+              <span className="flex-1">{item.label}</span>
+            )}
+            {isActive && !collapsed && (
+              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+            )}
+          </Link>
         );
       })}
     </div>
