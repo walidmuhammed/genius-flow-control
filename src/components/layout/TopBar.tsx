@@ -27,6 +27,7 @@ const TopBar: React.FC = () => {
   const userName = 'MK';
   const [open, setOpen] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [quickCreateDialogOpen, setQuickCreateDialogOpen] = useState(false);
   
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -232,14 +233,72 @@ const TopBar: React.FC = () => {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="my-1 bg-border/10" />
-              <DialogTrigger asChild>
-                <DropdownMenuItem className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                    <span className="font-medium">Quick Create</span>
+              <Dialog open={quickCreateDialogOpen} onOpenChange={setQuickCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <DropdownMenuItem className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer" onSelect={(e) => {
+                    e.preventDefault();
+                    setQuickCreateDialogOpen(true);
+                  }}>
+                    <div className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                      <span className="font-medium">Quick Create</span>
+                    </div>
+                  </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] rounded-xl p-0 gap-0">
+                  <DialogHeader className="p-5 border-b border-border/10">
+                    <DialogTitle>Quick Create</DialogTitle>
+                    <DialogDescription>
+                      Quickly create new orders, pickups, or products.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="p-5 space-y-4">
+                    <div className={cn(
+                      "flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-primary/20 hover:bg-primary/5 cursor-pointer transition-all",
+                      "hover:shadow-sm"
+                    )}>
+                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                        <Package className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium">New Order</h4>
+                        <p className="text-xs text-muted-foreground">Create a new delivery order</p>
+                      </div>
+                    </div>
+                    
+                    <div className={cn(
+                      "flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-blue-500/20 hover:bg-blue-500/5 cursor-pointer transition-all",
+                      "hover:shadow-sm"
+                    )}>
+                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                        <Clock className="h-5 w-5 text-blue-500" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium">Schedule Pickup</h4>
+                        <p className="text-xs text-muted-foreground">Create a new pickup request</p>
+                      </div>
+                    </div>
+                    
+                    <div className={cn(
+                      "flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-green-500/20 hover:bg-green-500/5 cursor-pointer transition-all",
+                      "hover:shadow-sm"
+                    )}>
+                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                        <Box className="h-5 w-5 text-green-500" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium">New Product</h4>
+                        <p className="text-xs text-muted-foreground">Add a new product to your inventory</p>
+                      </div>
+                    </div>
                   </div>
-                </DropdownMenuItem>
-              </DialogTrigger>
+                  <DialogFooter className="px-5 py-4 border-t border-border/10">
+                    <Button variant="outline" className="w-full rounded-lg">
+                      View All Options
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </DropdownMenuContent>
           </DropdownMenu>
           
@@ -349,62 +408,6 @@ const TopBar: React.FC = () => {
           </CommandGroup>
         </CommandList>
       </CommandDialog>
-      
-      <Dialog>
-        <DialogContent className="sm:max-w-[425px] rounded-xl p-0 gap-0">
-          <DialogHeader className="p-5 border-b border-border/10">
-            <DialogTitle>Quick Create</DialogTitle>
-            <DialogDescription>
-              Quickly create new orders, pickups, or products.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="p-5 space-y-4">
-            <div className={cn(
-              "flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-primary/20 hover:bg-primary/5 cursor-pointer transition-all",
-              "hover:shadow-sm"
-            )}>
-              <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                <Package className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h4 className="text-sm font-medium">New Order</h4>
-                <p className="text-xs text-muted-foreground">Create a new delivery order</p>
-              </div>
-            </div>
-            
-            <div className={cn(
-              "flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-blue-500/20 hover:bg-blue-500/5 cursor-pointer transition-all",
-              "hover:shadow-sm"
-            )}>
-              <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                <Clock className="h-5 w-5 text-blue-500" />
-              </div>
-              <div>
-                <h4 className="text-sm font-medium">Schedule Pickup</h4>
-                <p className="text-xs text-muted-foreground">Create a new pickup request</p>
-              </div>
-            </div>
-            
-            <div className={cn(
-              "flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-green-500/20 hover:bg-green-500/5 cursor-pointer transition-all",
-              "hover:shadow-sm"
-            )}>
-              <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                <Box className="h-5 w-5 text-green-500" />
-              </div>
-              <div>
-                <h4 className="text-sm font-medium">New Product</h4>
-                <p className="text-xs text-muted-foreground">Add a new product to your inventory</p>
-              </div>
-            </div>
-          </div>
-          <DialogFooter className="px-5 py-4 border-t border-border/10">
-            <Button variant="outline" className="w-full rounded-lg">
-              View All Options
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };
