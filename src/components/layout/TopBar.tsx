@@ -1,6 +1,10 @@
 
 import React, { useState } from 'react';
-import { Bell, Plus, Search, Settings, LifeBuoy, LogOut, ChevronDown, Command, Menu, MoreHorizontal } from 'lucide-react';
+import { 
+  Bell, Plus, Search, Settings, LifeBuoy, LogOut, ChevronDown, 
+  Command, Menu, MoreHorizontal, Package, Clock, Wallet, 
+  BarChart, Box
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';

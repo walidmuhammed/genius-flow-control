@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Filter, Search, Download, ChevronDown, X, Calendar as CalendarIcon, Info, Check, Clock } from 'lucide-react';
+import { Filter, Search, Download, ChevronDown, X, Calendar as CalendarIcon, Info, Check, Clock, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
