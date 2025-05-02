@@ -1,10 +1,5 @@
-
 import React, { useState } from 'react';
-import { 
-  Bell, Plus, Search, Settings, LifeBuoy, LogOut, ChevronDown, 
-  Command, Menu, MoreHorizontal, Package, Clock, Wallet, 
-  BarChart, Box
-} from 'lucide-react';
+import { Bell, Plus, Search, Settings, LifeBuoy, LogOut, ChevronDown, Command, Menu, MoreHorizontal, Package, Clock, Wallet, BarChart, Box } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
@@ -12,53 +7,31 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { 
-  CommandDialog, 
-  CommandEmpty, 
-  CommandGroup, 
-  CommandInput, 
-  CommandItem, 
-  CommandList,
-  CommandSeparator,
-  CommandShortcut
-} from '@/components/ui/command';
-
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut } from '@/components/ui/command';
 const TopBar: React.FC = () => {
   const userName = 'MK';
   const [open, setOpen] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [quickCreateDialogOpen, setQuickCreateDialogOpen] = useState(false);
-  
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen(open => !open);
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
-
-  return (
-    <>
+  return <>
       <header className="h-16 border-b border-border/5 bg-white px-6 flex items-center justify-between shadow-[0_1px_3px_0_rgba(0,0,0,0.05)]">
         <div className="flex items-center gap-4 lg:w-1/3">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="lg:hidden h-9 w-9"
-            onClick={() => setShowMobileMenu(!showMobileMenu)}
-          >
+          <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9" onClick={() => setShowMobileMenu(!showMobileMenu)}>
             <Menu className="h-[18px] w-[18px]" />
           </Button>
           
           <div className="relative hidden lg:flex max-w-md w-full">
-            <Button
-              variant="outline"
-              className="w-full justify-between h-9 border-none shadow-sm bg-muted/20 hover:bg-muted/30 focus-visible:ring-primary/20 rounded-full px-3 gap-2"
-              onClick={() => setOpen(true)}
-            >
+            <Button variant="outline" className="w-full justify-between h-9 border-none shadow-sm bg-muted/20 hover:bg-muted/30 focus-visible:ring-primary/20 rounded-full px-3 gap-2" onClick={() => setOpen(true)}>
               <div className="flex items-center gap-2">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground text-sm">Search anything...</span>
@@ -76,11 +49,7 @@ const TopBar: React.FC = () => {
           <div className="hidden sm:flex items-center border-r border-border/10 pr-4 mr-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-muted-foreground hover:text-foreground gap-2 h-8"
-                >
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-2 h-8">
                   <span className="hidden md:inline-flex">Beirut Branch</span>
                   <span className="inline-flex md:hidden">Branch</span>
                   <ChevronDown className="h-3 w-3 opacity-50" />
@@ -97,20 +66,14 @@ const TopBar: React.FC = () => {
                   Saida Branch
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="my-1 bg-border/10" />
-                <DropdownMenuItem className="cursor-pointer rounded-md py-1.5 text-primary">
-                  Manage Branches
-                </DropdownMenuItem>
+                
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative rounded-full h-9 w-9 transition-all hover:bg-muted/30"
-              >
+              <Button variant="ghost" size="icon" className="relative rounded-full h-9 w-9 transition-all hover:bg-muted/30">
                 <Bell className="h-[18px] w-[18px] text-muted-foreground" />
                 <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
                 <span className="sr-only">Notifications</span>
@@ -204,11 +167,7 @@ const TopBar: React.FC = () => {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="h-9 gap-2 border-primary/15 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/20 font-medium rounded-full px-4"
-              >
+              <Button variant="outline" size="sm" className="h-9 gap-2 border-primary/15 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/20 font-medium rounded-full px-4">
                 <span>Create</span>
                 <Plus className="h-3.5 w-3.5" />
               </Button>
@@ -235,10 +194,10 @@ const TopBar: React.FC = () => {
               <DropdownMenuSeparator className="my-1 bg-border/10" />
               <Dialog open={quickCreateDialogOpen} onOpenChange={setQuickCreateDialogOpen}>
                 <DialogTrigger asChild>
-                  <DropdownMenuItem className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer" onSelect={(e) => {
-                    e.preventDefault();
-                    setQuickCreateDialogOpen(true);
-                  }}>
+                  <DropdownMenuItem className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer" onSelect={e => {
+                  e.preventDefault();
+                  setQuickCreateDialogOpen(true);
+                }}>
                     <div className="flex items-center gap-2">
                       <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
                       <span className="font-medium">Quick Create</span>
@@ -253,10 +212,7 @@ const TopBar: React.FC = () => {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="p-5 space-y-4">
-                    <div className={cn(
-                      "flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-primary/20 hover:bg-primary/5 cursor-pointer transition-all",
-                      "hover:shadow-sm"
-                    )}>
+                    <div className={cn("flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-primary/20 hover:bg-primary/5 cursor-pointer transition-all", "hover:shadow-sm")}>
                       <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
                         <Package className="h-5 w-5 text-primary" />
                       </div>
@@ -266,10 +222,7 @@ const TopBar: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className={cn(
-                      "flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-blue-500/20 hover:bg-blue-500/5 cursor-pointer transition-all",
-                      "hover:shadow-sm"
-                    )}>
+                    <div className={cn("flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-blue-500/20 hover:bg-blue-500/5 cursor-pointer transition-all", "hover:shadow-sm")}>
                       <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
                         <Clock className="h-5 w-5 text-blue-500" />
                       </div>
@@ -279,10 +232,7 @@ const TopBar: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className={cn(
-                      "flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-green-500/20 hover:bg-green-500/5 cursor-pointer transition-all",
-                      "hover:shadow-sm"
-                    )}>
+                    <div className={cn("flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-green-500/20 hover:bg-green-500/5 cursor-pointer transition-all", "hover:shadow-sm")}>
                       <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
                         <Box className="h-5 w-5 text-green-500" />
                       </div>
@@ -304,10 +254,7 @@ const TopBar: React.FC = () => {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className="relative h-9 w-9 rounded-full flex items-center justify-center p-0 transition-all hover:bg-muted/30"
-              >
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full flex items-center justify-center p-0 transition-all hover:bg-muted/30">
                 <Avatar className="h-9 w-9 border border-border/10 ring-2 ring-white">
                   <AvatarImage src="https://i.pravatar.cc/100?img=13" alt="Mohammed Khatib" />
                   <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-medium text-sm">{userName}</AvatarFallback>
@@ -408,8 +355,6 @@ const TopBar: React.FC = () => {
           </CommandGroup>
         </CommandList>
       </CommandDialog>
-    </>
-  );
+    </>;
 };
-
 export default TopBar;
