@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  Home, Package, Clock, Box, Wallet, BarChart, Archive, 
-  LifeBuoy, Settings, ChevronDown, Users, ShieldCheck, Zap
+  Home, Package, Box, Wallet, BarChart, Users,
+  LifeBuoy, Settings, ChevronDown 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -37,94 +37,61 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
   
   const menuItems: (SidebarItemType | { type: 'separator', label: string })[] = [
     {
-      icon: <Home className="h-[18px] w-[18px]" />,
+      icon: <Home className="h-[18px] w-[18px] text-genius-500" />,
       label: 'Home',
       href: '/',
     },
     {
-      type: 'separator',
-      label: 'Operations'
-    },
-    {
-      icon: <Package className="h-[18px] w-[18px]" />,
+      icon: <Package className="h-[18px] w-[18px] text-genius-500" />,
       label: 'Orders',
       href: '/orders',
       badge: { count: 12, variant: 'warning' },
       children: [
         {
-          icon: <Box className="h-[16px] w-[16px]" />,
+          icon: <Box className="h-[16px] w-[16px] text-genius-500" />,
           label: 'All Orders',
           href: '/orders',
         },
         {
-          icon: <Clock className="h-[16px] w-[16px]" />,
-          label: 'Pending',
-          href: '/orders/pending',
+          icon: <Box className="h-[16px] w-[16px] text-genius-500" />,
+          label: 'New Orders',
+          href: '/orders/new',
           badge: { count: 8, variant: 'danger' }
         },
-        {
-          icon: <Zap className="h-[16px] w-[16px]" />,
-          label: 'Processing',
-          href: '/orders/processing',
-          badge: { count: 4, variant: 'warning' }
-        }
       ]
     },
     {
-      icon: <Clock className="h-[18px] w-[18px]" />,
+      icon: <Box className="h-[18px] w-[18px] text-genius-500" />,
       label: 'Pickups',
       href: '/pickups',
       badge: { count: 3, variant: 'success' },
     },
     {
-      icon: <Box className="h-[18px] w-[18px]" />,
-      label: 'Products',
-      href: '/products',
-    },
-    {
-      type: 'separator',
-      label: 'Finance'
-    },
-    {
-      icon: <Wallet className="h-[18px] w-[18px]" />,
-      label: 'Wallet',
-      href: '/wallet',
-    },
-    {
-      icon: <BarChart className="h-[18px] w-[18px]" />,
-      label: 'Analytics',
-      href: '/analytics',
-    },
-    {
-      type: 'separator',
-      label: 'Management'
-    },
-    {
-      icon: <Archive className="h-[18px] w-[18px]" />,
-      label: 'Packaging',
-      href: '/packaging',
-    },
-    {
-      icon: <Users className="h-[18px] w-[18px]" />,
+      icon: <Users className="h-[18px] w-[18px] text-genius-500" />,
       label: 'Customers',
       href: '/customers',
     },
     {
-      icon: <ShieldCheck className="h-[18px] w-[18px]" />,
-      label: 'Security',
-      href: '/security',
+      icon: <Wallet className="h-[18px] w-[18px] text-genius-500" />,
+      label: 'Wallet',
+      href: '/wallet',
+    },
+    {
+      icon: <BarChart className="h-[18px] w-[18px] text-genius-500" />,
+      label: 'Analytics',
+      href: '/analytics',
     },
     {
       type: 'separator',
       label: 'Support'
     },
     {
-      icon: <LifeBuoy className="h-[18px] w-[18px]" />,
+      icon: <LifeBuoy className="h-[18px] w-[18px] text-genius-500" />,
       label: 'Support',
       href: '/support',
     },
     {
-      icon: <Settings className="h-[18px] w-[18px]" />,
+      icon: <Settings className="h-[18px] w-[18px] text-genius-500" />,
       label: 'Settings',
       href: '/settings',
     },
@@ -135,7 +102,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
       case 'success':
         return 'bg-green-100 text-green-700';
       case 'warning':
-        return 'bg-amber-100 text-amber-700';
+        return 'bg-genius-100 text-genius-700';
       case 'danger':
         return 'bg-red-100 text-red-700';
       default:
@@ -162,14 +129,14 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
                 className={cn(
                   "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all",
                   isActive
-                    ? "bg-primary/8 text-primary font-medium shadow-sm"
+                    ? "bg-genius-50 text-genius-700 font-medium shadow-sm"
                     : "text-muted-foreground hover:bg-muted/50 hover:text-zinc-900"
                 )}
               >
                 <div className="flex items-center gap-3">
                   <div className={cn(
                     "flex items-center justify-center",
-                    isActive ? "text-primary" : "text-muted-foreground"
+                    isActive ? "text-genius-600" : "text-genius-500"
                   )}>
                     {item.icon}
                   </div>
@@ -205,13 +172,13 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
                     className={cn(
                       "flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm transition-all",
                       isChildActive
-                        ? "bg-primary/5 text-primary font-medium"
+                        ? "bg-genius-50 text-genius-700 font-medium"
                         : "text-muted-foreground hover:bg-muted/30 hover:text-zinc-900"
                     )}
                   >
                     <div className="flex items-center gap-2.5">
                       <div className={cn(
-                        isChildActive ? "text-primary" : "text-muted-foreground"
+                        isChildActive ? "text-genius-600" : "text-genius-500"
                       )}>
                         {childItem.icon}
                       </div>
@@ -242,13 +209,13 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
         className={cn(
           "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all",
           isActive
-            ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-medium shadow-[0_1px_3px_rgba(249,115,22,0.05)]"
+            ? "bg-gradient-to-r from-genius-50 to-genius-100/50 text-genius-700 font-medium shadow-[0_1px_3px_rgba(249,115,22,0.05)]"
             : "text-muted-foreground hover:bg-muted/50 hover:text-zinc-900"
         )}
       >
         <div className={cn(
           "flex items-center justify-center",
-          isActive ? "text-primary" : "text-muted-foreground"
+          isActive ? "text-genius-600" : "text-genius-500"
         )}>
           {item.icon}
         </div>
@@ -265,7 +232,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
               </span>
             )}
             {isActive && (
-              <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <div className="h-1.5 w-1.5 rounded-full bg-genius-500" />
             )}
           </>
         )}

@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 150 64% 54%;
+    --primary: 24 95% 53%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 30 100% 97%;
@@ -31,18 +31,18 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 150 64% 54%;
+    --ring: 24 95% 53%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 150 64% 54%;
+    --sidebar-primary: 24 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 150 64% 54%;
+    --sidebar-accent-foreground: 24 95% 53%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 150 64% 54%;
+    --sidebar-ring: 24 95% 53%;
   }
 
   .dark {
@@ -55,7 +55,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 150 64% 54%;
+    --primary: 24 95% 53%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -72,16 +72,16 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 150 64% 54%;
+    --ring: 24 95% 53%;
     
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 150 64% 54%;
+    --sidebar-primary: 24 95% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 150 64% 54%;
+    --sidebar-ring: 24 95% 53%;
   }
 }
 
@@ -102,7 +102,7 @@
 
 @layer components {
   .stat-card {
-    @apply bg-white rounded-lg p-4 shadow-sm border border-border;
+    @apply bg-white rounded-xl p-6 shadow-md border border-border hover:shadow-lg transition-shadow duration-300 flex flex-col h-full;
   }
   
   .currency-select-btn {
@@ -119,6 +119,18 @@
   
   .currency-badge-lbp {
     @apply bg-green-50 text-green-700 border-green-200;
+  }
+  
+  .genius-card {
+    @apply bg-white rounded-xl p-6 shadow-sm border border-border/40 hover:shadow-md transition-all duration-300 relative overflow-hidden;
+  }
+  
+  .genius-card-gradient {
+    @apply absolute -right-8 -top-8 w-28 h-28 rounded-full bg-gradient-to-br from-genius-100/50 to-genius-300/30 blur-xl opacity-70 pointer-events-none;
+  }
+  
+  .genius-icon-container {
+    @apply flex h-12 w-12 items-center justify-center rounded-lg bg-genius-100 text-genius-600 mb-4;
   }
 }
 
