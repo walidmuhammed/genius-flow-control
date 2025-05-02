@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, FileText, Download, Search, Calendar } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -14,6 +15,7 @@ const OrdersList: React.FC = () => {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<string>('all');
 
   // Mock data with Lebanese localized content
   const mockOrders: Order[] = [
@@ -193,7 +195,7 @@ const OrdersList: React.FC = () => {
         <Card className="border-0 shadow-sm bg-white">
           <CardHeader className="border-b">
             <div className="pb-1">
-              <Tabs defaultValue="all">
+              <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="bg-transparent p-0 h-auto">
                   <TabsTrigger 
                     value="all" 
@@ -238,41 +240,95 @@ const OrdersList: React.FC = () => {
                     On delivery
                   </TabsTrigger>
                 </TabsList>
+                
+                <CardContent className="p-4">
+                  <div className="flex justify-between gap-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input 
+                        placeholder="Search orders..." 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10 bg-white border-gray-200"
+                      />
+                    </div>
+                    
+                    <Button variant="outline" className="h-10 gap-2 rounded-md border-gray-200 bg-white shadow-sm text-sm font-medium">
+                      <Calendar className="h-4 w-4" />
+                      <span>June</span>
+                    </Button>
+                    
+                    <Button variant="outline" className="h-10 gap-2 rounded-md border-gray-200 bg-white shadow-sm text-sm font-medium">
+                      Export
+                    </Button>
+                  </div>
+                
+                  <TabsContent value="all" className="p-0 mt-4">
+                    <OrdersTable 
+                      orders={mockOrders}
+                      selectedOrders={selectedOrders}
+                      toggleSelectAll={toggleSelectAll}
+                      toggleSelectOrder={toggleSelectOrder}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="new" className="p-0 mt-4">
+                    <OrdersTable 
+                      orders={mockOrders.filter(order => order.status === 'New')}
+                      selectedOrders={selectedOrders}
+                      toggleSelectAll={toggleSelectAll}
+                      toggleSelectOrder={toggleSelectOrder}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="pending" className="p-0 mt-4">
+                    <OrdersTable 
+                      orders={mockOrders.filter(order => order.status === 'Pending Pickup')}
+                      selectedOrders={selectedOrders}
+                      toggleSelectAll={toggleSelectAll}
+                      toggleSelectOrder={toggleSelectOrder}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="process" className="p-0 mt-4">
+                    <OrdersTable 
+                      orders={mockOrders.filter(order => order.status === 'In Progress')}
+                      selectedOrders={selectedOrders}
+                      toggleSelectAll={toggleSelectAll}
+                      toggleSelectOrder={toggleSelectOrder}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="completed" className="p-0 mt-4">
+                    <OrdersTable 
+                      orders={mockOrders.filter(order => order.status === 'Successful')}
+                      selectedOrders={selectedOrders}
+                      toggleSelectAll={toggleSelectAll}
+                      toggleSelectOrder={toggleSelectOrder}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="cancelled" className="p-0 mt-4">
+                    <OrdersTable 
+                      orders={mockOrders.filter(order => order.status === 'Returned')}
+                      selectedOrders={selectedOrders}
+                      toggleSelectAll={toggleSelectAll}
+                      toggleSelectOrder={toggleSelectOrder}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="delivery" className="p-0 mt-4">
+                    <OrdersTable 
+                      orders={mockOrders.filter(order => order.status === 'Heading to Customer')}
+                      selectedOrders={selectedOrders}
+                      toggleSelectAll={toggleSelectAll}
+                      toggleSelectOrder={toggleSelectOrder}
+                    />
+                  </TabsContent>
+                </CardContent>
               </Tabs>
             </div>
           </CardHeader>
-          
-          <CardContent className="p-4">
-            <div className="flex justify-between gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input 
-                  placeholder="Search orders..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-white border-gray-200"
-                />
-              </div>
-              
-              <Button variant="outline" className="h-10 gap-2 rounded-md border-gray-200 bg-white shadow-sm text-sm font-medium">
-                <Calendar className="h-4 w-4" />
-                <span>June</span>
-              </Button>
-              
-              <Button variant="outline" className="h-10 gap-2 rounded-md border-gray-200 bg-white shadow-sm text-sm font-medium">
-                Export
-              </Button>
-            </div>
-          
-            <TabsContent value="all" className="p-0 mt-4">
-              <OrdersTable 
-                orders={mockOrders}
-                selectedOrders={selectedOrders}
-                toggleSelectAll={toggleSelectAll}
-                toggleSelectOrder={toggleSelectOrder}
-              />
-            </TabsContent>
-          </CardContent>
         </Card>
       </div>
     </MainLayout>

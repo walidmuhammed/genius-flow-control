@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 
 const Settings: React.FC = () => {
   const [defaultCurrency, setDefaultCurrency] = useState<CurrencyType>('USD');
+  const [activeTab, setActiveTab] = useState('personal');
 
   const menuItems = [
     { icon: <User className="h-5 w-5" />, label: 'Personal Info', value: 'personal' },
@@ -57,105 +58,115 @@ const Settings: React.FC = () => {
         
         <div className="flex-1 overflow-y-auto">
           <div className="p-6">
-            <div className="space-y-6" id="personal">
-              <div>
-                <h2 className="text-2xl font-bold">Personal Info</h2>
-                <p className="text-muted-foreground">Setup your personal info</p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="first-name">First name</Label>
-                  <div className="flex">
-                    <Input id="first-name" defaultValue="Walid" className="rounded-r-none" />
-                    <Button variant="outline" className="rounded-l-none border-l-0">
-                      Edit
-                    </Button>
+            <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsContent value="personal">
+                <div className="space-y-6" id="personal">
+                  <div>
+                    <h2 className="text-2xl font-bold">Personal Info</h2>
+                    <p className="text-muted-foreground">Setup your personal info</p>
                   </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="last-name">Last name</Label>
-                  <div className="flex">
-                    <Input id="last-name" defaultValue="Mohammed" className="rounded-r-none" />
-                    <Button variant="outline" className="rounded-l-none border-l-0">
-                      Edit
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="phone-number">Phone number</Label>
-                  <div className="flex">
-                    <Input id="phone-number" defaultValue="+20114626333" className="rounded-r-none" />
-                    <Button variant="outline" className="rounded-l-none border-l-0">
-                      Edit
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="flex">
-                    <Input id="email" defaultValue="walidmuhammed@gmail.com" className="rounded-r-none" />
-                    <Button variant="outline" className="rounded-l-none border-l-0">
-                      Edit
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <Separator className="my-8" />
-            
-            <div className="space-y-6" id="security">
-              <div>
-                <h2 className="text-2xl font-bold">Security</h2>
-                <p className="text-muted-foreground">Change your password</p>
-              </div>
-              
-              <div className="space-y-4">
-                <Button variant="outline" className="bg-primary/5 border-primary/20 text-primary">
-                  Reset Password
-                </Button>
-                
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Currency Settings</h3>
-                  <div className="space-y-2">
-                    <Label className="text-base">Default Currency for Transactions</Label>
-                    <RadioGroup 
-                      defaultValue={defaultCurrency}
-                      onValueChange={handleCurrencyChange}
-                      className="flex flex-col space-y-1"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="USD" id="usd" />
-                        <Label htmlFor="usd">USD (US Dollar)</Label>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="first-name">First name</Label>
+                      <div className="flex">
+                        <Input id="first-name" defaultValue="Walid" className="rounded-r-none" />
+                        <Button variant="outline" className="rounded-l-none border-l-0">
+                          Edit
+                        </Button>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="LBP" id="lbp" />
-                        <Label htmlFor="lbp">LBP (Lebanese Pound)</Label>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="last-name">Last name</Label>
+                      <div className="flex">
+                        <Input id="last-name" defaultValue="Mohammed" className="rounded-r-none" />
+                        <Button variant="outline" className="rounded-l-none border-l-0">
+                          Edit
+                        </Button>
                       </div>
-                    </RadioGroup>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="phone-number">Phone number</Label>
+                      <div className="flex">
+                        <Input id="phone-number" defaultValue="+20114626333" className="rounded-r-none" />
+                        <Button variant="outline" className="rounded-l-none border-l-0">
+                          Edit
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <div className="flex">
+                        <Input id="email" defaultValue="walidmuhammed@gmail.com" className="rounded-r-none" />
+                        <Button variant="outline" className="rounded-l-none border-l-0">
+                          Edit
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            
-            <Separator className="my-8" />
-            
-            <div className="space-y-6" id="delete-account">
-              <div>
-                <h2 className="text-2xl font-bold text-destructive">Delete account</h2>
-                <p className="text-muted-foreground">This will delete your account, Genius Store and Team members.</p>
-              </div>
+              </TabsContent>
               
-              <div className="space-y-4">
-                <Button variant="destructive">
-                  Delete account
-                </Button>
-              </div>
-            </div>
+              <TabsContent value="security">
+                <Separator className="my-8" />
+                
+                <div className="space-y-6" id="security">
+                  <div>
+                    <h2 className="text-2xl font-bold">Security</h2>
+                    <p className="text-muted-foreground">Change your password</p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <Button variant="outline" className="bg-primary/5 border-primary/20 text-primary">
+                      Reset Password
+                    </Button>
+                    
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">Currency Settings</h3>
+                      <div className="space-y-2">
+                        <Label className="text-base">Default Currency for Transactions</Label>
+                        <RadioGroup 
+                          defaultValue={defaultCurrency}
+                          onValueChange={handleCurrencyChange}
+                          className="flex flex-col space-y-1"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="USD" id="usd" />
+                            <Label htmlFor="usd">USD (US Dollar)</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="LBP" id="lbp" />
+                            <Label htmlFor="lbp">LBP (Lebanese Pound)</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="delete-account">
+                <Separator className="my-8" />
+                
+                <div className="space-y-6" id="delete-account">
+                  <div>
+                    <h2 className="text-2xl font-bold text-destructive">Delete account</h2>
+                    <p className="text-muted-foreground">This will delete your account, Genius Store and Team members.</p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <Button variant="destructive">
+                      Delete account
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              {/* Other TabsContent components for business, subscriptions, etc. can be added here */}
+            </Tabs>
           </div>
         </div>
       </div>
