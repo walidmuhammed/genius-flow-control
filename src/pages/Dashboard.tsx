@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-
 const Dashboard: React.FC = () => {
   const currentTime = new Date().toLocaleTimeString([], {
     hour: '2-digit',
@@ -29,13 +28,13 @@ const Dashboard: React.FC = () => {
     },
     totalCustomers: {
       value: "4,213",
-      percentChange: "+3.2%", 
+      percentChange: "+3.2%",
       period: "from last week"
     },
     totalTransactions: {
       value: "563",
       percentChange: "-1.8%",
-      period: "from last week" 
+      period: "from last week"
     },
     totalProducts: {
       value: "882",
@@ -89,9 +88,7 @@ const Dashboard: React.FC = () => {
     status: 'Updated',
     customer: 'Omar Farhat'
   }];
-  
-  return (
-    <MainLayout>
+  return <MainLayout>
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
@@ -101,15 +98,8 @@ const Dashboard: React.FC = () => {
             </p>
           </div>
           <div className="flex gap-3 mt-4 sm:mt-0">
-            <Button 
-              variant="outline" 
-              className="text-sm font-medium bg-white border-gray-200 shadow-sm"
-            >
-              Export data
-            </Button>
-            <Button 
-              className="text-sm font-medium bg-[#46d483] hover:bg-[#3ac476] text-white shadow-sm"
-            >
+            
+            <Button className="text-sm font-medium bg-[#46d483] hover:bg-[#3ac476] text-white shadow-sm">
               + Connect wallet
             </Button>
           </div>
@@ -124,10 +114,7 @@ const Dashboard: React.FC = () => {
                     Total Revenue <Info className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.totalRevenue.value}</p>
-                  <p className={cn(
-                    "mt-1.5 text-xs flex items-center gap-1",
-                    dashboardData.totalRevenue.percentChange.includes('+') ? "text-green-600" : "text-red-500"
-                  )}>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.totalRevenue.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
                     <span className="font-medium">{dashboardData.totalRevenue.percentChange}</span> 
                     <span className="text-gray-500">{dashboardData.totalRevenue.period}</span>
                   </p>
@@ -144,10 +131,7 @@ const Dashboard: React.FC = () => {
                     Total Customers <Info className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.totalCustomers.value}</p>
-                  <p className={cn(
-                    "mt-1.5 text-xs flex items-center gap-1",
-                    dashboardData.totalCustomers.percentChange.includes('+') ? "text-green-600" : "text-red-500"
-                  )}>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.totalCustomers.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
                     <span className="font-medium">{dashboardData.totalCustomers.percentChange}</span> 
                     <span className="text-gray-500">{dashboardData.totalCustomers.period}</span>
                   </p>
@@ -164,10 +148,7 @@ const Dashboard: React.FC = () => {
                     Total Transactions <Info className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.totalTransactions.value}</p>
-                  <p className={cn(
-                    "mt-1.5 text-xs flex items-center gap-1",
-                    dashboardData.totalTransactions.percentChange.includes('+') ? "text-green-600" : "text-red-500"
-                  )}>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.totalTransactions.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
                     <span className="font-medium">{dashboardData.totalTransactions.percentChange}</span> 
                     <span className="text-gray-500">{dashboardData.totalTransactions.period}</span>
                   </p>
@@ -184,10 +165,7 @@ const Dashboard: React.FC = () => {
                     Total Products <Info className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.totalProducts.value}</p>
-                  <p className={cn(
-                    "mt-1.5 text-xs flex items-center gap-1",
-                    dashboardData.totalProducts.percentChange.includes('+') ? "text-green-600" : "text-red-500"
-                  )}>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.totalProducts.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
                     <span className="font-medium">{dashboardData.totalProducts.percentChange}</span> 
                     <span className="text-gray-500">{dashboardData.totalProducts.period}</span>
                   </p>
@@ -202,40 +180,22 @@ const Dashboard: React.FC = () => {
             <div className="flex p-1 gap-1 bg-gray-100 rounded-md mx-auto">
               <Tabs defaultValue="all">
                 <TabsList className="bg-transparent p-0 h-auto">
-                  <TabsTrigger 
-                    value="all" 
-                    className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
-                  >
+                  <TabsTrigger value="all" className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm">
                     All
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="drafts" 
-                    className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
-                  >
+                  <TabsTrigger value="drafts" className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm">
                     Drafts
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="process" 
-                    className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
-                  >
+                  <TabsTrigger value="process" className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm">
                     To process <span className="ml-1.5 h-5 w-5 inline-flex items-center justify-center bg-gray-200 rounded-full text-xs">14</span>
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="completed" 
-                    className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
-                  >
+                  <TabsTrigger value="completed" className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm">
                     Completed
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="cancelled" 
-                    className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
-                  >
+                  <TabsTrigger value="cancelled" className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm">
                     Cancelled
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="delivery" 
-                    className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
-                  >
+                  <TabsTrigger value="delivery" className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm">
                     On delivery
                   </TabsTrigger>
                 </TabsList>
@@ -330,8 +290,6 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default Dashboard;
