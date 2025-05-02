@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Clock, CalendarIcon, PlusCircle, ArrowRight, Package, TrendingUp, Users, InfoCircle } from 'lucide-react';
+import { Clock, CalendarIcon, PlusCircle, ArrowRight, Package, TrendingUp, Users, Info } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import StatCard from '@/components/dashboard/StatCard';
 import { CurrencyType } from '@/components/dashboard/CurrencySelector';
@@ -122,7 +121,7 @@ const Dashboard: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    Total Revenue <InfoCircle className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
+                    Total Revenue <Info className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.totalRevenue.value}</p>
                   <p className={cn(
@@ -142,7 +141,7 @@ const Dashboard: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    Total Customers <InfoCircle className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
+                    Total Customers <Info className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.totalCustomers.value}</p>
                   <p className={cn(
@@ -162,7 +161,7 @@ const Dashboard: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    Total Transactions <InfoCircle className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
+                    Total Transactions <Info className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.totalTransactions.value}</p>
                   <p className={cn(
@@ -182,7 +181,7 @@ const Dashboard: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    Total Products <InfoCircle className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
+                    Total Products <Info className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.totalProducts.value}</p>
                   <p className={cn(
