@@ -142,7 +142,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
       <TableCell className="py-4">
         <div className="flex flex-col">
           <div className="flex items-center gap-1.5">
-            <Truck className="h-3.5 w-3.5 text-muted-foreground" />
+            
             <span className="font-medium">
               ${formatCurrency(order.deliveryCharge.valueUSD)}
             </span>
