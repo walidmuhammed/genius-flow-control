@@ -31,7 +31,7 @@ const TopBar: React.FC = () => {
           </Button>
           
           <div className="relative hidden lg:flex max-w-md w-full">
-            <Button variant="outline" className="w-full justify-between h-9 border-none shadow-sm bg-muted/20 hover:bg-muted/30 focus-visible:ring-primary/20 rounded-full px-3 gap-2" onClick={() => setOpen(true)}>
+            <Button variant="outline" onClick={() => setOpen(true)} className="w-full justify-between h-9 border-none shadow-sm bg-muted/20 hover:bg-muted/30 focus-visible:ring-primary/20 gap-2 px-[17px] text-base font-normal rounded-none">
               <div className="flex items-center gap-2">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground text-sm">Search anything...</span>
@@ -46,30 +46,7 @@ const TopBar: React.FC = () => {
         </div>
         
         <div className="flex items-center space-x-4">
-          <div className="hidden sm:flex items-center border-r border-border/10 pr-4 mr-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-2 h-8">
-                  <span className="hidden md:inline-flex">Beirut Branch</span>
-                  <span className="inline-flex md:hidden">Branch</span>
-                  <ChevronDown className="h-3 w-3 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 shadow-lg border-border/10 rounded-lg p-1">
-                <DropdownMenuItem className="cursor-pointer rounded-md py-1.5">
-                  Beirut Branch
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer rounded-md py-1.5">
-                  Tripoli Branch
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer rounded-md py-1.5">
-                  Saida Branch
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="my-1 bg-border/10" />
-                
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
