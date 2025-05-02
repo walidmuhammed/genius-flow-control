@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
-import { Plus, FileText, Download } from 'lucide-react';
+import { Plus, FileText, Download, Search, Calendar } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OrdersFilter from '@/components/orders/OrdersFilter';
 import OrdersTable from '@/components/orders/OrdersTable';
 import { Order } from '@/components/orders/OrdersTableRow';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 const OrdersList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -162,110 +164,115 @@ const OrdersList: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900">Orders</h1>
-            <p className="text-muted-foreground">Manage and track all customer deliveries</p>
+            <h1 className="text-2xl font-semibold text-gray-800">Orders</h1>
+            <p className="text-gray-500 text-sm mt-1">Manage and track all customer deliveries</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <Button 
               variant="outline" 
-              className="h-10 gap-2 rounded-lg border-border/10 shadow-sm"
+              className="h-10 gap-2 rounded-md border-gray-200 bg-white shadow-sm text-sm font-medium"
             >
               <Download className="h-4 w-4" /> Export
             </Button>
             <Button 
               variant="outline" 
-              className="h-10 gap-2 rounded-lg border-border/10 shadow-sm"
+              className="h-10 gap-2 rounded-md border-gray-200 bg-white shadow-sm text-sm font-medium"
             >
               <FileText className="h-4 w-4" /> Import
             </Button>
             <Button 
-              variant="default" 
-              className="h-10 gap-2 font-medium rounded-lg bg-primary hover:bg-primary/90"
+              className="h-10 gap-2 rounded-md bg-[#46d483] hover:bg-[#3ac476] text-white shadow-sm text-sm font-medium"
             >
               <Plus className="h-4 w-4" /> New Order
             </Button>
           </div>
         </div>
 
-        <Tabs defaultValue="all" className="w-full">
-          <div className="border-b border-border/5">
-            <div className="overflow-auto scrollbar-none">
+        <Card className="border-0 shadow-sm bg-white">
+          <CardHeader className="border-b">
+            <div className="pb-1">
               <TabsList className="bg-transparent p-0 h-auto">
                 <TabsTrigger 
                   value="all" 
-                  className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium"
+                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
                 >
                   All Orders
                 </TabsTrigger>
                 <TabsTrigger 
                   value="new" 
-                  className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium"
+                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
                 >
                   New
                 </TabsTrigger>
                 <TabsTrigger 
                   value="pending" 
-                  className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium"
+                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
                 >
                   Pending
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="in-progress" 
-                  className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium"
+                  value="process" 
+                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium flex items-center"
                 >
-                  In Progress
+                  To process <span className="ml-1.5 h-5 w-5 inline-flex items-center justify-center bg-gray-100 rounded-full text-xs">14</span>
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="successful" 
-                  className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium"
+                  value="completed" 
+                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
                 >
-                  Successful
+                  Completed
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="returned" 
-                  className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium"
+                  value="cancelled" 
+                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
                 >
-                  Returned
+                  Cancelled
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="heading" 
-                  className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium"
+                  value="delivery" 
+                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
                 >
-                  Heading to Customer
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="paid" 
-                  className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium"
-                >
-                  Paid
+                  On delivery
                 </TabsTrigger>
               </TabsList>
             </div>
-          </div>
+          </CardHeader>
           
-          <OrdersFilter 
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            date={date}
-            setDate={setDate}
-            statusFilter={statusFilter}
-            handleStatusFilterChange={handleStatusFilterChange}
-          />
+          <CardContent className="p-4">
+            <div className="flex justify-between gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input 
+                  placeholder="Search orders..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-white border-gray-200"
+                />
+              </div>
+              
+              <Button variant="outline" className="h-10 gap-2 rounded-md border-gray-200 bg-white shadow-sm text-sm font-medium">
+                <Calendar className="h-4 w-4" />
+                <span>June</span>
+              </Button>
+              
+              <Button variant="outline" className="h-10 gap-2 rounded-md border-gray-200 bg-white shadow-sm text-sm font-medium">
+                Export
+              </Button>
+            </div>
           
-          <TabsContent value="all" className="p-0">
-            <OrdersTable 
-              orders={mockOrders}
-              selectedOrders={selectedOrders}
-              toggleSelectAll={toggleSelectAll}
-              toggleSelectOrder={toggleSelectOrder}
-            />
-          </TabsContent>
-
-          {/* Additional TabsContent elements for other tabs would go here */}
-        </Tabs>
+            <TabsContent value="all" className="p-0 mt-4">
+              <OrdersTable 
+                orders={mockOrders}
+                selectedOrders={selectedOrders}
+                toggleSelectAll={toggleSelectAll}
+                toggleSelectOrder={toggleSelectOrder}
+              />
+            </TabsContent>
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );
