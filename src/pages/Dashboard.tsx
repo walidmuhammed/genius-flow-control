@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Clock, CalendarIcon, PlusCircle, ArrowRight, ArrowUpRight, Package, TrendingUp, Users } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -9,38 +8,68 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-
 const Dashboard: React.FC = () => {
-  const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const currentTime = new Date().toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
   const currentDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric',
+    day: 'numeric'
   });
 
   // Mock data for the dashboard
   const dashboardData = {
     inProgressOrders: 5,
     headingToCustomer: 2,
-    completedOrders: { value: 15, total: 18, progress: 83 },
+    completedOrders: {
+      value: 15,
+      total: 18,
+      progress: 83
+    },
     awaitingAction: 3,
     newOrders: 8,
     headingToYou: 1,
-    expectedCash: { usd: 1250, lbp: 32500000 },
-    collectedCash: { usd: 975, lbp: 25400000, progress: 78 },
+    expectedCash: {
+      usd: 1250,
+      lbp: 32500000
+    },
+    collectedCash: {
+      usd: 975,
+      lbp: 25400000,
+      progress: 78
+    }
   };
 
   // Recent activity data
-  const recentActivity = [
-    { id: 'ORD-2305', type: 'Order Created', time: '2 hours ago', status: 'New', customer: 'Sara Haddad' },
-    { id: 'ORD-2304', type: 'Delivery Completed', time: '4 hours ago', status: 'Successful', customer: 'Ahmad Khalil' },
-    { id: 'ORD-2303', type: 'Payment Received', time: '5 hours ago', status: 'Paid', customer: 'Layla Nassif' },
-    { id: 'ORD-2301', type: 'Address Updated', time: '8 hours ago', status: 'Updated', customer: 'Omar Farhat' },
-  ];
-
-  return (
-    <MainLayout>
+  const recentActivity = [{
+    id: 'ORD-2305',
+    type: 'Order Created',
+    time: '2 hours ago',
+    status: 'New',
+    customer: 'Sara Haddad'
+  }, {
+    id: 'ORD-2304',
+    type: 'Delivery Completed',
+    time: '4 hours ago',
+    status: 'Successful',
+    customer: 'Ahmad Khalil'
+  }, {
+    id: 'ORD-2303',
+    type: 'Payment Received',
+    time: '5 hours ago',
+    status: 'Paid',
+    customer: 'Layla Nassif'
+  }, {
+    id: 'ORD-2301',
+    type: 'Address Updated',
+    time: '8 hours ago',
+    status: 'Updated',
+    customer: 'Omar Farhat'
+  }];
+  return <MainLayout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -62,75 +91,31 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 rounded-none">
           {/* Main Stats */}
           <div className="col-span-12 md:col-span-8 space-y-6">
             <div>
               <h2 className="text-lg font-medium mb-3">Today's Overview</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard
-                  title="In Progress Orders"
-                  value={dashboardData.inProgressOrders.toString()}
-                  icon={<Package className="h-4 w-4 text-amber-500" />}
-                  trend="+15% vs. yesterday"
-                  className="animate-fade-in"
-                />
-                <StatCard
-                  title="Heading to Customer"
-                  value={dashboardData.headingToCustomer.toString()}
-                  icon={<TrendingUp className="h-4 w-4 text-green-500" />}
-                  className="animate-fade-in [animation-delay:100ms]"
-                />
-                <StatCard
-                  title="Completed Orders"
-                  value={dashboardData.completedOrders.value.toString()}
-                  secondaryValue={dashboardData.completedOrders.total.toString()}
-                  progress={dashboardData.completedOrders.progress}
-                  className="animate-fade-in [animation-delay:200ms]"
-                />
-                <StatCard
-                  title="Awaiting Action"
-                  value={dashboardData.awaitingAction.toString()}
-                  labelColor="text-amber-600"
-                  className="animate-fade-in [animation-delay:300ms]"
-                />
+                <StatCard title="In Progress Orders" value={dashboardData.inProgressOrders.toString()} icon={<Package className="h-4 w-4 text-amber-500" />} trend="+15% vs. yesterday" className="animate-fade-in" />
+                <StatCard title="Heading to Customer" value={dashboardData.headingToCustomer.toString()} icon={<TrendingUp className="h-4 w-4 text-green-500" />} className="animate-fade-in [animation-delay:100ms]" />
+                <StatCard title="Completed Orders" value={dashboardData.completedOrders.value.toString()} secondaryValue={dashboardData.completedOrders.total.toString()} progress={dashboardData.completedOrders.progress} className="animate-fade-in [animation-delay:200ms]" />
+                <StatCard title="Awaiting Action" value={dashboardData.awaitingAction.toString()} labelColor="text-amber-600" className="animate-fade-in [animation-delay:300ms]" />
               </div>
             </div>
 
             <div>
               <h2 className="text-lg font-medium mb-3">Activity & Performance</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <StatCard
-                  title="New Orders"
-                  value={dashboardData.newOrders.toString()}
-                  icon={<PlusCircle className="h-4 w-4 text-blue-500" />}
-                  className="animate-fade-in [animation-delay:400ms]"
-                />
-                <StatCard 
-                  title="Expected Cash"
-                  value=""
-                  className="animate-fade-in [animation-delay:500ms]"
-                >
+                <StatCard title="New Orders" value={dashboardData.newOrders.toString()} icon={<PlusCircle className="h-4 w-4 text-blue-500" />} className="animate-fade-in [animation-delay:400ms]" />
+                <StatCard title="Expected Cash" value="" className="animate-fade-in [animation-delay:500ms]">
                   <div className="mt-2">
-                    <CurrencyDisplay
-                      usdValue={dashboardData.expectedCash.usd}
-                      lbpValue={dashboardData.expectedCash.lbp.toLocaleString()}
-                      label="Total expected today"
-                    />
+                    <CurrencyDisplay usdValue={dashboardData.expectedCash.usd} lbpValue={dashboardData.expectedCash.lbp.toLocaleString()} label="Total expected today" />
                   </div>
                 </StatCard>
-                <StatCard
-                  title="Collected Cash"
-                  value=""
-                  progress={dashboardData.collectedCash.progress}
-                  className="animate-fade-in [animation-delay:600ms]"
-                >
+                <StatCard title="Collected Cash" value="" progress={dashboardData.collectedCash.progress} className="animate-fade-in [animation-delay:600ms]">
                   <div className="mt-1">
-                    <CurrencyDisplay
-                      usdValue={dashboardData.collectedCash.usd}
-                      lbpValue={dashboardData.collectedCash.lbp.toLocaleString()}
-                      label="Total collected today"
-                    />
+                    <CurrencyDisplay usdValue={dashboardData.collectedCash.usd} lbpValue={dashboardData.collectedCash.lbp.toLocaleString()} label="Total collected today" />
                   </div>
                 </StatCard>
               </div>
@@ -138,75 +123,7 @@ const Dashboard: React.FC = () => {
           </div>
           
           {/* Sidebars */}
-          <div className="col-span-12 md:col-span-4 space-y-6">
-            <Card className="border-border/10 shadow-sm overflow-hidden">
-              <CardHeader className="bg-muted/30 pb-2">
-                <CardTitle className="text-lg">Recent Activity</CardTitle>
-                <CardDescription>Updates from today</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y divide-border/5">
-                  {recentActivity.map((activity, index) => (
-                    <div 
-                      key={activity.id} 
-                      className={cn(
-                        "px-6 py-4 flex items-start justify-between", 
-                        index === 0 && "border-t border-border/5"
-                      )}
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{activity.id}</span>
-                          <span className={cn(
-                            "text-xs px-2 py-0.5 rounded-full",
-                            activity.status === 'New' && "bg-blue-50 text-blue-600",
-                            activity.status === 'Successful' && "bg-green-50 text-green-600",
-                            activity.status === 'Paid' && "bg-purple-50 text-purple-600", 
-                            activity.status === 'Updated' && "bg-amber-50 text-amber-600"
-                          )}>
-                            {activity.status}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{activity.type}</p>
-                        <p className="text-xs text-muted-foreground">{activity.customer}</p>
-                      </div>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">{activity.time}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-              <CardFooter className="bg-muted/20 p-4 flex justify-center">
-                <Button variant="ghost" size="sm" className="gap-1.5 text-sm w-full justify-center">
-                  <span>View All Activity</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card className="border-border/10 shadow-sm overflow-hidden">
-              <CardHeader className="bg-muted/30 pb-2">
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 grid grid-cols-2 gap-3">
-                <Button variant="outline" className="h-24 flex flex-col gap-2 shadow-sm border-border/10">
-                  <Package className="h-5 w-5" />
-                  <span>Create Order</span>
-                </Button>
-                <Button variant="outline" className="h-24 flex flex-col gap-2 shadow-sm border-border/10">
-                  <Users className="h-5 w-5" />
-                  <span>Add Customer</span>
-                </Button>
-                <Button variant="outline" className="h-24 flex flex-col gap-2 shadow-sm border-border/10">
-                  <CalendarIcon className="h-5 w-5" />
-                  <span>Schedule Pickup</span>
-                </Button>
-                <Button variant="outline" className="h-24 flex flex-col gap-2 shadow-sm border-border/10">
-                  <Clock className="h-5 w-5" />
-                  <span>Track Order</span>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          
         </div>
 
         <section className="space-y-3">
@@ -252,8 +169,6 @@ const Dashboard: React.FC = () => {
           </Card>
         </section>
       </div>
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default Dashboard;
