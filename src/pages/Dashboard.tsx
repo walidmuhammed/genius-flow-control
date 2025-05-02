@@ -75,19 +75,13 @@ const Dashboard: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Hello, Walid! 👋</h1>
             <p className="text-muted-foreground flex items-center gap-1.5 mt-2">
-              <Clock className="h-4 w-4" />
-              <span className="text-sm">Last updated at {currentTime} • {currentDate}</span>
+              
+              
             </p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" size="sm" className="h-9 gap-1.5 shadow-sm border-border/20">
-              <CalendarIcon className="h-4 w-4" />
-              <span>April 2025</span>
-            </Button>
-            <Button className="h-9 gap-1.5 shadow-sm">
-              <PlusCircle className="h-4 w-4" />
-              <span>New Order</span>
-            </Button>
+            
+            
           </div>
         </div>
 
