@@ -49,7 +49,7 @@ const getStatusBadge = (status: OrderStatus) => {
     case 'In Progress':
       return <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-100 font-medium px-2.5 py-0.5">In Progress</Badge>;
     case 'Heading to Customer':
-      return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-100 font-medium px-2.5 py-0.5 rounded">Heading to Customer</Badge>;
+      return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-100 font-medium px-2.5 py-0.5 rounded-none">Heading to Customer</Badge>;
     case 'Heading to You':
       return <Badge variant="outline" className="bg-teal-50 text-teal-600 border-teal-100 font-medium px-2.5 py-0.5">Heading to You</Badge>;
     case 'Successful':
