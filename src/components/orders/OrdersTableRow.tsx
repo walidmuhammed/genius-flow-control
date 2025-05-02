@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Eye, MoreHorizontal, Printer, MapPin, User, DollarSign, Truck, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -7,30 +6,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-
-export type OrderStatus = 
-  'New' | 
-  'Pending Pickup' | 
-  'In Progress' | 
-  'Heading to Customer' | 
-  'Heading to You' | 
-  'Successful' | 
-  'Unsuccessful' | 
-  'Returned' | 
-  'Paid';
-
+export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid';
 export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection' | 'Return';
-
 export interface Order {
   id: string;
   type: OrderType;
@@ -54,13 +35,11 @@ export interface Order {
   lastUpdate: string;
   note?: string;
 }
-
 interface OrdersTableRowProps {
   order: Order;
   isSelected: boolean;
   onToggleSelect: (orderId: string) => void;
 }
-
 const getStatusBadge = (status: OrderStatus) => {
   switch (status) {
     case 'New':
@@ -70,7 +49,7 @@ const getStatusBadge = (status: OrderStatus) => {
     case 'In Progress':
       return <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-100 font-medium px-2.5 py-0.5">In Progress</Badge>;
     case 'Heading to Customer':
-      return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-100 font-medium px-2.5 py-0.5">Heading to Customer</Badge>;
+      return <Badge variant="outline" className="bg-green-50 text-green-600 border-green-100 font-medium px-2.5 py-0.5 rounded">Heading to Customer</Badge>;
     case 'Heading to You':
       return <Badge variant="outline" className="bg-teal-50 text-teal-600 border-teal-100 font-medium px-2.5 py-0.5">Heading to You</Badge>;
     case 'Successful':
@@ -85,39 +64,29 @@ const getStatusBadge = (status: OrderStatus) => {
       return <Badge variant="outline">{status}</Badge>;
   }
 };
-
-const OrdersTableRow: React.FC<OrdersTableRowProps> = ({ order, isSelected, onToggleSelect }) => {
+const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
+  order,
+  isSelected,
+  onToggleSelect
+}) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return format(date, 'MMM dd, h:mm a');
   };
-
   const formatCurrency = (amount: number) => {
     return amount.toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2
     });
   };
-
-  return (
-    <TableRow 
-      className={cn(
-        "hover:bg-muted/10 transition-colors border-b last:border-0 border-border/10",
-        isSelected && "bg-primary/5"
-      )}
-    >
+  return <TableRow className={cn("hover:bg-muted/10 transition-colors border-b last:border-0 border-border/10", isSelected && "bg-primary/5")}>
       <TableCell className="w-12 pl-4 pr-0">
-        <Checkbox 
-          checked={isSelected}
-          onCheckedChange={() => onToggleSelect(order.id)}
-          className="rounded-sm"
-        />
+        <Checkbox checked={isSelected} onCheckedChange={() => onToggleSelect(order.id)} className="rounded-sm" />
       </TableCell>
       <TableCell className="py-4">
         <div className="flex items-center gap-1.5">
           <span className="font-medium text-primary">#{order.id}</span>
-          {order.note && (
-            <TooltipProvider>
+          {order.note && <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="cursor-help">
@@ -128,19 +97,18 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({ order, isSelected, onTo
                   <p className="text-sm">{order.note || "No notes available for this order."}</p>
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
-          )}
+            </TooltipProvider>}
         </div>
       </TableCell>
       <TableCell className="py-4">
-        <Badge variant="secondary" className="font-medium bg-muted/70 text-muted-foreground border border-border/10">
+        <Badge variant="secondary" className="font-medium bg-muted/70 text-muted-foreground border border-border/10 rounded">
           {order.type}
         </Badge>
       </TableCell>
       <TableCell className="py-4">
         <div className="flex flex-col">
           <div className="flex items-center gap-1.5">
-            <User className="h-3.5 w-3.5 text-muted-foreground" />
+            
             <span className="font-medium">{order.customer.name}</span>
           </div>
           <span className="text-muted-foreground text-xs pt-0.5">{order.customer.phone}</span>
@@ -156,10 +124,9 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({ order, isSelected, onTo
         </div>
       </TableCell>
       <TableCell className="py-4">
-        {(order.amount.valueUSD > 0 || order.amount.valueLBP > 0) ? (
-          <div className="flex flex-col">
+        {order.amount.valueUSD > 0 || order.amount.valueLBP > 0 ? <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
+              
               <span className="text-emerald-600 font-medium">
                 ${formatCurrency(order.amount.valueUSD)}
               </span>
@@ -167,13 +134,10 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({ order, isSelected, onTo
             <span className="text-muted-foreground text-xs pt-0.5">
               {formatCurrency(order.amount.valueLBP)} LBP
             </span>
-          </div>
-        ) : (
-          <div className="flex flex-col">
+          </div> : <div className="flex flex-col">
             <span className="text-muted-foreground">$0</span>
             <span className="text-muted-foreground text-xs pt-0.5">0 LBP</span>
-          </div>
-        )}
+          </div>}
       </TableCell>
       <TableCell className="py-4">
         <div className="flex flex-col">
@@ -192,7 +156,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({ order, isSelected, onTo
         {getStatusBadge(order.status)}
       </TableCell>
       <TableCell>
-        <span className="text-muted-foreground text-xs whitespace-nowrap">{formatDate(order.lastUpdate)}</span>
+        <span className="text-muted-foreground whitespace-nowrap text-center font-normal text-sm">{formatDate(order.lastUpdate)}</span>
       </TableCell>
       <TableCell>
         <div className="flex justify-center items-center gap-1">
@@ -218,8 +182,6 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({ order, isSelected, onTo
           </DropdownMenu>
         </div>
       </TableCell>
-    </TableRow>
-  );
+    </TableRow>;
 };
-
 export default OrdersTableRow;
