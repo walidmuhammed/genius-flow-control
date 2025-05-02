@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, FileText, Download } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -31,7 +31,10 @@ const OrdersList: React.FC = () => {
         valueLBP: 750000,
         valueUSD: 25,
       },
-      deliveryCharge: 5,
+      deliveryCharge: {
+        valueLBP: 150000,
+        valueUSD: 5,
+      },
       status: 'Successful',
       lastUpdate: '2025-04-15T15:19:00Z',
     },
@@ -47,10 +50,13 @@ const OrdersList: React.FC = () => {
         area: 'Mina',
       },
       amount: {
-        valueLBP: 0,
-        valueUSD: 0,
+        valueLBP: 300000,
+        valueUSD: 10,
       },
-      deliveryCharge: 3,
+      deliveryCharge: {
+        valueLBP: 90000,
+        valueUSD: 3,
+      },
       status: 'Returned',
       lastUpdate: '2025-04-12T18:53:00Z',
     },
@@ -69,13 +75,16 @@ const OrdersList: React.FC = () => {
         valueLBP: 1500000,
         valueUSD: 50,
       },
-      deliveryCharge: 6,
-      status: 'Successful',
+      deliveryCharge: {
+        valueLBP: 180000,
+        valueUSD: 6,
+      },
+      status: 'In Progress',
       lastUpdate: '2025-04-10T03:06:00Z',
     },
     {
       id: '2451006',
-      type: 'Return',
+      type: 'Exchange',
       customer: {
         name: 'ليلى سليم',
         phone: '81-345678',
@@ -88,8 +97,11 @@ const OrdersList: React.FC = () => {
         valueLBP: 1200000,
         valueUSD: 40,
       },
-      deliveryCharge: 8,
-      status: 'Pending',
+      deliveryCharge: {
+        valueLBP: 240000,
+        valueUSD: 8,
+      },
+      status: 'Pending Pickup',
       lastUpdate: '2025-04-08T13:42:00Z',
     },
     {
@@ -107,8 +119,11 @@ const OrdersList: React.FC = () => {
         valueLBP: 900000,
         valueUSD: 30,
       },
-      deliveryCharge: 5,
-      status: 'In Progress',
+      deliveryCharge: {
+        valueLBP: 150000,
+        valueUSD: 5,
+      },
+      status: 'Heading to Customer',
       lastUpdate: '2025-04-05T10:15:00Z',
     },
   ];
@@ -147,15 +162,28 @@ const OrdersList: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-zinc-900">Orders</h1>
-            <p className="text-muted-foreground">Track and manage all your orders in one place</p>
+            <p className="text-muted-foreground">Manage and track all customer deliveries</p>
           </div>
-          <Button 
-            variant="default" 
-            className="h-10 gap-2 font-medium rounded-full"
-          >
-            New Order
-            <Plus className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              className="h-10 gap-2 rounded-lg border-border/10 shadow-sm"
+            >
+              <Download className="h-4 w-4" /> Export
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-10 gap-2 rounded-lg border-border/10 shadow-sm"
+            >
+              <FileText className="h-4 w-4" /> Import
+            </Button>
+            <Button 
+              variant="default" 
+              className="h-10 gap-2 font-medium rounded-lg bg-primary hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4" /> New Order
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="all" className="w-full">
@@ -167,6 +195,12 @@ const OrdersList: React.FC = () => {
                   className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium"
                 >
                   All Orders
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="new" 
+                  className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium"
+                >
+                  New
                 </TabsTrigger>
                 <TabsTrigger 
                   value="pending" 
@@ -193,10 +227,16 @@ const OrdersList: React.FC = () => {
                   Returned
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="delayed" 
+                  value="heading" 
                   className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium"
                 >
-                  Delayed
+                  Heading to Customer
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="paid" 
+                  className="py-3 px-4 rounded-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary font-medium"
+                >
+                  Paid
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -219,6 +259,8 @@ const OrdersList: React.FC = () => {
               toggleSelectOrder={toggleSelectOrder}
             />
           </TabsContent>
+
+          {/* Additional TabsContent elements for other tabs would go here */}
         </Tabs>
       </div>
     </MainLayout>
