@@ -99,9 +99,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="flex gap-3 mt-4 sm:mt-0">
             
-            <Button className="text-sm font-medium bg-[#46d483] hover:bg-[#3ac476] text-white shadow-sm">
-              + Connect wallet
-            </Button>
+            
           </div>
         </div>
 
