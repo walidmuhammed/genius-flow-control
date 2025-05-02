@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User, Lock, Building2, Receipt, Users, ServerCog, Plug, FileCheck, ShieldAlert } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';

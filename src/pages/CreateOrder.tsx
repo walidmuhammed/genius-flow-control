@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, Info, Check, Plus, ChevronDown } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';

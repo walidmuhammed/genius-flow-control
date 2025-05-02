@@ -200,44 +200,46 @@ const Dashboard: React.FC = () => {
         <Card className="bg-white border-0 rounded-lg shadow-sm">
           <CardHeader className="border-b border-gray-100">
             <div className="flex p-1 gap-1 bg-gray-100 rounded-md mx-auto">
-              <TabsList className="bg-transparent p-0 h-auto">
-                <TabsTrigger 
-                  value="all" 
-                  className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
-                >
-                  All
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="drafts" 
-                  className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
-                >
-                  Drafts
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="process" 
-                  className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
-                >
-                  To process <span className="ml-1.5 h-5 w-5 inline-flex items-center justify-center bg-gray-200 rounded-full text-xs">14</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="completed" 
-                  className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
-                >
-                  Completed
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="cancelled" 
-                  className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
-                >
-                  Cancelled
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="delivery" 
-                  className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
-                >
-                  On delivery
-                </TabsTrigger>
-              </TabsList>
+              <Tabs defaultValue="all">
+                <TabsList className="bg-transparent p-0 h-auto">
+                  <TabsTrigger 
+                    value="all" 
+                    className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
+                  >
+                    All
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="drafts" 
+                    className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
+                  >
+                    Drafts
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="process" 
+                    className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
+                  >
+                    To process <span className="ml-1.5 h-5 w-5 inline-flex items-center justify-center bg-gray-200 rounded-full text-xs">14</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="completed" 
+                    className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
+                  >
+                    Completed
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="cancelled" 
+                    className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
+                  >
+                    Cancelled
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="delivery" 
+                    className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
+                  >
+                    On delivery
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
           </CardHeader>
           <CardContent className="p-0">

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, FileText, Download, Search, Calendar } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -194,50 +193,52 @@ const OrdersList: React.FC = () => {
         <Card className="border-0 shadow-sm bg-white">
           <CardHeader className="border-b">
             <div className="pb-1">
-              <TabsList className="bg-transparent p-0 h-auto">
-                <TabsTrigger 
-                  value="all" 
-                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
-                >
-                  All Orders
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="new" 
-                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
-                >
-                  New
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="pending" 
-                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
-                >
-                  Pending
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="process" 
-                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium flex items-center"
-                >
-                  To process <span className="ml-1.5 h-5 w-5 inline-flex items-center justify-center bg-gray-100 rounded-full text-xs">14</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="completed" 
-                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
-                >
-                  Completed
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="cancelled" 
-                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
-                >
-                  Cancelled
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="delivery" 
-                  className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
-                >
-                  On delivery
-                </TabsTrigger>
-              </TabsList>
+              <Tabs defaultValue="all">
+                <TabsList className="bg-transparent p-0 h-auto">
+                  <TabsTrigger 
+                    value="all" 
+                    className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
+                  >
+                    All Orders
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="new" 
+                    className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
+                  >
+                    New
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="pending" 
+                    className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
+                  >
+                    Pending
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="process" 
+                    className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium flex items-center"
+                  >
+                    To process <span className="ml-1.5 h-5 w-5 inline-flex items-center justify-center bg-gray-100 rounded-full text-xs">14</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="completed" 
+                    className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
+                  >
+                    Completed
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="cancelled" 
+                    className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
+                  >
+                    Cancelled
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="delivery" 
+                    className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium"
+                  >
+                    On delivery
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
           </CardHeader>
           
