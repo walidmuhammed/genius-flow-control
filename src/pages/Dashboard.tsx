@@ -90,7 +90,7 @@ const Dashboard: React.FC = () => {
   }];
   return <MainLayout>
       <div className="space-y-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 px-[12px]">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800">Hello, Walid! 👋</h1>
             <p className="text-gray-500 text-sm mt-1">
