@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, Eye, Package, MoreHorizontal, Printer } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, Package, MoreHorizontal, Printer, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -20,6 +20,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface OrdersTableProps {
   orders: Order[];
@@ -42,14 +43,14 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
             {selectedOrders.length} orders selected
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="gap-2 rounded-lg h-8 shadow-sm">
+            <Button variant="outline" size="sm" className="gap-2 rounded-lg h-9 shadow-sm">
               <Printer className="h-3.5 w-3.5" /> 
               Print Labels
             </Button>
             <Button 
               variant="outline" 
               size="sm" 
-              className="rounded-lg h-8 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+              className="rounded-lg h-9 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
               onClick={() => toggleSelectAll(false)}
             >
               Cancel
@@ -60,28 +61,30 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/20 hover:bg-muted/20 border-b border-border/5">
-              <TableHead className="w-12 h-12">
+            <TableRow className="bg-muted/20 hover:bg-muted/20 border-b border-border/10">
+              <TableHead className="w-12 h-11 pl-4">
                 <Checkbox 
                   checked={selectedOrders.length === orders.length && orders.length > 0}
                   onCheckedChange={(checked) => toggleSelectAll(!!checked)}
                   className="rounded-sm"
                 />
               </TableHead>
-              <TableHead className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <TableHead className="font-medium text-xs text-muted-foreground uppercase tracking-wider">
                 <div className="flex items-center gap-1.5">
                   <Package className="h-3.5 w-3.5" />
                   Order ID
                 </div>
               </TableHead>
-              <TableHead className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Type</TableHead>
-              <TableHead className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Customer</TableHead>
-              <TableHead className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Location</TableHead>
-              <TableHead className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Amount</TableHead>
-              <TableHead className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Delivery Fees</TableHead>
-              <TableHead className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Status</TableHead>
-              <TableHead className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Last Update</TableHead>
-              <TableHead className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider text-center">Actions</TableHead>
+              <TableHead className="font-medium text-xs text-muted-foreground uppercase tracking-wider">Type</TableHead>
+              <TableHead className="font-medium text-xs text-muted-foreground uppercase tracking-wider">Customer</TableHead>
+              <TableHead className="font-medium text-xs text-muted-foreground uppercase tracking-wider">Location</TableHead>
+              <TableHead className="font-medium text-xs text-muted-foreground uppercase tracking-wider">Amount</TableHead>
+              <TableHead className="font-medium text-xs text-muted-foreground uppercase tracking-wider">Delivery Fees</TableHead>
+              <TableHead className="font-medium text-xs text-muted-foreground uppercase tracking-wider">Status</TableHead>
+              <TableHead className="font-medium text-xs text-muted-foreground uppercase tracking-wider">
+                <span className="whitespace-nowrap">Last Update</span>
+              </TableHead>
+              <TableHead className="font-medium text-xs text-muted-foreground uppercase tracking-wider text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -96,9 +99,9 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
           </TableBody>
         </Table>
       </div>
-      <div className="bg-white border-t border-border/5 px-6 py-4 flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">
-          Showing <span className="font-medium">1</span> to <span className="font-medium">{orders.length}</span> of <span className="font-medium">36</span> orders
+      <div className="bg-white border-t border-border/10 px-6 py-4 flex items-center justify-between">
+        <span className="text-sm text-muted-foreground font-medium">
+          Showing <span className="text-foreground">1</span> to <span className="text-foreground">{orders.length}</span> of <span className="text-foreground">36</span> orders
         </span>
         
         <Pagination>
@@ -107,13 +110,13 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
               <PaginationPrevious href="#" className="rounded-lg border border-border/10 hover:bg-muted/30 shadow-sm" />
             </PaginationItem>
             <PaginationItem>
-              <PaginationLink href="#" isActive className="rounded-lg border border-primary/20 bg-primary/5 text-primary">1</PaginationLink>
+              <PaginationLink href="#" isActive className="rounded-lg border border-primary/20 bg-primary/5 text-primary font-medium">1</PaginationLink>
             </PaginationItem>
             <PaginationItem>
-              <PaginationLink href="#" className="rounded-lg border border-border/10 hover:bg-muted/30">2</PaginationLink>
+              <PaginationLink href="#" className="rounded-lg border border-border/10 hover:bg-muted/30 font-medium">2</PaginationLink>
             </PaginationItem>
             <PaginationItem>
-              <PaginationLink href="#" className="rounded-lg border border-border/10 hover:bg-muted/30">3</PaginationLink>
+              <PaginationLink href="#" className="rounded-lg border border-border/10 hover:bg-muted/30 font-medium">3</PaginationLink>
             </PaginationItem>
             <PaginationItem>
               <PaginationNext href="#" className="rounded-lg border border-border/10 hover:bg-muted/30 shadow-sm" />

@@ -37,6 +37,7 @@ const OrdersList: React.FC = () => {
       },
       status: 'Successful',
       lastUpdate: '2025-04-15T15:19:00Z',
+      note: 'Customer requested delivery after 2 PM. Fragile items inside the package. Need careful handling.',
     },
     {
       id: '1237118',
@@ -59,6 +60,7 @@ const OrdersList: React.FC = () => {
       },
       status: 'Returned',
       lastUpdate: '2025-04-12T18:53:00Z',
+      note: 'Customer was not available. Attempted delivery twice.',
     },
     {
       id: '6690815',
@@ -81,6 +83,7 @@ const OrdersList: React.FC = () => {
       },
       status: 'In Progress',
       lastUpdate: '2025-04-10T03:06:00Z',
+      note: 'Call customer before delivery. Building has security gate access.',
     },
     {
       id: '2451006',
@@ -125,6 +128,7 @@ const OrdersList: React.FC = () => {
       },
       status: 'Heading to Customer',
       lastUpdate: '2025-04-05T10:15:00Z',
+      note: 'Preferred delivery time: Morning hours. Leave with building concierge if not available.',
     },
   ];
 
