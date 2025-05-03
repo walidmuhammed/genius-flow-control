@@ -1,9 +1,8 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Package, Search, Filter, Download, Clock, Plus, Note } from "lucide-react";
+import { Package, Search, Filter, Download, Clock, Plus, FileText } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -104,7 +103,7 @@ const PickupHistoryTable = ({ pickups }: { pickups: PickupData[] }) => (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <button className="text-gray-400 hover:text-gray-600">
-                          <Note className="h-4 w-4" />
+                          <FileText className="h-4 w-4" />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent className="w-80 p-4 bg-white shadow-lg rounded-lg border">
