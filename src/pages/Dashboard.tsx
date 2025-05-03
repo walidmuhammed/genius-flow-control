@@ -1,12 +1,11 @@
+
 import React from 'react';
-import { Clock, CalendarIcon, PlusCircle, ArrowRight, Package, TrendingUp, Users, Info } from 'lucide-react';
+import { ArrowUp, ArrowDown, Package, Check, Clock, AlertTriangle, DollarSign } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import StatCard from '@/components/dashboard/StatCard';
-import { CurrencyType } from '@/components/dashboard/CurrencySelector';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+
 const Dashboard: React.FC = () => {
   const currentTime = new Date().toLocaleTimeString([], {
     hour: '2-digit',
@@ -21,74 +20,41 @@ const Dashboard: React.FC = () => {
 
   // Mock data for the dashboard
   const dashboardData = {
-    totalRevenue: {
-      value: "$712,241",
-      percentChange: "+4.7%",
+    newOrders: {
+      value: 78,
+      percentChange: "+12.4%",
       period: "from last week"
     },
-    totalCustomers: {
-      value: "4,213",
-      percentChange: "+3.2%",
+    delivered: {
+      value: 485,
+      percentChange: "+5.8%",
       period: "from last week"
     },
-    totalTransactions: {
-      value: "563",
-      percentChange: "-1.8%",
+    inProgress: {
+      value: 164,
+      percentChange: "+2.5%",
       period: "from last week"
     },
-    totalProducts: {
-      value: "882",
-      percentChange: "+1.2%",
+    failedOrders: {
+      value: 24,
+      percentChange: "-3.2%",
       period: "from last week"
     },
-    inProgressOrders: 5,
-    headingToCustomer: 2,
-    completedOrders: {
-      value: 15,
-      total: 18,
-      progress: 83
-    },
-    awaitingAction: 3,
-    newOrders: 8,
-    headingToYou: 1,
-    expectedCash: {
-      usd: 1250,
-      lbp: 32500000
+    averageOrderValue: {
+      value: "$142.58",
+      percentChange: "+4.3%",
+      period: "from last week"
     },
     collectedCash: {
-      usd: 975,
-      lbp: 25400000,
-      progress: 78
+      usd: 32450,
+      lbp: 875400000,
+      percentChange: "+7.1%",
+      period: "from last week"
     }
   };
 
-  // Recent activity data
-  const recentActivity = [{
-    id: 'ORD-2305',
-    type: 'Order Created',
-    time: '2 hours ago',
-    status: 'New',
-    customer: 'Sara Haddad'
-  }, {
-    id: 'ORD-2304',
-    type: 'Delivery Completed',
-    time: '4 hours ago',
-    status: 'Successful',
-    customer: 'Ahmad Khalil'
-  }, {
-    id: 'ORD-2303',
-    type: 'Payment Received',
-    time: '5 hours ago',
-    status: 'Paid',
-    customer: 'Layla Nassif'
-  }, {
-    id: 'ORD-2301',
-    type: 'Address Updated',
-    time: '8 hours ago',
-    status: 'Updated',
-    customer: 'Omar Farhat'
-  }];
-  return <MainLayout>
+  return (
+    <MainLayout>
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 px-[12px]">
           <div>
@@ -99,195 +65,148 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="flex gap-3 mt-4 sm:mt-0">
             
-            
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 px-[12px]">
+          {/* New Orders */}
           <Card className="bg-white border-0 rounded-lg shadow-sm">
             <CardContent className="pt-6">
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    Total Revenue <Info className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
+                    New Orders In
                   </h3>
-                  <p className="mt-2 text-3xl font-semibold">{dashboardData.totalRevenue.value}</p>
-                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.totalRevenue.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
-                    <span className="font-medium">{dashboardData.totalRevenue.percentChange}</span> 
-                    <span className="text-gray-500">{dashboardData.totalRevenue.period}</span>
+                  <p className="mt-2 text-3xl font-semibold">{dashboardData.newOrders.value}</p>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", 
+                    dashboardData.newOrders.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
+                    <span className="font-medium">{dashboardData.newOrders.percentChange}</span> 
+                    <span className="text-gray-500">{dashboardData.newOrders.period}</span>
                   </p>
+                </div>
+                <div className="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <Package className="h-5 w-5 text-orange-500" />
                 </div>
               </div>
             </CardContent>
           </Card>
           
+          {/* Delivered */}
           <Card className="bg-white border-0 rounded-lg shadow-sm">
             <CardContent className="pt-6">
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    Total Customers <Info className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
+                    Delivered
                   </h3>
-                  <p className="mt-2 text-3xl font-semibold">{dashboardData.totalCustomers.value}</p>
-                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.totalCustomers.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
-                    <span className="font-medium">{dashboardData.totalCustomers.percentChange}</span> 
-                    <span className="text-gray-500">{dashboardData.totalCustomers.period}</span>
+                  <p className="mt-2 text-3xl font-semibold">{dashboardData.delivered.value}</p>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", 
+                    dashboardData.delivered.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
+                    <span className="font-medium">{dashboardData.delivered.percentChange}</span> 
+                    <span className="text-gray-500">{dashboardData.delivered.period}</span>
                   </p>
+                </div>
+                <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <Check className="h-5 w-5 text-green-500" />
                 </div>
               </div>
             </CardContent>
           </Card>
           
+          {/* In Progress */}
           <Card className="bg-white border-0 rounded-lg shadow-sm">
             <CardContent className="pt-6">
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    Total Transactions <Info className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
+                    In Progress
                   </h3>
-                  <p className="mt-2 text-3xl font-semibold">{dashboardData.totalTransactions.value}</p>
-                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.totalTransactions.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
-                    <span className="font-medium">{dashboardData.totalTransactions.percentChange}</span> 
-                    <span className="text-gray-500">{dashboardData.totalTransactions.period}</span>
+                  <p className="mt-2 text-3xl font-semibold">{dashboardData.inProgress.value}</p>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", 
+                    dashboardData.inProgress.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
+                    <span className="font-medium">{dashboardData.inProgress.percentChange}</span> 
+                    <span className="text-gray-500">{dashboardData.inProgress.period}</span>
                   </p>
+                </div>
+                <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-blue-500" />
                 </div>
               </div>
             </CardContent>
           </Card>
           
+          {/* Failed Orders */}
           <Card className="bg-white border-0 rounded-lg shadow-sm">
             <CardContent className="pt-6">
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    Total Products <Info className="ml-1.5 h-3.5 w-3.5 text-gray-400" />
+                    Failed Orders
                   </h3>
-                  <p className="mt-2 text-3xl font-semibold">{dashboardData.totalProducts.value}</p>
-                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.totalProducts.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
-                    <span className="font-medium">{dashboardData.totalProducts.percentChange}</span> 
-                    <span className="text-gray-500">{dashboardData.totalProducts.period}</span>
+                  <p className="mt-2 text-3xl font-semibold">{dashboardData.failedOrders.value}</p>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", 
+                    dashboardData.failedOrders.percentChange.includes('+') ? "text-red-500" : "text-green-600")}>
+                    <span className="font-medium">{dashboardData.failedOrders.percentChange}</span> 
+                    <span className="text-gray-500">{dashboardData.failedOrders.period}</span>
                   </p>
+                </div>
+                <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-red-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Average Order Value */}
+          <Card className="bg-white border-0 rounded-lg shadow-sm">
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 flex items-center">
+                    Avg. Order Value
+                  </h3>
+                  <p className="mt-2 text-3xl font-semibold">{dashboardData.averageOrderValue.value}</p>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", 
+                    dashboardData.averageOrderValue.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
+                    <span className="font-medium">{dashboardData.averageOrderValue.percentChange}</span> 
+                    <span className="text-gray-500">{dashboardData.averageOrderValue.period}</span>
+                  </p>
+                </div>
+                <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <DollarSign className="h-5 w-5 text-purple-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Collected Cash */}
+          <Card className="bg-white border-0 rounded-lg shadow-sm">
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 flex items-center">
+                    Collected Cash
+                  </h3>
+                  <div className="flex flex-col mt-2">
+                    <p className="text-2xl font-semibold">${dashboardData.collectedCash.usd.toLocaleString()}</p>
+                    <p className="text-sm text-gray-500">{dashboardData.collectedCash.lbp.toLocaleString()} LBP</p>
+                  </div>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", 
+                    dashboardData.collectedCash.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
+                    <span className="font-medium">{dashboardData.collectedCash.percentChange}</span> 
+                    <span className="text-gray-500">{dashboardData.collectedCash.period}</span>
+                  </p>
+                </div>
+                <div className="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <DollarSign className="h-5 w-5 text-orange-500" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
-
-        <Card className="bg-white border-0 rounded-lg shadow-sm">
-          <CardHeader className="border-b border-gray-100">
-            <div className="flex p-1 gap-1 bg-gray-100 rounded-md mx-auto">
-              <Tabs defaultValue="all">
-                <TabsList className="bg-transparent p-0 h-auto">
-                  <TabsTrigger value="all" className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm">
-                    All
-                  </TabsTrigger>
-                  <TabsTrigger value="drafts" className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm">
-                    Drafts
-                  </TabsTrigger>
-                  <TabsTrigger value="process" className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm">
-                    To process <span className="ml-1.5 h-5 w-5 inline-flex items-center justify-center bg-gray-200 rounded-full text-xs">14</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="completed" className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm">
-                    Completed
-                  </TabsTrigger>
-                  <TabsTrigger value="cancelled" className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm">
-                    Cancelled
-                  </TabsTrigger>
-                  <TabsTrigger value="delivery" className="px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm">
-                    On delivery
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="py-4 px-6 text-left font-medium text-sm text-gray-500">
-                      <div className="flex items-center">
-                        <input type="checkbox" className="rounded mr-4" />
-                        Order
-                      </div>
-                    </th>
-                    <th className="py-4 px-6 text-left font-medium text-sm text-gray-500">Date</th>
-                    <th className="py-4 px-6 text-left font-medium text-sm text-gray-500">Categories</th>
-                    <th className="py-4 px-6 text-left font-medium text-sm text-gray-500">Cust ID</th>
-                    <th className="py-4 px-6 text-left font-medium text-sm text-gray-500">Payment</th>
-                    <th className="py-4 px-6 text-left font-medium text-sm text-gray-500">Status</th>
-                    <th className="py-4 px-6 text-left font-medium text-sm text-gray-500">City</th>
-                    <th className="py-4 px-6 text-left font-medium text-sm text-gray-500">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-4 px-6">
-                      <div className="flex items-center">
-                        <input type="checkbox" className="rounded mr-4" />
-                        <span>Flexy Chair dark oak</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">27/06/24</td>
-                    <td className="py-4 px-6 text-sm text-gray-600">Chairs</td>
-                    <td className="py-4 px-6 text-sm text-gray-600">#61391</td>
-                    <td className="py-4 px-6 text-sm text-gray-600">
-                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Completed</span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">To process</span>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">Jakarta</td>
-                    <td className="py-4 px-6 text-sm font-medium">$183</td>
-                  </tr>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-4 px-6">
-                      <div className="flex items-center">
-                        <input type="checkbox" className="rounded mr-4" />
-                        <span>Zenith Sofa</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">27/06/24</td>
-                    <td className="py-4 px-6 text-sm text-gray-600">
-                      <div className="flex flex-col gap-1">
-                        <span>Kitchen</span>
-                        <span>Electronics</span>
-                        <span>Living room</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">#61390</td>
-                    <td className="py-4 px-6 text-sm text-gray-600">
-                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Completed</span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">To process</span>
-                    </td>
-                    <td className="py-4 px-6 text-sm text-gray-600">Philadelphia</td>
-                    <td className="py-4 px-6 text-sm font-medium">$2,499</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            
-            <div className="flex justify-between items-center p-4 border-t border-gray-100">
-              <button className="p-2 border border-gray-200 rounded-md hover:bg-gray-50">
-                <ArrowRight className="h-4 w-4 rotate-180" />
-              </button>
-              <div className="flex gap-1">
-                <button className="h-8 w-8 bg-[#46d483] text-white rounded-md flex items-center justify-center text-sm">1</button>
-                <button className="h-8 w-8 text-gray-500 hover:bg-gray-100 rounded-md flex items-center justify-center text-sm">2</button>
-                <button className="h-8 w-8 text-gray-500 hover:bg-gray-100 rounded-md flex items-center justify-center text-sm">3</button>
-                <button className="h-8 w-8 text-gray-500 hover:bg-gray-100 rounded-md flex items-center justify-center text-sm">4</button>
-                <button className="h-8 px-2 text-gray-500 flex items-center justify-center text-sm">...</button>
-                <button className="h-8 w-8 text-gray-500 hover:bg-gray-100 rounded-md flex items-center justify-center text-sm">13</button>
-              </div>
-              <button className="p-2 border border-gray-200 rounded-md hover:bg-gray-50">
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
-    </MainLayout>;
+    </MainLayout>
+  );
 };
+
 export default Dashboard;

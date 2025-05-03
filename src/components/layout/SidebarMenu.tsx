@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  Home, Package, Clock, Box, Wallet, BarChart, Archive, 
-  LifeBuoy, Settings, ChevronDown, Users, ShieldCheck, Zap
+  Home, Package, Clock, Wallet, BarChart, 
+  LifeBuoy, Settings, ChevronDown, Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -36,39 +35,17 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
   };
   
   const menuItems: (SidebarItemType | { type: 'separator', label: string })[] = [
+    // Main Navigation Items
     {
       icon: <Home className="h-[18px] w-[18px]" />,
       label: 'Home',
       href: '/',
     },
     {
-      type: 'separator',
-      label: 'Operations'
-    },
-    {
       icon: <Package className="h-[18px] w-[18px]" />,
       label: 'Orders',
       href: '/orders',
       badge: { count: 12, variant: 'warning' },
-      children: [
-        {
-          icon: <Box className="h-[16px] w-[16px]" />,
-          label: 'All Orders',
-          href: '/orders',
-        },
-        {
-          icon: <Clock className="h-[16px] w-[16px]" />,
-          label: 'Pending',
-          href: '/orders/pending',
-          badge: { count: 8, variant: 'danger' }
-        },
-        {
-          icon: <Zap className="h-[16px] w-[16px]" />,
-          label: 'Processing',
-          href: '/orders/processing',
-          badge: { count: 4, variant: 'warning' }
-        }
-      ]
     },
     {
       icon: <Clock className="h-[18px] w-[18px]" />,
@@ -77,13 +54,9 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
       badge: { count: 3, variant: 'success' },
     },
     {
-      icon: <Box className="h-[18px] w-[18px]" />,
-      label: 'Products',
-      href: '/products',
-    },
-    {
-      type: 'separator',
-      label: 'Finance'
+      icon: <Users className="h-[18px] w-[18px]" />,
+      label: 'Customers',
+      href: '/customers',
     },
     {
       icon: <Wallet className="h-[18px] w-[18px]" />,
@@ -94,25 +67,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed = false }) => {
       icon: <BarChart className="h-[18px] w-[18px]" />,
       label: 'Analytics',
       href: '/analytics',
-    },
-    {
-      type: 'separator',
-      label: 'Management'
-    },
-    {
-      icon: <Archive className="h-[18px] w-[18px]" />,
-      label: 'Packaging',
-      href: '/packaging',
-    },
-    {
-      icon: <Users className="h-[18px] w-[18px]" />,
-      label: 'Customers',
-      href: '/customers',
-    },
-    {
-      icon: <ShieldCheck className="h-[18px] w-[18px]" />,
-      label: 'Security',
-      href: '/security',
     },
     {
       type: 'separator',
