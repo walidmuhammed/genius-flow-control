@@ -1,8 +1,10 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Package, Clock, Wallet, BarChart, LifeBuoy, Settings, ChevronDown, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
 type SidebarItemType = {
   icon: React.ReactNode;
   label: string;
@@ -13,9 +15,11 @@ type SidebarItemType = {
   };
   children?: Omit<SidebarItemType, 'children'>[];
 };
+
 interface SidebarMenuProps {
   collapsed?: boolean;
 }
+
 const SidebarMenu: React.FC<SidebarMenuProps> = ({
   collapsed = false
 }) => {
@@ -25,6 +29,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
   const toggleGroup = (groupName: string) => {
     setOpenGroups(prev => prev.includes(groupName) ? prev.filter(g => g !== groupName) : [...prev, groupName]);
   };
+
   const menuItems: (SidebarItemType | {
     type: 'separator';
     label: string;
@@ -74,6 +79,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
     label: 'Settings',
     href: '/settings'
   }];
+
   const getBadgeStyles = (variant: string = 'default') => {
     switch (variant) {
       case 'success':
@@ -86,10 +92,12 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
         return 'bg-primary/10 text-primary';
     }
   };
+
   const renderMenuItem = (item: SidebarItemType) => {
     const isActive = location.pathname === item.href || item.href !== '/' && location.pathname.startsWith(item.href);
     const hasChildren = item.children && item.children.length > 0;
     const isGroupOpen = hasChildren && openGroups.includes(item.label.toLowerCase());
+    
     if (hasChildren && !collapsed) {
       return <div key={item.href} className="mb-1">
           <Collapsible open={isGroupOpen} onOpenChange={() => toggleGroup(item.label.toLowerCase())}>
@@ -130,18 +138,25 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
           </Collapsible>
         </div>;
     }
+    
     return <Link key={item.href} to={item.href} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all", isActive ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-medium shadow-[0_1px_3px_rgba(249,115,22,0.05)]" : "text-muted-foreground hover:bg-muted/50 hover:text-zinc-900")}>
         <div className={cn("flex items-center justify-center", isActive ? "text-primary" : "text-muted-foreground")}>
           {item.icon}
         </div>
         
-        {!collapsed && <>
+        {!collapsed && (
+          <>
             <span className="flex-1 font-medium">{item.label}</span>
-            {item.badge}
-            {isActive}
-          </>}
+            {item.badge && (
+              <span className={cn("flex min-w-[18px] h-[18px] rounded-full text-[10px] items-center justify-center px-1 font-medium", getBadgeStyles(item.badge.variant))}>
+                {item.badge.count}
+              </span>
+            )}
+          </>
+        )}
       </Link>;
   };
+
   return <div className="space-y-1">
       {menuItems.map((item, index) => {
       if ('type' in item && item.type === 'separator' && !collapsed) {
@@ -156,4 +171,5 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
     })}
     </div>;
 };
+
 export default SidebarMenu;
