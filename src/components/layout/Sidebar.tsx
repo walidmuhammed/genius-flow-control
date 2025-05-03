@@ -14,7 +14,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="flex h-16 items-center px-3 border-b">
         <Link to="/" className="flex items-center gap-2">
           {!collapsed ? <div className="flex items-center">
-              <span className="text-xl font-semibold tracking-tight text-orange-500">
+              <span className="tracking-tight text-orange-500 font-semibold text-2xl px-[50px] text-justify">
                 GENIUS
               </span>
             </div> : <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-white font-bold text-sm">
