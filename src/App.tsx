@@ -11,6 +11,8 @@ import CreateOrder from "./pages/CreateOrder";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import Support from "./pages/Support";
+import Pickups from "./pages/Pickups";
+import Customers from "./pages/Customers";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +26,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/orders" element={<OrdersList />} />
           <Route path="/orders/new" element={<CreateOrder />} />
+          <Route path="/pickups" element={<Pickups />} />
+          <Route path="/customers" element={<Customers />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/support" element={<Support />} />
