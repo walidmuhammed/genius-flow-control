@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, FileText, Download, Search, Calendar } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -8,6 +9,14 @@ import OrdersTable from '@/components/orders/OrdersTable';
 import { Order } from '@/components/orders/OrdersTableRow';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { format } from 'date-fns';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+
 const OrdersList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
@@ -18,6 +27,7 @@ const OrdersList: React.FC = () => {
   // Mock data with Lebanese localized content
   const mockOrders: Order[] = [{
     id: '232940',
+    referenceNumber: 'REF-A5921',
     type: 'Deliver',
     customer: {
       name: 'محمد الخطيب',
@@ -35,11 +45,12 @@ const OrdersList: React.FC = () => {
       valueLBP: 150000,
       valueUSD: 5
     },
-    status: 'Successful',
+    status: 'New',
     lastUpdate: '2025-04-15T15:19:00Z',
     note: 'Customer requested delivery after 2 PM. Fragile items inside the package. Need careful handling.'
   }, {
     id: '1237118',
+    referenceNumber: 'REF-B3801',
     type: 'Cash Collection',
     customer: {
       name: 'سارة الحريري',
@@ -62,6 +73,7 @@ const OrdersList: React.FC = () => {
     note: 'Customer was not available. Attempted delivery twice.'
   }, {
     id: '6690815',
+    referenceNumber: 'REF-C7462',
     type: 'Deliver',
     customer: {
       name: 'علي حسن',
@@ -84,6 +96,7 @@ const OrdersList: React.FC = () => {
     note: 'Call customer before delivery. Building has security gate access.'
   }, {
     id: '2451006',
+    referenceNumber: 'REF-D9254',
     type: 'Exchange',
     customer: {
       name: 'ليلى سليم',
@@ -105,6 +118,7 @@ const OrdersList: React.FC = () => {
     lastUpdate: '2025-04-08T13:42:00Z'
   }, {
     id: '8712354',
+    referenceNumber: 'REF-E6138',
     type: 'Deliver',
     customer: {
       name: 'كريم نجار',
@@ -122,10 +136,11 @@ const OrdersList: React.FC = () => {
       valueLBP: 150000,
       valueUSD: 5
     },
-    status: 'Heading to Customer',
+    status: 'Successful',
     lastUpdate: '2025-04-05T10:15:00Z',
     note: 'Preferred delivery time: Morning hours. Leave with building concierge if not available.'
   }];
+  
   const toggleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedOrders(mockOrders.map(order => order.id));
@@ -133,6 +148,7 @@ const OrdersList: React.FC = () => {
       setSelectedOrders([]);
     }
   };
+  
   const toggleSelectOrder = (orderId: string) => {
     setSelectedOrders(prev => {
       if (prev.includes(orderId)) {
@@ -142,6 +158,7 @@ const OrdersList: React.FC = () => {
       }
     });
   };
+  
   const handleStatusFilterChange = (status: string) => {
     setStatusFilter(prev => {
       if (prev.includes(status)) {
@@ -151,6 +168,24 @@ const OrdersList: React.FC = () => {
       }
     });
   };
+
+  // Filter orders based on the active tab
+  const getFilteredOrders = () => {
+    if (activeTab === 'all') return mockOrders;
+    return mockOrders.filter(order => {
+      switch (activeTab) {
+        case 'new': return order.status === 'New';
+        case 'pending': return order.status === 'Pending Pickup';
+        case 'process': return order.status === 'In Progress';
+        case 'completed': return order.status === 'Successful';
+        case 'cancelled': return order.status === 'Unsuccessful' || order.status === 'Returned';
+        case 'paid': return order.status === 'Paid';
+        case 'delivery': return order.status === 'Heading to Customer';
+        default: return true;
+      }
+    });
+  };
+  
   return <MainLayout>
       <div className="space-y-5">
         <div className="flex justify-between items-center">
@@ -181,19 +216,19 @@ const OrdersList: React.FC = () => {
                     New
                   </TabsTrigger>
                   <TabsTrigger value="pending" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
-                    Pending
+                    Pending Pickup
                   </TabsTrigger>
-                  <TabsTrigger value="process" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium flex items-center">
-                    To process <span className="ml-1.5 h-5 w-5 inline-flex items-center justify-center bg-gray-100 rounded-full text-xs">14</span>
+                  <TabsTrigger value="process" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
+                    In Progress
                   </TabsTrigger>
                   <TabsTrigger value="completed" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
-                    Completed
+                    Successful
                   </TabsTrigger>
                   <TabsTrigger value="cancelled" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
-                    Cancelled
+                    Unsuccessful/Returned
                   </TabsTrigger>
-                  <TabsTrigger value="delivery" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
-                    On delivery
+                  <TabsTrigger value="paid" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
+                    Paid
                   </TabsTrigger>
                 </TabsList>
                 
@@ -204,37 +239,52 @@ const OrdersList: React.FC = () => {
                       <Input placeholder="Search orders..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10 bg-white border-gray-200" />
                     </div>
                     
-                    
-                    
-                    
+                    {/* Date Picker */}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="h-10 gap-2 border-gray-200 bg-white shadow-sm text-sm font-medium">
+                          <Calendar className="h-4 w-4" />
+                          {date ? format(date, 'PPP') : <span className="text-gray-500">Filter by date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="end">
+                        <CalendarComponent
+                          mode="single"
+                          selected={date}
+                          onSelect={setDate}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 
                   <TabsContent value="all" className="p-0 mt-4">
-                    <OrdersTable orders={mockOrders} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
                   </TabsContent>
                   
                   <TabsContent value="new" className="p-0 mt-4">
-                    <OrdersTable orders={mockOrders.filter(order => order.status === 'New')} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
                   </TabsContent>
                   
                   <TabsContent value="pending" className="p-0 mt-4">
-                    <OrdersTable orders={mockOrders.filter(order => order.status === 'Pending Pickup')} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
                   </TabsContent>
                   
                   <TabsContent value="process" className="p-0 mt-4">
-                    <OrdersTable orders={mockOrders.filter(order => order.status === 'In Progress')} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
                   </TabsContent>
                   
                   <TabsContent value="completed" className="p-0 mt-4">
-                    <OrdersTable orders={mockOrders.filter(order => order.status === 'Successful')} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
                   </TabsContent>
                   
                   <TabsContent value="cancelled" className="p-0 mt-4">
-                    <OrdersTable orders={mockOrders.filter(order => order.status === 'Returned')} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
                   </TabsContent>
                   
-                  <TabsContent value="delivery" className="p-0 mt-4">
-                    <OrdersTable orders={mockOrders.filter(order => order.status === 'Heading to Customer')} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                  <TabsContent value="paid" className="p-0 mt-4">
+                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
                   </TabsContent>
                 </CardContent>
               </Tabs>

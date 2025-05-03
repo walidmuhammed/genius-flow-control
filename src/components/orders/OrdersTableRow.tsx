@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Eye, MoreHorizontal, Printer, FileText } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -6,10 +7,13 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
 export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid';
 export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection' | 'Return';
+
 export interface Order {
   id: string;
+  referenceNumber: string;
   type: OrderType;
   customer: {
     name: string;
@@ -31,11 +35,13 @@ export interface Order {
   lastUpdate: string;
   note?: string;
 }
+
 interface OrdersTableRowProps {
   order: Order;
   isSelected: boolean;
   onToggleSelect: (orderId: string) => void;
 }
+
 const getStatusBadge = (status: OrderStatus) => {
   switch (status) {
     case 'New':
@@ -60,22 +66,21 @@ const getStatusBadge = (status: OrderStatus) => {
       return <span className="px-3 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium">{status}</span>;
   }
 };
+
 const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   order,
   isSelected,
   onToggleSelect
 }) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, 'dd/MM/yy');
-  };
   const formatCurrency = (amount: number) => {
     return amount.toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2
     });
   };
-  return <TableRow className={cn("hover:bg-gray-50 border-b border-gray-200", isSelected && "bg-gray-50")}>
+
+  return (
+    <TableRow className={cn("hover:bg-gray-50 border-b border-gray-200", isSelected && "bg-gray-50")}>
       <TableCell className="w-12 pl-4 pr-0">
         <Checkbox checked={isSelected} onCheckedChange={() => onToggleSelect(order.id)} />
       </TableCell>
@@ -95,6 +100,9 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
               </Tooltip>
             </TooltipProvider>}
         </div>
+      </TableCell>
+      <TableCell className="py-4">
+        <span className="font-medium text-gray-900">{order.referenceNumber}</span>
       </TableCell>
       <TableCell className="py-4">
         <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
@@ -140,9 +148,6 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
         {getStatusBadge(order.status)}
       </TableCell>
       <TableCell>
-        <span className="text-gray-500 text-sm whitespace-nowrap">{formatDate(order.lastUpdate)}</span>
-      </TableCell>
-      <TableCell>
         <div className="flex justify-center items-center gap-1">
           <button className="h-8 w-8 rounded-md hover:bg-gray-100 flex items-center justify-center">
             <Eye className="h-4 w-4 text-gray-500" />
@@ -166,6 +171,8 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
           </DropdownMenu>
         </div>
       </TableCell>
-    </TableRow>;
+    </TableRow>
+  );
 };
+
 export default OrdersTableRow;

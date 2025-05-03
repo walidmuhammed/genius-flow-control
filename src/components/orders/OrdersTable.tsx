@@ -60,15 +60,15 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
                   Order ID
                 </div>
               </TableHead>
+              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
+                Reference Number
+              </TableHead>
               <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Type</TableHead>
               <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Customer</TableHead>
               <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
               <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Amount</TableHead>
               <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Delivery Fees</TableHead>
               <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
-              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                <span className="whitespace-nowrap">Last Update</span>
-              </TableHead>
               <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
