@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ArrowUp, ArrowDown, Package, Check, Clock, AlertTriangle, DollarSign, ChevronRight } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -6,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+
 const Dashboard: React.FC = () => {
   const currentTime = new Date().toLocaleTimeString([], {
     hour: '2-digit',
@@ -138,9 +140,6 @@ const Dashboard: React.FC = () => {
               {currentDate} • {currentTime}
             </p>
           </div>
-          <div className="flex gap-3 mt-4 sm:mt-0">
-            
-          </div>
         </div>
 
         <div className="px-[12px]">
@@ -158,8 +157,8 @@ const Dashboard: React.FC = () => {
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.newOrders.value}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
-                  <Package className="h-6 w-6 text-orange-500" />
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-200 to-orange-100 flex items-center justify-center shadow-sm">
+                  <Package className="h-6 w-6 text-orange-500" strokeWidth={2.5} />
                 </div>
               </div>
             </CardContent>
@@ -175,8 +174,8 @@ const Dashboard: React.FC = () => {
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.delivered.value}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                  <Check className="h-6 w-6 text-green-500" />
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-green-200 to-green-100 flex items-center justify-center shadow-sm">
+                  <Check className="h-6 w-6 text-green-500" strokeWidth={2.5} />
                 </div>
               </div>
             </CardContent>
@@ -192,8 +191,8 @@ const Dashboard: React.FC = () => {
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.inProgress.value}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-blue-500" />
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-200 to-blue-100 flex items-center justify-center shadow-sm">
+                  <Clock className="h-6 w-6 text-blue-500" strokeWidth={2.5} />
                 </div>
               </div>
             </CardContent>
@@ -207,8 +206,8 @@ const Dashboard: React.FC = () => {
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">Canceled Orders</h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.failedOrders.value}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
-                  <AlertTriangle className="h-6 w-6 text-red-500" />
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-red-200 to-red-100 flex items-center justify-center shadow-sm">
+                  <AlertTriangle className="h-6 w-6 text-red-500" strokeWidth={2.5} />
                 </div>
               </div>
             </CardContent>
@@ -224,8 +223,8 @@ const Dashboard: React.FC = () => {
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.averageOrderValue.value}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-purple-500" />
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-200 to-purple-100 flex items-center justify-center shadow-sm">
+                  <DollarSign className="h-6 w-6 text-purple-500" strokeWidth={2.5} />
                 </div>
               </div>
             </CardContent>
@@ -244,15 +243,15 @@ const Dashboard: React.FC = () => {
                     <p className="text-sm text-gray-500">{dashboardData.collectedCash.lbp.toLocaleString()} LBP</p>
                   </div>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-orange-500" />
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-amber-200 to-amber-100 flex items-center justify-center shadow-sm">
+                  <DollarSign className="h-6 w-6 text-amber-500" strokeWidth={2.5} />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
         
-        {/* New Tabbed Tables Section */}
+        {/* Tabbed Tables Section */}
         <div className="px-[12px] mt-8">
           <Card className="border-0 shadow-sm">
             <CardContent className="p-0">

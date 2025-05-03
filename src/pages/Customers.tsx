@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, Filter, Download, Plus } from "lucide-react";
+import { Search, Filter, Download, Plus, Edit, Check, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
@@ -141,6 +141,8 @@ const Customers: React.FC = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerWithOrders | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [cityFilter, setCityFilter] = useState<string>("all");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedCustomer, setEditedCustomer] = useState<CustomerWithOrders | null>(null);
   
   const filteredCustomers = customersData.filter(customer => {
     const matchesSearch = customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -154,10 +156,52 @@ const Customers: React.FC = () => {
 
   const handleRowClick = (customer: CustomerWithOrders) => {
     setSelectedCustomer(customer);
+    setEditedCustomer({...customer});
+    setIsEditing(false);
   };
 
   const closeModal = () => {
     setSelectedCustomer(null);
+    setEditedCustomer(null);
+    setIsEditing(false);
+  };
+
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const handleSaveChanges = () => {
+    if (editedCustomer) {
+      // Here you would typically save changes to your backend
+      // For this demo, we're just updating the local state
+      const updatedCustomers = customersData.map(c => 
+        c.id === editedCustomer.id ? editedCustomer : c
+      );
+      
+      // Update the selected customer to show the changes
+      setSelectedCustomer(editedCustomer);
+      setIsEditing(false);
+      
+      console.log('Customer updated:', editedCustomer);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!editedCustomer) return;
+    
+    setEditedCustomer({
+      ...editedCustomer,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleCityChange = (city: string) => {
+    if (!editedCustomer) return;
+    
+    setEditedCustomer({
+      ...editedCustomer,
+      city
+    });
   };
 
   return (
@@ -304,20 +348,110 @@ const Customers: React.FC = () => {
       {/* Customer Detail Modal */}
       <Dialog open={!!selectedCustomer} onOpenChange={(open) => !open && closeModal()}>
         <DialogContent className="sm:max-w-[600px] p-0">
-          <DialogHeader className="px-6 py-4 border-b">
+          <DialogHeader className="px-6 py-4 border-b flex flex-row justify-between items-center">
             <DialogTitle className="text-xl font-semibold">Customer Details</DialogTitle>
+            <div className="flex items-center gap-2">
+              {isEditing ? (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8 px-3 py-1 text-sm"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditedCustomer(selectedCustomer);
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-1" /> Cancel
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    className="h-8 px-3 py-1 text-sm bg-[#46d483] hover:bg-[#3bb36e]"
+                    onClick={handleSaveChanges}
+                  >
+                    <Check className="h-4 w-4 mr-1" /> Save Changes
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 px-3 py-1 text-sm"
+                  onClick={handleEditToggle}
+                >
+                  <Edit className="h-4 w-4 mr-1" /> Edit
+                </Button>
+              )}
+            </div>
           </DialogHeader>
           
-          {selectedCustomer && (
+          {selectedCustomer && editedCustomer && (
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Customer Information</h3>
-                  <div className="mt-2 space-y-2">
-                    <p className="text-lg font-semibold">{selectedCustomer.name}</p>
-                    <p className="text-gray-700">{selectedCustomer.phone}</p>
-                    <p className="text-gray-700">{selectedCustomer.city}</p>
-                    <p className="text-gray-700">{selectedCustomer.address}</p>
+                  <div className="mt-2 space-y-4">
+                    {isEditing ? (
+                      <>
+                        <div>
+                          <label htmlFor="name" className="block text-xs text-gray-500 mb-1">Customer Name</label>
+                          <Input
+                            id="name"
+                            name="name"
+                            value={editedCustomer.name}
+                            onChange={handleInputChange}
+                            className="h-9"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="phone" className="block text-xs text-gray-500 mb-1">Phone Number</label>
+                          <Input
+                            id="phone"
+                            name="phone"
+                            value={editedCustomer.phone}
+                            onChange={handleInputChange}
+                            className="h-9"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="city" className="block text-xs text-gray-500 mb-1">City</label>
+                          <Select 
+                            value={editedCustomer.city} 
+                            onValueChange={handleCityChange}
+                          >
+                            <SelectTrigger id="city" className="h-9">
+                              <SelectValue placeholder="Select city" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Beirut">Beirut</SelectItem>
+                              <SelectItem value="Mount Lebanon">Mount Lebanon</SelectItem>
+                              <SelectItem value="North Lebanon">North Lebanon</SelectItem>
+                              <SelectItem value="Akkar">Akkar</SelectItem>
+                              <SelectItem value="Beqaa">Beqaa</SelectItem>
+                              <SelectItem value="Baalbek-Hermel">Baalbek-Hermel</SelectItem>
+                              <SelectItem value="South Lebanon">South Lebanon</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label htmlFor="address" className="block text-xs text-gray-500 mb-1">Address</label>
+                          <Input
+                            id="address"
+                            name="address"
+                            value={editedCustomer.address}
+                            onChange={handleInputChange}
+                            className="h-9"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-lg font-semibold">{selectedCustomer.name}</p>
+                        <p className="text-gray-700">{selectedCustomer.phone}</p>
+                        <p className="text-gray-700">{selectedCustomer.city}</p>
+                        <p className="text-gray-700">{selectedCustomer.address}</p>
+                      </>
+                    )}
                   </div>
                 </div>
                 

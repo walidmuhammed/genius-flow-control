@@ -4,7 +4,6 @@ import { Plus, FileText, Download, Search, Calendar } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import OrdersFilter from '@/components/orders/OrdersFilter';
 import OrdersTable from '@/components/orders/OrdersTable';
 import { Order } from '@/components/orders/OrdersTableRow';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -16,6 +15,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { DateRangePicker } from '@/components/orders/DateRangePicker';
 
 const OrdersList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -178,9 +178,9 @@ const OrdersList: React.FC = () => {
         case 'pending': return order.status === 'Pending Pickup';
         case 'process': return order.status === 'In Progress';
         case 'completed': return order.status === 'Successful';
-        case 'cancelled': return order.status === 'Unsuccessful' || order.status === 'Returned';
+        case 'unsuccessful': return order.status === 'Unsuccessful';
+        case 'returned': return order.status === 'Returned';
         case 'paid': return order.status === 'Paid';
-        case 'delivery': return order.status === 'Heading to Customer';
         default: return true;
       }
     });
@@ -224,8 +224,11 @@ const OrdersList: React.FC = () => {
                   <TabsTrigger value="completed" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
                     Successful
                   </TabsTrigger>
-                  <TabsTrigger value="cancelled" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
-                    Unsuccessful/Returned
+                  <TabsTrigger value="unsuccessful" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
+                    Unsuccessful
+                  </TabsTrigger>
+                  <TabsTrigger value="returned" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
+                    Returned
                   </TabsTrigger>
                   <TabsTrigger value="paid" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
                     Paid
@@ -239,24 +242,7 @@ const OrdersList: React.FC = () => {
                       <Input placeholder="Search orders..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10 bg-white border-gray-200" />
                     </div>
                     
-                    {/* Date Picker */}
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className="h-10 gap-2 border-gray-200 bg-white shadow-sm text-sm font-medium">
-                          <Calendar className="h-4 w-4" />
-                          {date ? format(date, 'PPP') : <span className="text-gray-500">Filter by date</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="end">
-                        <CalendarComponent
-                          mode="single"
-                          selected={date}
-                          onSelect={setDate}
-                          initialFocus
-                          className="p-3 pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <DateRangePicker />
                   </div>
                 
                   <TabsContent value="all" className="p-0 mt-4">
@@ -279,7 +265,11 @@ const OrdersList: React.FC = () => {
                     <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
                   </TabsContent>
                   
-                  <TabsContent value="cancelled" className="p-0 mt-4">
+                  <TabsContent value="unsuccessful" className="p-0 mt-4">
+                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                  </TabsContent>
+                  
+                  <TabsContent value="returned" className="p-0 mt-4">
                     <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
                   </TabsContent>
                   
