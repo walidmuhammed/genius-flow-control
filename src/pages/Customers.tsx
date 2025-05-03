@@ -1,20 +1,11 @@
-
 import React from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search, Filter, Download, Plus } from "lucide-react";
-
 interface CustomerData {
   id: string;
   name: string;
@@ -27,73 +18,64 @@ interface CustomerData {
   lastOrderDate: string;
   status: "Active" | "Inactive";
 }
-
-const customersData: CustomerData[] = [
-  {
-    id: "CUST-001",
-    name: "Hiba's Bakery",
-    phone: "+961 3 123 456",
-    location: "Beirut",
-    address: "123 Hamra St, Beirut",
-    orderCount: 24,
-    totalValueUSD: 1250.75,
-    totalValueLBP: 19250000,
-    lastOrderDate: "May 2, 2025",
-    status: "Active"
-  },
-  {
-    id: "CUST-002",
-    name: "Café Najjar",
-    phone: "+961 1 987 654",
-    location: "Tripoli",
-    address: "45 Main St, Tripoli",
-    orderCount: 18,
-    totalValueUSD: 876.50,
-    totalValueLBP: null,
-    lastOrderDate: "May 1, 2025",
-    status: "Active"
-  },
-  {
-    id: "CUST-003",
-    name: "Beirut Supermarket",
-    phone: "+961 70 123 789",
-    location: "Jounieh",
-    address: "78 Coastal Rd, Jounieh",
-    orderCount: 31,
-    totalValueUSD: 2350.25,
-    totalValueLBP: 36150000,
-    lastOrderDate: "Apr 30, 2025",
-    status: "Active"
-  },
-  {
-    id: "CUST-004",
-    name: "Aishti Department Store",
-    phone: "+961 3 456 789",
-    location: "Beirut",
-    address: "Downtown, Beirut",
-    orderCount: 42,
-    totalValueUSD: 4150.00,
-    totalValueLBP: 63850000,
-    lastOrderDate: "Apr 28, 2025",
-    status: "Active"
-  },
-  {
-    id: "CUST-005",
-    name: "Cedar Pharmacy",
-    phone: "+961 81 234 567",
-    location: "Baalbek",
-    address: "12 Cedar St, Baalbek",
-    orderCount: 8,
-    totalValueUSD: 450.25,
-    totalValueLBP: 6930000,
-    lastOrderDate: "Apr 15, 2025",
-    status: "Inactive"
-  },
-];
-
+const customersData: CustomerData[] = [{
+  id: "CUST-001",
+  name: "Hiba's Bakery",
+  phone: "+961 3 123 456",
+  location: "Beirut",
+  address: "123 Hamra St, Beirut",
+  orderCount: 24,
+  totalValueUSD: 1250.75,
+  totalValueLBP: 19250000,
+  lastOrderDate: "May 2, 2025",
+  status: "Active"
+}, {
+  id: "CUST-002",
+  name: "Café Najjar",
+  phone: "+961 1 987 654",
+  location: "Tripoli",
+  address: "45 Main St, Tripoli",
+  orderCount: 18,
+  totalValueUSD: 876.50,
+  totalValueLBP: null,
+  lastOrderDate: "May 1, 2025",
+  status: "Active"
+}, {
+  id: "CUST-003",
+  name: "Beirut Supermarket",
+  phone: "+961 70 123 789",
+  location: "Jounieh",
+  address: "78 Coastal Rd, Jounieh",
+  orderCount: 31,
+  totalValueUSD: 2350.25,
+  totalValueLBP: 36150000,
+  lastOrderDate: "Apr 30, 2025",
+  status: "Active"
+}, {
+  id: "CUST-004",
+  name: "Aishti Department Store",
+  phone: "+961 3 456 789",
+  location: "Beirut",
+  address: "Downtown, Beirut",
+  orderCount: 42,
+  totalValueUSD: 4150.00,
+  totalValueLBP: 63850000,
+  lastOrderDate: "Apr 28, 2025",
+  status: "Active"
+}, {
+  id: "CUST-005",
+  name: "Cedar Pharmacy",
+  phone: "+961 81 234 567",
+  location: "Baalbek",
+  address: "12 Cedar St, Baalbek",
+  orderCount: 8,
+  totalValueUSD: 450.25,
+  totalValueLBP: 6930000,
+  lastOrderDate: "Apr 15, 2025",
+  status: "Inactive"
+}];
 const Customers: React.FC = () => {
-  return (
-    <MainLayout>
+  return <MainLayout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -111,11 +93,7 @@ const Customers: React.FC = () => {
             <div className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b gap-4">
               <div className="relative w-full sm:w-auto">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                <input 
-                  type="text" 
-                  placeholder="Search customers..." 
-                  className="pl-9 h-10 w-full sm:w-[300px] rounded-md border border-input px-3 py-2 text-sm ring-offset-background" 
-                />
+                <input type="text" placeholder="Search customers..." className="pl-9 h-10 w-full sm:w-[300px] rounded-md border border-input text-sm ring-offset-background mx-[49px] my-[6px] py-0 px-[62px]" />
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                 <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -157,11 +135,7 @@ const Customers: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {customersData.map((customer) => (
-                    <TableRow 
-                      key={customer.id} 
-                      className="hover:bg-gray-50 transition-colors cursor-pointer"
-                    >
+                  {customersData.map(customer => <TableRow key={customer.id} className="hover:bg-gray-50 transition-colors cursor-pointer">
                       <TableCell className="font-medium">
                         {customer.name}
                       </TableCell>
@@ -187,9 +161,7 @@ const Customers: React.FC = () => {
                               <div className="text-xs">
                                 <div className="font-semibold">Total Value:</div>
                                 <div>${customer.totalValueUSD.toFixed(2)} USD</div>
-                                {customer.totalValueLBP !== null && (
-                                  <div>{customer.totalValueLBP.toLocaleString()} LBP</div>
-                                )}
+                                {customer.totalValueLBP !== null && <div>{customer.totalValueLBP.toLocaleString()} LBP</div>}
                               </div>
                             </TooltipContent>
                           </Tooltip>
@@ -199,18 +171,11 @@ const Customers: React.FC = () => {
                         <span className="text-gray-700">{customer.lastOrderDate}</span>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          className={`px-2 py-1 rounded-full font-medium text-xs ${
-                            customer.status === "Active" 
-                              ? "bg-green-100 text-green-800" 
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
+                        <Badge className={`px-2 py-1 rounded-full font-medium text-xs ${customer.status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}>
                           {customer.status}
                         </Badge>
                       </TableCell>
-                    </TableRow>
-                  ))}
+                    </TableRow>)}
                 </TableBody>
               </Table>
             </div>
@@ -230,8 +195,6 @@ const Customers: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default Customers;
