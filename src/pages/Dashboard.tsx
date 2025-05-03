@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowUp, ArrowDown, Package, Check, Clock, AlertTriangle, DollarSign, ChevronRight } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -7,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-
 const Dashboard: React.FC = () => {
   const currentTime = new Date().toLocaleTimeString([], {
     hour: '2-digit',
@@ -146,7 +144,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="px-[12px]">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Today's Overview</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4 px-[9px]">Today's Overview</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 px-[12px]">
