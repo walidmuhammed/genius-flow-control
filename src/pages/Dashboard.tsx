@@ -1,11 +1,9 @@
-
 import React from 'react';
 import { ArrowUp, ArrowDown, Package, Check, Clock, AlertTriangle, DollarSign } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import StatCard from '@/components/dashboard/StatCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-
 const Dashboard: React.FC = () => {
   const currentTime = new Date().toLocaleTimeString([], {
     hour: '2-digit',
@@ -52,9 +50,7 @@ const Dashboard: React.FC = () => {
       period: "from last week"
     }
   };
-
-  return (
-    <MainLayout>
+  return <MainLayout>
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 px-[12px]">
           <div>
@@ -78,8 +74,7 @@ const Dashboard: React.FC = () => {
                     New Orders In
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.newOrders.value}</p>
-                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", 
-                    dashboardData.newOrders.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.newOrders.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
                     <span className="font-medium">{dashboardData.newOrders.percentChange}</span> 
                     <span className="text-gray-500">{dashboardData.newOrders.period}</span>
                   </p>
@@ -100,8 +95,7 @@ const Dashboard: React.FC = () => {
                     Delivered
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.delivered.value}</p>
-                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", 
-                    dashboardData.delivered.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.delivered.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
                     <span className="font-medium">{dashboardData.delivered.percentChange}</span> 
                     <span className="text-gray-500">{dashboardData.delivered.period}</span>
                   </p>
@@ -122,8 +116,7 @@ const Dashboard: React.FC = () => {
                     In Progress
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.inProgress.value}</p>
-                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", 
-                    dashboardData.inProgress.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.inProgress.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
                     <span className="font-medium">{dashboardData.inProgress.percentChange}</span> 
                     <span className="text-gray-500">{dashboardData.inProgress.period}</span>
                   </p>
@@ -140,12 +133,9 @@ const Dashboard: React.FC = () => {
             <CardContent className="pt-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    Failed Orders
-                  </h3>
+                  <h3 className="text-sm font-medium text-gray-500 flex items-center">Canceled Orders</h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.failedOrders.value}</p>
-                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", 
-                    dashboardData.failedOrders.percentChange.includes('+') ? "text-red-500" : "text-green-600")}>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.failedOrders.percentChange.includes('+') ? "text-red-500" : "text-green-600")}>
                     <span className="font-medium">{dashboardData.failedOrders.percentChange}</span> 
                     <span className="text-gray-500">{dashboardData.failedOrders.period}</span>
                   </p>
@@ -166,8 +156,7 @@ const Dashboard: React.FC = () => {
                     Avg. Order Value
                   </h3>
                   <p className="mt-2 text-3xl font-semibold">{dashboardData.averageOrderValue.value}</p>
-                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", 
-                    dashboardData.averageOrderValue.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.averageOrderValue.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
                     <span className="font-medium">{dashboardData.averageOrderValue.percentChange}</span> 
                     <span className="text-gray-500">{dashboardData.averageOrderValue.period}</span>
                   </p>
@@ -191,8 +180,7 @@ const Dashboard: React.FC = () => {
                     <p className="text-2xl font-semibold">${dashboardData.collectedCash.usd.toLocaleString()}</p>
                     <p className="text-sm text-gray-500">{dashboardData.collectedCash.lbp.toLocaleString()} LBP</p>
                   </div>
-                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", 
-                    dashboardData.collectedCash.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
+                  <p className={cn("mt-1.5 text-xs flex items-center gap-1", dashboardData.collectedCash.percentChange.includes('+') ? "text-green-600" : "text-red-500")}>
                     <span className="font-medium">{dashboardData.collectedCash.percentChange}</span> 
                     <span className="text-gray-500">{dashboardData.collectedCash.period}</span>
                   </p>
@@ -205,8 +193,6 @@ const Dashboard: React.FC = () => {
           </Card>
         </div>
       </div>
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default Dashboard;
