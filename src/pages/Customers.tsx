@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search, Filter, Download, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CustomerData {
   id: string;
@@ -26,9 +35,20 @@ interface CustomerData {
   totalValueLBP: number | null;
   lastOrderDate: string;
   status: "Active" | "Inactive";
+  city: string;
 }
 
-const customersData: CustomerData[] = [
+// Expanded customer data with recent orders
+interface CustomerWithOrders extends CustomerData {
+  recentOrders: {
+    id: string;
+    date: string;
+    amount: number;
+    status: string;
+  }[];
+}
+
+const customersData: CustomerWithOrders[] = [
   {
     id: "CUST-001",
     name: "Hiba's Bakery",
@@ -39,7 +59,13 @@ const customersData: CustomerData[] = [
     totalValueUSD: 1250.75,
     totalValueLBP: 19250000,
     lastOrderDate: "May 2, 2025",
-    status: "Active"
+    status: "Active",
+    city: "Beirut",
+    recentOrders: [
+      { id: "ORD-001", date: "May 2, 2025", amount: 150.25, status: "Delivered" },
+      { id: "ORD-002", date: "Apr 28, 2025", amount: 215.50, status: "Delivered" },
+      { id: "ORD-003", date: "Apr 15, 2025", amount: 89.75, status: "Delivered" }
+    ]
   },
   {
     id: "CUST-002",
@@ -51,7 +77,12 @@ const customersData: CustomerData[] = [
     totalValueUSD: 876.50,
     totalValueLBP: null,
     lastOrderDate: "May 1, 2025",
-    status: "Active"
+    status: "Active",
+    city: "North Lebanon",
+    recentOrders: [
+      { id: "ORD-004", date: "May 1, 2025", amount: 125.00, status: "Delivered" },
+      { id: "ORD-005", date: "Apr 25, 2025", amount: 175.25, status: "Delivered" }
+    ]
   },
   {
     id: "CUST-003",
@@ -63,7 +94,13 @@ const customersData: CustomerData[] = [
     totalValueUSD: 2350.25,
     totalValueLBP: 36150000,
     lastOrderDate: "Apr 30, 2025",
-    status: "Active"
+    status: "Active",
+    city: "Mount Lebanon",
+    recentOrders: [
+      { id: "ORD-006", date: "Apr 30, 2025", amount: 312.50, status: "Delivered" },
+      { id: "ORD-007", date: "Apr 27, 2025", amount: 145.75, status: "Delivered" },
+      { id: "ORD-008", date: "Apr 20, 2025", amount: 89.25, status: "Delivered" }
+    ]
   },
   {
     id: "CUST-004",
@@ -75,7 +112,12 @@ const customersData: CustomerData[] = [
     totalValueUSD: 4150.00,
     totalValueLBP: 63850000,
     lastOrderDate: "Apr 28, 2025",
-    status: "Active"
+    status: "Active",
+    city: "Beirut",
+    recentOrders: [
+      { id: "ORD-009", date: "Apr 28, 2025", amount: 527.75, status: "Delivered" },
+      { id: "ORD-010", date: "Apr 22, 2025", amount: 318.50, status: "Delivered" }
+    ]
   },
   {
     id: "CUST-005",
@@ -87,11 +129,37 @@ const customersData: CustomerData[] = [
     totalValueUSD: 450.25,
     totalValueLBP: 6930000,
     lastOrderDate: "Apr 15, 2025",
-    status: "Inactive"
+    status: "Inactive",
+    city: "Baalbek-Hermel",
+    recentOrders: [
+      { id: "ORD-011", date: "Apr 15, 2025", amount: 78.25, status: "Delivered" }
+    ]
   },
 ];
 
 const Customers: React.FC = () => {
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerWithOrders | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [cityFilter, setCityFilter] = useState<string>("all");
+  
+  const filteredCustomers = customersData.filter(customer => {
+    const matchesSearch = customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          customer.phone.includes(searchQuery) ||
+                          customer.location.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCity = cityFilter === "all" || customer.city === cityFilter;
+    
+    return matchesSearch && matchesCity;
+  });
+
+  const handleRowClick = (customer: CustomerWithOrders) => {
+    setSelectedCustomer(customer);
+  };
+
+  const closeModal = () => {
+    setSelectedCustomer(null);
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -115,13 +183,28 @@ const Customers: React.FC = () => {
                   type="text" 
                   placeholder="Search customers..." 
                   className="pl-9 h-10 w-full sm:w-[300px] rounded-md border border-input px-3 py-2 text-sm ring-offset-background" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  <span>Filter</span>
-                </Button>
+                <div className="relative w-full sm:w-[200px]">
+                  <Select value={cityFilter} onValueChange={setCityFilter}>
+                    <SelectTrigger className="h-10 w-full border-input">
+                      <SelectValue placeholder="Filter by city" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Cities</SelectItem>
+                      <SelectItem value="Beirut">Beirut</SelectItem>
+                      <SelectItem value="Mount Lebanon">Mount Lebanon</SelectItem>
+                      <SelectItem value="North Lebanon">North Lebanon</SelectItem>
+                      <SelectItem value="Akkar">Akkar</SelectItem>
+                      <SelectItem value="Beqaa">Beqaa</SelectItem>
+                      <SelectItem value="Baalbek-Hermel">Baalbek-Hermel</SelectItem>
+                      <SelectItem value="South Lebanon">South Lebanon</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button variant="outline" size="sm" className="flex items-center gap-2">
                   <Download className="h-4 w-4" />
                   <span>Export</span>
@@ -151,16 +234,14 @@ const Customers: React.FC = () => {
                     <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
                       Last Order Date
                     </TableHead>
-                    <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                      Status
-                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {customersData.map((customer) => (
+                  {filteredCustomers.map((customer) => (
                     <TableRow 
                       key={customer.id} 
                       className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={() => handleRowClick(customer)}
                     >
                       <TableCell className="font-medium">
                         {customer.name}
@@ -198,17 +279,6 @@ const Customers: React.FC = () => {
                       <TableCell>
                         <span className="text-gray-700">{customer.lastOrderDate}</span>
                       </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={`px-2 py-1 rounded-full font-medium text-xs ${
-                            customer.status === "Active" 
-                              ? "bg-green-100 text-green-800" 
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {customer.status}
-                        </Badge>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -218,8 +288,8 @@ const Customers: React.FC = () => {
             <div className="bg-white border-t border-gray-200 px-6 py-4 flex justify-between items-center">
               <span className="text-sm text-gray-500">
                 Showing <span className="font-medium text-gray-700">1</span> to{" "}
-                <span className="font-medium text-gray-700">{customersData.length}</span> of{" "}
-                <span className="font-medium text-gray-700">{customersData.length}</span> customers
+                <span className="font-medium text-gray-700">{filteredCustomers.length}</span> of{" "}
+                <span className="font-medium text-gray-700">{filteredCustomers.length}</span> customers
               </span>
               
               <div className="flex items-center gap-2">
@@ -230,6 +300,85 @@ const Customers: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Customer Detail Modal */}
+      <Dialog open={!!selectedCustomer} onOpenChange={(open) => !open && closeModal()}>
+        <DialogContent className="sm:max-w-[600px] p-0">
+          <DialogHeader className="px-6 py-4 border-b">
+            <DialogTitle className="text-xl font-semibold">Customer Details</DialogTitle>
+          </DialogHeader>
+          
+          {selectedCustomer && (
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Customer Information</h3>
+                  <div className="mt-2 space-y-2">
+                    <p className="text-lg font-semibold">{selectedCustomer.name}</p>
+                    <p className="text-gray-700">{selectedCustomer.phone}</p>
+                    <p className="text-gray-700">{selectedCustomer.city}</p>
+                    <p className="text-gray-700">{selectedCustomer.address}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Order Statistics</h3>
+                  <div className="mt-2 space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Total Orders:</span>
+                      <span className="font-medium">{selectedCustomer.orderCount}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Total Value (USD):</span>
+                      <span className="font-medium">${selectedCustomer.totalValueUSD.toFixed(2)}</span>
+                    </div>
+                    {selectedCustomer.totalValueLBP !== null && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Value (LBP):</span>
+                        <span className="font-medium">{selectedCustomer.totalValueLBP.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Last Order:</span>
+                      <span className="font-medium">{selectedCustomer.lastOrderDate}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-3">Recent Orders</h3>
+                <div className="border rounded-md overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="text-xs">Order ID</TableHead>
+                        <TableHead className="text-xs">Date</TableHead>
+                        <TableHead className="text-xs">Amount</TableHead>
+                        <TableHead className="text-xs">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedCustomer.recentOrders.map((order) => (
+                        <TableRow key={order.id}>
+                          <TableCell className="font-medium">{order.id}</TableCell>
+                          <TableCell>{order.date}</TableCell>
+                          <TableCell>${order.amount.toFixed(2)}</TableCell>
+                          <TableCell>
+                            <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                              {order.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 };

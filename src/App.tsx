@@ -13,6 +13,7 @@ import Settings from "./pages/Settings";
 import Support from "./pages/Support";
 import Pickups from "./pages/Pickups";
 import Customers from "./pages/Customers";
+import Wallet from "./pages/Wallet";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/orders/new" element={<CreateOrder />} />
           <Route path="/pickups" element={<Pickups />} />
           <Route path="/customers" element={<Customers />} />
+          <Route path="/wallet" element={<Wallet />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/support" element={<Support />} />
