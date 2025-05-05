@@ -11,11 +11,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
+import { DayPickerRangeProps } from 'react-day-picker';
 
-type DateRange = {
+// Update the type to match react-day-picker's DateRange type
+interface DateRange {
   from: Date | undefined;
-  to: Date | undefined;
-};
+  to?: Date | undefined;
+}
 
 type Preset = {
   name: string;
@@ -92,6 +94,13 @@ export function DateRangePicker() {
     console.log('Applied date range:', date);
   };
 
+  // Handler to properly set the date range
+  const handleSelect = (range: DateRange | undefined) => {
+    if (range) {
+      setDate(range);
+    }
+  };
+
   // Format the display string for the button
   const formatDateRange = () => {
     if (date.from && date.to) {
@@ -141,7 +150,7 @@ export function DateRangePicker() {
             <Calendar
               mode="range"
               selected={date}
-              onSelect={setDate}
+              onSelect={handleSelect}
               numberOfMonths={1}
               className="p-3 pointer-events-auto"
             />
