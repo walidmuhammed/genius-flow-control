@@ -198,6 +198,10 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
 
     const errorToShow = error || validationError;
 
+    // The key attribute here ensures we fully recreate the Command component when open changes
+    // This helps avoid stale internal state issues that might cause the "undefined is not iterable" error
+    const commandKey = `command-${open ? 'open' : 'closed'}-${countrySearchTerm}`;
+
     return (
       <div className="space-y-2">
         {showLabel && <div className="text-sm font-medium text-primary">{label}</div>}
@@ -221,36 +225,36 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[300px] p-0 max-h-[400px] overflow-y-auto">
-                <Command>
+                <Command key={commandKey} className="w-full">
                   <CommandInput 
                     placeholder="Search countries or codes" 
                     className="h-9"
                     value={countrySearchTerm}
-                    onValueChange={setCountrySearchTerm} 
+                    onValueChange={(value) => {
+                      setCountrySearchTerm(value || "");
+                    }}
                   />
                   <CommandEmpty>No country found.</CommandEmpty>
-                  {filteredCountries.length > 0 ? (
-                    <CommandGroup>
-                      {filteredCountries.map((country) => (
-                        <CommandItem
-                          key={country.code}
-                          value={`${country.name.toLowerCase()}-${country.dialCode}`}
-                          onSelect={() => {
-                            handleCountryChange(country.code);
-                          }}
-                          className="flex items-center justify-between py-3"
-                        >
-                          <div className="flex items-center">
-                            <span className="mr-2 text-lg">{country.flag}</span>
-                            <span>{country.name}</span>
-                          </div>
-                          <span className="text-sm text-muted-foreground">
-                            {country.dialCode}
-                          </span>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  ) : null}
+                  <CommandGroup>
+                    {filteredCountries.map((country) => (
+                      <CommandItem
+                        key={country.code}
+                        value={`${country.name.toLowerCase()}-${country.dialCode}`}
+                        onSelect={() => {
+                          handleCountryChange(country.code);
+                        }}
+                        className="flex items-center justify-between py-3"
+                      >
+                        <div className="flex items-center">
+                          <span className="mr-2 text-lg">{country.flag}</span>
+                          <span>{country.name}</span>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {country.dialCode}
+                        </span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
                 </Command>
               </PopoverContent>
             </Popover>

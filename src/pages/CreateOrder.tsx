@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, Info, Check, Plus, ChevronDown, Search, MapPin } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -106,12 +107,12 @@ const CreateOrder = () => {
   };
 
   const handlePhoneChange = (value: string) => {
-    setPhone(value);
+    setPhone(value || '+961'); // Ensure we always have a default value
     setPhoneError(''); // Clear error, validation happens in PhoneInput component
   };
 
   const handleSecondaryPhoneChange = (value: string) => {
-    setSecondaryPhone(value);
+    setSecondaryPhone(value || ''); // Handle possible undefined values
     setSecondaryPhoneError(''); // Clear error, validation happens in PhoneInput component
   };
 
@@ -192,6 +193,7 @@ const CreateOrder = () => {
                     value={phone}
                     onChange={handlePhoneChange}
                     showLabel={false}
+                    error={phoneError}
                   />
                 </div>
                 
@@ -227,6 +229,7 @@ const CreateOrder = () => {
                       value={secondaryPhone}
                       onChange={handleSecondaryPhoneChange}
                       showLabel={false}
+                      error={secondaryPhoneError}
                     />
                   </div>
                 )}
