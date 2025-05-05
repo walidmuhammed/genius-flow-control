@@ -199,48 +199,6 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
 
     const errorToShow = error || validationError;
 
-    // Create a unique key for Command component to ensure it's recreated on relevant prop changes
-    const commandKey = React.useMemo(() => 
-      `command-${open}-${countrySearchTerm}-${filteredCountries.length}`, 
-      [open, countrySearchTerm, filteredCountries.length]
-    );
-
-    // Render country search dropdown only when it's open
-    // This prevents any issues with stale references when the dropdown is closed
-    const renderCountrySearch = () => {
-      if (!open) return null;
-      
-      return (
-        <Command key={commandKey} className="w-full">
-          <CommandInput 
-            placeholder="Search countries or codes" 
-            className="h-9"
-            value={countrySearchTerm}
-            onValueChange={(value) => setCountrySearchTerm(value || "")}
-          />
-          <CommandEmpty>No country found.</CommandEmpty>
-          <CommandGroup>
-            {filteredCountries.map((country) => (
-              <CommandItem
-                key={country.code}
-                value={`${country.name.toLowerCase()}-${country.dialCode}`}
-                onSelect={() => handleCountryChange(country.code)}
-                className="flex items-center justify-between py-3"
-              >
-                <div className="flex items-center">
-                  <span className="mr-2 text-lg">{country.flag}</span>
-                  <span>{country.name}</span>
-                </div>
-                <span className="text-sm text-muted-foreground">
-                  {country.dialCode}
-                </span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
-      );
-    };
-
     return (
       <div className="space-y-2">
         {showLabel && <div className="text-sm font-medium text-primary">{label}</div>}
@@ -264,7 +222,35 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[300px] p-0 max-h-[400px] overflow-y-auto">
-                {renderCountrySearch()}
+                {open && ( // Only render the Command when the popover is open
+                  <Command>
+                    <CommandInput 
+                      placeholder="Search countries or codes" 
+                      className="h-9"
+                      value={countrySearchTerm}
+                      onValueChange={(value) => setCountrySearchTerm(value || "")}
+                    />
+                    <CommandEmpty>No country found.</CommandEmpty>
+                    <CommandGroup>
+                      {filteredCountries.map((country) => (
+                        <CommandItem
+                          key={country.code}
+                          value={`${country.name.toLowerCase()}-${country.dialCode}`}
+                          onSelect={() => handleCountryChange(country.code)}
+                          className="flex items-center justify-between py-3"
+                        >
+                          <div className="flex items-center">
+                            <span className="mr-2 text-lg">{country.flag}</span>
+                            <span>{country.name}</span>
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {country.dialCode}
+                          </span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                )}
               </PopoverContent>
             </Popover>
             
