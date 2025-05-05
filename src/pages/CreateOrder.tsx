@@ -334,9 +334,7 @@ const CreateOrder = () => {
                     
                     <div className="space-y-2">
                       
-                      <p className="text-xs text-muted-foreground">
-                        Select the location for your returned package.
-                      </p>
+                      
                     </div>
                   </div>
                   
