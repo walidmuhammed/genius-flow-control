@@ -120,6 +120,32 @@
   .currency-badge-lbp {
     @apply bg-green-50 text-green-700 border-green-200;
   }
+
+  /* Phone Input Styles */
+  .PhoneInput {
+    @apply flex items-center border border-input rounded-md overflow-hidden;
+  }
+
+  .PhoneInputCountry {
+    @apply flex items-center px-3 bg-muted/30;
+  }
+
+  .PhoneInputCountryIcon {
+    @apply w-5 h-auto mr-2;
+  }
+
+  .PhoneInputCountrySelectArrow {
+    @apply border-t-4 border-t-gray-400 border-l-4 border-l-transparent border-r-4 border-r-transparent;
+  }
+
+  .PhoneInputInput {
+    @apply flex h-10 w-full bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 border-none md:text-sm;
+  }
+
+  /* Fix for the phone input container */
+  .phone-input-container .PhoneInput {
+    @apply border-none;
+  }
 }
 
 @keyframes fadeIn {
