@@ -157,10 +157,7 @@ const TopBar: React.FC = () => {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer">
-                <Link to="/orders/bulk" className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  <span className="font-medium">Bulk Orders</span>
-                </Link>
+                
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer">
                 <Link to="/pickups/new" className="flex items-center gap-2">
@@ -171,15 +168,7 @@ const TopBar: React.FC = () => {
               <DropdownMenuSeparator className="my-1 bg-border/10" />
               <Dialog open={quickCreateDialogOpen} onOpenChange={setQuickCreateDialogOpen}>
                 <DialogTrigger asChild>
-                  <DropdownMenuItem className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer" onSelect={e => {
-                  e.preventDefault();
-                  setQuickCreateDialogOpen(true);
-                }}>
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                      <span className="font-medium">Quick Create</span>
-                    </div>
-                  </DropdownMenuItem>
+                  
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px] rounded-xl p-0 gap-0">
                   <DialogHeader className="p-5 border-b border-border/10">
