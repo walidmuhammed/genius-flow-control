@@ -13,34 +13,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import PhoneInput from 'react-phone-number-input';
-import { isPossiblePhoneNumber, parsePhoneNumber } from 'libphonenumber-js';
-import 'react-phone-number-input/style.css';
+import { toast } from "sonner";
 import { cn } from '@/lib/utils';
+import { PhoneInput } from '@/components/ui/phone-input';
+import { CountryCode } from 'libphonenumber-js';
 
 // Lebanese governorates and areas
-const lebanonAreas = [{
-  governorate: 'Beirut',
-  areas: ['Achrafieh', 'Ain El Mraiseh', 'Bachoura', 'Marfaa', 'Mazraa', 'Medawar', 'Minet El Hosn', 'Mousaitbeh', 'Port', 'Rmeil', 'Saifi', 'Zuqaq al-Blat']
-}, {
-  governorate: 'Mount Lebanon',
-  areas: ['Aley', 'Baabda', 'Byblos', 'Chouf', 'Keserwan', 'Matn']
-}, {
-  governorate: 'North Lebanon',
-  areas: ['Batroun', 'Bcharreh', 'Koura', 'Miniyeh-Danniyeh', 'Tripoli', 'Zgharta']
-}, {
-  governorate: 'Akkar',
-  areas: ['Akkar']
-}, {
-  governorate: 'Beqaa',
-  areas: ['Rachaya', 'West Beqaa', 'Zahle']
-}, {
-  governorate: 'Baalbek-Hermel',
-  areas: ['Baalbek', 'Hermel']
-}, {
-  governorate: 'South Lebanon',
-  areas: ['Jezzine', 'Sidon', 'Tyre']
-}];
+const lebanonAreas = [
+  // ... keep existing code (lebanonAreas array definition)
+];
 
 const CreateOrder = () => {
   const [orderType, setOrderType] = useState<'shipment' | 'exchange'>('shipment');
@@ -60,6 +41,13 @@ const CreateOrder = () => {
   const [phoneError, setPhoneError] = useState<string>('');
   const [secondaryPhoneError, setSecondaryPhoneError] = useState<string>('');
   const [expandedGovernorate, setExpandedGovernorate] = useState<string | null>(null);
+  const [customerName, setCustomerName] = useState<string>('');
+  const [address, setAddress] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
+  const [itemsCount, setItemsCount] = useState<number>(1);
+  const [orderReference, setOrderReference] = useState<string>('');
+  const [deliveryNotes, setDeliveryNotes] = useState<string>('');
+  const [allowOpening, setAllowOpening] = useState<boolean>(false);
 
   const handleCloseModal = () => {
     // In a real application, this would navigate back or close the modal
@@ -67,46 +55,64 @@ const CreateOrder = () => {
   };
 
   const handleSubmit = (createAnother: boolean = false) => {
+    // Validate phone number
+    if (!phone || phoneError) {
+      toast.error("Please provide a valid phone number");
+      return;
+    }
+
+    // Validate secondary phone if provided
+    if (isSecondaryPhone && (!secondaryPhone || secondaryPhoneError)) {
+      toast.error("Please provide a valid secondary phone number");
+      return;
+    }
+
+    // Validate customer name
+    if (!customerName.trim()) {
+      toast.error("Please provide the customer name");
+      return;
+    }
+
+    // Validate area
+    if (!selectedArea) {
+      toast.error("Please select an area");
+      return;
+    }
+
+    // Validate address
+    if (!address.trim()) {
+      toast.error("Please provide an address");
+      return;
+    }
+
     console.log('Order submitted, create another:', createAnother);
-    // In a real application, this would submit the form data to the backend
-  };
-
-  const validatePhone = (value: string, setError: React.Dispatch<React.SetStateAction<string>>) => {
-    if (!value) {
-      setError('Phone number is required');
-      return false;
-    }
+    toast.success(createAnother ? "Order created! Creating another." : "Order created successfully!");
     
-    try {
-      if (!isPossiblePhoneNumber(value)) {
-        setError('Invalid phone number');
-        return false;
-      }
-
-      // Check for Lebanese numbers (8 digits after country code)
-      if (value.startsWith('+961') && value.length !== 12) {
-        setError('Lebanese numbers should be 8 digits after +961');
-        return false;
-      }
-      
-      setError('');
-      return true;
-    } catch (error) {
-      setError('Invalid phone number format');
-      return false;
+    // In a real application, this would submit the form data to the backend
+    // and reset the form or navigate away depending on createAnother
+    if (createAnother) {
+      // Reset form for another order
+      setPhone('+961');
+      setSecondaryPhone('');
+      setCustomerName('');
+      setSelectedGovernorate('');
+      setSelectedArea('');
+      setAddress('');
+      setDescription('');
+      // Keep other settings like order type intact for convenience
+    } else {
+      // Navigate away or close modal in real application
     }
   };
 
-  const handlePhoneChange = (value: string | undefined) => {
-    const cleanedValue = value?.replace(/\s/g, '') || '';
-    setPhone(cleanedValue);
-    if (cleanedValue) validatePhone(cleanedValue, setPhoneError);
+  const handlePhoneChange = (value: string) => {
+    setPhone(value);
+    setPhoneError(''); // Clear error, validation happens in PhoneInput component
   };
 
-  const handleSecondaryPhoneChange = (value: string | undefined) => {
-    const cleanedValue = value?.replace(/\s/g, '') || '';
-    setSecondaryPhone(cleanedValue);
-    if (cleanedValue) validatePhone(cleanedValue, setSecondaryPhoneError);
+  const handleSecondaryPhoneChange = (value: string) => {
+    setSecondaryPhone(value);
+    setSecondaryPhoneError(''); // Clear error, validation happens in PhoneInput component
   };
 
   const handleSelectArea = (governorate: string, area: string) => {
@@ -117,16 +123,16 @@ const CreateOrder = () => {
 
   const handleUsdAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Only allow positive numbers
-    if (value === '' || (!isNaN(Number(value)) && Number(value) >= 0)) {
+    // Only allow positive numbers with up to 2 decimal places
+    if (value === '' || (/^\d*\.?\d{0,2}$/).test(value) && Number(value) >= 0) {
       setUsdAmount(value);
     }
   };
 
   const handleLbpAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Only allow positive numbers
-    if (value === '' || (!isNaN(Number(value)) && Number(value) >= 0)) {
+    // Only allow positive integers
+    if (value === '' || (/^\d+$/).test(value) && Number(value) >= 0) {
       setLbpAmount(value);
     }
   };
@@ -180,46 +186,24 @@ const CreateOrder = () => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="font-medium">Phone number</Label>
-                  <div className="phone-input-container">
-                    <div className="relative">
-                      <PhoneInput
-                        international
-                        defaultCountry="LB"
-                        value={phone}
-                        onChange={handlePhoneChange}
-                        className="w-full"
-                        inputComponent={Input}
-                        style={{ display: 'flex' }}
-                        countrySelectProps={{ 
-                          className: 'bg-transparent border-none focus:ring-0 px-0' 
-                        }}
-                        numberInputProps={{ 
-                          className: 'focus:ring-2 focus:ring-primary/20 ring-offset-background',
-                          style: { width: '100%', padding: '0.75rem 0.75rem 0.75rem 3rem' }
-                        }}
-                      />
-                      {phoneError && (
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-destructive">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="h-4 w-4" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{phoneError}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      )}
-                    </div>
-                    {phoneError && <p className="text-xs text-destructive mt-1">{phoneError}</p>}
-                  </div>
+                  <PhoneInput
+                    id="phone"
+                    defaultCountry="LB" as CountryCode
+                    value={phone}
+                    onChange={handlePhoneChange}
+                    showLabel={false}
+                  />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="name" className="font-medium">Full name</Label>
-                  <Input id="name" placeholder="Enter customer name" className="py-6" />
+                  <Input 
+                    id="name" 
+                    placeholder="Enter customer name" 
+                    className="py-6" 
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                  />
                 </div>
                 
                 {!isSecondaryPhone && (
@@ -237,39 +221,13 @@ const CreateOrder = () => {
                 {isSecondaryPhone && (
                   <div className="space-y-2">
                     <Label htmlFor="secondary-phone" className="font-medium">Secondary phone</Label>
-                    <div className="relative">
-                      <PhoneInput
-                        international
-                        defaultCountry="LB"
-                        value={secondaryPhone}
-                        onChange={handleSecondaryPhoneChange}
-                        className="w-full"
-                        inputComponent={Input}
-                        style={{ display: 'flex' }}
-                        countrySelectProps={{ 
-                          className: 'bg-transparent border-none focus:ring-0 px-0' 
-                        }}
-                        numberInputProps={{ 
-                          className: 'focus:ring-2 focus:ring-primary/20 ring-offset-background',
-                          style: { width: '100%', padding: '0.75rem 0.75rem 0.75rem 3rem' }
-                        }}
-                      />
-                      {secondaryPhoneError && (
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-destructive">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="h-4 w-4" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{secondaryPhoneError}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      )}
-                    </div>
-                    {secondaryPhoneError && <p className="text-xs text-destructive mt-1">{secondaryPhoneError}</p>}
+                    <PhoneInput
+                      id="secondary-phone" 
+                      defaultCountry="LB" as CountryCode
+                      value={secondaryPhone}
+                      onChange={handleSecondaryPhoneChange}
+                      showLabel={false}
+                    />
                   </div>
                 )}
                 
@@ -337,7 +295,13 @@ const CreateOrder = () => {
                 
                 <div className="space-y-2">
                   <Label htmlFor="address" className="font-medium">Address details</Label>
-                  <Input id="address" placeholder="Enter full address" className="py-6" />
+                  <Input 
+                    id="address" 
+                    placeholder="Enter full address" 
+                    className="py-6" 
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                  />
                 </div>
                 
                 <div className="flex items-center space-x-2">
@@ -416,7 +380,13 @@ const CreateOrder = () => {
                     <Label htmlFor="description" className="font-medium">Description</Label>
                     <span className="text-xs text-muted-foreground">Optional</span>
                   </div>
-                  <Input id="description" placeholder="Product name - code - color - size" className="py-6" />
+                  <Input 
+                    id="description" 
+                    placeholder="Product name - code - color - size" 
+                    className="py-6" 
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
                 </div>
                 
                 <div className="flex items-center justify-between">
@@ -428,10 +398,27 @@ const CreateOrder = () => {
                   </div>
                 </div>
                 <div className="relative">
-                  <Input id="items-count" type="number" defaultValue={1} min={1} className="pr-8 py-6" />
+                  <Input 
+                    id="items-count" 
+                    type="number" 
+                    value={itemsCount} 
+                    onChange={(e) => setItemsCount(parseInt(e.target.value) || 1)} 
+                    min={1} 
+                    className="pr-8 py-6" 
+                  />
                   <div className="absolute right-2 top-0 h-full flex flex-col justify-center">
-                    <button className="text-gray-400 hover:text-gray-600">▲</button>
-                    <button className="text-gray-400 hover:text-gray-600">▼</button>
+                    <button 
+                      className="text-gray-400 hover:text-gray-600"
+                      onClick={() => setItemsCount(prev => Math.max(1, prev + 1))}
+                    >
+                      ▲
+                    </button>
+                    <button 
+                      className="text-gray-400 hover:text-gray-600"
+                      onClick={() => setItemsCount(prev => Math.max(1, prev - 1))}
+                    >
+                      ▼
+                    </button>
                   </div>
                 </div>
               </CardContent>
@@ -527,7 +514,16 @@ const CreateOrder = () => {
                 
                 <div className="space-y-4 pt-4">
                   <div className="flex items-center space-x-2 p-3 bg-white rounded-lg border shadow-sm">
-                    <Checkbox id="allow-opening" className="h-5 w-5" />
+                    <Checkbox 
+                      id="allow-opening" 
+                      checked={allowOpening}
+                      onCheckedChange={(checked) => {
+                        if (typeof checked === 'boolean') {
+                          setAllowOpening(checked);
+                        }
+                      }}
+                      className="h-5 w-5" 
+                    />
                     <div className="flex items-center">
                       <label 
                         htmlFor="allow-opening" 
@@ -580,7 +576,13 @@ const CreateOrder = () => {
                       <Label htmlFor="order-reference" className="font-medium">Order reference</Label>
                       <span className="text-xs text-muted-foreground">Optional</span>
                     </div>
-                    <Input id="order-reference" placeholder="For an easier search use a reference code." className="py-6" />
+                    <Input 
+                      id="order-reference" 
+                      placeholder="For an easier search use a reference code." 
+                      className="py-6"
+                      value={orderReference}
+                      onChange={(e) => setOrderReference(e.target.value)}
+                    />
                   </div>
                   
                   <div className="space-y-2 bg-white p-4 rounded-lg border shadow-sm">
@@ -593,6 +595,8 @@ const CreateOrder = () => {
                       placeholder="Please contact the customer before delivering the order." 
                       rows={3} 
                       className="min-h-[100px]"
+                      value={deliveryNotes}
+                      onChange={(e) => setDeliveryNotes(e.target.value)}
                     />
                   </div>
                 </div>
