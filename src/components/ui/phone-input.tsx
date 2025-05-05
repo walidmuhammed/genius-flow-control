@@ -63,9 +63,9 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
     const selectedCountry = countries.find((c) => c.code === countryCode) || countries[0];
 
     const filteredCountries = React.useMemo(() => {
+      if (!countrySearchTerm) return countries;
+      
       return countries.filter((country) => {
-        if (!countrySearchTerm) return true;
-        
         return (
           country.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) ||
           country.dialCode.includes(countrySearchTerm)
