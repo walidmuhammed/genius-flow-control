@@ -165,7 +165,7 @@ const TopBar: React.FC = () => {
                   <span className="font-medium">Schedule Pickup</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="my-1 bg-border/10" />
+              
               <Dialog open={quickCreateDialogOpen} onOpenChange={setQuickCreateDialogOpen}>
                 <DialogTrigger asChild>
                   
