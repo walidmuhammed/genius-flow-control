@@ -237,42 +237,7 @@ const CreateOrder = () => {
                   </>}
                 
                 <div className="space-y-4 pt-4">
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <div className="flex items-center">
-                        <span className="text-sm font-medium">Item Value</span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Info className="h-3.5 w-3.5 ml-1 text-muted-foreground cursor-help" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Declare the value of the items in this shipment</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      <span className="text-xs text-muted-foreground">Optional</span>
-                    </div>
-                    
-                    <div className="flex items-center">
-                      <div className="relative flex-1">
-                        <Tabs defaultValue={currency} value={currency} onValueChange={value => handleCurrencySwitch(value as CurrencyType)} className="absolute left-1 top-1/2 transform -translate-y-1/2 z-10">
-                          <TabsList className="h-6 p-0">
-                            <TabsTrigger className="text-xs px-2 py-0 h-6" value="USD">USD</TabsTrigger>
-                            <TabsTrigger className="text-xs px-2 py-0 h-6" value="LBP">LBP</TabsTrigger>
-                          </TabsList>
-                        </Tabs>
-                        <Input type="number" placeholder="0.00" className="pl-24" />
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-between mt-1">
-                      <Button variant="link" className="text-blue-600 text-sm p-0">
-                        Terms & Conditions
-                      </Button>
-                    </div>
-                  </div>
+                  
                   
                   <div>
                     
