@@ -331,14 +331,9 @@ const CreateOrder = () => {
                 
                 <div className="space-y-4 pt-4">
                   <div>
-                    <div className="mb-1 text-sm font-medium">Return location</div>
+                    
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <p className="text-sm font-medium">Original business location</p>
-                        </div>
-                        <ChevronDown className="h-4 w-4" />
-                      </div>
+                      
                       <p className="text-xs text-muted-foreground">
                         Select the location for your returned package.
                       </p>
