@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Info, Check, Plus, ChevronDown, Search, MapPin } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -17,6 +16,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import PhoneInput from 'react-phone-number-input';
 import { isPossiblePhoneNumber, parsePhoneNumber } from 'libphonenumber-js';
 import 'react-phone-number-input/style.css';
+import { cn } from '@/lib/utils';
 
 // Lebanese governorates and areas
 const lebanonAreas = [{
