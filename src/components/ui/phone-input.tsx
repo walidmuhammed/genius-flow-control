@@ -39,7 +39,6 @@ const countries: CountryData[] = [
   // You can add more countries as needed
 ];
 
-// Fix: Changed the interface to avoid extending InputHTMLAttributes
 export interface PhoneInputProps {
   className?: string;
   value?: string;
@@ -230,26 +229,28 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
                     onValueChange={setCountrySearchTerm} 
                   />
                   <CommandEmpty>No country found.</CommandEmpty>
-                  <CommandGroup>
-                    {filteredCountries.map((country) => (
-                      <CommandItem
-                        key={country.code}
-                        value={`${country.name.toLowerCase()}-${country.dialCode}`}
-                        onSelect={() => {
-                          handleCountryChange(country.code);
-                        }}
-                        className="flex items-center justify-between py-3"
-                      >
-                        <div className="flex items-center">
-                          <span className="mr-2 text-lg">{country.flag}</span>
-                          <span>{country.name}</span>
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {country.dialCode}
-                        </span>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
+                  {filteredCountries.length > 0 ? (
+                    <CommandGroup>
+                      {filteredCountries.map((country) => (
+                        <CommandItem
+                          key={country.code}
+                          value={`${country.name.toLowerCase()}-${country.dialCode}`}
+                          onSelect={() => {
+                            handleCountryChange(country.code);
+                          }}
+                          className="flex items-center justify-between py-3"
+                        >
+                          <div className="flex items-center">
+                            <span className="mr-2 text-lg">{country.flag}</span>
+                            <span>{country.name}</span>
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {country.dialCode}
+                          </span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  ) : null}
                 </Command>
               </PopoverContent>
             </Popover>
