@@ -7,7 +7,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { parsePhoneNumber, isValidPhoneNumber, getCountryCallingCode, CountryCode } from "libphonenumber-js";
-import flags from "libphonenumber-js/metadata.min";
 
 type CountryData = {
   name: string;
@@ -61,6 +60,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
     const [countrySearchTerm, setCountrySearchTerm] = React.useState<string>("");
     const selectedCountry = countries.find((c) => c.code === countryCode) || countries[0];
 
+    // Create a stable reference for filteredCountries to avoid recreation on each render
     const filteredCountries = React.useMemo(() => {
       if (!countrySearchTerm) return countries;
       
@@ -75,6 +75,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
     // Reset the country search when closing the dropdown
     React.useEffect(() => {
       if (!open) {
+        // Use a timeout to ensure state is updated after the dropdown has closed
         setTimeout(() => setCountrySearchTerm(""), 300);
       }
     }, [open]);
@@ -110,7 +111,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
           const nationalNumber = phoneNumber.replace(/^\+\d+\s*/, '');
           const newValue = `${dialCode}${nationalNumber ? ` ${nationalNumber}` : ''}`;
           setInputValue(newValue);
-          onChange?.(newValue);
+          if (onChange) onChange(newValue);
         } catch (error) {
           console.error("Error formatting number with new country code:", error);
         }
@@ -144,7 +145,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
       }
       
       setInputValue(newValue);
-      onChange?.(newValue);
+      if (onChange) onChange(newValue);
 
       // Extract national number for validation
       const nationalNumber = newValue.replace(/^\+\d+\s*/, '');
@@ -198,9 +199,47 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
 
     const errorToShow = error || validationError;
 
-    // The key attribute here ensures we fully recreate the Command component when open changes
-    // This helps avoid stale internal state issues that might cause the "undefined is not iterable" error
-    const commandKey = `command-${open ? 'open' : 'closed'}-${countrySearchTerm}`;
+    // Create a unique key for Command component to ensure it's recreated on relevant prop changes
+    const commandKey = React.useMemo(() => 
+      `command-${open}-${countrySearchTerm}-${filteredCountries.length}`, 
+      [open, countrySearchTerm, filteredCountries.length]
+    );
+
+    // Render country search dropdown only when it's open
+    // This prevents any issues with stale references when the dropdown is closed
+    const renderCountrySearch = () => {
+      if (!open) return null;
+      
+      return (
+        <Command key={commandKey} className="w-full">
+          <CommandInput 
+            placeholder="Search countries or codes" 
+            className="h-9"
+            value={countrySearchTerm}
+            onValueChange={(value) => setCountrySearchTerm(value || "")}
+          />
+          <CommandEmpty>No country found.</CommandEmpty>
+          <CommandGroup>
+            {filteredCountries.map((country) => (
+              <CommandItem
+                key={country.code}
+                value={`${country.name.toLowerCase()}-${country.dialCode}`}
+                onSelect={() => handleCountryChange(country.code)}
+                className="flex items-center justify-between py-3"
+              >
+                <div className="flex items-center">
+                  <span className="mr-2 text-lg">{country.flag}</span>
+                  <span>{country.name}</span>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {country.dialCode}
+                </span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      );
+    };
 
     return (
       <div className="space-y-2">
@@ -225,37 +264,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[300px] p-0 max-h-[400px] overflow-y-auto">
-                <Command key={commandKey} className="w-full">
-                  <CommandInput 
-                    placeholder="Search countries or codes" 
-                    className="h-9"
-                    value={countrySearchTerm}
-                    onValueChange={(value) => {
-                      setCountrySearchTerm(value || "");
-                    }}
-                  />
-                  <CommandEmpty>No country found.</CommandEmpty>
-                  <CommandGroup>
-                    {filteredCountries.map((country) => (
-                      <CommandItem
-                        key={country.code}
-                        value={`${country.name.toLowerCase()}-${country.dialCode}`}
-                        onSelect={() => {
-                          handleCountryChange(country.code);
-                        }}
-                        className="flex items-center justify-between py-3"
-                      >
-                        <div className="flex items-center">
-                          <span className="mr-2 text-lg">{country.flag}</span>
-                          <span>{country.name}</span>
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {country.dialCode}
-                        </span>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </Command>
+                {renderCountrySearch()}
               </PopoverContent>
             </Popover>
             

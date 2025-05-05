@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Info, Check, Plus, ChevronDown, Search, MapPin } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -21,7 +20,46 @@ import { CountryCode } from 'libphonenumber-js';
 
 // Lebanese governorates and areas
 const lebanonAreas = [
-  // ... keep existing code (lebanonAreas array definition)
+  {
+    governorate: "Beirut",
+    areas: [
+      "Achrafieh", "Ain El Mreisseh", "Bachoura", "Badaro", "Corniche El Nahr",
+      "Downtown Beirut", "Gemmayzeh", "Hamra", "Jnah", "Karantina", "Mar Elias",
+      "Mazraa", "Mina El Hosn", "Mousseitbeh", "Ras Beirut", "Rmeil", "Saifi",
+      "Sanayeh", "Zkak El Blat"
+    ]
+  },
+  {
+    governorate: "Mount Lebanon",
+    areas: [
+      "Aley", "Baabda", "Bikfaya", "Broummana", "Choueifat", "Dbayeh", "Jounieh",
+      "Kfarchima", "Metn", "Zalka"
+    ]
+  },
+  {
+    governorate: "North Lebanon",
+    areas: [
+      "Amioun", "Batroun", "Bcharre", "Chekka", "Ehden", "Koura", "Tripoli", "Zgharta"
+    ]
+  },
+  {
+    governorate: "South Lebanon",
+    areas: [
+      "Jezzine", "Saida", "Sour"
+    ]
+  },
+  {
+    governorate: "Beqaa",
+    areas: [
+      "Baalbek", "Hermel", "Joub Jannine", "Zahle"
+    ]
+  },
+  {
+    governorate: "Nabatieh",
+    areas: [
+      "Hasbaya", "Marjayoun", "Nabatieh"
+    ]
+  }
 ];
 
 const CreateOrder = () => {
