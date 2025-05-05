@@ -188,7 +188,7 @@ const CreateOrder = () => {
                   <Label htmlFor="phone" className="font-medium">Phone number</Label>
                   <PhoneInput
                     id="phone"
-                    defaultCountry="LB" as CountryCode
+                    defaultCountry="LB"
                     value={phone}
                     onChange={handlePhoneChange}
                     showLabel={false}
@@ -223,7 +223,7 @@ const CreateOrder = () => {
                     <Label htmlFor="secondary-phone" className="font-medium">Secondary phone</Label>
                     <PhoneInput
                       id="secondary-phone" 
-                      defaultCountry="LB" as CountryCode
+                      defaultCountry="LB"
                       value={secondaryPhone}
                       onChange={handleSecondaryPhoneChange}
                       showLabel={false}

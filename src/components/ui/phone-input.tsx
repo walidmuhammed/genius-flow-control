@@ -39,17 +39,22 @@ const countries: CountryData[] = [
   // You can add more countries as needed
 ];
 
-export interface PhoneInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+// Fix: Changed the interface to avoid extending InputHTMLAttributes
+export interface PhoneInputProps {
+  className?: string;
   value?: string;
   onChange?: (value: string) => void;
   defaultCountry?: CountryCode;
   label?: string;
   error?: string;
   showLabel?: boolean;
+  id?: string;
+  disabled?: boolean;
+  placeholder?: string;
 }
 
 export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ className, value = "", onChange, defaultCountry = "LB", label = "Phone number", error, showLabel = true, ...props }, ref) => {
+  ({ className, value = "", onChange, defaultCountry = "LB", label = "Phone number", error, showLabel = true, id, disabled, placeholder, ...props }, ref) => {
     const [countryCode, setCountryCode] = React.useState<CountryCode>(defaultCountry);
     const [phoneNumber, setPhoneNumber] = React.useState<string>("");
     const [open, setOpen] = React.useState(false);
@@ -210,6 +215,7 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
                   role="combobox"
                   aria-expanded={open}
                   className="h-full px-3 py-2 text-sm flex-shrink-0 border-r border-input font-normal hover:bg-accent"
+                  disabled={disabled}
                 >
                   <span className="mr-2 text-lg">{selectedCountry.flag}</span>
                   <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
@@ -251,13 +257,15 @@ export const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
             <Input
               ref={ref}
               type="tel"
+              id={id}
               className={cn(
                 "border-0 h-full px-3 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent",
                 errorToShow ? "placeholder:text-destructive/50" : ""
               )}
               value={formattedValue}
               onChange={handlePhoneNumberChange}
-              placeholder={`${selectedCountry.dialCode} (___) ___ ____`}
+              placeholder={placeholder || `${selectedCountry.dialCode} (___) ___ ____`}
+              disabled={disabled}
               {...props}
             />
             
