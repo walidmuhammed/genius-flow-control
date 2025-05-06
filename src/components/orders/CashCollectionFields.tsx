@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Info } from 'lucide-react';
+
 interface CashCollectionFieldsProps {
   enabled: boolean;
   onEnabledChange: (enabled: boolean) => void;
@@ -15,6 +17,7 @@ interface CashCollectionFieldsProps {
     lbp: number;
   };
 }
+
 const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
   enabled,
   onEnabledChange,
@@ -76,46 +79,96 @@ const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
       onLbpAmountChange('0');
     }
   };
-  return <div className="space-y-4">
-      <div className="flex items-center space-x-2 mb-4">
-        <Checkbox id="cash-collection" checked={enabled} onCheckedChange={handleToggle} />
-        <div className="space-y-1">
-          <label htmlFor="cash-collection" className="text-sm font-medium leading-none">
+
+  return (
+    <div className="space-y-4 animate-fade-in">
+      <div className="flex items-start space-x-3 mb-5">
+        <Checkbox 
+          id="cash-collection"
+          checked={enabled}
+          onCheckedChange={handleToggle}
+          className="mt-1"
+        />
+        <div className="space-y-1.5">
+          <label 
+            htmlFor="cash-collection" 
+            className="text-base font-medium leading-none cursor-pointer"
+          >
             Cash collection
           </label>
-          <p className="text-xs text-gray-500">
+          <p className="text-sm text-gray-500">
             Your customer shall pay this amount to courier upon delivery.
           </p>
         </div>
       </div>
       
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <Label>USD Amount</Label>
-          <Input type="text" value={usdAmount} onChange={handleUsdChange} placeholder="0.00" disabled={!enabled} className={!enabled ? "opacity-50" : ""} />
+      <div className="space-y-5 pl-7">
+        <div className="space-y-2.5 transition-opacity duration-200" style={{ opacity: enabled ? 1 : 0.6 }}>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="usd-amount" className="text-sm font-medium">USD Amount</Label>
+            {enabled && parseFloat(usdAmount) > 0 && (
+              <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                Active
+              </span>
+            )}
+          </div>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+            <Input
+              id="usd-amount"
+              type="text"
+              value={usdAmount}
+              onChange={handleUsdChange}
+              placeholder="0.00"
+              disabled={!enabled}
+              className="pl-7 transition-all border-gray-200 focus:border-primary/50"
+            />
+          </div>
         </div>
         
-        <div className="space-y-2">
-          <Label>LBP Amount</Label>
-          <Input type="text" value={lbpAmount} onChange={handleLbpChange} placeholder="0" disabled={!enabled} className={!enabled ? "opacity-50" : ""} />
+        <div className="space-y-2.5 transition-opacity duration-200" style={{ opacity: enabled ? 1 : 0.6 }}>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="lbp-amount" className="text-sm font-medium">LBP Amount</Label>
+            {enabled && parseFloat(lbpAmount) > 0 && (
+              <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded-full border border-green-100">
+                Active
+              </span>
+            )}
+          </div>
+          <Input
+            id="lbp-amount"
+            type="text"
+            value={lbpAmount}
+            onChange={handleLbpChange}
+            placeholder="0"
+            disabled={!enabled}
+            className="transition-all border-gray-200 focus:border-primary/50"
+          />
         </div>
         
-        {validationError && <div className="text-sm text-red-500 mt-2 flex items-center gap-1">
-            <Info className="h-4 w-4" />
+        {validationError && (
+          <div className="text-sm text-red-500 flex items-center gap-1.5 bg-red-50 p-2.5 rounded-md border border-red-100">
+            <Info className="h-4 w-4 flex-shrink-0" />
             <span>{validationError}</span>
-          </div>}
+          </div>
+        )}
         
-        <div className="space-y-2 mt-4">
-          <Label className="text-gray-600">Delivery Fees</Label>
-          <div className="bg-gray-50 border border-gray-200 p-3 rounded-md space-y-1">
-            <div className="flex justify-between">
-              <span className="text-gray-600">USD:</span>
-              <span className="font-medium px-[12px]">${formatCurrency(deliveryFees.usd)}</span>
+        <div className="space-y-3 pt-2">
+          <Label className="text-sm font-medium text-gray-700">Delivery Fees</Label>
+          <div className="bg-gray-50 border border-gray-200 p-4 rounded-md space-y-2 transition-all hover:bg-gray-100/50">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">USD:</span>
+              <span className="font-medium text-gray-800">${formatCurrency(deliveryFees.usd)}</span>
             </div>
-            
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">LBP:</span>
+              <span className="font-medium text-gray-800">{formatCurrency(deliveryFees.lbp)} LBP</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default CashCollectionFields;

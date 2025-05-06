@@ -1,57 +1,58 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { format } from 'date-fns';
-import { Check, Clock, AlertTriangle, Package, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import ActivityLog, { ActivityLogItem } from '@/components/shared/ActivityLog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 
-interface PickupData {
+export interface Pickup {
   id: string;
-  status: "Scheduled" | "Completed" | "Canceled" | "In Progress";
-  location: string;
-  address: string;
-  contactPerson: string;
-  contactPhone: string;
-  pickupDate: string;
-  courier: {
+  storeId: string;
+  storeName: string;
+  address: {
+    city: string;
+    area: string;
+    details: string;
+  };
+  contact: {
     name: string;
     phone: string;
   };
-  requested: boolean;
-  pickedUp: boolean;
-  validated: boolean;
-  note?: string;
+  numberOfOrders: number;
+  status: 'Scheduled' | 'On the way' | 'Completed' | 'Cancelled' | 'Failed';
+  scheduledTime: string;
+  driver?: {
+    name: string;
+    phone: string;
+    vehicleInfo?: string;
+  };
+  notes?: string;
 }
 
 interface PickupDetailsDialogProps {
-  pickup: PickupData | null;
+  pickup: Pickup | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-interface ActivityLog {
-  timestamp: string;
-  user: string;
-  action: string;
-}
-
 // Mock activity logs for demonstration
-const mockActivityLogs: ActivityLog[] = [
+const mockActivityLogs: ActivityLogItem[] = [
   {
-    timestamp: '2025-05-04T10:00:00Z',
+    timestamp: '2025-05-05T10:30:00Z',
     user: 'Admin',
     action: 'Pickup scheduled'
   },
   {
-    timestamp: '2025-05-04T11:30:00Z',
+    timestamp: '2025-05-05T11:15:00Z',
     user: 'System',
     action: 'Driver assigned: Mohammed Ali'
   },
   {
-    timestamp: '2025-05-04T13:45:00Z',
+    timestamp: '2025-05-05T12:40:00Z',
     user: 'Driver: Mohammed Ali',
     action: 'On the way to pickup location'
   }
@@ -63,210 +64,148 @@ const PickupDetailsDialog: React.FC<PickupDetailsDialogProps> = ({
   onOpenChange
 }) => {
   if (!pickup) return null;
-
-  // Determine progress status
-  const getProgressPercentage = () => {
+  
+  const getStatusBadge = () => {
     switch (pickup.status) {
       case 'Scheduled':
-        return 25;
-      case 'In Progress':
-        return 50;
+        return <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">Scheduled</Badge>;
+      case 'On the way':
+        return <Badge variant="outline" className="bg-yellow-50 border-yellow-200 text-yellow-700">On the way</Badge>;
       case 'Completed':
-        return 100;
-      case 'Canceled':
-        return 100; // Still 100% complete, just with a different outcome
+        return <Badge variant="outline" className="bg-emerald-50 border-emerald-200 text-emerald-700">Completed</Badge>;
+      case 'Cancelled':
+        return <Badge variant="outline" className="bg-red-50 border-red-200 text-red-700">Cancelled</Badge>;
+      case 'Failed':
+        return <Badge variant="outline" className="bg-gray-50 border-gray-200 text-gray-700">Failed</Badge>;
       default:
-        return 0;
-    }
-  };
-
-  // Get status icon
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'Scheduled':
-        return <Clock className="h-5 w-5" />;
-      case 'In Progress':
-        return <Package className="h-5 w-5" />;
-      case 'Completed':
-        return <Check className="h-5 w-5" />;
-      case 'Canceled':
-        return <X className="h-5 w-5" />;
-      default:
-        return <Clock className="h-5 w-5" />;
-    }
-  };
-
-  // Get status color
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Scheduled':
-        return 'bg-blue-500';
-      case 'In Progress':
-        return 'bg-yellow-500';
-      case 'Completed':
-        return 'bg-green-500';
-      case 'Canceled':
-        return 'bg-red-500';
-      default:
-        return 'bg-gray-500';
+        return <Badge variant="outline">Unknown</Badge>;
     }
   };
   
-  const progressSteps = ['Scheduled', 'In Progress', 'Completed'];
-  if (pickup.status === 'Canceled') {
-    progressSteps[2] = 'Canceled';
-  }
-  
-  const currentStepIndex = progressSteps.findIndex(step => 
-    step.toLowerCase() === pickup.status.toLowerCase()
-  );
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Scheduled':
-        return <Badge className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full">Scheduled</Badge>;
-      case 'In Progress':
-        return <Badge className="bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full">In Progress</Badge>;
-      case 'Completed':
-        return <Badge className="bg-green-50 text-green-700 px-2 py-1 rounded-full">Completed</Badge>;
-      case 'Canceled':
-        return <Badge className="bg-red-50 text-red-700 px-2 py-1 rounded-full">Canceled</Badge>;
-      default:
-        return <Badge className="bg-gray-50 text-gray-700 px-2 py-1 rounded-full">{status}</Badge>;
+  const getProgressPercentage = () => {
+    switch (pickup.status) {
+      case 'Scheduled': return 25;
+      case 'On the way': return 50;
+      case 'Completed': return 100;
+      case 'Cancelled': return 100;
+      case 'Failed': return 100;
+      default: return 0;
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl flex items-center gap-2">
-            Pickup #{pickup.id}
-            {getStatusBadge(pickup.status)}
-          </DialogTitle>
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-0">
+        <DialogHeader className="sticky top-0 z-10 bg-white shadow-sm px-6 py-4 border-b">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-xl flex items-center gap-2 font-semibold">
+              Pickup #{pickup.id}
+            </DialogTitle>
+            {getStatusBadge()}
+          </div>
         </DialogHeader>
         
-        <div className="space-y-6 py-4">
-          {/* Pickup Summary Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Location</h3>
-              <p className="font-medium">{pickup.location}</p>
-              <p className="text-gray-600 text-sm">{pickup.address}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Contact Person</h3>
-              <p className="font-medium">{pickup.contactPerson}</p>
-              <p className="text-gray-600 text-sm">{pickup.contactPhone}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Pickup Date</h3>
-              <p className="font-medium">{pickup.pickupDate}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Courier</h3>
-              <p className="font-medium">{pickup.courier.name}</p>
-              <p className="text-gray-600 text-sm">{pickup.courier.phone}</p>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Status Summary Section */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="flex flex-col items-center">
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Requested</h3>
-              <Badge className={pickup.requested ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                {pickup.requested ? 'Yes' : 'No'}
-              </Badge>
-            </div>
-            <div className="flex flex-col items-center">
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Picked Up</h3>
-              <Badge className={pickup.pickedUp ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                {pickup.pickedUp ? 'Yes' : 'No'}
-              </Badge>
-            </div>
-            <div className="flex flex-col items-center">
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Validated</h3>
-              <Badge className={pickup.validated ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                {pickup.validated ? 'Yes' : 'No'}
-              </Badge>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Progress Tracking Section */}
-          <div>
-            <h3 className="text-base font-medium mb-4">Pickup Progress</h3>
-            <div className="mb-2">
-              <Progress value={getProgressPercentage()} className="h-3" />
-            </div>
-            
-            <div className="flex justify-between mt-4">
-              {progressSteps.map((step, index) => (
-                <div 
-                  key={index} 
-                  className={cn(
-                    "flex flex-col items-center", 
-                    index <= currentStepIndex ? "opacity-100" : "opacity-50"
-                  )}
-                  style={{ width: `${100 / progressSteps.length}%` }}
-                >
-                  <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center mb-2 text-white",
-                    index <= currentStepIndex ? getStatusColor(
-                      index === 2 && pickup.status === 'Canceled' ? 'Canceled' : step
-                    ) : "bg-gray-200"
-                  )}>
-                    {getStatusIcon(
-                      index === 2 && pickup.status === 'Canceled' ? 'Canceled' : step
-                    )}
-                  </div>
-                  <span className="text-xs text-center">{step}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Notes Section */}
-          {pickup.note && (
-            <>
-              <div>
-                <h3 className="text-base font-medium mb-2">Notes</h3>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-sm text-gray-700">{pickup.note}</p>
-                </div>
+        <Tabs defaultValue="details" className="px-6 py-5">
+          <TabsList className="mb-4 bg-gray-100/80 p-1 rounded-lg">
+            <TabsTrigger value="details" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              Pickup Details
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              Activity Log
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="details" className="space-y-7 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-gray-500">Store</h3>
+                <p className="font-medium text-gray-900">{pickup.storeName}</p>
+                <p className="text-gray-600 text-sm">ID: {pickup.storeId}</p>
               </div>
-              <Separator />
-            </>
-          )}
+              
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-gray-500">Address</h3>
+                <p className="font-medium text-gray-900">{pickup.address.city}, {pickup.address.area}</p>
+                <p className="text-gray-600 text-sm">{pickup.address.details}</p>
+              </div>
+              
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-gray-500">Contact</h3>
+                <p className="font-medium text-gray-900">{pickup.contact.name}</p>
+                <p className="text-gray-600 text-sm">{pickup.contact.phone}</p>
+              </div>
+              
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-gray-500">Scheduled Time</h3>
+                <p className="font-medium text-gray-900">{format(new Date(pickup.scheduledTime), 'PPP pp')}</p>
+              </div>
+            </div>
 
-          {/* Activity Log Section */}
-          <div>
-            <h3 className="text-base font-medium mb-4">Activity Log</h3>
-            <div className="space-y-4">
-              {mockActivityLogs.map((log, index) => (
-                <div key={index} className="flex gap-4">
-                  <div className="min-w-8 flex-shrink-0">
-                    <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
-                      <Clock className="h-4 w-4 text-gray-500" />
+            <div className="bg-gray-50/50 border border-gray-100 rounded-lg p-4">
+              <div className="flex justify-between mb-2">
+                <h3 className="text-sm font-medium text-gray-800">Pickup Progress</h3>
+                <span className="text-sm text-gray-500">{pickup.status}</span>
+              </div>
+              <Progress value={getProgressPercentage()} className="h-2" />
+            </div>
+
+            {pickup.driver && (
+              <>
+                <Separator />
+                <div className="space-y-3">
+                  <h3 className="text-base font-medium text-gray-800">Driver Information</h3>
+                  <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Driver Name</p>
+                        <p className="font-medium">{pickup.driver.name}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Contact Number</p>
+                        <p className="font-medium">{pickup.driver.phone}</p>
+                      </div>
+                      {pickup.driver.vehicleInfo && (
+                        <div className="space-y-1 col-span-2">
+                          <p className="text-sm text-gray-500">Vehicle Information</p>
+                          <p className="font-medium">{pickup.driver.vehicleInfo}</p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div className="flex-1 pb-4 border-b border-gray-100">
-                    <div className="flex flex-col sm:flex-row sm:justify-between mb-1">
-                      <p className="font-medium text-gray-900">{log.user}</p>
-                      <p className="text-xs text-gray-500">{format(new Date(log.timestamp), 'PPP p')}</p>
-                    </div>
-                    <p className="text-sm text-gray-700">{log.action}</p>
                   </div>
                 </div>
-              ))}
+              </>
+            )}
+
+            <div className="flex items-center justify-between bg-blue-50 border border-blue-100 rounded-lg p-4">
+              <div>
+                <h3 className="text-base font-medium text-blue-800">Orders to Pickup</h3>
+                <p className="text-sm text-blue-600 mt-1">Total orders included in this pickup</p>
+              </div>
+              <div className="bg-white border border-blue-200 rounded-full px-4 py-2 text-xl font-semibold text-blue-700 shadow-sm">
+                {pickup.numberOfOrders}
+              </div>
             </div>
-          </div>
-        </div>
+
+            {pickup.notes && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <h3 className="text-base font-medium text-gray-800">Notes</h3>
+                  <div className="bg-yellow-50 border border-yellow-100 p-4 rounded-lg">
+                    <p className="text-sm text-gray-700">{pickup.notes}</p>
+                  </div>
+                </div>
+              </>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="activity" className="animate-fade-in">
+            <div className="bg-white rounded-lg border border-gray-100 p-6">
+              <h3 className="text-lg font-medium text-gray-800 mb-6">Activity Log</h3>
+              <ActivityLog items={mockActivityLogs} />
+            </div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

@@ -1,13 +1,14 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Order, OrderStatus } from '@/components/orders/OrdersTableRow';
-import { Progress } from '@/components/ui/progress';
-import { Check, Clock, AlertTriangle, Package, ArrowRight, ArrowDown, DollarSign } from 'lucide-react';
+import { Order } from '@/components/orders/OrdersTableRow';
+import OrderProgressBar from './OrderProgressBar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import ActivityLog, { ActivityLogItem } from '@/components/shared/ActivityLog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface OrderDetailsDialogProps {
   order: Order | null;
@@ -15,14 +16,8 @@ interface OrderDetailsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface ActivityLog {
-  timestamp: string;
-  user: string;
-  action: string;
-}
-
 // Mock activity logs for demonstration
-const mockActivityLogs: ActivityLog[] = [
+const mockActivityLogs: ActivityLogItem[] = [
   {
     timestamp: '2025-05-05T14:30:00Z',
     user: 'Admin',
@@ -59,197 +54,122 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     });
   };
 
-  // Determine progress path based on order type and status
-  const getProgressSteps = () => {
-    let steps: OrderStatus[] = [];
-    if (order.type === 'Exchange') {
-      steps = ['New', 'Pending Pickup', 'In Progress', 'Successful', 'Returned', 'Paid'];
-    } else if (order.status === 'Unsuccessful' || order.status === 'Returned') {
-      steps = ['New', 'Pending Pickup', 'In Progress', 'Unsuccessful', 'Returned', 'Paid'];
-    } else {
-      steps = ['New', 'Pending Pickup', 'In Progress', 'Successful', 'Paid'];
-    }
-    return steps;
-  };
-
-  const progressSteps = getProgressSteps();
-  const currentStepIndex = progressSteps.indexOf(order.status);
-  const progressPercentage = ((currentStepIndex + 1) / progressSteps.length) * 100;
-
-  const getStatusIcon = (status: OrderStatus) => {
-    switch (status) {
-      case 'New':
-        return <Package className="h-5 w-5" />;
-      case 'Pending Pickup':
-        return <Clock className="h-5 w-5" />;
-      case 'In Progress':
-        return <ArrowRight className="h-5 w-5" />;
-      case 'Heading to Customer':
-        return <ArrowRight className="h-5 w-5" />;
-      case 'Heading to You':
-        return <ArrowDown className="h-5 w-5" />;
-      case 'Successful':
-        return <Check className="h-5 w-5" />;
-      case 'Unsuccessful':
-        return <AlertTriangle className="h-5 w-5" />;
-      case 'Returned':
-        return <ArrowDown className="h-5 w-5" />;
-      case 'Paid':
-        return <DollarSign className="h-5 w-5" />;
-      default:
-        return <Package className="h-5 w-5" />;
-    }
-  };
-
-  const getStatusColor = (status: OrderStatus) => {
-    switch (status) {
-      case 'New':
-        return 'bg-blue-500';
-      case 'Pending Pickup':
-        return 'bg-orange-500';
-      case 'In Progress':
-        return 'bg-yellow-500';
-      case 'Heading to Customer':
-        return 'bg-green-500';
-      case 'Heading to You':
-        return 'bg-teal-500';
-      case 'Successful':
-        return 'bg-emerald-500';
-      case 'Unsuccessful':
-        return 'bg-red-500';
-      case 'Returned':
-        return 'bg-sky-500';
-      case 'Paid':
-        return 'bg-indigo-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl flex items-center gap-2">
-            Order #{order.id} 
-            <Badge className="ml-2 bg-gray-100 text-gray-700">{order.type}</Badge>
-          </DialogTitle>
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-0">
+        <DialogHeader className="sticky top-0 z-10 bg-white shadow-sm px-6 py-4 border-b">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-xl flex items-center gap-2 font-semibold">
+              Order #{order.id}
+            </DialogTitle>
+            <Badge variant="outline" className="bg-gray-100 text-gray-700 font-medium">
+              {order.type}
+            </Badge>
+          </div>
         </DialogHeader>
         
-        <div className="space-y-6 py-4">
-          {/* Order Summary Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Customer</h3>
-              <p className="font-medium">{order.customer.name}</p>
-              <p className="text-gray-600 text-sm">{order.customer.phone}</p>
+        <Tabs defaultValue="details" className="px-6 py-5">
+          <TabsList className="mb-4 bg-gray-100/80 p-1 rounded-lg">
+            <TabsTrigger value="details" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              Order Details
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              Activity Log
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="details" className="space-y-7 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-gray-500">Customer</h3>
+                <p className="font-medium text-gray-900">{order.customer.name}</p>
+                <p className="text-gray-600 text-sm">{order.customer.phone}</p>
+              </div>
+              
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-gray-500">Location</h3>
+                <p className="font-medium text-gray-900">{order.location.city}</p>
+                <p className="text-gray-600 text-sm">{order.location.area}</p>
+              </div>
+              
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-gray-500">Reference Number</h3>
+                <p className="font-medium text-gray-900">{order.referenceNumber}</p>
+              </div>
+              
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-gray-500">Last Update</h3>
+                <p className="font-medium text-gray-900">{format(new Date(order.lastUpdate), 'PPP pp')}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Location</h3>
-              <p className="font-medium">{order.location.city}</p>
-              <p className="text-gray-600 text-sm">{order.location.area}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Reference Number</h3>
-              <p className="font-medium">{order.referenceNumber}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Last Update</h3>
-              <p className="font-medium">{format(new Date(order.lastUpdate), 'PPP pp')}</p>
-            </div>
-          </div>
 
-          <Separator />
-
-          {/* Payment Info Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Amount to Collect</h3>
-              {order.amount.valueUSD > 0 || order.amount.valueLBP > 0 ? (
-                <div>
-                  <p className="font-medium">${formatCurrency(order.amount.valueUSD)}</p>
-                  <p className="text-gray-600 text-sm">{formatCurrency(order.amount.valueLBP)} LBP</p>
-                </div>
-              ) : (
-                <p className="text-gray-600">No amount to collect</p>
-              )}
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-500 mb-2">Delivery Charge</h3>
-              <p className="font-medium">${formatCurrency(order.deliveryCharge.valueUSD)}</p>
-              <p className="text-gray-600 text-sm">{formatCurrency(order.deliveryCharge.valueLBP)} LBP</p>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Progress Tracking Section */}
-          <div>
-            <h3 className="text-base font-medium mb-4">Order Progress</h3>
-            <div className="mb-2">
-              <Progress value={progressPercentage} className="h-3" />
-            </div>
+            <Separator />
             
-            <div className="flex justify-between mt-4">
-              {progressSteps.map((step, index) => (
-                <div 
-                  key={index} 
-                  className={cn(
-                    "flex flex-col items-center", 
-                    index <= currentStepIndex ? "opacity-100" : "opacity-50"
-                  )}
-                  style={{ width: `${100 / progressSteps.length}%` }}
-                >
-                  <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center mb-2 text-white",
-                    index <= currentStepIndex ? getStatusColor(step) : "bg-gray-200"
-                  )}>
-                    {getStatusIcon(step)}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-gray-500">Amount to Collect</h3>
+                {order.amount.valueUSD > 0 || order.amount.valueLBP > 0 ? (
+                  <div className="space-y-0.5 mt-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">USD</Badge>
+                      <p className="font-medium text-gray-900">${formatCurrency(order.amount.valueUSD)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">LBP</Badge>
+                      <p className="text-gray-900">{formatCurrency(order.amount.valueLBP)} LBP</p>
+                    </div>
                   </div>
-                  <span className="text-xs text-center">{step}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Notes Section */}
-          {order.note && (
-            <>
-              <div>
-                <h3 className="text-base font-medium mb-2">Notes</h3>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-sm text-gray-700">{order.note}</p>
+                ) : (
+                  <p className="text-gray-500 italic mt-2">No amount to collect</p>
+                )}
+              </div>
+              
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-gray-500">Delivery Charge</h3>
+                <div className="space-y-0.5 mt-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">USD</Badge>
+                    <p className="font-medium text-gray-900">${formatCurrency(order.deliveryCharge.valueUSD)}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">LBP</Badge>
+                    <p className="text-gray-900">{formatCurrency(order.deliveryCharge.valueLBP)} LBP</p>
+                  </div>
                 </div>
               </div>
-              <Separator />
-            </>
-          )}
+            </div>
 
-          {/* Activity Log Section */}
-          <div>
-            <h3 className="text-base font-medium mb-4">Activity Log</h3>
+            <Separator />
+
             <div className="space-y-4">
-              {mockActivityLogs.map((log, index) => (
-                <div key={index} className="flex gap-4">
-                  <div className="min-w-8 flex-shrink-0">
-                    <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
-                      <Clock className="h-4 w-4 text-gray-500" />
-                    </div>
-                  </div>
-                  <div className="flex-1 pb-4 border-b border-gray-100">
-                    <div className="flex flex-col sm:flex-row sm:justify-between mb-1">
-                      <p className="font-medium text-gray-900">{log.user}</p>
-                      <p className="text-xs text-gray-500">{format(new Date(log.timestamp), 'PPP p')}</p>
-                    </div>
-                    <p className="text-sm text-gray-700">{log.action}</p>
+              <h3 className="text-base font-medium text-gray-800">Order Progress</h3>
+              <OrderProgressBar 
+                status={order.status} 
+                type={order.type}
+                className="py-4"
+              />
+            </div>
+
+            {order.note && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <h3 className="text-base font-medium text-gray-800">Notes</h3>
+                  <div className="bg-yellow-50 border border-yellow-100 p-4 rounded-lg">
+                    <p className="text-sm text-gray-700">{order.note}</p>
                   </div>
                 </div>
-              ))}
+              </>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="activity" className="animate-fade-in">
+            <div className="bg-white rounded-lg border border-gray-100 p-6">
+              <h3 className="text-lg font-medium text-gray-800 mb-6">Activity Log</h3>
+              <ActivityLog items={mockActivityLogs} />
             </div>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
