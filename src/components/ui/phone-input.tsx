@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronDown, Flag, Search } from "lucide-react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import { CountryCode, parsePhoneNumber, getCountryCallingCode, AsYouType, isValidNumberForRegion } from "libphonenumber-js";
 import flags from "libphonenumber-js/metadata.min.json";
 import { Button } from "@/components/ui/button";
@@ -192,7 +192,7 @@ export function PhoneInput({
           <PopoverContent className="p-0 w-[280px]" align="start" side="bottom">
             {open && (
               <Command>
-                <CommandInput placeholder="Search country..." autoFocus className="h-9">
+                <CommandInput placeholder="Search country..." autoFocus>
                   <Search className="h-3.5 w-3.5 text-muted-foreground" />
                 </CommandInput>
                 <CommandList>
