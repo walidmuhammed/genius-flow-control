@@ -191,10 +191,7 @@ const CreateOrder = () => {
                   </div>
                 </div>
                 
-                {!additionalInfo && <Button type="button" variant="outline" className="text-sm flex items-center gap-1" onClick={() => setAdditionalInfo(true)}>
-                    <Plus className="h-3.5 w-3.5" />
-                    Add additional information
-                  </Button>}
+                {!additionalInfo}
                 
                 {additionalInfo && <div className="space-y-2">
                     <div className="flex justify-between">
