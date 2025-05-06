@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -192,9 +191,7 @@ export function PhoneInput({
           <PopoverContent className="p-0 w-[280px]" align="start" side="bottom">
             {open && (
               <Command>
-                <CommandInput placeholder="Search country..." autoFocus>
-                  <Search className="h-3.5 w-3.5 text-muted-foreground" />
-                </CommandInput>
+                <CommandInput placeholder="Search country..." autoFocus />
                 <CommandList>
                   <CommandEmpty>No country found.</CommandEmpty>
                   <CommandGroup>
