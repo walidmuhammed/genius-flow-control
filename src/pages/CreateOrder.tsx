@@ -147,11 +147,7 @@ const CreateOrder = () => {
                     Add a secondary phone
                   </Button>}
 
-                {isSecondaryPhone && <div className="space-y-2">
-                    <Label htmlFor="secondary-phone">Secondary phone</Label>
-                    <PhoneInput international defaultCountry="LB" value={secondaryPhone} onChange={handleSecondaryPhoneChange} inputComponent={Input} className="w-full" />
-                    {secondaryPhoneError && <p className="text-xs text-destructive mt-1">{secondaryPhoneError}</p>}
-                  </div>}
+                {isSecondaryPhone}
                 
                 <div className="space-y-2">
                   <Label htmlFor="area">Area</Label>
