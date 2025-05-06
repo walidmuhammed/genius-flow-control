@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Bell, Search, Calendar, ChevronDown, Plus } from 'lucide-react';
+import { Bell, Search, Calendar, ChevronDown, Plus, Package } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
