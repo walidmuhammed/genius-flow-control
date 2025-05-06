@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, Info, Check, Plus, ChevronDown, Search, MapPin } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -58,28 +57,23 @@ const CreateOrder = () => {
   const [lbpAmount, setLbpAmount] = useState<string>('0');
   const [phoneValid, setPhoneValid] = useState<boolean>(false);
   const [secondaryPhoneValid, setSecondaryPhoneValid] = useState<boolean>(false);
-
   const handleCloseModal = () => {
     // In a real application, this would navigate back or close the modal
     console.log('Close modal');
   };
-  
   const handleSubmit = (createAnother: boolean = false) => {
     console.log('Order submitted, create another:', createAnother);
     // In a real application, this would submit the form data to the backend
   };
-
   const handleSelectArea = (governorate: string, area: string) => {
     setSelectedGovernorate(governorate);
     setSelectedArea(area);
     setIsAreaDialogOpen(false);
   };
-  
   const filteredAreas = searchArea.length > 0 ? lebanonAreas.map(gov => ({
     governorate: gov.governorate,
     areas: gov.areas.filter(area => area.toLowerCase().includes(searchArea.toLowerCase()) || gov.governorate.toLowerCase().includes(searchArea.toLowerCase()))
   })).filter(gov => gov.areas.length > 0) : lebanonAreas;
-  
   return <MainLayout className="p-0">
       <div className="flex flex-col h-full">
         <div className="border-b bg-white px-6 py-4 flex items-center justify-between">
@@ -110,14 +104,7 @@ const CreateOrder = () => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone number</Label>
-                  <PhoneInput
-                    id="phone"
-                    value={phone}
-                    onChange={setPhone}
-                    defaultCountry="LB"
-                    onValidationChange={setPhoneValid}
-                    placeholder="Enter phone number"
-                  />
+                  <PhoneInput id="phone" value={phone} onChange={setPhone} defaultCountry="LB" onValidationChange={setPhoneValid} placeholder="Enter phone number" />
                 </div>
                 
                 <div className="space-y-2">
@@ -125,42 +112,22 @@ const CreateOrder = () => {
                   <Input id="name" placeholder="Enter customer name" />
                 </div>
                 
-                {!isSecondaryPhone && (
-                  <div>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      className="text-sm flex items-center gap-1"
-                      onClick={() => setIsSecondaryPhone(true)}
-                    >
+                {!isSecondaryPhone && <div>
+                    <Button type="button" variant="outline" className="text-sm flex items-center gap-1" onClick={() => setIsSecondaryPhone(true)}>
                       <Plus className="h-3.5 w-3.5" />
                       Add secondary phone number
                     </Button>
-                  </div>
-                )}
+                  </div>}
 
-                {isSecondaryPhone && (
-                  <div className="space-y-2">
+                {isSecondaryPhone && <div className="space-y-2">
                     <div className="flex justify-between">
                       <Label htmlFor="secondary-phone">Secondary phone</Label>
-                      <Button 
-                        variant="link" 
-                        className="text-xs text-muted-foreground h-auto p-0"
-                        onClick={() => setIsSecondaryPhone(false)}
-                      >
+                      <Button variant="link" className="text-xs text-muted-foreground h-auto p-0" onClick={() => setIsSecondaryPhone(false)}>
                         Remove
                       </Button>
                     </div>
-                    <PhoneInput
-                      id="secondary-phone"
-                      value={secondaryPhone}
-                      onChange={setSecondaryPhone}
-                      defaultCountry="LB"
-                      onValidationChange={setSecondaryPhoneValid}
-                      placeholder="Enter secondary phone"
-                    />
-                  </div>
-                )}
+                    <PhoneInput id="secondary-phone" value={secondaryPhone} onChange={setSecondaryPhone} defaultCountry="LB" onValidationChange={setSecondaryPhoneValid} placeholder="Enter secondary phone" />
+                  </div>}
                 
                 <div className="space-y-2">
                   <Label htmlFor="area">Area</Label>
@@ -224,30 +191,19 @@ const CreateOrder = () => {
                   </div>
                 </div>
                 
-                {!additionalInfo && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="text-sm flex items-center gap-1"
-                    onClick={() => setAdditionalInfo(true)}
-                  >
+                {!additionalInfo && <Button type="button" variant="outline" className="text-sm flex items-center gap-1" onClick={() => setAdditionalInfo(true)}>
                     <Plus className="h-3.5 w-3.5" />
                     Add additional information
-                  </Button>
-                )}
+                  </Button>}
                 
                 {additionalInfo && <div className="space-y-2">
                     <div className="flex justify-between">
                       <Label htmlFor="additional-info">Additional Information</Label>
-                      <Button 
-                        variant="link" 
-                        className="text-xs text-muted-foreground h-auto p-0"
-                        onClick={() => setAdditionalInfo(false)}
-                      >
+                      <Button variant="link" className="text-xs text-muted-foreground h-auto p-0" onClick={() => setAdditionalInfo(false)}>
                         Remove
                       </Button>
                     </div>
-                    <Textarea id="additional-info" placeholder="Enter any additional information" />
+                    
                   </div>}
               </CardContent>
             </Card>
