@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowUp, ArrowDown, Package, Check, Clock, AlertTriangle, DollarSign, ChevronRight } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,189 +7,228 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Order } from '@/components/orders/OrdersTableRow';
-import OrderDetailsDialog from '@/components/orders/OrderDetailsDialog';
 import OrdersTable from '@/components/orders/OrdersTable';
+import OrderDetailsDialog from '@/components/orders/OrderDetailsDialog';
 import PickupDetailsDialog from '@/components/pickups/PickupDetailsDialog';
+import { useOrders, useOrdersByStatus } from '@/hooks/use-orders';
+import { usePickups } from '@/hooks/use-pickups';
+import { Order, OrderWithCustomer } from '@/services/orders';
+import { Pickup } from '@/services/pickups';
+import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from "@/integrations/supabase/client";
+
+// Mapping function to convert Supabase order data to the format expected by OrdersTableRow
+const mapOrderToTableFormat = (order: OrderWithCustomer): Order => {
+  return {
+    id: order.id,
+    referenceNumber: order.reference_number,
+    type: order.type,
+    customer: {
+      name: order.customer.name,
+      phone: order.customer.phone
+    },
+    location: {
+      city: order.customer.city_name || '',
+      area: order.customer.governorate_name || ''
+    },
+    amount: {
+      valueLBP: Number(order.cash_collection_lbp),
+      valueUSD: Number(order.cash_collection_usd)
+    },
+    deliveryCharge: {
+      valueLBP: Number(order.delivery_fees_lbp),
+      valueUSD: Number(order.delivery_fees_usd)
+    },
+    status: order.status,
+    lastUpdate: order.updated_at,
+    note: order.note
+  };
+};
 
 const Dashboard: React.FC = () => {
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
-  const [selectedPickup, setSelectedPickup] = useState<any>(null);
+  const [selectedPickup, setSelectedPickup] = useState<Pickup | null>(null);
   const [pickupDetailsOpen, setPickupDetailsOpen] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-
-  const currentTime = new Date().toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
-  // Mock data for the dashboard
-  const dashboardData = {
-    newOrders: {
-      value: 78
-    },
-    delivered: {
-      value: 485
-    },
-    inProgress: {
-      value: 164
-    },
-    failedOrders: {
-      value: 24
-    },
-    averageOrderValue: {
-      value: "$142.58"
-    },
+  const [dashboardStats, setDashboardStats] = useState({
+    newOrders: { value: 0 },
+    delivered: { value: 0 },
+    inProgress: { value: 0 },
+    failedOrders: { value: 0 },
+    averageOrderValue: { value: "$0.00" },
     collectedCash: {
-      usd: 32450,
-      lbp: 875400000
+      usd: 0,
+      lbp: 0
+    }
+  });
+
+  // Fetch recent orders
+  const { 
+    data: recentOrders, 
+    isLoading: ordersLoading, 
+    error: ordersError 
+  } = useOrdersByStatus('New');
+  
+  // Fetch upcoming pickups
+  const { 
+    data: pickups, 
+    isLoading: pickupsLoading, 
+    error: pickupsError 
+  } = usePickups();
+
+  useEffect(() => {
+    if (ordersError) {
+      toast.error("Failed to load recent orders");
+      console.error(ordersError);
+    }
+    
+    if (pickupsError) {
+      toast.error("Failed to load upcoming pickups");
+      console.error(pickupsError);
+    }
+  }, [ordersError, pickupsError]);
+
+  // Subscribe to realtime updates
+  useEffect(() => {
+    const ordersChannel = supabase
+      .channel('orders-changes')
+      .on(
+        'postgres_changes',
+        { 
+          event: '*', 
+          schema: 'public',
+          table: 'orders'
+        },
+        (payload) => {
+          console.log('Orders change received:', payload);
+          // Refresh the dashboard stats
+          fetchDashboardStats();
+          // The ordersByStatus query will be invalidated and refetched by React Query
+        }
+      )
+      .subscribe();
+
+    const pickupsChannel = supabase
+      .channel('pickups-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pickups'
+        },
+        (payload) => {
+          console.log('Pickups change received:', payload);
+          // The pickups query will be invalidated and refetched by React Query
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(pickupsChannel);
+    };
+  }, []);
+
+  // Fetch dashboard statistics
+  const fetchDashboardStats = async () => {
+    try {
+      // Count of new orders
+      const { count: newOrdersCount, error: newOrdersError } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'New');
+
+      if (newOrdersError) throw newOrdersError;
+
+      // Count of delivered orders
+      const { count: deliveredCount, error: deliveredError } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'Successful');
+
+      if (deliveredError) throw deliveredError;
+
+      // Count of in-progress orders
+      const { count: inProgressCount, error: inProgressError } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'In Progress');
+
+      if (inProgressError) throw inProgressError;
+
+      // Count of failed orders
+      const { count: failedCount, error: failedError } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'Unsuccessful');
+
+      if (failedError) throw failedError;
+
+      // Collect successful orders for average and total calculations
+      const { data: successfulOrders, error: successfulOrdersError } = await supabase
+        .from('orders')
+        .select('cash_collection_usd, cash_collection_lbp')
+        .eq('status', 'Successful');
+
+      if (successfulOrdersError) throw successfulOrdersError;
+
+      // Calculate average order value
+      let totalUSD = 0;
+      let totalLBP = 0;
+      
+      if (successfulOrders.length > 0) {
+        successfulOrders.forEach(order => {
+          totalUSD += Number(order.cash_collection_usd || 0);
+          totalLBP += Number(order.cash_collection_lbp || 0);
+        });
+        
+        const averageUSD = successfulOrders.length > 0 
+          ? totalUSD / successfulOrders.length 
+          : 0;
+
+        setDashboardStats({
+          newOrders: { value: newOrdersCount || 0 },
+          delivered: { value: deliveredCount || 0 },
+          inProgress: { value: inProgressCount || 0 },
+          failedOrders: { value: failedCount || 0 },
+          averageOrderValue: { 
+            value: `$${averageUSD.toFixed(2)}` 
+          },
+          collectedCash: {
+            usd: totalUSD,
+            lbp: totalLBP
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      toast.error("Failed to load dashboard statistics");
     }
   };
 
-  // Mock data for recent orders (today's orders)
-  const mockOrders: Order[] = [{
-    id: '232940',
-    referenceNumber: 'REF-A5921',
-    type: 'Deliver',
-    customer: {
-      name: 'محمد الخطيب',
-      phone: '03-123456'
-    },
-    location: {
-      city: 'Beirut',
-      area: 'Hamra'
-    },
-    amount: {
-      valueLBP: 750000,
-      valueUSD: 25
-    },
-    deliveryCharge: {
-      valueLBP: 150000,
-      valueUSD: 5
-    },
-    status: 'New',
-    lastUpdate: new Date().toISOString(),
-    note: 'Customer requested delivery after 2 PM. Fragile items inside the package. Need careful handling.'
-  }, {
-    id: '1237118',
-    referenceNumber: 'REF-B3801',
-    type: 'Cash Collection',
-    customer: {
-      name: 'سارة الحريري',
-      phone: '76-654321'
-    },
-    location: {
-      city: 'Tripoli',
-      area: 'Mina'
-    },
-    amount: {
-      valueLBP: 300000,
-      valueUSD: 10
-    },
-    deliveryCharge: {
-      valueLBP: 90000,
-      valueUSD: 3
-    },
-    status: 'Returned',
-    lastUpdate: new Date().toISOString(),
-    note: 'Customer was not available. Attempted delivery twice.'
-  }, {
-    id: '6690815',
-    referenceNumber: 'REF-C7462',
-    type: 'Deliver',
-    customer: {
-      name: 'علي حسن',
-      phone: '71-908765'
-    },
-    location: {
-      city: 'Saida',
-      area: 'Downtown'
-    },
-    amount: {
-      valueLBP: 1500000,
-      valueUSD: 50
-    },
-    deliveryCharge: {
-      valueLBP: 180000,
-      valueUSD: 6
-    },
-    status: 'In Progress',
-    lastUpdate: new Date().toISOString(),
-    note: 'Call customer before delivery. Building has security gate access.'
-  }];
-
-  // Mock data for upcoming pickups
-  const upcomingPickups = [{
-    id: "PIC-892",
-    status: "Scheduled",
-    location: "Beirut Bakery",
-    address: "Verdun, Main Street",
-    contactPerson: "Sara Abboud",
-    contactPhone: "+961 3 123 456",
-    pickupDate: "May 4, 2025, 10:00 AM",
-    courier: {
-      name: "Mohammed Ali",
-      phone: "+961 71 987 654"
-    },
-    requested: true,
-    pickedUp: false,
-    validated: false,
-    note: "This is a priority pickup. Please arrive on time."
-  }, {
-    id: "PIC-891",
-    status: "In Progress",
-    location: "Tech Store",
-    address: "Hamra, Bliss Street",
-    contactPerson: "Fadi Mansour",
-    contactPhone: "+961 71 234 567",
-    pickupDate: "May 4, 2025, 2:30 PM",
-    courier: {
-      name: "Jad Makari",
-      phone: "+961 76 123 456"
-    },
-    requested: true,
-    pickedUp: false,
-    validated: false
-  }, {
-    id: "PIC-890",
-    status: "Scheduled",
-    location: "Lebanese Sweets",
-    address: "Ashrafieh, Sassine Square",
-    contactPerson: "Maya Khalil",
-    contactPhone: "+961 76 345 678",
-    pickupDate: "May 5, 2025, 9:00 AM",
-    courier: {
-      name: "Ali Hamdan",
-      phone: "+961 76 345 678"
-    },
-    requested: true,
-    pickedUp: false,
-    validated: false
-  }];
+  useEffect(() => {
+    fetchDashboardStats();
+  }, []);
 
   // Handle viewing order details
-  const handleViewOrderDetails = (order: Order) => {
+  const handleViewOrderDetails = (order: OrderWithCustomer) => {
     setSelectedOrder(order);
     setOrderDetailsOpen(true);
   };
 
   // Handle viewing pickup details
-  const handleViewPickupDetails = (pickup: any) => {
+  const handleViewPickupDetails = (pickup: Pickup) => {
     setSelectedPickup(pickup);
     setPickupDetailsOpen(true);
   };
   
   // Toggle select all orders
   const toggleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedOrders(mockOrders.map(order => order.id));
+    if (checked && recentOrders) {
+      setSelectedOrders(recentOrders.map(order => order.id));
     } else {
       setSelectedOrders([]);
     }
@@ -206,12 +245,37 @@ const Dashboard: React.FC = () => {
     });
   };
 
+  // Format pickup date
+  const formatPickupDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Format current time and date
+  const currentTime = new Date().toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
   return (
     <MainLayout>
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 px-[12px]">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800 px-[11px]">Hello, Walid! 👋</h1>
+            <p className="text-gray-500 px-[11px]">{currentDate} • {currentTime}</p>
           </div>
         </div>
 
@@ -228,7 +292,11 @@ const Dashboard: React.FC = () => {
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
                     New Orders In
                   </h3>
-                  <p className="mt-2 text-3xl font-semibold">{dashboardData.newOrders.value}</p>
+                  {dashboardStats ? (
+                    <p className="mt-2 text-3xl font-semibold">{dashboardStats.newOrders.value}</p>
+                  ) : (
+                    <Skeleton className="h-8 w-16 mt-2" />
+                  )}
                 </div>
                 <div className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-200 to-orange-100 flex items-center justify-center shadow-sm">
                   <Package className="h-6 w-6 text-orange-500" strokeWidth={2.5} />
@@ -245,7 +313,11 @@ const Dashboard: React.FC = () => {
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
                     Delivered
                   </h3>
-                  <p className="mt-2 text-3xl font-semibold">{dashboardData.delivered.value}</p>
+                  {dashboardStats ? (
+                    <p className="mt-2 text-3xl font-semibold">{dashboardStats.delivered.value}</p>
+                  ) : (
+                    <Skeleton className="h-8 w-16 mt-2" />
+                  )}
                 </div>
                 <div className="h-12 w-12 rounded-full bg-gradient-to-br from-green-200 to-green-100 flex items-center justify-center shadow-sm">
                   <Check className="h-6 w-6 text-green-500" strokeWidth={2.5} />
@@ -262,7 +334,11 @@ const Dashboard: React.FC = () => {
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
                     In Progress
                   </h3>
-                  <p className="mt-2 text-3xl font-semibold">{dashboardData.inProgress.value}</p>
+                  {dashboardStats ? (
+                    <p className="mt-2 text-3xl font-semibold">{dashboardStats.inProgress.value}</p>
+                  ) : (
+                    <Skeleton className="h-8 w-16 mt-2" />
+                  )}
                 </div>
                 <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-200 to-blue-100 flex items-center justify-center shadow-sm">
                   <Clock className="h-6 w-6 text-blue-500" strokeWidth={2.5} />
@@ -277,7 +353,11 @@ const Dashboard: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">Canceled Orders</h3>
-                  <p className="mt-2 text-3xl font-semibold">{dashboardData.failedOrders.value}</p>
+                  {dashboardStats ? (
+                    <p className="mt-2 text-3xl font-semibold">{dashboardStats.failedOrders.value}</p>
+                  ) : (
+                    <Skeleton className="h-8 w-16 mt-2" />
+                  )}
                 </div>
                 <div className="h-12 w-12 rounded-full bg-gradient-to-br from-red-200 to-red-100 flex items-center justify-center shadow-sm">
                   <AlertTriangle className="h-6 w-6 text-red-500" strokeWidth={2.5} />
@@ -294,7 +374,11 @@ const Dashboard: React.FC = () => {
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
                     Avg. Order Value
                   </h3>
-                  <p className="mt-2 text-3xl font-semibold">{dashboardData.averageOrderValue.value}</p>
+                  {dashboardStats ? (
+                    <p className="mt-2 text-3xl font-semibold">{dashboardStats.averageOrderValue.value}</p>
+                  ) : (
+                    <Skeleton className="h-8 w-16 mt-2" />
+                  )}
                 </div>
                 <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-200 to-purple-100 flex items-center justify-center shadow-sm">
                   <DollarSign className="h-6 w-6 text-purple-500" strokeWidth={2.5} />
@@ -311,10 +395,17 @@ const Dashboard: React.FC = () => {
                   <h3 className="text-sm font-medium text-gray-500 flex items-center">
                     Collected Cash
                   </h3>
-                  <div className="flex flex-col mt-2">
-                    <p className="text-2xl font-semibold">${dashboardData.collectedCash.usd.toLocaleString()}</p>
-                    <p className="text-sm text-gray-500">{dashboardData.collectedCash.lbp.toLocaleString()} LBP</p>
-                  </div>
+                  {dashboardStats ? (
+                    <div className="flex flex-col mt-2">
+                      <p className="text-2xl font-semibold">${dashboardStats.collectedCash.usd.toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">{dashboardStats.collectedCash.lbp.toLocaleString()} LBP</p>
+                    </div>
+                  ) : (
+                    <>
+                      <Skeleton className="h-8 w-16 mt-2" />
+                      <Skeleton className="h-4 w-24 mt-1" />
+                    </>
+                  )}
                 </div>
                 <div className="h-12 w-12 rounded-full bg-gradient-to-br from-amber-200 to-amber-100 flex items-center justify-center shadow-sm">
                   <DollarSign className="h-6 w-6 text-amber-500" strokeWidth={2.5} />
@@ -341,13 +432,26 @@ const Dashboard: React.FC = () => {
                 </div>
                 
                 <TabsContent value="recent-orders" className="mt-0 p-4">
-                  <OrdersTable 
-                    orders={mockOrders} 
-                    selectedOrders={selectedOrders} 
-                    toggleSelectAll={toggleSelectAll} 
-                    toggleSelectOrder={toggleSelectOrder} 
-                    showActions={false}
-                  />
+                  {ordersLoading ? (
+                    <div className="p-12 text-center">
+                      <Skeleton className="h-8 w-1/2 mx-auto mb-4" />
+                      <Skeleton className="h-8 w-full mx-auto mb-2" />
+                      <Skeleton className="h-8 w-full mx-auto mb-2" />
+                      <Skeleton className="h-8 w-full mx-auto" />
+                    </div>
+                  ) : recentOrders && recentOrders.length > 0 ? (
+                    <OrdersTable 
+                      orders={recentOrders.map(mapOrderToTableFormat)} 
+                      selectedOrders={selectedOrders} 
+                      toggleSelectAll={toggleSelectAll} 
+                      toggleSelectOrder={toggleSelectOrder} 
+                      showActions={false}
+                    />
+                  ) : (
+                    <div className="p-12 text-center text-gray-500">
+                      No recent orders found
+                    </div>
+                  )}
                   
                   <div className="flex items-center justify-end p-4 border-t">
                     <a href="/orders" className="text-sm font-medium text-orange-500 hover:text-orange-600 flex items-center gap-1">
@@ -357,49 +461,66 @@ const Dashboard: React.FC = () => {
                 </TabsContent>
                 
                 <TabsContent value="upcoming-pickups" className="mt-0">
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-gray-50 hover:bg-gray-50">
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Pickup ID</TableHead>
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Scheduled Date</TableHead>
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Contact Person</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {upcomingPickups.map(pickup => (
-                          <TableRow 
-                            key={pickup.id} 
-                            className="hover:bg-gray-50 cursor-pointer"
-                            onClick={() => handleViewPickupDetails(pickup)}
-                          >
-                            <TableCell className="font-medium">{pickup.id}</TableCell>
-                            <TableCell>
-                              <Badge className={cn(
-                                "px-2 py-1 rounded-full", 
-                                pickup.status === "Scheduled" ? "bg-blue-50 text-blue-700" : 
-                                pickup.status === "In Progress" ? "bg-yellow-50 text-yellow-700" : 
-                                pickup.status === "Completed" ? "bg-green-50 text-green-700" : 
-                                "bg-red-50 text-red-700"
-                              )}>
-                                {pickup.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{pickup.location}</TableCell>
-                            <TableCell>{pickup.pickupDate}</TableCell>
-                            <TableCell>
-                              <div>
-                                <div>{pickup.contactPerson}</div>
-                                <div className="text-xs text-gray-500">{pickup.contactPhone}</div>
-                              </div>
-                            </TableCell>
+                  {pickupsLoading ? (
+                    <div className="p-12 text-center">
+                      <Skeleton className="h-8 w-1/2 mx-auto mb-4" />
+                      <Skeleton className="h-8 w-full mx-auto mb-2" />
+                      <Skeleton className="h-8 w-full mx-auto mb-2" />
+                      <Skeleton className="h-8 w-full mx-auto" />
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-gray-50 hover:bg-gray-50">
+                            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Pickup ID</TableHead>
+                            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
+                            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
+                            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Scheduled Date</TableHead>
+                            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Contact Person</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                        </TableHeader>
+                        <TableBody>
+                          {pickups && pickups.length > 0 ? (
+                            pickups.map(pickup => (
+                              <TableRow 
+                                key={pickup.id} 
+                                className="hover:bg-gray-50 cursor-pointer"
+                                onClick={() => handleViewPickupDetails(pickup)}
+                              >
+                                <TableCell className="font-medium">{pickup.pickup_id}</TableCell>
+                                <TableCell>
+                                  <Badge className={cn(
+                                    "px-2 py-1 rounded-full", 
+                                    pickup.status === "Scheduled" ? "bg-blue-50 text-blue-700" : 
+                                    pickup.status === "In Progress" ? "bg-yellow-50 text-yellow-700" : 
+                                    pickup.status === "Completed" ? "bg-green-50 text-green-700" : 
+                                    "bg-red-50 text-red-700"
+                                  )}>
+                                    {pickup.status}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>{pickup.location}</TableCell>
+                                <TableCell>{formatPickupDate(pickup.pickup_date)}</TableCell>
+                                <TableCell>
+                                  <div>
+                                    <div>{pickup.contact_person}</div>
+                                    <div className="text-xs text-gray-500">{pickup.contact_phone}</div>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                                No upcoming pickups found
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
                   <div className="flex items-center justify-end p-4 border-t">
                     <a href="/pickups" className="text-sm font-medium text-orange-500 hover:text-orange-600 flex items-center gap-1">
                       View all pickups <ChevronRight className="h-4 w-4" />

@@ -1,20 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Info } from 'lucide-react';
+
+import React from 'react';
+import { Check, Info, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import CurrencyDisplay from '@/components/dashboard/CurrencyDisplay';
+import CurrencySelector from '@/components/dashboard/CurrencySelector';
+
 interface CashCollectionFieldsProps {
   enabled: boolean;
   onEnabledChange: (enabled: boolean) => void;
   usdAmount: string;
   lbpAmount: string;
-  onUsdAmountChange: (value: string) => void;
-  onLbpAmountChange: (value: string) => void;
+  onUsdAmountChange: (amount: string) => void;
+  onLbpAmountChange: (amount: string) => void;
   deliveryFees: {
     usd: number;
     lbp: number;
   };
+  errors?: {
+    usdAmount?: string;
+    lbpAmount?: string;
+  };
 }
+
 const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
   enabled,
   onEnabledChange,
@@ -22,100 +30,123 @@ const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
   lbpAmount,
   onUsdAmountChange,
   onLbpAmountChange,
-  deliveryFees
+  deliveryFees,
+  errors
 }) => {
-  const [validationError, setValidationError] = useState<string | null>(null);
-
-  // Format currency for display
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString(undefined, {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2
-    });
-  };
-
-  // Validate the fields when values change
-  useEffect(() => {
-    if (enabled) {
-      const usd = parseFloat(usdAmount) || 0;
-      const lbp = parseFloat(lbpAmount) || 0;
-      if (usd <= 0 && lbp <= 0) {
-        setValidationError("At least one currency amount must be greater than 0");
-      } else {
-        setValidationError(null);
-      }
-    } else {
-      setValidationError(null);
-    }
-  }, [enabled, usdAmount, lbpAmount]);
-
-  // Handle USD amount change with validation
-  const handleUsdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const isValid = !value || /^\d*\.?\d*$/.test(value);
-    if (isValid) {
-      onUsdAmountChange(value);
-    }
-  };
-
-  // Handle LBP amount change with validation
-  const handleLbpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const isValid = !value || /^\d*$/.test(value);
-    if (isValid) {
-      onLbpAmountChange(value);
-    }
-  };
-
-  // Handle checkbox toggle
-  const handleToggle = (checked: boolean | "indeterminate") => {
-    const isChecked = checked === true;
-    onEnabledChange(isChecked);
-    if (!isChecked) {
-      onUsdAmountChange('0');
-      onLbpAmountChange('0');
-    }
-  };
-  return <div className="space-y-4">
-      <div className="flex items-center space-x-2 mb-4">
-        <Checkbox id="cash-collection" checked={enabled} onCheckedChange={handleToggle} />
-        <div className="space-y-1">
-          <label htmlFor="cash-collection" className="text-sm font-medium leading-none">
-            Cash collection
-          </label>
-          <p className="text-xs text-gray-500">
-            Your customer shall pay this amount to courier upon delivery.
-          </p>
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-2">
+          <h3 className="font-medium">Cash Collection</h3>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Enable if you need to collect cash upon delivery</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
+        <Switch checked={enabled} onCheckedChange={onEnabledChange} />
       </div>
       
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <Label>USD Amount</Label>
-          <Input type="text" value={usdAmount} onChange={handleUsdChange} placeholder="0.00" disabled={!enabled} className={!enabled ? "opacity-50" : ""} />
-        </div>
-        
-        <div className="space-y-2">
-          <Label>LBP Amount</Label>
-          <Input type="text" value={lbpAmount} onChange={handleLbpChange} placeholder="0" disabled={!enabled} className={!enabled ? "opacity-50" : ""} />
-        </div>
-        
-        {validationError && <div className="text-sm text-red-500 mt-2 flex items-center gap-1">
-            <Info className="h-4 w-4" />
-            <span>{validationError}</span>
-          </div>}
-        
-        <div className="space-y-2 mt-4">
-          <Label className="text-gray-600">Delivery Fees</Label>
-          <div className="bg-gray-50 border border-gray-200 p-3 rounded-md space-y-1">
-            <div className="flex justify-between">
-              <span className="text-gray-600">USD:</span>
-              <span className="font-medium px-[12px]">${formatCurrency(deliveryFees.usd)}</span>
+      {enabled && (
+        <div className="space-y-3">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm">USD Amount</span>
+              <CurrencySelector type="usd" />
             </div>
-            
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">$</div>
+              <input
+                type="text"
+                value={usdAmount}
+                onChange={(e) => {
+                  // Allow only numbers and decimal point
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  // Ensure only one decimal point
+                  const decimalParts = value.split('.');
+                  if (decimalParts.length > 1) {
+                    const wholeNumber = decimalParts[0];
+                    const decimal = decimalParts.slice(1).join('').slice(0, 2);
+                    onUsdAmountChange(`${wholeNumber}.${decimal}`);
+                  } else {
+                    onUsdAmountChange(value);
+                  }
+                }}
+                className={`w-full pl-8 pr-12 py-2 border ${errors?.usdAmount ? 'border-red-500' : 'border-gray-300'} rounded-md`}
+                placeholder="0.00"
+              />
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <button
+                  type="button"
+                  onClick={() => onUsdAmountChange('')}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            {errors?.usdAmount && (
+              <p className="text-red-500 text-xs mt-1">{errors.usdAmount}</p>
+            )}
+          </div>
+          
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm">LBP Amount</span>
+              <CurrencySelector type="lbp" />
+            </div>
+            <div className="relative">
+              <input
+                type="text"
+                value={lbpAmount}
+                onChange={(e) => {
+                  // Allow only numbers
+                  const value = e.target.value.replace(/\D/g, '');
+                  onLbpAmountChange(value);
+                }}
+                className={`w-full pl-3 pr-12 py-2 border ${errors?.lbpAmount ? 'border-red-500' : 'border-gray-300'} rounded-md`}
+                placeholder="0"
+              />
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <button
+                  type="button"
+                  onClick={() => onLbpAmountChange('')}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            {errors?.lbpAmount && (
+              <p className="text-red-500 text-xs mt-1">{errors.lbpAmount}</p>
+            )}
+          </div>
+          
+          <div className="flex items-center justify-between pt-1">
+            <div className="text-sm font-medium">Delivery Fee:</div>
+            <div className="text-sm">
+              <CurrencyDisplay usd={deliveryFees.usd} lbp={deliveryFees.lbp} />
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between pt-2 pb-1 border-t border-dashed">
+            <div className="text-base font-medium">Total:</div>
+            <div className="text-base font-medium">
+              <CurrencyDisplay 
+                usd={Number(usdAmount || 0) + deliveryFees.usd} 
+                lbp={Number(lbpAmount || 0) + deliveryFees.lbp} 
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </div>;
+      )}
+    </div>
+  );
 };
+
 export default CashCollectionFields;

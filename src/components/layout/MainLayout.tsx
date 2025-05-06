@@ -3,6 +3,7 @@ import React from 'react';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import { cn } from '@/lib/utils';
+import { Toaster } from '@/components/ui/sonner';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
           </div>
         </main>
       </div>
+      <Toaster position="top-right" />
     </div>
   );
 };

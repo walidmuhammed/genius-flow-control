@@ -9,13 +9,275 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          entity_id: string
+          entity_type: string
+          id: string
+          performed_by: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          performed_by?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          performed_by?: string | null
+        }
+        Relationships: []
+      }
+      cities: {
+        Row: {
+          created_at: string
+          governorate_id: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          governorate_id: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          governorate_id?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cities_governorate_id_fkey"
+            columns: ["governorate_id"]
+            isOneToOne: false
+            referencedRelation: "governorates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          address: string | null
+          city_id: string | null
+          created_at: string
+          governorate_id: string | null
+          id: string
+          is_work_address: boolean | null
+          name: string
+          phone: string
+          secondary_phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city_id?: string | null
+          created_at?: string
+          governorate_id?: string | null
+          id?: string
+          is_work_address?: boolean | null
+          name: string
+          phone: string
+          secondary_phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city_id?: string | null
+          created_at?: string
+          governorate_id?: string | null
+          id?: string
+          is_work_address?: boolean | null
+          name?: string
+          phone?: string
+          secondary_phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_governorate_id_fkey"
+            columns: ["governorate_id"]
+            isOneToOne: false
+            referencedRelation: "governorates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      governorates: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          allow_opening: boolean | null
+          cash_collection_enabled: boolean | null
+          cash_collection_lbp: number | null
+          cash_collection_usd: number | null
+          created_at: string
+          customer_id: string
+          delivery_fees_lbp: number | null
+          delivery_fees_usd: number | null
+          id: string
+          items_count: number | null
+          note: string | null
+          package_description: string | null
+          package_type: string | null
+          reference_number: string | null
+          status: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          allow_opening?: boolean | null
+          cash_collection_enabled?: boolean | null
+          cash_collection_lbp?: number | null
+          cash_collection_usd?: number | null
+          created_at?: string
+          customer_id: string
+          delivery_fees_lbp?: number | null
+          delivery_fees_usd?: number | null
+          id?: string
+          items_count?: number | null
+          note?: string | null
+          package_description?: string | null
+          package_type?: string | null
+          reference_number?: string | null
+          status?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          allow_opening?: boolean | null
+          cash_collection_enabled?: boolean | null
+          cash_collection_lbp?: number | null
+          cash_collection_usd?: number | null
+          created_at?: string
+          customer_id?: string
+          delivery_fees_lbp?: number | null
+          delivery_fees_usd?: number | null
+          id?: string
+          items_count?: number | null
+          note?: string | null
+          package_description?: string | null
+          package_type?: string | null
+          reference_number?: string | null
+          status?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pickups: {
+        Row: {
+          address: string
+          contact_person: string
+          contact_phone: string
+          courier_name: string | null
+          courier_phone: string | null
+          created_at: string
+          id: string
+          location: string
+          note: string | null
+          picked_up: boolean | null
+          pickup_date: string
+          pickup_id: string | null
+          requested: boolean | null
+          status: string
+          updated_at: string
+          validated: boolean | null
+        }
+        Insert: {
+          address: string
+          contact_person: string
+          contact_phone: string
+          courier_name?: string | null
+          courier_phone?: string | null
+          created_at?: string
+          id?: string
+          location: string
+          note?: string | null
+          picked_up?: boolean | null
+          pickup_date: string
+          pickup_id?: string | null
+          requested?: boolean | null
+          status: string
+          updated_at?: string
+          validated?: boolean | null
+        }
+        Update: {
+          address?: string
+          contact_person?: string
+          contact_phone?: string
+          courier_name?: string | null
+          courier_phone?: string | null
+          created_at?: string
+          id?: string
+          location?: string
+          note?: string | null
+          picked_up?: boolean | null
+          pickup_date?: string
+          pickup_id?: string | null
+          requested?: boolean | null
+          status?: string
+          updated_at?: string
+          validated?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_pickup_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_reference_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
