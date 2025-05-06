@@ -142,10 +142,7 @@ const CreateOrder = () => {
                   <Input id="name" placeholder="Enter customer name" />
                 </div>
                 
-                {!isSecondaryPhone && <Button variant="ghost" size="sm" className="text-primary" onClick={() => setIsSecondaryPhone(true)}>
-                    <Plus className="mr-1 h-4 w-4" />
-                    Add a secondary phone
-                  </Button>}
+                {!isSecondaryPhone}
 
                 {isSecondaryPhone}
                 
