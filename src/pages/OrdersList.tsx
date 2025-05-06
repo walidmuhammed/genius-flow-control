@@ -8,19 +8,11 @@ import OrdersTable from '@/components/orders/OrdersTable';
 import { Order } from '@/components/orders/OrdersTableRow';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { format } from 'date-fns';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { DateRangePicker } from '@/components/orders/DateRangePicker';
 
 const OrdersList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [date, setDate] = useState<Date | undefined>(undefined);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>('all');
 
@@ -186,7 +178,8 @@ const OrdersList: React.FC = () => {
     });
   };
   
-  return <MainLayout>
+  return (
+    <MainLayout>
       <div className="space-y-5">
         <div className="flex justify-between items-center">
           <div>
@@ -200,7 +193,6 @@ const OrdersList: React.FC = () => {
             <Button variant="outline" className="h-10 gap-2 rounded-md border-gray-200 bg-white shadow-sm text-sm font-medium">
               <FileText className="h-4 w-4" /> Import
             </Button>
-            
           </div>
         </div>
 
@@ -246,35 +238,75 @@ const OrdersList: React.FC = () => {
                   </div>
                 
                   <TabsContent value="all" className="p-0 mt-4">
-                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable 
+                      orders={getFilteredOrders()} 
+                      selectedOrders={selectedOrders} 
+                      toggleSelectAll={toggleSelectAll} 
+                      toggleSelectOrder={toggleSelectOrder} 
+                    />
                   </TabsContent>
                   
                   <TabsContent value="new" className="p-0 mt-4">
-                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable 
+                      orders={getFilteredOrders()} 
+                      selectedOrders={selectedOrders} 
+                      toggleSelectAll={toggleSelectAll} 
+                      toggleSelectOrder={toggleSelectOrder} 
+                    />
                   </TabsContent>
                   
                   <TabsContent value="pending" className="p-0 mt-4">
-                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable 
+                      orders={getFilteredOrders()} 
+                      selectedOrders={selectedOrders} 
+                      toggleSelectAll={toggleSelectAll} 
+                      toggleSelectOrder={toggleSelectOrder} 
+                    />
                   </TabsContent>
                   
                   <TabsContent value="process" className="p-0 mt-4">
-                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable 
+                      orders={getFilteredOrders()} 
+                      selectedOrders={selectedOrders} 
+                      toggleSelectAll={toggleSelectAll} 
+                      toggleSelectOrder={toggleSelectOrder} 
+                    />
                   </TabsContent>
                   
                   <TabsContent value="completed" className="p-0 mt-4">
-                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable 
+                      orders={getFilteredOrders()} 
+                      selectedOrders={selectedOrders} 
+                      toggleSelectAll={toggleSelectAll} 
+                      toggleSelectOrder={toggleSelectOrder} 
+                    />
                   </TabsContent>
                   
                   <TabsContent value="unsuccessful" className="p-0 mt-4">
-                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable 
+                      orders={getFilteredOrders()} 
+                      selectedOrders={selectedOrders} 
+                      toggleSelectAll={toggleSelectAll} 
+                      toggleSelectOrder={toggleSelectOrder} 
+                    />
                   </TabsContent>
                   
                   <TabsContent value="returned" className="p-0 mt-4">
-                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable 
+                      orders={getFilteredOrders()} 
+                      selectedOrders={selectedOrders} 
+                      toggleSelectAll={toggleSelectAll} 
+                      toggleSelectOrder={toggleSelectOrder} 
+                    />
                   </TabsContent>
                   
                   <TabsContent value="paid" className="p-0 mt-4">
-                    <OrdersTable orders={getFilteredOrders()} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAll} toggleSelectOrder={toggleSelectOrder} />
+                    <OrdersTable 
+                      orders={getFilteredOrders()} 
+                      selectedOrders={selectedOrders} 
+                      toggleSelectAll={toggleSelectAll} 
+                      toggleSelectOrder={toggleSelectOrder} 
+                    />
                   </TabsContent>
                 </CardContent>
               </Tabs>
@@ -282,6 +314,8 @@ const OrdersList: React.FC = () => {
           </CardHeader>
         </Card>
       </div>
-    </MainLayout>;
+    </MainLayout>
+  );
 };
+
 export default OrdersList;

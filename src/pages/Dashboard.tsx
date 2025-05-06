@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { ArrowUp, ArrowDown, Package, Check, Clock, AlertTriangle, DollarSign, ChevronRight } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,7 +7,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Order } from '@/components/orders/OrdersTableRow';
+import OrderDetailsDialog from '@/components/orders/OrderDetailsDialog';
+import OrdersTable from '@/components/orders/OrdersTable';
+import PickupDetailsDialog from '@/components/pickups/PickupDetailsDialog';
+
 const Dashboard: React.FC = () => {
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
+  const [selectedPickup, setSelectedPickup] = useState<any>(null);
+  const [pickupDetailsOpen, setPickupDetailsOpen] = useState(false);
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+
   const currentTime = new Date().toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit'
@@ -41,100 +53,165 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Mock data for recent orders
-  const recentOrders = [{
-    id: "ORD-4781",
-    customer: "Ali Hassan",
-    location: "Beirut, Hamra",
-    amount: 125.50,
-    status: "Delivered",
-    date: "May 3, 2025"
+  // Mock data for recent orders (today's orders)
+  const mockOrders: Order[] = [{
+    id: '232940',
+    referenceNumber: 'REF-A5921',
+    type: 'Deliver',
+    customer: {
+      name: 'محمد الخطيب',
+      phone: '03-123456'
+    },
+    location: {
+      city: 'Beirut',
+      area: 'Hamra'
+    },
+    amount: {
+      valueLBP: 750000,
+      valueUSD: 25
+    },
+    deliveryCharge: {
+      valueLBP: 150000,
+      valueUSD: 5
+    },
+    status: 'New',
+    lastUpdate: new Date().toISOString(),
+    note: 'Customer requested delivery after 2 PM. Fragile items inside the package. Need careful handling.'
   }, {
-    id: "ORD-4780",
-    customer: "Layla Najm",
-    location: "Tripoli, Al Mina",
-    amount: 78.25,
-    status: "In Progress",
-    date: "May 2, 2025"
+    id: '1237118',
+    referenceNumber: 'REF-B3801',
+    type: 'Cash Collection',
+    customer: {
+      name: 'سارة الحريري',
+      phone: '76-654321'
+    },
+    location: {
+      city: 'Tripoli',
+      area: 'Mina'
+    },
+    amount: {
+      valueLBP: 300000,
+      valueUSD: 10
+    },
+    deliveryCharge: {
+      valueLBP: 90000,
+      valueUSD: 3
+    },
+    status: 'Returned',
+    lastUpdate: new Date().toISOString(),
+    note: 'Customer was not available. Attempted delivery twice.'
   }, {
-    id: "ORD-4779",
-    customer: "Karim Saleh",
-    location: "Saida, Downtown",
-    amount: 214.75,
-    status: "Pending Pickup",
-    date: "May 2, 2025"
-  }, {
-    id: "ORD-4778",
-    customer: "Nour Khoury",
-    location: "Beirut, Achrafieh",
-    amount: 56.30,
-    status: "Delivered",
-    date: "May 1, 2025"
-  }, {
-    id: "ORD-4777",
-    customer: "Hassan Ibrahim",
-    location: "Jounieh, Maameltein",
-    amount: 92.00,
-    status: "Delivered",
-    date: "Apr 30, 2025"
+    id: '6690815',
+    referenceNumber: 'REF-C7462',
+    type: 'Deliver',
+    customer: {
+      name: 'علي حسن',
+      phone: '71-908765'
+    },
+    location: {
+      city: 'Saida',
+      area: 'Downtown'
+    },
+    amount: {
+      valueLBP: 1500000,
+      valueUSD: 50
+    },
+    deliveryCharge: {
+      valueLBP: 180000,
+      valueUSD: 6
+    },
+    status: 'In Progress',
+    lastUpdate: new Date().toISOString(),
+    note: 'Call customer before delivery. Building has security gate access.'
   }];
 
   // Mock data for upcoming pickups
   const upcomingPickups = [{
     id: "PIC-892",
-    location: "Beirut Bakery, Verdun",
-    scheduledDate: "May 4, 2025, 10:00 AM",
-    contact: "Sara Abboud",
-    phone: "+961 3 123 456",
-    status: "Scheduled"
+    status: "Scheduled",
+    location: "Beirut Bakery",
+    address: "Verdun, Main Street",
+    contactPerson: "Sara Abboud",
+    contactPhone: "+961 3 123 456",
+    pickupDate: "May 4, 2025, 10:00 AM",
+    courier: {
+      name: "Mohammed Ali",
+      phone: "+961 71 987 654"
+    },
+    requested: true,
+    pickedUp: false,
+    validated: false,
+    note: "This is a priority pickup. Please arrive on time."
   }, {
     id: "PIC-891",
-    location: "Tech Store, Hamra",
-    scheduledDate: "May 4, 2025, 2:30 PM",
-    contact: "Fadi Mansour",
-    phone: "+961 71 234 567",
-    status: "Scheduled"
+    status: "In Progress",
+    location: "Tech Store",
+    address: "Hamra, Bliss Street",
+    contactPerson: "Fadi Mansour",
+    contactPhone: "+961 71 234 567",
+    pickupDate: "May 4, 2025, 2:30 PM",
+    courier: {
+      name: "Jad Makari",
+      phone: "+961 76 123 456"
+    },
+    requested: true,
+    pickedUp: false,
+    validated: false
   }, {
     id: "PIC-890",
-    location: "Lebanese Sweets, Ashrafieh",
-    scheduledDate: "May 5, 2025, 9:00 AM",
-    contact: "Maya Khalil",
-    phone: "+961 76 345 678",
-    status: "Confirmed"
-  }, {
-    id: "PIC-889",
-    location: "Modern Furniture, Jdeideh",
-    scheduledDate: "May 5, 2025, 11:30 AM",
-    contact: "Rami Nassar",
-    phone: "+961 81 456 789",
-    status: "Pending Confirmation"
+    status: "Scheduled",
+    location: "Lebanese Sweets",
+    address: "Ashrafieh, Sassine Square",
+    contactPerson: "Maya Khalil",
+    contactPhone: "+961 76 345 678",
+    pickupDate: "May 5, 2025, 9:00 AM",
+    courier: {
+      name: "Ali Hamdan",
+      phone: "+961 76 345 678"
+    },
+    requested: true,
+    pickedUp: false,
+    validated: false
   }];
 
-  // Function to render status badges with appropriate colors
-  const renderStatusBadge = (status: string) => {
-    switch (status) {
-      case "Delivered":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">{status}</Badge>;
-      case "In Progress":
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">{status}</Badge>;
-      case "Pending Pickup":
-        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">{status}</Badge>;
-      case "Scheduled":
-        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">{status}</Badge>;
-      case "Confirmed":
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">{status}</Badge>;
-      case "Pending Confirmation":
-        return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">{status}</Badge>;
-      default:
-        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">{status}</Badge>;
+  // Handle viewing order details
+  const handleViewOrderDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setOrderDetailsOpen(true);
+  };
+
+  // Handle viewing pickup details
+  const handleViewPickupDetails = (pickup: any) => {
+    setSelectedPickup(pickup);
+    setPickupDetailsOpen(true);
+  };
+  
+  // Toggle select all orders
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedOrders(mockOrders.map(order => order.id));
+    } else {
+      setSelectedOrders([]);
     }
   };
-  return <MainLayout>
+  
+  // Toggle select individual order
+  const toggleSelectOrder = (orderId: string) => {
+    setSelectedOrders(prev => {
+      if (prev.includes(orderId)) {
+        return prev.filter(id => id !== orderId);
+      } else {
+        return [...prev, orderId];
+      }
+    });
+  };
+
+  return (
+    <MainLayout>
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 px-[12px]">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800 px-[11px]">Hello, Walid! 👋</h1>
-            
           </div>
         </div>
 
@@ -263,31 +340,15 @@ const Dashboard: React.FC = () => {
                   </TabsList>
                 </div>
                 
-                <TabsContent value="recent-orders" className="mt-0">
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-gray-50 hover:bg-gray-50">
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Order ID</TableHead>
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Customer</TableHead>
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Amount</TableHead>
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Date</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {recentOrders.map(order => <TableRow key={order.id} className="hover:bg-gray-50 cursor-pointer">
-                            <TableCell className="font-medium">{order.id}</TableCell>
-                            <TableCell>{order.customer}</TableCell>
-                            <TableCell>{order.location}</TableCell>
-                            <TableCell>${order.amount.toFixed(2)}</TableCell>
-                            <TableCell>{renderStatusBadge(order.status)}</TableCell>
-                            <TableCell>{order.date}</TableCell>
-                          </TableRow>)}
-                      </TableBody>
-                    </Table>
-                  </div>
+                <TabsContent value="recent-orders" className="mt-0 p-4">
+                  <OrdersTable 
+                    orders={mockOrders} 
+                    selectedOrders={selectedOrders} 
+                    toggleSelectAll={toggleSelectAll} 
+                    toggleSelectOrder={toggleSelectOrder} 
+                    showActions={false}
+                  />
+                  
                   <div className="flex items-center justify-end p-4 border-t">
                     <a href="/orders" className="text-sm font-medium text-orange-500 hover:text-orange-600 flex items-center gap-1">
                       View all orders <ChevronRight className="h-4 w-4" />
@@ -301,25 +362,41 @@ const Dashboard: React.FC = () => {
                       <TableHeader>
                         <TableRow className="bg-gray-50 hover:bg-gray-50">
                           <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Pickup ID</TableHead>
+                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
                           <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
                           <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Scheduled Date</TableHead>
                           <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Contact Person</TableHead>
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {upcomingPickups.map(pickup => <TableRow key={pickup.id} className="hover:bg-gray-50 cursor-pointer">
+                        {upcomingPickups.map(pickup => (
+                          <TableRow 
+                            key={pickup.id} 
+                            className="hover:bg-gray-50 cursor-pointer"
+                            onClick={() => handleViewPickupDetails(pickup)}
+                          >
                             <TableCell className="font-medium">{pickup.id}</TableCell>
+                            <TableCell>
+                              <Badge className={cn(
+                                "px-2 py-1 rounded-full", 
+                                pickup.status === "Scheduled" ? "bg-blue-50 text-blue-700" : 
+                                pickup.status === "In Progress" ? "bg-yellow-50 text-yellow-700" : 
+                                pickup.status === "Completed" ? "bg-green-50 text-green-700" : 
+                                "bg-red-50 text-red-700"
+                              )}>
+                                {pickup.status}
+                              </Badge>
+                            </TableCell>
                             <TableCell>{pickup.location}</TableCell>
-                            <TableCell>{pickup.scheduledDate}</TableCell>
+                            <TableCell>{pickup.pickupDate}</TableCell>
                             <TableCell>
                               <div>
-                                <div>{pickup.contact}</div>
-                                <div className="text-xs text-gray-500">{pickup.phone}</div>
+                                <div>{pickup.contactPerson}</div>
+                                <div className="text-xs text-gray-500">{pickup.contactPhone}</div>
                               </div>
                             </TableCell>
-                            <TableCell>{renderStatusBadge(pickup.status)}</TableCell>
-                          </TableRow>)}
+                          </TableRow>
+                        ))}
                       </TableBody>
                     </Table>
                   </div>
@@ -334,6 +411,22 @@ const Dashboard: React.FC = () => {
           </Card>
         </div>
       </div>
-    </MainLayout>;
+      
+      {/* Order Details Dialog */}
+      <OrderDetailsDialog 
+        order={selectedOrder}
+        open={orderDetailsOpen}
+        onOpenChange={setOrderDetailsOpen}
+      />
+      
+      {/* Pickup Details Dialog */}
+      <PickupDetailsDialog
+        pickup={selectedPickup}
+        open={pickupDetailsOpen}
+        onOpenChange={setPickupDetailsOpen}
+      />
+    </MainLayout>
+  );
 };
+
 export default Dashboard;

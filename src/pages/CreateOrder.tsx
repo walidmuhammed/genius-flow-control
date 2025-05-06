@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X, Info, Check, Plus, ChevronDown, Search, MapPin } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -9,37 +10,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { CountryCode } from 'libphonenumber-js';
-import 'react-phone-number-input/style.css';
+import AreaSelector from '@/components/orders/AreaSelector';
+import CashCollectionFields from '@/components/orders/CashCollectionFields';
 
-// Lebanese governorates and areas
-const lebanonAreas = [{
-  governorate: 'Beirut',
-  areas: ['Achrafieh', 'Ain El Mraiseh', 'Bachoura', 'Marfaa', 'Mazraa', 'Medawar', 'Minet El Hosn', 'Mousaitbeh', 'Port', 'Rmeil', 'Saifi', 'Zuqaq al-Blat']
-}, {
-  governorate: 'Mount Lebanon',
-  areas: ['Aley', 'Baabda', 'Byblos', 'Chouf', 'Keserwan', 'Matn']
-}, {
-  governorate: 'North Lebanon',
-  areas: ['Batroun', 'Bcharreh', 'Koura', 'Miniyeh-Danniyeh', 'Tripoli', 'Zgharta']
-}, {
-  governorate: 'Akkar',
-  areas: ['Akkar']
-}, {
-  governorate: 'Beqaa',
-  areas: ['Rachaya', 'West Beqaa', 'Zahle']
-}, {
-  governorate: 'Baalbek-Hermel',
-  areas: ['Baalbek', 'Hermel']
-}, {
-  governorate: 'South Lebanon',
-  areas: ['Jezzine', 'Sidon', 'Tyre']
-}];
 const CreateOrder = () => {
   const [orderType, setOrderType] = useState<'shipment' | 'exchange'>('shipment');
   const [phone, setPhone] = useState<string>('+961');
@@ -48,8 +22,6 @@ const CreateOrder = () => {
   const [isWorkAddress, setIsWorkAddress] = useState<boolean>(false);
   const [additionalInfo, setAdditionalInfo] = useState<boolean>(false);
   const [packageType, setPackageType] = useState<'parcel' | 'document' | 'bulky'>('parcel');
-  const [isAreaDialogOpen, setIsAreaDialogOpen] = useState<boolean>(false);
-  const [searchArea, setSearchArea] = useState<string>('');
   const [selectedGovernorate, setSelectedGovernorate] = useState<string>('');
   const [selectedArea, setSelectedArea] = useState<string>('');
   const [cashCollection, setCashCollection] = useState<boolean>(true);
@@ -57,24 +29,30 @@ const CreateOrder = () => {
   const [lbpAmount, setLbpAmount] = useState<string>('0');
   const [phoneValid, setPhoneValid] = useState<boolean>(false);
   const [secondaryPhoneValid, setSecondaryPhoneValid] = useState<boolean>(false);
+  
+  // Delivery fees (calculated or fixed)
+  const deliveryFees = {
+    usd: 5,
+    lbp: 150000
+  };
+  
   const handleCloseModal = () => {
     // In a real application, this would navigate back or close the modal
     console.log('Close modal');
   };
+  
   const handleSubmit = (createAnother: boolean = false) => {
     console.log('Order submitted, create another:', createAnother);
     // In a real application, this would submit the form data to the backend
   };
+  
   const handleSelectArea = (governorate: string, area: string) => {
     setSelectedGovernorate(governorate);
     setSelectedArea(area);
-    setIsAreaDialogOpen(false);
   };
-  const filteredAreas = searchArea.length > 0 ? lebanonAreas.map(gov => ({
-    governorate: gov.governorate,
-    areas: gov.areas.filter(area => area.toLowerCase().includes(searchArea.toLowerCase()) || gov.governorate.toLowerCase().includes(searchArea.toLowerCase()))
-  })).filter(gov => gov.areas.length > 0) : lebanonAreas;
-  return <MainLayout className="p-0">
+  
+  return (
+    <MainLayout className="p-0">
       <div className="flex flex-col h-full">
         <div className="border-b bg-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -104,7 +82,14 @@ const CreateOrder = () => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone number</Label>
-                  <PhoneInput id="phone" value={phone} onChange={setPhone} defaultCountry="LB" onValidationChange={setPhoneValid} placeholder="Enter phone number" />
+                  <PhoneInput 
+                    id="phone" 
+                    value={phone} 
+                    onChange={setPhone} 
+                    defaultCountry="LB" 
+                    onValidationChange={setPhoneValid} 
+                    placeholder="Enter phone number" 
+                  />
                 </div>
                 
                 <div className="space-y-2">
@@ -112,56 +97,51 @@ const CreateOrder = () => {
                   <Input id="name" placeholder="Enter customer name" />
                 </div>
                 
-                {!isSecondaryPhone && <div>
-                    <Button type="button" variant="outline" className="text-sm flex items-center gap-1" onClick={() => setIsSecondaryPhone(true)}>
+                {!isSecondaryPhone && (
+                  <div>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="text-sm flex items-center gap-1" 
+                      onClick={() => setIsSecondaryPhone(true)}
+                    >
                       <Plus className="h-3.5 w-3.5" />
                       Add secondary phone number
                     </Button>
-                  </div>}
+                  </div>
+                )}
 
-                {isSecondaryPhone && <div className="space-y-2">
+                {isSecondaryPhone && (
+                  <div className="space-y-2">
                     <div className="flex justify-between">
                       <Label htmlFor="secondary-phone">Secondary phone</Label>
-                      <Button variant="link" className="text-xs text-muted-foreground h-auto p-0" onClick={() => setIsSecondaryPhone(false)}>
+                      <Button 
+                        variant="link" 
+                        className="text-xs text-muted-foreground h-auto p-0" 
+                        onClick={() => setIsSecondaryPhone(false)}
+                      >
                         Remove
                       </Button>
                     </div>
-                    <PhoneInput id="secondary-phone" value={secondaryPhone} onChange={setSecondaryPhone} defaultCountry="LB" onValidationChange={setSecondaryPhoneValid} placeholder="Enter secondary phone" />
-                  </div>}
+                    <PhoneInput 
+                      id="secondary-phone" 
+                      value={secondaryPhone} 
+                      onChange={setSecondaryPhone} 
+                      defaultCountry="LB" 
+                      onValidationChange={setSecondaryPhoneValid} 
+                      placeholder="Enter secondary phone" 
+                    />
+                  </div>
+                )}
                 
                 <div className="space-y-2">
                   <Label htmlFor="area">Area</Label>
-                  <div className="relative">
-                    <Button variant="outline" className="w-full justify-between text-left font-normal" onClick={() => setIsAreaDialogOpen(true)}>
-                      {selectedArea ? `${selectedArea}, ${selectedGovernorate}` : "Search with an area or a city"}
-                      <MapPin className="h-4 w-4 opacity-50" />
-                    </Button>
-                  </div>
+                  <AreaSelector
+                    selectedArea={selectedArea}
+                    selectedGovernorate={selectedGovernorate}
+                    onAreaSelected={handleSelectArea}
+                  />
                 </div>
-
-                <Dialog open={isAreaDialogOpen} onOpenChange={setIsAreaDialogOpen}>
-                  <DialogContent className="max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Select an Area</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="relative">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Search areas..." className="pl-8" value={searchArea} onChange={e => setSearchArea(e.target.value)} />
-                      </div>
-                      <div className="space-y-2">
-                        {filteredAreas.map(gov => <div key={gov.governorate} className="space-y-1">
-                            <h4 className="text-sm font-medium py-1">{gov.governorate}</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                              {gov.areas.map(area => <Button key={area} variant="ghost" className="justify-start h-auto py-1.5 px-2" onClick={() => handleSelectArea(gov.governorate, area)}>
-                                  {area}
-                                </Button>)}
-                            </div>
-                          </div>)}
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
                 
                 <div className="space-y-2">
                   <Label htmlFor="address">Address details</Label>
@@ -169,13 +149,20 @@ const CreateOrder = () => {
                 </div>
                 
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="work-address" checked={isWorkAddress} onCheckedChange={checked => {
-                  if (typeof checked === 'boolean') {
-                    setIsWorkAddress(checked);
-                  }
-                }} />
+                  <Checkbox 
+                    id="work-address" 
+                    checked={isWorkAddress} 
+                    onCheckedChange={checked => {
+                      if (typeof checked === 'boolean') {
+                        setIsWorkAddress(checked);
+                      }
+                    }} 
+                  />
                   <div className="flex items-center">
-                    <label htmlFor="work-address" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    <label 
+                      htmlFor="work-address" 
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
                       This is a work address.
                     </label>
                     <TooltipProvider>
@@ -190,16 +177,6 @@ const CreateOrder = () => {
                     </TooltipProvider>
                   </div>
                 </div>
-                
-                {!additionalInfo}
-                
-                {additionalInfo && <div className="space-y-2">
-                    <div className="flex justify-between">
-                      
-                      
-                    </div>
-                    
-                  </div>}
               </CardContent>
             </Card>
 
@@ -257,10 +234,18 @@ const CreateOrder = () => {
               <div className="space-y-3">
                 <h3 className="font-medium">Order Type</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  <Button variant={orderType === 'shipment' ? "default" : "outline"} onClick={() => setOrderType('shipment')} className={orderType === 'shipment' ? "bg-primary text-primary-foreground" : ""}>
+                  <Button 
+                    variant={orderType === 'shipment' ? "default" : "outline"} 
+                    onClick={() => setOrderType('shipment')} 
+                    className={orderType === 'shipment' ? "bg-primary text-primary-foreground" : ""}
+                  >
                     Shipment
                   </Button>
-                  <Button variant={orderType === 'exchange' ? "default" : "outline"} onClick={() => setOrderType('exchange')} className={orderType === 'exchange' ? "bg-primary text-primary-foreground" : ""}>
+                  <Button 
+                    variant={orderType === 'exchange' ? "default" : "outline"} 
+                    onClick={() => setOrderType('exchange')} 
+                    className={orderType === 'exchange' ? "bg-primary text-primary-foreground" : ""}
+                  >
                     Exchange
                   </Button>
                 </div>
@@ -270,41 +255,15 @@ const CreateOrder = () => {
               
               <div className="space-y-4">
                 {/* Cash Collection Section */}
-                <Collapsible open={true}>
-                  <div className="flex items-center space-x-2 mb-4">
-                    <Checkbox id="cash-collection" checked={cashCollection} onCheckedChange={checked => {
-                    if (typeof checked === 'boolean') {
-                      setCashCollection(checked);
-                      if (!checked) {
-                        setUsdAmount('0.00');
-                        setLbpAmount('0');
-                      }
-                    }
-                  }} />
-                    <div className="space-y-1">
-                      <label htmlFor="cash-collection" className="text-sm font-medium leading-none">
-                        Cash collection
-                      </label>
-                      <p className="text-xs text-muted-foreground">
-                        Your customer shall pay this amount to courier upon delivery.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <CollapsibleContent>
-                    <div className="space-y-3">
-                      <div className="space-y-2">
-                        <Label>USD Amount</Label>
-                        <Input type="number" value={usdAmount} onChange={e => setUsdAmount(e.target.value)} placeholder="0.00" disabled={!cashCollection} className={!cashCollection ? "opacity-50" : ""} />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label>LBP Amount</Label>
-                        <Input type="number" value={lbpAmount} onChange={e => setLbpAmount(e.target.value)} placeholder="0" disabled={!cashCollection} className={!cashCollection ? "opacity-50" : ""} />
-                      </div>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                <CashCollectionFields
+                  enabled={cashCollection}
+                  onEnabledChange={setCashCollection}
+                  usdAmount={usdAmount}
+                  lbpAmount={lbpAmount}
+                  onUsdAmountChange={setUsdAmount}
+                  onLbpAmountChange={setLbpAmount}
+                  deliveryFees={deliveryFees}
+                />
                 
                 <div className="space-y-4 pt-4">
                   <div className="flex items-center space-x-2">
@@ -329,13 +288,25 @@ const CreateOrder = () => {
                   <div>
                     <div className="mb-2 text-sm font-medium">Package type</div>
                     <div className="flex space-x-2">
-                      <Button variant={packageType === "parcel" ? "default" : "outline"} className="flex-1" onClick={() => setPackageType("parcel")}>
+                      <Button 
+                        variant={packageType === "parcel" ? "default" : "outline"} 
+                        className="flex-1" 
+                        onClick={() => setPackageType("parcel")}
+                      >
                         Parcel
                       </Button>
-                      <Button variant={packageType === "document" ? "default" : "outline"} className="flex-1" onClick={() => setPackageType("document")}>
+                      <Button 
+                        variant={packageType === "document" ? "default" : "outline"} 
+                        className="flex-1" 
+                        onClick={() => setPackageType("document")}
+                      >
                         Document
                       </Button>
-                      <Button variant={packageType === "bulky" ? "default" : "outline"} className="flex-1" onClick={() => setPackageType("bulky")}>
+                      <Button 
+                        variant={packageType === "bulky" ? "default" : "outline"} 
+                        className="flex-1" 
+                        onClick={() => setPackageType("bulky")}
+                      >
                         Bulky
                       </Button>
                     </div>
@@ -362,6 +333,8 @@ const CreateOrder = () => {
           </div>
         </div>
       </div>
-    </MainLayout>;
+    </MainLayout>
+  );
 };
+
 export default CreateOrder;
