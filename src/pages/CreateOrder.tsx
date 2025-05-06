@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X, Info, Check, Plus, ChevronDown, Search, MapPin } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -13,8 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import PhoneInput from 'react-phone-number-input';
-import { isPossiblePhoneNumber, parsePhoneNumber } from 'libphonenumber-js';
+import { PhoneInput } from '@/components/ui/phone-input';
+import { CountryCode } from 'libphonenumber-js';
 import 'react-phone-number-input/style.css';
 
 // Lebanese governorates and areas
@@ -55,52 +56,30 @@ const CreateOrder = () => {
   const [cashCollection, setCashCollection] = useState<boolean>(true);
   const [usdAmount, setUsdAmount] = useState<string>('0.00');
   const [lbpAmount, setLbpAmount] = useState<string>('0');
-  const [phoneError, setPhoneError] = useState<string>('');
-  const [secondaryPhoneError, setSecondaryPhoneError] = useState<string>('');
+  const [phoneValid, setPhoneValid] = useState<boolean>(false);
+  const [secondaryPhoneValid, setSecondaryPhoneValid] = useState<boolean>(false);
+
   const handleCloseModal = () => {
     // In a real application, this would navigate back or close the modal
     console.log('Close modal');
   };
+  
   const handleSubmit = (createAnother: boolean = false) => {
     console.log('Order submitted, create another:', createAnother);
     // In a real application, this would submit the form data to the backend
   };
-  const validatePhone = (value: string, setError: React.Dispatch<React.SetStateAction<string>>) => {
-    if (!value) {
-      setError('Phone number is required');
-      return;
-    }
-    if (!isPossiblePhoneNumber(value)) {
-      setError('Invalid phone number');
-      return;
-    }
 
-    // Check for Lebanese numbers (8 digits after country code)
-    if (value.startsWith('+961') && value.length !== 12) {
-      setError('Lebanese numbers should be 8 digits after +961');
-      return;
-    }
-    setError('');
-  };
-  const handlePhoneChange = (value: string | undefined) => {
-    const cleanedValue = value?.replace(/\s/g, '') || '';
-    setPhone(cleanedValue);
-    if (cleanedValue) validatePhone(cleanedValue, setPhoneError);
-  };
-  const handleSecondaryPhoneChange = (value: string | undefined) => {
-    const cleanedValue = value?.replace(/\s/g, '') || '';
-    setSecondaryPhone(cleanedValue);
-    if (cleanedValue) validatePhone(cleanedValue, setSecondaryPhoneError);
-  };
   const handleSelectArea = (governorate: string, area: string) => {
     setSelectedGovernorate(governorate);
     setSelectedArea(area);
     setIsAreaDialogOpen(false);
   };
+  
   const filteredAreas = searchArea.length > 0 ? lebanonAreas.map(gov => ({
     governorate: gov.governorate,
     areas: gov.areas.filter(area => area.toLowerCase().includes(searchArea.toLowerCase()) || gov.governorate.toLowerCase().includes(searchArea.toLowerCase()))
   })).filter(gov => gov.areas.length > 0) : lebanonAreas;
+  
   return <MainLayout className="p-0">
       <div className="flex flex-col h-full">
         <div className="border-b bg-white px-6 py-4 flex items-center justify-between">
@@ -131,10 +110,14 @@ const CreateOrder = () => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone number</Label>
-                  <div className="phone-input-container">
-                    <PhoneInput international defaultCountry="LB" value={phone} onChange={handlePhoneChange} inputComponent={Input} className="w-full" />
-                    {phoneError && <p className="text-xs text-destructive mt-1">{phoneError}</p>}
-                  </div>
+                  <PhoneInput
+                    id="phone"
+                    value={phone}
+                    onChange={setPhone}
+                    defaultCountry="LB"
+                    onValidationChange={setPhoneValid}
+                    placeholder="Enter phone number"
+                  />
                 </div>
                 
                 <div className="space-y-2">
@@ -142,9 +125,42 @@ const CreateOrder = () => {
                   <Input id="name" placeholder="Enter customer name" />
                 </div>
                 
-                {!isSecondaryPhone}
+                {!isSecondaryPhone && (
+                  <div>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="text-sm flex items-center gap-1"
+                      onClick={() => setIsSecondaryPhone(true)}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Add secondary phone number
+                    </Button>
+                  </div>
+                )}
 
-                {isSecondaryPhone}
+                {isSecondaryPhone && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <Label htmlFor="secondary-phone">Secondary phone</Label>
+                      <Button 
+                        variant="link" 
+                        className="text-xs text-muted-foreground h-auto p-0"
+                        onClick={() => setIsSecondaryPhone(false)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                    <PhoneInput
+                      id="secondary-phone"
+                      value={secondaryPhone}
+                      onChange={setSecondaryPhone}
+                      defaultCountry="LB"
+                      onValidationChange={setSecondaryPhoneValid}
+                      placeholder="Enter secondary phone"
+                    />
+                  </div>
+                )}
                 
                 <div className="space-y-2">
                   <Label htmlFor="area">Area</Label>
@@ -208,10 +224,29 @@ const CreateOrder = () => {
                   </div>
                 </div>
                 
-                {!additionalInfo}
+                {!additionalInfo && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="text-sm flex items-center gap-1"
+                    onClick={() => setAdditionalInfo(true)}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add additional information
+                  </Button>
+                )}
                 
                 {additionalInfo && <div className="space-y-2">
-                    <Label htmlFor="additional-info">Additional Information</Label>
+                    <div className="flex justify-between">
+                      <Label htmlFor="additional-info">Additional Information</Label>
+                      <Button 
+                        variant="link" 
+                        className="text-xs text-muted-foreground h-auto p-0"
+                        onClick={() => setAdditionalInfo(false)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
                     <Textarea id="additional-info" placeholder="Enter any additional information" />
                   </div>}
               </CardContent>
@@ -316,21 +351,11 @@ const CreateOrder = () => {
                         <Label>LBP Amount</Label>
                         <Input type="number" value={lbpAmount} onChange={e => setLbpAmount(e.target.value)} placeholder="0" disabled={!cashCollection} className={!cashCollection ? "opacity-50" : ""} />
                       </div>
-                      
-                      
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
                 
                 <div className="space-y-4 pt-4">
-                  <div>
-                    
-                    <div className="space-y-2">
-                      
-                      
-                    </div>
-                  </div>
-                  
                   <div className="flex items-center space-x-2">
                     <Checkbox id="allow-opening" />
                     <div className="flex items-center">
