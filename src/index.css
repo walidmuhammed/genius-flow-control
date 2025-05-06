@@ -33,7 +33,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 24 94% 53%;
 
-    --radius: 0.65rem;
+    --radius: 0.5rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -96,35 +96,17 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply text-gray-900 font-medium tracking-tight;
-  }
-
-  /* Premium scrollbar styling */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-full;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400;
+    @apply text-gray-900 tracking-tight;
   }
 }
 
 @layer components {
   .stat-card {
-    @apply bg-white rounded-lg p-4 shadow-card border border-border transition-all duration-300 hover:shadow-card-hover;
+    @apply bg-white rounded-lg p-4 shadow-sm border border-border;
   }
   
   .currency-select-btn {
-    @apply flex items-center gap-1 px-2.5 py-1.5 rounded-md text-sm font-medium hover:bg-muted transition-colors;
+    @apply flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium hover:bg-muted transition-colors;
   }
   
   .currency-badge {
@@ -139,42 +121,9 @@
     @apply bg-green-50 text-green-700 border-green-200;
   }
 
-  /* Premium badge variants */
-  .status-badge {
-    @apply px-3 py-1.5 rounded-full text-xs font-medium transition-all;
-  }
-
-  .status-badge-new {
-    @apply bg-blue-50 text-blue-700 border border-blue-200;
-  }
-
-  .status-badge-pending {
-    @apply bg-orange-50 text-orange-600 border border-orange-200;
-  }
-
-  .status-badge-progress {
-    @apply bg-yellow-50 text-yellow-600 border border-yellow-200;
-  }
-
-  .status-badge-successful {
-    @apply bg-emerald-50 text-emerald-600 border border-emerald-200;
-  }
-
-  .status-badge-unsuccessful {
-    @apply bg-red-50 text-red-600 border border-red-200;
-  }
-
-  .status-badge-returned {
-    @apply bg-sky-50 text-sky-600 border border-sky-200;
-  }
-
-  .status-badge-paid {
-    @apply bg-indigo-50 text-indigo-600 border border-indigo-200;
-  }
-
   /* Phone Input Styles */
   .PhoneInput {
-    @apply flex items-center border border-input bg-background rounded-md overflow-hidden transition-all duration-200 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2;
+    @apply flex items-center border border-input rounded-md overflow-hidden;
   }
 
   .PhoneInputCountry {
@@ -190,67 +139,15 @@
   }
 
   .PhoneInputInput {
-    @apply flex h-10 w-full bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 border-none md:text-sm;
+    @apply flex h-10 w-full bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 border-none md:text-sm;
   }
 
   /* Fix for the phone input container */
   .phone-input-container .PhoneInput {
     @apply border-none;
   }
-
-  /* Premium table styles */
-  .premium-table {
-    @apply w-full rounded-xl overflow-hidden border border-gray-200 bg-white shadow-subtle;
-  }
-
-  .premium-table th {
-    @apply bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3;
-  }
-
-  .premium-table td {
-    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-800;
-  }
-
-  .premium-table tr {
-    @apply border-b border-gray-200 transition-colors hover:bg-gray-50/80;
-  }
-
-  /* Premium card styles */
-  .premium-card {
-    @apply rounded-xl bg-white border border-gray-200 shadow-card transition-all duration-300 hover:shadow-card-hover overflow-hidden;
-  }
-  
-  .premium-card-header {
-    @apply p-5 border-b border-gray-100 flex justify-between items-center;
-  }
-  
-  .premium-card-body {
-    @apply p-5;
-  }
-  
-  .premium-card-footer {
-    @apply p-5 border-t border-gray-100 bg-gray-50;
-  }
-
-  /* Button variants */
-  .btn-premium {
-    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
-  }
-
-  .btn-premium-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 h-10 py-2 px-4;
-  }
-
-  .btn-premium-outline {
-    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 py-2 px-4;
-  }
-
-  .btn-premium-ghost {
-    @apply hover:bg-accent hover:text-accent-foreground h-10 py-2 px-4;
-  }
 }
 
-/* Keyframe animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -262,34 +159,6 @@
   }
 }
 
-@keyframes slideInRight {
-  from {
-    transform: translateX(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes pulseSubtle {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
-
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out forwards;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.3s ease-out forwards;
-}
-
-.animate-pulse-subtle {
-  animation: pulseSubtle 2s infinite ease-in-out;
 }

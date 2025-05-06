@@ -1,111 +1,182 @@
 
-import * as React from "react"
-import { format, isValid, startOfToday } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
-import { DateRange } from "react-day-picker"
-
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import React, { useState } from 'react';
+import { addDays, format } from 'date-fns';
+import { Calendar as CalendarIcon, Check, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
+import { DayPickerRangeProps } from 'react-day-picker';
 
-interface DateRangePickerProps {
-  className?: string
-  onSelect?: (range: DateRange | undefined) => void
+// Update the type to match react-day-picker's DateRange type
+interface DateRange {
+  from: Date | undefined;
+  to?: Date | undefined;
 }
 
-export function DateRangePicker({ className, onSelect }: DateRangePickerProps) {
-  const [date, setDate] = React.useState<DateRange | undefined>()
+type Preset = {
+  name: string;
+  label: string;
+  date: () => DateRange;
+};
 
+export function DateRangePicker() {
+  const [date, setDate] = useState<DateRange>({
+    from: undefined,
+    to: undefined,
+  });
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Presets for quick date selection
+  const presets: Preset[] = [
+    {
+      name: 'today',
+      label: 'Today',
+      date: () => {
+        const today = new Date();
+        return { from: today, to: today };
+      },
+    },
+    {
+      name: 'yesterday',
+      label: 'Yesterday',
+      date: () => {
+        const yesterday = addDays(new Date(), -1);
+        return { from: yesterday, to: yesterday };
+      },
+    },
+    {
+      name: 'last7',
+      label: 'Last 7 days',
+      date: () => {
+        const today = new Date();
+        const last7Days = addDays(today, -6);
+        return { from: last7Days, to: today };
+      },
+    },
+    {
+      name: 'last30',
+      label: 'Last 30 days',
+      date: () => {
+        const today = new Date();
+        const last30Days = addDays(today, -29);
+        return { from: last30Days, to: today };
+      },
+    },
+    {
+      name: 'thisMonth',
+      label: 'This month',
+      date: () => {
+        const today = new Date();
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        return { from: firstDayOfMonth, to: today };
+      },
+    },
+  ];
+
+  const handleSelectPreset = (preset: Preset) => {
+    const newDate = preset.date();
+    setDate(newDate);
+  };
+
+  const handleClear = () => {
+    setDate({ from: undefined, to: undefined });
+  };
+
+  const handleApply = () => {
+    setIsOpen(false);
+    // Here you would typically handle the date application logic
+    console.log('Applied date range:', date);
+  };
+
+  // Handler to properly set the date range
   const handleSelect = (range: DateRange | undefined) => {
-    setDate(range)
-    if (onSelect) {
-      onSelect(range)
+    if (range) {
+      setDate(range);
     }
-  }
+  };
+
+  // Format the display string for the button
+  const formatDateRange = () => {
+    if (date.from && date.to) {
+      if (date.from.toDateString() === date.to.toDateString()) {
+        return format(date.from, 'MMM d, yyyy');
+      } else {
+        return `${format(date.from, 'MMM d')} – ${format(date.to, 'MMM d')}`;
+      }
+    }
+    return 'Filter by date';
+  };
 
   return (
-    <div className={cn("grid gap-2", className)}>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            id="date"
-            variant={"outline"}
-            size="sm"
-            className={cn(
-              "w-[260px] justify-start text-left font-normal h-9 text-gray-700",
-              !date && "text-muted-foreground"
-            )}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4 text-gray-500" />
-            {date?.from ? (
-              date.to ? (
-                <>
-                  {format(date.from, "LLL dd, y")} -{" "}
-                  {format(date.to, "LLL dd, y")}
-                </>
-              ) : (
-                format(date.from, "LLL dd, y")
-              )
-            ) : (
-              <span>Select date range</span>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            initialFocus
-            mode="range"
-            defaultMonth={date?.from ?? startOfToday()}
-            selected={date}
-            onSelect={handleSelect}
-            numberOfMonths={2}
-            className="p-3 pointer-events-auto"
-          />
-
-          <div className="flex items-center justify-between p-3 border-t border-gray-100">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleSelect(undefined)}
-              className="text-gray-500"
-            >
-              Clear
-            </Button>
-            <div className="flex gap-2">
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "h-10 gap-2 border-gray-200 bg-white shadow-sm text-sm",
+            date.from && "text-black"
+          )}
+        >
+          <CalendarIcon className="h-4 w-4" />
+          <span>{formatDateRange()}</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="end">
+        <div className="flex">
+          {/* Presets */}
+          <div className="border-r p-3 space-y-2 bg-white w-[160px]">
+            <h3 className="font-medium text-sm mb-3">Date presets</h3>
+            {presets.map((preset) => (
+              <Button
+                key={preset.name}
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-left font-normal"
+                onClick={() => handleSelectPreset(preset)}
+              >
+                {preset.label}
+              </Button>
+            ))}
+          </div>
+          
+          {/* Calendar */}
+          <div className="p-3">
+            <Calendar
+              mode="range"
+              selected={date}
+              onSelect={handleSelect}
+              numberOfMonths={1}
+              className="p-3 pointer-events-auto"
+            />
+            
+            {/* Actions */}
+            <div className="flex items-center justify-between pt-3 border-t mt-3">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  const today = startOfToday();
-                  handleSelect({
-                    from: today,
-                    to: today,
-                  });
-                }}
-                className="text-gray-700"
+                className="text-sm"
+                onClick={handleClear}
               >
-                Today
+                <X className="h-4 w-4 mr-1" /> Clear
               </Button>
+              
               <Button
-                variant="outline"
                 size="sm"
-                onClick={() => {
-                  if (date?.from && isValid(date.from)) {
-                    handleSelect(date);
-                  }
-                }}
+                className="text-sm bg-[#46d483] hover:bg-[#3bb36e]"
+                onClick={handleApply}
               >
-                Apply
+                <Check className="h-4 w-4 mr-1" /> Apply
               </Button>
             </div>
           </div>
-        </PopoverContent>
-      </Popover>
-    </div>
-  )
-}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};

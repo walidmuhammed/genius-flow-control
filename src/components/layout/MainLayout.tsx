@@ -3,7 +3,6 @@ import React from 'react';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import { cn } from '@/lib/utils';
-import { Toaster } from '@/components/ui/toaster';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -12,7 +11,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
   return (
-    <div className="flex min-h-screen bg-[#f8f9fa]">
+    <div className="flex min-h-screen bg-[#f5f5f6]">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <TopBar />
@@ -25,7 +24,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
           </div>
         </main>
       </div>
-      <Toaster />
     </div>
   );
 };
