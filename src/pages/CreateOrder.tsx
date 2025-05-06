@@ -198,10 +198,8 @@ const CreateOrder = () => {
                 
                 {additionalInfo && <div className="space-y-2">
                     <div className="flex justify-between">
-                      <Label htmlFor="additional-info">Additional Information</Label>
-                      <Button variant="link" className="text-xs text-muted-foreground h-auto p-0" onClick={() => setAdditionalInfo(false)}>
-                        Remove
-                      </Button>
+                      
+                      
                     </div>
                     
                   </div>}
