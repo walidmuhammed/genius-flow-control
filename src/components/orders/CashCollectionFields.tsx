@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { InfoCircle } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 interface CashCollectionFieldsProps {
   enabled: boolean;
@@ -126,7 +126,7 @@ const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
         
         {validationError && (
           <div className="text-sm text-red-500 mt-2 flex items-center gap-1">
-            <InfoCircle className="h-4 w-4" />
+            <Info className="h-4 w-4" />
             <span>{validationError}</span>
           </div>
         )}
