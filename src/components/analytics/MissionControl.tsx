@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Package, TrendingUp, TrendingDown, Check, AlertTriangle, DollarSign, AreaChart } from 'lucide-react';
-import { useDashboardStats, useSparklineData } from '@/hooks/use-analytics';
+import { useDashboardStats, useSparklineData, useGeographicalStats } from '@/hooks/use-analytics';
 import MissionControlCard from './MissionControlCard';
 import Sparkline from './Sparkline';
 import ProgressRing from './ProgressRing';
@@ -10,7 +10,8 @@ import { formatNumber, formatCurrency } from '@/utils/format';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import MapVisualization from './MapVisualization';
+import TopRegionsChart from './TopRegionsChart';
+import RegionalSummary from './RegionalSummary';
 
 export default function MissionControl() {
   const { data: dashboardStats, isLoading: isStatsLoading } = useDashboardStats();
@@ -18,6 +19,7 @@ export default function MissionControl() {
   const { data: successSparkline, isLoading: isSuccessSparklineLoading } = useSparklineData('successful');
   const { data: failedSparkline, isLoading: isFailedSparklineLoading } = useSparklineData('failed');
   const { data: cashSparkline, isLoading: isCashSparklineLoading } = useSparklineData('cash');
+  const { data: geoStats, isLoading: isGeoStatsLoading } = useGeographicalStats();
   
   return (
     <div className="space-y-8">
@@ -206,31 +208,27 @@ export default function MissionControl() {
         </Card>
       </div>
       
-      {/* Map View */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <Card className="overflow-hidden">
-          <CardHeader className="p-4 pb-0">
-            <CardTitle className="flex items-center gap-2">
-              Live Courier Map
-              <Badge variant="outline" className="ml-2">Live</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 mt-4">
-            <MapVisualization
-              courierLocations={[
-                { id: '1', name: 'John Doe', lat: 33.8938, lng: 35.5018, status: 'active' },
-                { id: '2', name: 'Jane Smith', lat: 33.8866, lng: 35.5133, status: 'idle' },
-                { id: '3', name: 'Mike Johnson', lat: 33.9032, lng: 35.4823, status: 'active' },
-                { id: '4', name: 'Sarah Williams', lat: 33.8688, lng: 35.5097, status: 'offline' }
-              ]} 
-            />
-          </CardContent>
-        </Card>
-      </motion.div>
+      {/* Regional Analytics - Replacing the Map Section */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {/* Top Regions by Orders */}
+        <motion.div 
+          className="md:col-span-2"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <TopRegionsChart data={geoStats?.regions} isLoading={isGeoStatsLoading} />
+        </motion.div>
+
+        {/* Regional Summary */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <RegionalSummary data={geoStats?.regions} isLoading={isGeoStatsLoading} />
+        </motion.div>
+      </div>
     </div>
   );
 }
