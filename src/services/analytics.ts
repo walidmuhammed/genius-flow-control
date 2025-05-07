@@ -200,65 +200,74 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     ((deliveryFees.usd / targetFees.usd) * 100)
   );
   
-  // Get top courier with proper query syntax for the count
-  const { data: topCourierResult, error: topCourierError } = await supabase
-    .from('orders')
-    .select('courier_name, count')
-    .eq('status', 'Successful')
-    .gte('created_at', todayStart)
-    .lte('created_at', todayEnd)
-    .not('courier_name', 'is', null)
-    .order('count', { ascending: false })
-    .limit(1)
-    .select(`
-      courier_name,
-      count() OVER (PARTITION BY courier_name) as orders_count
-    `)
-    .single();
-  
-  // If the above approach doesn't work, try raw SQL as fallback
+  // Try to get the top courier using the SQL function
   let topCourier = null;
-  if (topCourierError) {
-    // Use a raw SQL query instead
-    const { data: rawTopCourierData } = await supabase
+  try {
+    const { data: funcResult, error: funcError } = await supabase.rpc(
+      'get_top_courier_today',
+      { 
+        start_date: todayStart, 
+        end_date: todayEnd 
+      }
+    );
+
+    if (funcError) {
+      console.error('Error fetching top courier via function:', funcError);
+      // We'll handle this with our fallback below
+    } else if (funcResult && funcResult.length > 0) {
+      topCourier = {
+        name: funcResult[0].courier_name,
+        ordersCompleted: Number(funcResult[0].orders_count)
+      };
+    }
+  } catch (error) {
+    console.error('Exception when fetching top courier:', error);
+    // We'll handle this with our fallback below
+  }
+
+  // If we couldn't get the top courier via the function, use a fallback approach
+  if (!topCourier) {
+    // Direct query approach as fallback
+    const { data: rawTopCourierData, error: rawDataError } = await supabase
       .from('orders')
-      .select('courier_name')
+      .select('*') // Select all fields, avoiding direct courier_name reference
       .eq('status', 'Successful')
       .gte('created_at', todayStart)
-      .lte('created_at', todayEnd)
-      .not('courier_name', 'is', null);
+      .lte('created_at', todayEnd);
     
-    if (rawTopCourierData && rawTopCourierData.length > 0) {
-      // Count occurrences in JavaScript
-      const courierCounts: Record<string, number> = {};
-      rawTopCourierData.forEach(order => {
-        const name = order.courier_name as string;
-        courierCounts[name] = (courierCounts[name] || 0) + 1;
-      });
+    if (rawDataError) {
+      console.error('Error fetching raw courier data:', rawDataError);
+    } else if (rawTopCourierData && rawTopCourierData.length > 0) {
+      // Filter only orders that have a courier_name
+      const ordersWithCourier = rawTopCourierData.filter(order => order.courier_name);
       
-      // Find the courier with most orders
-      let maxCount = 0;
-      let topCourierName = '';
-      
-      Object.entries(courierCounts).forEach(([name, count]) => {
-        if (count > maxCount) {
-          maxCount = count;
-          topCourierName = name;
+      if (ordersWithCourier.length > 0) {
+        // Count occurrences in JavaScript
+        const courierCounts: Record<string, number> = {};
+        ordersWithCourier.forEach(order => {
+          const name = order.courier_name as string;
+          courierCounts[name] = (courierCounts[name] || 0) + 1;
+        });
+        
+        // Find the courier with most orders
+        let maxCount = 0;
+        let topCourierName = '';
+        
+        Object.entries(courierCounts).forEach(([name, count]) => {
+          if (count > maxCount) {
+            maxCount = count;
+            topCourierName = name;
+          }
+        });
+        
+        if (topCourierName) {
+          topCourier = {
+            name: topCourierName,
+            ordersCompleted: maxCount,
+          };
         }
-      });
-      
-      if (topCourierName) {
-        topCourier = {
-          name: topCourierName,
-          ordersCompleted: maxCount,
-        };
       }
     }
-  } else if (topCourierResult) {
-    topCourier = {
-      name: topCourierResult.courier_name,
-      ordersCompleted: parseInt(topCourierResult.orders_count as string) || 0,
-    };
   }
   
   return {
