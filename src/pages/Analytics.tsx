@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Info } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -219,24 +218,24 @@ const Analytics: React.FC = () => {
                   <div className="flex justify-between items-center">
                     <CurrencyDisplay
                       label="Collected Cash"
-                      usdValue={cashCycleData.collectedCash.usd}
-                      lbpValue={cashCycleData.collectedCash.lbp.toLocaleString()}
+                      usd={cashCycleData.collectedCash.usd}
+                      lbp={cashCycleData.collectedCash.lbp}
                     />
                   </div>
                   
                   <div className="flex justify-between items-center">
                     <CurrencyDisplay
                       label="Genius Fees"
-                      usdValue={cashCycleData.geniusFees.usd}
-                      lbpValue={cashCycleData.geniusFees.lbp.toLocaleString()}
+                      usd={cashCycleData.geniusFees.usd}
+                      lbp={cashCycleData.geniusFees.lbp}
                     />
                   </div>
                   
                   <div className="flex justify-between items-center pt-2 border-t">
                     <CurrencyDisplay
                       label="Net Value"
-                      usdValue={cashCycleData.netValue.usd}
-                      lbpValue={cashCycleData.netValue.lbp.toLocaleString()}
+                      usd={cashCycleData.netValue.usd}
+                      lbp={cashCycleData.netValue.lbp}
                     />
                   </div>
                 </div>

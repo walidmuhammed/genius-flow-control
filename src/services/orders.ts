@@ -53,10 +53,17 @@ export async function getOrders() {
     if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
       orderType = 'Deliver';
     }
+
+    // Ensure package_type is correctly cast to one of the allowed types
+    let packageType = order.package_type;
+    if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
+      packageType = 'parcel';
+    }
     
     return {
       ...order,
       type: orderType as 'Deliver' | 'Exchange' | 'Cash Collection',
+      package_type: packageType as 'parcel' | 'document' | 'bulky',
       customer: {
         ...customerData,
         city_name: customerData.cities?.name,
@@ -97,9 +104,16 @@ export async function getOrdersByStatus(status: Order['status']) {
       orderType = 'Deliver';
     }
     
+    // Ensure package_type is correctly cast to one of the allowed types
+    let packageType = order.package_type;
+    if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
+      packageType = 'parcel';
+    }
+    
     return {
       ...order,
       type: orderType as 'Deliver' | 'Exchange' | 'Cash Collection',
+      package_type: packageType as 'parcel' | 'document' | 'bulky',
       customer: {
         ...customerData,
         city_name: customerData.cities?.name,
@@ -138,9 +152,16 @@ export async function getOrderById(id: string) {
     orderType = 'Deliver';
   }
   
+  // Ensure package_type is correctly cast to one of the allowed types
+  let packageType = data.package_type;
+  if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
+    packageType = 'parcel';
+  }
+  
   const order: OrderWithCustomer = {
     ...data,
     type: orderType as 'Deliver' | 'Exchange' | 'Cash Collection',
+    package_type: packageType as 'parcel' | 'document' | 'bulky',
     customer: {
       ...customerData,
       city_name: customerData.cities?.name,
@@ -212,9 +233,16 @@ export async function getOrdersWithDateRange(startDate: string, endDate: string)
       orderType = 'Deliver';
     }
     
+    // Ensure package_type is correctly cast to one of the allowed types
+    let packageType = order.package_type;
+    if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
+      packageType = 'parcel';
+    }
+    
     return {
       ...order,
       type: orderType as 'Deliver' | 'Exchange' | 'Cash Collection',
+      package_type: packageType as 'parcel' | 'document' | 'bulky',
       customer: {
         ...customerData,
         city_name: customerData.cities?.name,

@@ -16,36 +16,10 @@ import { Pickup } from '@/services/pickups';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from "@/integrations/supabase/client";
-import { mapOrderToTableFormat, mapOrdersToTableFormat } from "@/utils/orderMappers";
+import { mapOrdersToTableFormat } from "@/utils/orderMappers";
 import { mapPickupToComponentFormat } from "@/utils/pickupMappers";
 
-// Mapping function to convert Supabase order data to the format expected by OrdersTableRow
-const mapOrderToTableFormat = (order: OrderWithCustomer): Order => {
-  return {
-    id: order.id,
-    referenceNumber: order.reference_number,
-    type: order.type,
-    customer: {
-      name: order.customer.name,
-      phone: order.customer.phone
-    },
-    location: {
-      city: order.customer.city_name || '',
-      area: order.customer.governorate_name || ''
-    },
-    amount: {
-      valueLBP: Number(order.cash_collection_lbp),
-      valueUSD: Number(order.cash_collection_usd)
-    },
-    deliveryCharge: {
-      valueLBP: Number(order.delivery_fees_lbp),
-      valueUSD: Number(order.delivery_fees_usd)
-    },
-    status: order.status,
-    lastUpdate: order.updated_at,
-    note: order.note
-  };
-};
+// Remove the duplicate mapOrderToTableFormat function since we're now importing it
 
 const Dashboard: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
