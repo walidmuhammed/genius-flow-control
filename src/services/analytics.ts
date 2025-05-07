@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { OrderStatus } from "./orders";
 
@@ -200,16 +201,23 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     ((deliveryFees.usd / targetFees.usd) * 100)
   );
   
-  // Get top courier (this would require a courier field in orders or related table)
-  // For now using SQL query instead of .group() which isn't available in the client
+  // Get top courier using direct SQL query since .group() isn't available in the client
   const { data: topCourierData, error: topCourierError } = await supabase
-    .rpc('get_top_courier_today', { start_date: todayStart, end_date: todayEnd });
+    .from('orders')
+    .select('courier_name, count(*) as orders_count')
+    .eq('status', 'Successful')
+    .gte('created_at', todayStart)
+    .lte('created_at', todayEnd)
+    .not('courier_name', 'is', null)
+    .order('orders_count', { ascending: false })
+    .limit(1)
+    .single();
   
   let topCourier = null;
-  if (topCourierData && topCourierData.length > 0) {
+  if (topCourierData) {
     topCourier = {
-      name: topCourierData[0].courier_name,
-      ordersCompleted: topCourierData[0].orders_count,
+      name: topCourierData.courier_name,
+      ordersCompleted: parseInt(topCourierData.orders_count as string) || 0,
     };
   }
   
