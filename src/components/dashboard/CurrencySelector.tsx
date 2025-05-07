@@ -9,20 +9,23 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-export type CurrencyType = 'USD' | 'LBP';
+export type CurrencyType = 'usd' | 'lbp' | string;
 
 interface CurrencySelectorProps {
-  value: CurrencyType;
-  onChange: (currency: CurrencyType) => void;
+  type: CurrencyType;
+  value?: CurrencyType;
+  onChange?: (currency: CurrencyType) => void;
   className?: string;
 }
 
 const CurrencySelector: React.FC<CurrencySelectorProps> = ({
+  type,
   value,
   onChange,
   className,
 }) => {
-  const currencies: CurrencyType[] = ['USD', 'LBP'];
+  const displayType = type === 'usd' ? 'USD' : type === 'lbp' ? 'LBP' : type.toUpperCase();
+  const currencies: CurrencyType[] = ['usd', 'lbp'];
 
   return (
     <DropdownMenu>
@@ -32,18 +35,18 @@ const CurrencySelector: React.FC<CurrencySelectorProps> = ({
           size="sm"
           className={className}
         >
-          {value}
+          {displayType}
           <ChevronDown className="ml-1 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        {currencies.map((currency) => (
+        {onChange && currencies.map((currency) => (
           <DropdownMenuItem
             key={currency}
             onClick={() => onChange(currency)}
             className="flex justify-between"
           >
-            {currency}
+            {currency === 'usd' ? 'USD' : 'LBP'}
             {value === currency && <Check className="h-4 w-4" />}
           </DropdownMenuItem>
         ))}

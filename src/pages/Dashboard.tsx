@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowUp, ArrowDown, Package, Check, Clock, AlertTriangle, DollarSign, ChevronRight } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -17,6 +16,8 @@ import { Pickup } from '@/services/pickups';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from "@/integrations/supabase/client";
+import { mapOrderToTableFormat, mapOrdersToTableFormat } from "@/utils/orderMappers";
+import { mapPickupToComponentFormat } from "@/utils/pickupMappers";
 
 // Mapping function to convert Supabase order data to the format expected by OrdersTableRow
 const mapOrderToTableFormat = (order: OrderWithCustomer): Order => {
@@ -441,7 +442,7 @@ const Dashboard: React.FC = () => {
                     </div>
                   ) : recentOrders && recentOrders.length > 0 ? (
                     <OrdersTable 
-                      orders={recentOrders.map(mapOrderToTableFormat)} 
+                      orders={recentOrders ? mapOrdersToTableFormat(recentOrders) : []} 
                       selectedOrders={selectedOrders} 
                       toggleSelectAll={toggleSelectAll} 
                       toggleSelectOrder={toggleSelectOrder} 
@@ -482,34 +483,37 @@ const Dashboard: React.FC = () => {
                         </TableHeader>
                         <TableBody>
                           {pickups && pickups.length > 0 ? (
-                            pickups.map(pickup => (
-                              <TableRow 
-                                key={pickup.id} 
-                                className="hover:bg-gray-50 cursor-pointer"
-                                onClick={() => handleViewPickupDetails(pickup)}
-                              >
-                                <TableCell className="font-medium">{pickup.pickup_id}</TableCell>
-                                <TableCell>
-                                  <Badge className={cn(
-                                    "px-2 py-1 rounded-full", 
-                                    pickup.status === "Scheduled" ? "bg-blue-50 text-blue-700" : 
-                                    pickup.status === "In Progress" ? "bg-yellow-50 text-yellow-700" : 
-                                    pickup.status === "Completed" ? "bg-green-50 text-green-700" : 
-                                    "bg-red-50 text-red-700"
-                                  )}>
-                                    {pickup.status}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>{pickup.location}</TableCell>
-                                <TableCell>{formatPickupDate(pickup.pickup_date)}</TableCell>
-                                <TableCell>
-                                  <div>
-                                    <div>{pickup.contact_person}</div>
-                                    <div className="text-xs text-gray-500">{pickup.contact_phone}</div>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            ))
+                            pickups.map(pickup => {
+                              const pickupData = mapPickupToComponentFormat(pickup);
+                              return (
+                                <TableRow 
+                                  key={pickup.id} 
+                                  className="hover:bg-gray-50 cursor-pointer"
+                                  onClick={() => handleViewPickupDetails(pickup)}
+                                >
+                                  <TableCell className="font-medium">{pickupData.pickupId}</TableCell>
+                                  <TableCell>
+                                    <Badge className={cn(
+                                      "px-2 py-1 rounded-full", 
+                                      pickupData.status === "Scheduled" ? "bg-blue-50 text-blue-700" : 
+                                      pickupData.status === "In Progress" ? "bg-yellow-50 text-yellow-700" : 
+                                      pickupData.status === "Completed" ? "bg-green-50 text-green-700" : 
+                                      "bg-red-50 text-red-700"
+                                    )}>
+                                      {pickupData.status}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>{pickupData.location}</TableCell>
+                                  <TableCell>{formatPickupDate(pickupData.pickupDate)}</TableCell>
+                                  <TableCell>
+                                    <div>
+                                      <div>{pickupData.contactPerson}</div>
+                                      <div className="text-xs text-gray-500">{pickupData.contactPhone}</div>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })
                           ) : (
                             <TableRow>
                               <TableCell colSpan={5} className="text-center py-8 text-gray-500">

@@ -47,8 +47,16 @@ export async function getOrders() {
   // Transform the data to match our interface
   const transformedData: OrderWithCustomer[] = data.map(order => {
     const customerData = order.customer as any;
+    
+    // Ensure type is correctly cast to one of the allowed types
+    let orderType = order.type;
+    if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
+      orderType = 'Deliver';
+    }
+    
     return {
       ...order,
+      type: orderType as 'Deliver' | 'Exchange' | 'Cash Collection',
       customer: {
         ...customerData,
         city_name: customerData.cities?.name,
@@ -82,8 +90,16 @@ export async function getOrdersByStatus(status: Order['status']) {
   // Transform the data to match our interface
   const transformedData: OrderWithCustomer[] = data.map(order => {
     const customerData = order.customer as any;
+    
+    // Ensure type is correctly cast to one of the allowed types
+    let orderType = order.type;
+    if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
+      orderType = 'Deliver';
+    }
+    
     return {
       ...order,
+      type: orderType as 'Deliver' | 'Exchange' | 'Cash Collection',
       customer: {
         ...customerData,
         city_name: customerData.cities?.name,
@@ -115,8 +131,16 @@ export async function getOrderById(id: string) {
   }
   
   const customerData = data.customer as any;
+  
+  // Ensure type is correctly cast to one of the allowed types
+  let orderType = data.type;
+  if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
+    orderType = 'Deliver';
+  }
+  
   const order: OrderWithCustomer = {
     ...data,
+    type: orderType as 'Deliver' | 'Exchange' | 'Cash Collection',
     customer: {
       ...customerData,
       city_name: customerData.cities?.name,
@@ -181,8 +205,16 @@ export async function getOrdersWithDateRange(startDate: string, endDate: string)
   // Transform the data to match our interface
   const transformedData: OrderWithCustomer[] = data.map(order => {
     const customerData = order.customer as any;
+    
+    // Ensure type is correctly cast to one of the allowed types
+    let orderType = order.type;
+    if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
+      orderType = 'Deliver';
+    }
+    
     return {
       ...order,
+      type: orderType as 'Deliver' | 'Exchange' | 'Cash Collection',
       customer: {
         ...customerData,
         city_name: customerData.cities?.name,
