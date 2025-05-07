@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { OrderStatus } from "./orders";
 
@@ -203,13 +204,15 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   // Try to get the top courier using the SQL function
   let topCourier = null;
   try {
-    const { data: funcResult, error: funcError } = await supabase.rpc(
-      'get_top_courier_today',
-      { 
+    // Using a custom query for the RPC function since TypeScript doesn't know about our custom function
+    const { data: funcResult, error: funcError } = await supabase
+      .rpc('get_top_courier_today', { 
         start_date: todayStart, 
         end_date: todayEnd 
-      }
-    );
+      }) as unknown as { 
+        data: { courier_name: string; orders_count: number }[] | null; 
+        error: Error | null 
+      };
 
     if (funcError) {
       console.error('Error fetching top courier via function:', funcError);
@@ -230,42 +233,40 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     // Direct query approach as fallback
     const { data: rawTopCourierData, error: rawDataError } = await supabase
       .from('orders')
-      .select('*') // Select all fields, avoiding direct courier_name reference
+      .select('courier_name') // Select only courier_name to be more specific
       .eq('status', 'Successful')
       .gte('created_at', todayStart)
-      .lte('created_at', todayEnd);
+      .lte('created_at', todayEnd)
+      .not('courier_name', 'is', null);
     
     if (rawDataError) {
       console.error('Error fetching raw courier data:', rawDataError);
     } else if (rawTopCourierData && rawTopCourierData.length > 0) {
-      // Filter only orders that have a courier_name
-      const ordersWithCourier = rawTopCourierData.filter(order => order.courier_name);
-      
-      if (ordersWithCourier.length > 0) {
-        // Count occurrences in JavaScript
-        const courierCounts: Record<string, number> = {};
-        ordersWithCourier.forEach(order => {
-          const name = order.courier_name as string;
+      // Count occurrences in JavaScript
+      const courierCounts: Record<string, number> = {};
+      rawTopCourierData.forEach(order => {
+        const name = order.courier_name as string;
+        if (name) { // Extra check to be safe
           courierCounts[name] = (courierCounts[name] || 0) + 1;
-        });
-        
-        // Find the courier with most orders
-        let maxCount = 0;
-        let topCourierName = '';
-        
-        Object.entries(courierCounts).forEach(([name, count]) => {
-          if (count > maxCount) {
-            maxCount = count;
-            topCourierName = name;
-          }
-        });
-        
-        if (topCourierName) {
-          topCourier = {
-            name: topCourierName,
-            ordersCompleted: maxCount,
-          };
         }
+      });
+      
+      // Find the courier with most orders
+      let maxCount = 0;
+      let topCourierName = '';
+      
+      Object.entries(courierCounts).forEach(([name, count]) => {
+        if (count > maxCount) {
+          maxCount = count;
+          topCourierName = name;
+        }
+      });
+      
+      if (topCourierName) {
+        topCourier = {
+          name: topCourierName,
+          ordersCompleted: maxCount,
+        };
       }
     }
   }

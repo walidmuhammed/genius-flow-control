@@ -146,6 +146,7 @@ export type Database = {
           cash_collection_enabled: boolean | null
           cash_collection_lbp: number | null
           cash_collection_usd: number | null
+          courier_name: string | null
           created_at: string
           customer_id: string
           delivery_fees_lbp: number | null
@@ -165,6 +166,7 @@ export type Database = {
           cash_collection_enabled?: boolean | null
           cash_collection_lbp?: number | null
           cash_collection_usd?: number | null
+          courier_name?: string | null
           created_at?: string
           customer_id: string
           delivery_fees_lbp?: number | null
@@ -184,6 +186,7 @@ export type Database = {
           cash_collection_enabled?: boolean | null
           cash_collection_lbp?: number | null
           cash_collection_usd?: number | null
+          courier_name?: string | null
           created_at?: string
           customer_id?: string
           delivery_fees_lbp?: number | null
@@ -277,6 +280,13 @@ export type Database = {
       generate_reference_number: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_top_courier_today: {
+        Args: { start_date: string; end_date: string }
+        Returns: {
+          courier_name: string
+          orders_count: number
+        }[]
       }
     }
     Enums: {
