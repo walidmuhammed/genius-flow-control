@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGeographicalStats } from '@/hooks/use-analytics';
 import CurrencyToggle from './CurrencyToggle';
-import MapVisualization from './MapVisualization';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -23,6 +22,8 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency, formatNumber, formatPercent } from '@/utils/format';
 import { ChevronRight, MapPin } from 'lucide-react';
+import TopRegionsChart from './TopRegionsChart';
+import RegionalSummary from './RegionalSummary';
 
 export default function GeographicalAnalysis() {
   const [currency, setCurrency] = useState<'USD' | 'LBP'>('USD');
@@ -36,13 +37,15 @@ export default function GeographicalAnalysis() {
         <CurrencyToggle currency={currency} onChange={setCurrency} />
       </div>
       
-      {/* Map Visualization */}
-      <MapVisualization
-        isLoading={isLoading}
-        courierLocations={geoStats?.courierLocations || []}
-        centerCoordinates={[35.5, 33.9]} // Centered on Lebanon
-        zoom={7}
-      />
+      {/* Regional Analytics Visualization */}
+      <div className="grid gap-8 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <TopRegionsChart data={geoStats?.regions} isLoading={isLoading} />
+        </div>
+        <div>
+          <RegionalSummary data={geoStats?.regions} isLoading={isLoading} />
+        </div>
+      </div>
       
       {/* Regional Breakdown */}
       <Card>

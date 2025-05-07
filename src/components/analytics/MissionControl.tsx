@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Package, TrendingUp, TrendingDown, Check, AlertTriangle, DollarSign, AreaChart } from 'lucide-react';
@@ -11,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import TopRegionsChart from './TopRegionsChart';
 import RegionalSummary from './RegionalSummary';
+
 export default function MissionControl() {
   const {
     data: dashboardStats,
@@ -36,6 +38,7 @@ export default function MissionControl() {
     data: geoStats,
     isLoading: isGeoStatsLoading
   } = useGeographicalStats();
+
   return <div className="space-y-8">
       <div className="grid gap-4 md:grid-cols-4">
         {/* Orders Created Today */}
@@ -153,7 +156,14 @@ export default function MissionControl() {
         </Card>
       </div>
       
-      {/* Regional Analytics - Replacing the Map Section */}
-      
+      {/* Regional Analytics Section */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <TopRegionsChart data={geoStats?.regions} isLoading={isGeoStatsLoading} />
+        </div>
+        <div className="md:col-span-1">
+          <RegionalSummary data={geoStats?.regions} isLoading={isGeoStatsLoading} />
+        </div>
+      </div>
     </div>;
 }
