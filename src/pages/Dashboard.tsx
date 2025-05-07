@@ -17,28 +17,15 @@ import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from "@/integrations/supabase/client";
 import { mapOrdersToTableFormat } from "@/utils/orderMappers";
-import { mapPickupToComponentFormat } from "@/utils/pickupMappers";
-
-// Remove the duplicate mapOrderToTableFormat function since we're now importing it
+import { mapPickupToComponentFormat, PickupData } from "@/utils/pickupMappers";
 
 const Dashboard: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
-  const [selectedPickup, setSelectedPickup] = useState<Pickup | null>(null);
+  const [selectedPickup, setSelectedPickup] = useState<PickupData | null>(null);
   const [pickupDetailsOpen, setPickupDetailsOpen] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [dashboardStats, setDashboardStats] = useState({
-    newOrders: { value: 0 },
-    delivered: { value: 0 },
-    inProgress: { value: 0 },
-    failedOrders: { value: 0 },
-    averageOrderValue: { value: "$0.00" },
-    collectedCash: {
-      usd: 0,
-      lbp: 0
-    }
-  });
-
+  
   // Fetch recent orders
   const { 
     data: recentOrders, 

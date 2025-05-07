@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
@@ -7,24 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { Check, Clock, AlertTriangle, Package, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface PickupData {
-  id: string;
-  status: "Scheduled" | "Completed" | "Canceled" | "In Progress";
-  location: string;
-  address: string;
-  contactPerson: string;
-  contactPhone: string;
-  pickupDate: string;
-  courier: {
-    name: string;
-    phone: string;
-  };
-  requested: boolean;
-  pickedUp: boolean;
-  validated: boolean;
-  note?: string;
-}
+import { PickupData } from '@/utils/pickupMappers';
 
 interface PickupDetailsDialogProps {
   pickup: PickupData | null;
