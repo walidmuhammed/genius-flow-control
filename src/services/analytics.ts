@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { OrderStatus } from "./orders";
 
@@ -201,23 +200,64 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     ((deliveryFees.usd / targetFees.usd) * 100)
   );
   
-  // Get top courier using direct SQL query since .group() isn't available in the client
-  const { data: topCourierData, error: topCourierError } = await supabase
+  // Get top courier with proper query syntax for the count
+  const { data: topCourierResult, error: topCourierError } = await supabase
     .from('orders')
-    .select('courier_name, count(*) as orders_count')
+    .select('courier_name, count')
     .eq('status', 'Successful')
     .gte('created_at', todayStart)
     .lte('created_at', todayEnd)
     .not('courier_name', 'is', null)
-    .order('orders_count', { ascending: false })
+    .order('count', { ascending: false })
     .limit(1)
+    .select(`
+      courier_name,
+      count() OVER (PARTITION BY courier_name) as orders_count
+    `)
     .single();
   
+  // If the above approach doesn't work, try raw SQL as fallback
   let topCourier = null;
-  if (topCourierData) {
+  if (topCourierError) {
+    // Use a raw SQL query instead
+    const { data: rawTopCourierData } = await supabase
+      .from('orders')
+      .select('courier_name')
+      .eq('status', 'Successful')
+      .gte('created_at', todayStart)
+      .lte('created_at', todayEnd)
+      .not('courier_name', 'is', null);
+    
+    if (rawTopCourierData && rawTopCourierData.length > 0) {
+      // Count occurrences in JavaScript
+      const courierCounts: Record<string, number> = {};
+      rawTopCourierData.forEach(order => {
+        const name = order.courier_name as string;
+        courierCounts[name] = (courierCounts[name] || 0) + 1;
+      });
+      
+      // Find the courier with most orders
+      let maxCount = 0;
+      let topCourierName = '';
+      
+      Object.entries(courierCounts).forEach(([name, count]) => {
+        if (count > maxCount) {
+          maxCount = count;
+          topCourierName = name;
+        }
+      });
+      
+      if (topCourierName) {
+        topCourier = {
+          name: topCourierName,
+          ordersCompleted: maxCount,
+        };
+      }
+    }
+  } else if (topCourierResult) {
     topCourier = {
-      name: topCourierData.courier_name,
-      ordersCompleted: parseInt(topCourierData.orders_count as string) || 0,
+      name: topCourierResult.courier_name,
+      ordersCompleted: parseInt(topCourierResult.orders_count as string) || 0,
     };
   }
   
