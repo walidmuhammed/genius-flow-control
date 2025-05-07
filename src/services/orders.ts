@@ -2,12 +2,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerWithLocation } from "./customers";
 
+export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid';
+export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection';
+export type PackageType = 'parcel' | 'document' | 'bulky';
+
 export interface Order {
   id: string;
   reference_number: string;
-  type: 'Deliver' | 'Exchange' | 'Cash Collection';
+  type: OrderType;
   customer_id: string;
-  package_type: 'parcel' | 'document' | 'bulky';
+  package_type: PackageType;
   package_description?: string;
   items_count: number;
   allow_opening: boolean;
@@ -17,7 +21,7 @@ export interface Order {
   delivery_fees_usd: number;
   delivery_fees_lbp: number;
   note?: string;
-  status: 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid';
+  status: OrderStatus;
   created_at: string;
   updated_at: string;
 }
@@ -60,10 +64,25 @@ export async function getOrders() {
       packageType = 'parcel';
     }
     
+    // Ensure status is correctly cast to one of the allowed types
+    let statusType = order.status;
+    if (statusType !== 'New' && 
+        statusType !== 'Pending Pickup' && 
+        statusType !== 'In Progress' && 
+        statusType !== 'Heading to Customer' && 
+        statusType !== 'Heading to You' && 
+        statusType !== 'Successful' && 
+        statusType !== 'Unsuccessful' && 
+        statusType !== 'Returned' && 
+        statusType !== 'Paid') {
+      statusType = 'New';
+    }
+    
     return {
       ...order,
-      type: orderType as 'Deliver' | 'Exchange' | 'Cash Collection',
-      package_type: packageType as 'parcel' | 'document' | 'bulky',
+      type: orderType as OrderType,
+      package_type: packageType as PackageType,
+      status: statusType as OrderStatus,
       customer: {
         ...customerData,
         city_name: customerData.cities?.name,
@@ -75,7 +94,7 @@ export async function getOrders() {
   return transformedData;
 }
 
-export async function getOrdersByStatus(status: Order['status']) {
+export async function getOrdersByStatus(status: OrderStatus) {
   const { data, error } = await supabase
     .from('orders')
     .select(`
@@ -110,10 +129,13 @@ export async function getOrdersByStatus(status: Order['status']) {
       packageType = 'parcel';
     }
     
+    // Status is already filtered so it should match the OrderStatus type
+    
     return {
       ...order,
-      type: orderType as 'Deliver' | 'Exchange' | 'Cash Collection',
-      package_type: packageType as 'parcel' | 'document' | 'bulky',
+      type: orderType as OrderType,
+      package_type: packageType as PackageType,
+      status: status, // This is already the correct type since we filtered by it
       customer: {
         ...customerData,
         city_name: customerData.cities?.name,
@@ -158,10 +180,25 @@ export async function getOrderById(id: string) {
     packageType = 'parcel';
   }
   
+  // Ensure status is correctly cast to one of the allowed types
+  let statusType = data.status;
+  if (statusType !== 'New' && 
+      statusType !== 'Pending Pickup' && 
+      statusType !== 'In Progress' && 
+      statusType !== 'Heading to Customer' && 
+      statusType !== 'Heading to You' && 
+      statusType !== 'Successful' && 
+      statusType !== 'Unsuccessful' && 
+      statusType !== 'Returned' && 
+      statusType !== 'Paid') {
+    statusType = 'New';
+  }
+  
   const order: OrderWithCustomer = {
     ...data,
-    type: orderType as 'Deliver' | 'Exchange' | 'Cash Collection',
-    package_type: packageType as 'parcel' | 'document' | 'bulky',
+    type: orderType as OrderType,
+    package_type: packageType as PackageType,
+    status: statusType as OrderStatus,
     customer: {
       ...customerData,
       city_name: customerData.cities?.name,
@@ -239,10 +276,25 @@ export async function getOrdersWithDateRange(startDate: string, endDate: string)
       packageType = 'parcel';
     }
     
+    // Ensure status is correctly cast to one of the allowed types
+    let statusType = order.status;
+    if (statusType !== 'New' && 
+        statusType !== 'Pending Pickup' && 
+        statusType !== 'In Progress' && 
+        statusType !== 'Heading to Customer' && 
+        statusType !== 'Heading to You' && 
+        statusType !== 'Successful' && 
+        statusType !== 'Unsuccessful' && 
+        statusType !== 'Returned' && 
+        statusType !== 'Paid') {
+      statusType = 'New';
+    }
+    
     return {
       ...order,
-      type: orderType as 'Deliver' | 'Exchange' | 'Cash Collection',
-      package_type: packageType as 'parcel' | 'document' | 'bulky',
+      type: orderType as OrderType,
+      package_type: packageType as PackageType,
+      status: statusType as OrderStatus,
       customer: {
         ...customerData,
         city_name: customerData.cities?.name,

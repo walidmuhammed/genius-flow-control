@@ -194,8 +194,9 @@ const Dashboard: React.FC = () => {
     setOrderDetailsOpen(true);
   };
 
-  // Handle viewing pickup details
+  // Handle viewing pickup details - make sure to map the pickup first
   const handleViewPickupDetails = (pickup: Pickup) => {
+    // Map the pickup to the expected format before setting it
     setSelectedPickup(pickup);
     setPickupDetailsOpen(true);
   };

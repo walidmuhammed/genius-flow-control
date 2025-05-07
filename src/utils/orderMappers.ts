@@ -1,5 +1,5 @@
 
-import { Order as ApiOrder, OrderWithCustomer } from '@/services/orders';
+import { Order as ApiOrder, OrderWithCustomer, OrderStatus, OrderType } from '@/services/orders';
 import { Order as TableOrder } from '@/components/orders/OrdersTableRow';
 
 /**
@@ -9,7 +9,7 @@ export function mapOrderToTableFormat(order: OrderWithCustomer): TableOrder {
   return {
     id: order.id,
     referenceNumber: order.reference_number,
-    type: order.type,
+    type: order.type as OrderType,
     customer: {
       name: order.customer.name,
       phone: order.customer.phone
@@ -26,7 +26,7 @@ export function mapOrderToTableFormat(order: OrderWithCustomer): TableOrder {
       valueLBP: Number(order.delivery_fees_lbp),
       valueUSD: Number(order.delivery_fees_usd)
     },
-    status: order.status,
+    status: order.status as OrderStatus,
     lastUpdate: order.updated_at,
     note: order.note
   };
