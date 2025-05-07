@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowUp, ArrowDown, Package, Check, Clock, AlertTriangle, DollarSign, ChevronRight } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -25,6 +26,18 @@ const Dashboard: React.FC = () => {
   const [selectedPickup, setSelectedPickup] = useState<PickupData | null>(null);
   const [pickupDetailsOpen, setPickupDetailsOpen] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  // Restore dashboardStats state
+  const [dashboardStats, setDashboardStats] = useState({
+    newOrders: { value: 0 },
+    delivered: { value: 0 },
+    inProgress: { value: 0 },
+    failedOrders: { value: 0 },
+    averageOrderValue: { value: "$0.00" },
+    collectedCash: {
+      usd: 0,
+      lbp: 0
+    }
+  });
   
   // Fetch recent orders
   const { 
@@ -184,7 +197,8 @@ const Dashboard: React.FC = () => {
   // Handle viewing pickup details - make sure to map the pickup first
   const handleViewPickupDetails = (pickup: Pickup) => {
     // Map the pickup to the expected format before setting it
-    setSelectedPickup(pickup);
+    const mappedPickup = mapPickupToComponentFormat(pickup);
+    setSelectedPickup(mappedPickup);
     setPickupDetailsOpen(true);
   };
   

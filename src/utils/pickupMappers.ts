@@ -16,6 +16,8 @@ export interface PickupData {
     phone?: string;
   };
   pickedUp: boolean;
+  requested: boolean;   // Added this property
+  validated: boolean;   // Added this property
   requestedAt: string;
   updatedAt: string;
 }
@@ -39,6 +41,8 @@ export function mapPickupToComponentFormat(pickup: Pickup): PickupData {
       phone: pickup.courier_phone
     },
     pickedUp: pickup.picked_up || false,
+    requested: pickup.requested || false, // Map the requested property
+    validated: pickup.validated || false, // Map the validated property
     requestedAt: pickup.created_at,
     updatedAt: pickup.updated_at
   };
