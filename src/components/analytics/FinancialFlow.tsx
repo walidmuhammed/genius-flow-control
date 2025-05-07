@@ -205,7 +205,7 @@ export default function FinancialFlow() {
           chart={
             <div className="h-[200px] flex flex-col items-center justify-center">
               <div className="text-3xl font-bold mb-2">
-                {financialStats?.refundRate.toFixed(1)}%
+                {financialStats?.refundRate ? financialStats.refundRate.toFixed(1) : '0.0'}%
               </div>
               
               <div className="w-full mt-6">
@@ -223,7 +223,16 @@ export default function FinancialFlow() {
                       radius={[4, 4, 4, 4]}
                       barSize={20}
                     >
-                      <LabelList dataKey="value" position="insideRight" formatter={(value: number) => `${value.toFixed(1)}%`} />
+                      {/* This is where the error was happening - we need to safely handle undefined values */}
+                      <LabelList 
+                        dataKey="value" 
+                        position="insideRight" 
+                        formatter={(value: number | null | undefined) => {
+                          // Safely handle undefined or null values
+                          if (value === undefined || value === null) return '0.0%';
+                          return `${value.toFixed(1)}%`;
+                        }} 
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -239,7 +248,10 @@ export default function FinancialFlow() {
 // Helper component for labels in charts
 const LabelList = (props: any) => {
   const { x, y, width, height, value, formatter } = props;
-  const formattedValue = formatter ? formatter(value) : value;
+  // Apply the formatter safely - if formatter doesn't exist or value is undefined, handle it gracefully
+  const formattedValue = formatter && value !== undefined && value !== null 
+    ? formatter(value) 
+    : (value !== undefined && value !== null ? value : '');
   
   return (
     <text 
