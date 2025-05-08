@@ -1,11 +1,9 @@
-
 import React from 'react';
 import { Check, Info, X } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import CurrencyDisplay from '@/components/dashboard/CurrencyDisplay';
 import CurrencySelector from '@/components/dashboard/CurrencySelector';
-
 interface CashCollectionFieldsProps {
   enabled: boolean;
   onEnabledChange: (enabled: boolean) => void;
@@ -22,7 +20,6 @@ interface CashCollectionFieldsProps {
     lbpAmount?: string;
   };
 }
-
 const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
   enabled,
   onEnabledChange,
@@ -33,8 +30,7 @@ const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
   deliveryFees,
   errors
 }) => {
-  return (
-    <div>
+  return <div>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
           <h3 className="font-medium">Cash Collection</h3>
@@ -52,8 +48,7 @@ const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
         <Switch checked={enabled} onCheckedChange={onEnabledChange} />
       </div>
       
-      {enabled && (
-        <div className="space-y-3">
+      {enabled && <div className="space-y-3">
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm">USD Amount</span>
@@ -61,38 +56,26 @@ const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
             </div>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">$</div>
-              <input
-                type="text"
-                value={usdAmount}
-                onChange={(e) => {
-                  // Allow only numbers and decimal point
-                  const value = e.target.value.replace(/[^0-9.]/g, '');
-                  // Ensure only one decimal point
-                  const decimalParts = value.split('.');
-                  if (decimalParts.length > 1) {
-                    const wholeNumber = decimalParts[0];
-                    const decimal = decimalParts.slice(1).join('').slice(0, 2);
-                    onUsdAmountChange(`${wholeNumber}.${decimal}`);
-                  } else {
-                    onUsdAmountChange(value);
-                  }
-                }}
-                className={`w-full pl-8 pr-12 py-2 border ${errors?.usdAmount ? 'border-red-500' : 'border-gray-300'} rounded-md`}
-                placeholder="0.00"
-              />
+              <input type="text" value={usdAmount} onChange={e => {
+            // Allow only numbers and decimal point
+            const value = e.target.value.replace(/[^0-9.]/g, '');
+            // Ensure only one decimal point
+            const decimalParts = value.split('.');
+            if (decimalParts.length > 1) {
+              const wholeNumber = decimalParts[0];
+              const decimal = decimalParts.slice(1).join('').slice(0, 2);
+              onUsdAmountChange(`${wholeNumber}.${decimal}`);
+            } else {
+              onUsdAmountChange(value);
+            }
+          }} className={`w-full pl-8 pr-12 py-2 border ${errors?.usdAmount ? 'border-red-500' : 'border-gray-300'} rounded-md`} placeholder="0.00" />
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <button
-                  type="button"
-                  onClick={() => onUsdAmountChange('')}
-                  className="text-gray-400 hover:text-gray-600"
-                >
+                <button type="button" onClick={() => onUsdAmountChange('')} className="text-gray-400 hover:text-gray-600">
                   <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
-            {errors?.usdAmount && (
-              <p className="text-red-500 text-xs mt-1">{errors.usdAmount}</p>
-            )}
+            {errors?.usdAmount && <p className="text-red-500 text-xs mt-1">{errors.usdAmount}</p>}
           </div>
           
           <div>
@@ -101,30 +84,18 @@ const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
               <CurrencySelector type="lbp" />
             </div>
             <div className="relative">
-              <input
-                type="text"
-                value={lbpAmount}
-                onChange={(e) => {
-                  // Allow only numbers
-                  const value = e.target.value.replace(/\D/g, '');
-                  onLbpAmountChange(value);
-                }}
-                className={`w-full pl-3 pr-12 py-2 border ${errors?.lbpAmount ? 'border-red-500' : 'border-gray-300'} rounded-md`}
-                placeholder="0"
-              />
+              <input type="text" value={lbpAmount} onChange={e => {
+            // Allow only numbers
+            const value = e.target.value.replace(/\D/g, '');
+            onLbpAmountChange(value);
+          }} className={`w-full pl-3 pr-12 py-2 border ${errors?.lbpAmount ? 'border-red-500' : 'border-gray-300'} rounded-md`} placeholder="0" />
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <button
-                  type="button"
-                  onClick={() => onLbpAmountChange('')}
-                  className="text-gray-400 hover:text-gray-600"
-                >
+                <button type="button" onClick={() => onLbpAmountChange('')} className="text-gray-400 hover:text-gray-600">
                   <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
-            {errors?.lbpAmount && (
-              <p className="text-red-500 text-xs mt-1">{errors.lbpAmount}</p>
-            )}
+            {errors?.lbpAmount && <p className="text-red-500 text-xs mt-1">{errors.lbpAmount}</p>}
           </div>
           
           <div className="flex items-center justify-between pt-1">
@@ -134,19 +105,8 @@ const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
             </div>
           </div>
           
-          <div className="flex items-center justify-between pt-2 pb-1 border-t border-dashed">
-            <div className="text-base font-medium">Total:</div>
-            <div className="text-base font-medium">
-              <CurrencyDisplay 
-                usd={Number(usdAmount || 0) + deliveryFees.usd} 
-                lbp={Number(lbpAmount || 0) + deliveryFees.lbp} 
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+          
+        </div>}
+    </div>;
 };
-
 export default CashCollectionFields;
