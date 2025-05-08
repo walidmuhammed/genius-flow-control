@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { OrderStatus } from "./orders";
 
@@ -26,12 +25,42 @@ export interface DashboardStats {
   } | null;
 }
 
+export interface DeliveryPerformanceStats {
+  totalOrders: number;
+  successfulOrders: number;
+  unsuccessfulOrders: number;
+  successRate: number;
+  averageDeliveryTime: number; // in minutes
+  deliverySuccessOverTime: {
+    date: string;
+    successful: number;
+    unsuccessful: number;
+    rate: number;
+  }[];
+  unsuccessfulReasons: {
+    reason: string;
+    count: number;
+  }[];
+}
+
 export interface FinancialStats {
   cashFlow: {
     date: string;
     usd: number;
     lbp: number;
   }[];
+  cashCollected: {
+    usd: number;
+    lbp: number;
+  };
+  deliveryFees: {
+    usd: number; 
+    lbp: number;
+  };
+  netValue: {
+    usd: number;
+    lbp: number;
+  };
   paymentMethods: {
     method: string;
     value: number;
@@ -49,12 +78,47 @@ export interface FinancialStats {
   refundRate: number;
 }
 
+export interface SalesInsightsStats {
+  topCustomers: {
+    id: string;
+    name: string;
+    totalOrders: number;
+    totalSpent: {
+      usd: number;
+      lbp: number;
+    };
+  }[];
+  repeatOrderFrequency: {
+    repeats: number; // 1 = one-time, 2 = twice, etc.
+    customerCount: number;
+  }[];
+  averageOrderValue: {
+    usd: number;
+    lbp: number;
+    trend: number; // percentage change
+  };
+  topCategories: {
+    name: string;
+    count: number;
+    revenue: {
+      usd: number;
+      lbp: number;
+    };
+  }[];
+  mostExchangedItems: {
+    name: string;
+    count: number;
+    percentage: number;
+  }[];
+}
+
 export interface GeographicalStats {
   regions: {
     name: string;
     totalOrders: number;
     successRate: number;
     failureRate: number;
+    averageDeliveryTime: number; // in minutes
     cashCollected: {
       usd: number;
       lbp: number;
@@ -64,18 +128,18 @@ export interface GeographicalStats {
       totalOrders: number;
       successRate: number;
       failureRate: number;
+      averageDeliveryTime: number; // in minutes
       cashCollected: {
         usd: number;
         lbp: number;
       };
     }[];
   }[];
-  courierLocations: {
-    id: string;
+  mapData: {
     name: string;
-    lat: number;
-    lng: number;
-    status: 'active' | 'idle' | 'offline';
+    orders: number;
+    successRate: number;
+    color: string;
   }[];
 }
 
@@ -345,6 +409,146 @@ export async function getSparklineData(metric: 'orders' | 'successful' | 'failed
   return result;
 }
 
+// Get delivery performance stats
+export async function getDeliveryPerformanceStats(period: 'daily' | 'weekly' | 'monthly' = 'daily'): Promise<DeliveryPerformanceStats> {
+  // Determine date range based on period
+  let daysToFetch = 30; // Default for daily
+  if (period === 'weekly') daysToFetch = 90;
+  if (period === 'monthly') daysToFetch = 365;
+  
+  const { start, end } = getDateRangeForPastDays(daysToFetch);
+  
+  // Fetch orders for the period
+  const { data: orders, error: ordersError } = await supabase
+    .from('orders')
+    .select(`
+      id,
+      created_at,
+      updated_at,
+      status,
+      note
+    `)
+    .gte('created_at', start)
+    .lte('created_at', end);
+  
+  if (ordersError) {
+    console.error('Error fetching delivery performance data:', ordersError);
+    throw ordersError;
+  }
+
+  // Calculate basic stats
+  const totalOrders = orders.length;
+  const successfulOrders = orders.filter(order => order.status === 'Successful').length;
+  const unsuccessfulOrders = orders.filter(order => order.status === 'Unsuccessful').length;
+  const successRate = totalOrders > 0 ? (successfulOrders / totalOrders) * 100 : 0;
+  
+  // Calculate average delivery time (mock for now, replace with actual calculation)
+  // Assumption: created_at to updated_at difference for successful orders
+  let totalDeliveryTime = 0;
+  let ordersWithTime = 0;
+  
+  orders.filter(order => order.status === 'Successful').forEach(order => {
+    const createdAt = new Date(order.created_at).getTime();
+    const updatedAt = new Date(order.updated_at).getTime();
+    const deliveryTime = (updatedAt - createdAt) / (1000 * 60); // Convert to minutes
+    
+    if (deliveryTime > 0) {
+      totalDeliveryTime += deliveryTime;
+      ordersWithTime++;
+    }
+  });
+  
+  const averageDeliveryTime = ordersWithTime > 0 ? totalDeliveryTime / ordersWithTime : 0;
+  
+  // Group orders by date for the success/failure over time chart
+  const ordersByDate: Record<string, { successful: number; unsuccessful: number }> = {};
+  
+  // Initialize dates in the range
+  for (let i = 0; i < daysToFetch; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const dateStr = formatDate(date);
+    ordersByDate[dateStr] = { successful: 0, unsuccessful: 0 };
+  }
+  
+  // Populate with actual data
+  orders.forEach(order => {
+    const dateStr = formatDate(new Date(order.created_at));
+    if (!ordersByDate[dateStr]) {
+      ordersByDate[dateStr] = { successful: 0, unsuccessful: 0 };
+    }
+    
+    if (order.status === 'Successful') {
+      ordersByDate[dateStr].successful += 1;
+    } else if (order.status === 'Unsuccessful') {
+      ordersByDate[dateStr].unsuccessful += 1;
+    }
+  });
+  
+  // Convert to array and calculate rates
+  const deliverySuccessOverTime = Object.entries(ordersByDate)
+    .map(([date, data]) => {
+      const dailyTotal = data.successful + data.unsuccessful;
+      const rate = dailyTotal > 0 ? (data.successful / dailyTotal) * 100 : 0;
+      return {
+        date,
+        successful: data.successful,
+        unsuccessful: data.unsuccessful,
+        rate
+      };
+    })
+    .sort((a, b) => a.date.localeCompare(b.date));
+  
+  // Extract unsuccessful reasons from notes
+  // This is a simple implementation - in a real scenario, you might have a dedicated field for this
+  const commonReasons = [
+    "Customer not available",
+    "Wrong address",
+    "Customer refused",
+    "Package damaged",
+    "Payment issues",
+    "Customer postponed",
+    "Other"
+  ];
+  
+  const reasonCounts: Record<string, number> = {};
+  commonReasons.forEach(reason => { reasonCounts[reason] = 0; });
+  
+  orders
+    .filter(order => order.status === 'Unsuccessful')
+    .forEach(order => {
+      const note = (order.note || "").toLowerCase();
+      let reasonFound = false;
+      
+      for (const reason of commonReasons.slice(0, -1)) {
+        if (note.includes(reason.toLowerCase())) {
+          reasonCounts[reason] += 1;
+          reasonFound = true;
+          break;
+        }
+      }
+      
+      if (!reasonFound) {
+        reasonCounts["Other"] += 1;
+      }
+    });
+  
+  // Sort reasons by count and format
+  const unsuccessfulReasons = Object.entries(reasonCounts)
+    .map(([reason, count]) => ({ reason, count }))
+    .sort((a, b) => b.count - a.count);
+  
+  return {
+    totalOrders,
+    successfulOrders,
+    unsuccessfulOrders,
+    successRate,
+    averageDeliveryTime,
+    deliverySuccessOverTime,
+    unsuccessfulReasons
+  };
+}
+
 // Get financial statistics
 export async function getFinancialStats(period: 'daily' | 'weekly' | 'monthly' = 'daily'): Promise<FinancialStats> {
   // Determine date range based on period
@@ -357,7 +561,16 @@ export async function getFinancialStats(period: 'daily' | 'weekly' | 'monthly' =
   // Fetch orders for the period
   const { data: orders, error: ordersError } = await supabase
     .from('orders')
-    .select('created_at, status, cash_collection_usd, cash_collection_lbp, cash_collection_enabled, type')
+    .select(`
+      created_at, 
+      status, 
+      cash_collection_usd, 
+      cash_collection_lbp, 
+      cash_collection_enabled, 
+      delivery_fees_usd,
+      delivery_fees_lbp,
+      type
+    `)
     .gte('created_at', start)
     .lte('created_at', end);
   
@@ -366,11 +579,43 @@ export async function getFinancialStats(period: 'daily' | 'weekly' | 'monthly' =
     throw ordersError;
   }
 
+  // Calculate total cash collected
+  const cashCollected = orders
+    .filter(order => order.status === 'Successful')
+    .reduce(
+      (acc, order) => {
+        acc.usd += Number(order.cash_collection_usd || 0);
+        acc.lbp += Number(order.cash_collection_lbp || 0);
+        return acc;
+      }, 
+      { usd: 0, lbp: 0 }
+    );
+  
+  // Calculate total delivery fees
+  const deliveryFees = orders
+    .filter(order => order.status === 'Successful')
+    .reduce(
+      (acc, order) => {
+        acc.usd += Number(order.delivery_fees_usd || 0);
+        acc.lbp += Number(order.delivery_fees_lbp || 0);
+        return acc;
+      }, 
+      { usd: 0, lbp: 0 }
+    );
+  
+  // Calculate net value (cash collected minus delivery fees)
+  const netValue = {
+    usd: cashCollected.usd - deliveryFees.usd,
+    lbp: cashCollected.lbp - deliveryFees.lbp
+  };
+
   // Process cash flow by date
-  const cashFlowByDate: Record<string, { usd: number; lbp: number }> = {};
+  const cashFlowByDate: Record<string, { usd: number; lbp: number; feesUsd: number; feesLbp: number; netUsd: number; netLbp: number }> = {};
   
   // Group data for the given period
   orders.forEach(order => {
+    if (order.status !== 'Successful') return;
+    
     let dateKey: string;
     const orderDate = new Date(order.created_at);
     
@@ -387,13 +632,24 @@ export async function getFinancialStats(period: 'daily' | 'weekly' | 'monthly' =
     }
     
     if (!cashFlowByDate[dateKey]) {
-      cashFlowByDate[dateKey] = { usd: 0, lbp: 0 };
+      cashFlowByDate[dateKey] = { 
+        usd: 0, lbp: 0, 
+        feesUsd: 0, feesLbp: 0, 
+        netUsd: 0, netLbp: 0 
+      };
     }
     
-    if (order.status === 'Successful') {
-      cashFlowByDate[dateKey].usd += Number(order.cash_collection_usd || 0);
-      cashFlowByDate[dateKey].lbp += Number(order.cash_collection_lbp || 0);
-    }
+    const cashUsd = Number(order.cash_collection_usd || 0);
+    const cashLbp = Number(order.cash_collection_lbp || 0);
+    const feesUsd = Number(order.delivery_fees_usd || 0);
+    const feesLbp = Number(order.delivery_fees_lbp || 0);
+    
+    cashFlowByDate[dateKey].usd += cashUsd;
+    cashFlowByDate[dateKey].lbp += cashLbp;
+    cashFlowByDate[dateKey].feesUsd += feesUsd;
+    cashFlowByDate[dateKey].feesLbp += feesLbp;
+    cashFlowByDate[dateKey].netUsd += cashUsd - feesUsd;
+    cashFlowByDate[dateKey].netLbp += cashLbp - feesLbp;
   });
   
   // Convert to array and format
@@ -446,10 +702,173 @@ export async function getFinancialStats(period: 'daily' | 'weekly' | 'monthly' =
   
   return {
     cashFlow,
+    cashCollected,
+    deliveryFees,
+    netValue,
     paymentMethods,
     failedCollections,
     avgCashPerOrder,
     refundRate
+  };
+}
+
+// Get sales insights statistics
+export async function getSalesInsightsStats(): Promise<SalesInsightsStats> {
+  const { start, end } = getDateRangeForPastDays(90); // Last 90 days
+  
+  // Fetch orders with customer data for the period
+  const { data: orders, error: ordersError } = await supabase
+    .from('orders')
+    .select(`
+      id,
+      created_at,
+      status,
+      cash_collection_usd,
+      cash_collection_lbp,
+      type,
+      package_type,
+      package_description,
+      customer:customer_id (
+        id,
+        name
+      )
+    `)
+    .gte('created_at', start)
+    .lte('created_at', end);
+  
+  if (ordersError) {
+    console.error('Error fetching sales insights data:', ordersError);
+    throw ordersError;
+  }
+
+  // Process customer data for "Top Customers"
+  const customerStats: Record<string, {
+    id: string;
+    name: string;
+    totalOrders: number;
+    totalSpent: { usd: number; lbp: number };
+  }> = {};
+  
+  orders.forEach(order => {
+    if (!order.customer) return;
+    
+    const customerId = order.customer.id;
+    const customerName = order.customer.name;
+    
+    if (!customerStats[customerId]) {
+      customerStats[customerId] = {
+        id: customerId,
+        name: customerName,
+        totalOrders: 0,
+        totalSpent: { usd: 0, lbp: 0 }
+      };
+    }
+    
+    customerStats[customerId].totalOrders += 1;
+    
+    if (order.status === 'Successful') {
+      customerStats[customerId].totalSpent.usd += Number(order.cash_collection_usd || 0);
+      customerStats[customerId].totalSpent.lbp += Number(order.cash_collection_lbp || 0);
+    }
+  });
+  
+  // Convert to array and sort by orders count
+  const topCustomers = Object.values(customerStats)
+    .sort((a, b) => b.totalOrders - a.totalOrders)
+    .slice(0, 10); // Top 10 customers
+  
+  // Calculate repeat order frequency
+  const customerOrderCounts: Record<string, number> = {};
+  
+  orders.forEach(order => {
+    if (!order.customer) return;
+    
+    const customerId = order.customer.id;
+    customerOrderCounts[customerId] = (customerOrderCounts[customerId] || 0) + 1;
+  });
+  
+  const orderFrequency: Record<number, number> = {};
+  
+  Object.values(customerOrderCounts).forEach(count => {
+    orderFrequency[count] = (orderFrequency[count] || 0) + 1;
+  });
+  
+  const repeatOrderFrequency = Object.entries(orderFrequency)
+    .map(([repeats, customerCount]) => ({
+      repeats: Number(repeats),
+      customerCount
+    }))
+    .sort((a, b) => a.repeats - b.repeats);
+  
+  // Calculate average order value
+  const successfulOrders = orders.filter(order => order.status === 'Successful');
+  const totalUsd = successfulOrders.reduce((sum, order) => sum + Number(order.cash_collection_usd || 0), 0);
+  const totalLbp = successfulOrders.reduce((sum, order) => sum + Number(order.cash_collection_lbp || 0), 0);
+  
+  const avgOrderValue = {
+    usd: successfulOrders.length ? totalUsd / successfulOrders.length : 0,
+    lbp: successfulOrders.length ? totalLbp / successfulOrders.length : 0,
+    trend: 5.2 // Mock trend - would need historical comparison
+  };
+  
+  // Calculate top categories based on package_type and package_description
+  // Using package_type as a proxy for category since we don't have a dedicated field
+  const categoryCounts: Record<string, {
+    count: number;
+    revenue: { usd: number; lbp: number };
+  }> = {};
+  
+  orders.forEach(order => {
+    const category = order.package_type || 'Uncategorized';
+    
+    if (!categoryCounts[category]) {
+      categoryCounts[category] = {
+        count: 0,
+        revenue: { usd: 0, lbp: 0 }
+      };
+    }
+    
+    categoryCounts[category].count += 1;
+    
+    if (order.status === 'Successful') {
+      categoryCounts[category].revenue.usd += Number(order.cash_collection_usd || 0);
+      categoryCounts[category].revenue.lbp += Number(order.cash_collection_lbp || 0);
+    }
+  });
+  
+  const topCategories = Object.entries(categoryCounts)
+    .map(([name, data]) => ({
+      name,
+      count: data.count,
+      revenue: data.revenue
+    }))
+    .sort((a, b) => b.count - a.count);
+  
+  // Calculate most exchanged items based on type
+  // Using just 'Exchange' type orders since we don't have item-level data
+  const exchangedItems: Record<string, number> = {};
+  const exchangeOrders = orders.filter(order => order.type === 'Exchange');
+  
+  exchangeOrders.forEach(order => {
+    const itemCategory = order.package_type || 'Unknown';
+    exchangedItems[itemCategory] = (exchangedItems[itemCategory] || 0) + 1;
+  });
+  
+  const totalExchanges = exchangeOrders.length;
+  const mostExchangedItems = Object.entries(exchangedItems)
+    .map(([name, count]) => ({
+      name,
+      count,
+      percentage: totalExchanges > 0 ? (count / totalExchanges) * 100 : 0
+    }))
+    .sort((a, b) => b.count - a.count);
+  
+  return {
+    topCustomers,
+    repeatOrderFrequency,
+    averageOrderValue: avgOrderValue,
+    topCategories,
+    mostExchangedItems
   };
 }
 
@@ -462,6 +881,8 @@ export async function getGeographicalStats(): Promise<GeographicalStats> {
     .from('orders')
     .select(`
       id,
+      created_at,
+      updated_at,
       status,
       cash_collection_usd,
       cash_collection_lbp,
@@ -483,20 +904,42 @@ export async function getGeographicalStats(): Promise<GeographicalStats> {
     totalOrders: number;
     successfulOrders: number;
     failedOrders: number;
+    deliveryTimes: number[]; // Array of delivery times in minutes
     cashUsd: number;
     cashLbp: number;
     cities: Record<string, {
       totalOrders: number;
       successfulOrders: number;
       failedOrders: number;
+      deliveryTimes: number[]; // Array of delivery times in minutes
       cashUsd: number;
       cashLbp: number;
     }>
   }> = {};
   
+  // Define colors for regions
+  const regionColors: Record<string, string> = {
+    'Beirut': '#3B82F6', // Blue
+    'Mount Lebanon': '#10B981', // Green
+    'North Lebanon': '#F59E0B', // Amber
+    'Akkar': '#EC4899', // Pink
+    'Beqaa': '#8B5CF6', // Purple
+    'Baalbek-Hermel': '#F97316', // Orange
+    'South Lebanon': '#06B6D4', // Cyan
+    'Unknown': '#6B7280' // Gray
+  };
+  
   orders.forEach(order => {
     const region = order.customer?.governorates?.name || 'Unknown';
     const city = order.customer?.cities?.name || 'Unknown';
+    
+    // Calculate delivery time if available
+    let deliveryTime = 0;
+    if (order.status === 'Successful' && order.created_at && order.updated_at) {
+      const createdAt = new Date(order.created_at).getTime();
+      const updatedAt = new Date(order.updated_at).getTime();
+      deliveryTime = (updatedAt - createdAt) / (1000 * 60); // Convert to minutes
+    }
     
     // Initialize region if not exists
     if (!regionData[region]) {
@@ -504,6 +947,7 @@ export async function getGeographicalStats(): Promise<GeographicalStats> {
         totalOrders: 0,
         successfulOrders: 0,
         failedOrders: 0,
+        deliveryTimes: [],
         cashUsd: 0,
         cashLbp: 0,
         cities: {}
@@ -516,6 +960,7 @@ export async function getGeographicalStats(): Promise<GeographicalStats> {
         totalOrders: 0,
         successfulOrders: 0,
         failedOrders: 0,
+        deliveryTimes: [],
         cashUsd: 0,
         cashLbp: 0
       };
@@ -525,6 +970,9 @@ export async function getGeographicalStats(): Promise<GeographicalStats> {
     regionData[region].totalOrders++;
     if (order.status === 'Successful') {
       regionData[region].successfulOrders++;
+      if (deliveryTime > 0) {
+        regionData[region].deliveryTimes.push(deliveryTime);
+      }
       regionData[region].cashUsd += Number(order.cash_collection_usd || 0);
       regionData[region].cashLbp += Number(order.cash_collection_lbp || 0);
     } else if (order.status === 'Unsuccessful') {
@@ -535,6 +983,9 @@ export async function getGeographicalStats(): Promise<GeographicalStats> {
     regionData[region].cities[city].totalOrders++;
     if (order.status === 'Successful') {
       regionData[region].cities[city].successfulOrders++;
+      if (deliveryTime > 0) {
+        regionData[region].cities[city].deliveryTimes.push(deliveryTime);
+      }
       regionData[region].cities[city].cashUsd += Number(order.cash_collection_usd || 0);
       regionData[region].cities[city].cashLbp += Number(order.cash_collection_lbp || 0);
     } else if (order.status === 'Unsuccessful') {
@@ -544,21 +995,33 @@ export async function getGeographicalStats(): Promise<GeographicalStats> {
   
   // Format regions array
   const regions = Object.entries(regionData).map(([name, data]) => {
+    // Calculate average delivery time for region
+    const avgDeliveryTime = data.deliveryTimes.length > 0
+      ? data.deliveryTimes.reduce((sum, time) => sum + time, 0) / data.deliveryTimes.length
+      : 0;
+    
     return {
       name,
       totalOrders: data.totalOrders,
-      successRate: data.totalOrders ? (data.successfulOrders / data.totalOrders) * 100 : 0,
-      failureRate: data.totalOrders ? (data.failedOrders / data.totalOrders) * 100 : 0,
+      successRate: data.totalOrders > 0 ? (data.successfulOrders / data.totalOrders) * 100 : 0,
+      failureRate: data.totalOrders > 0 ? (data.failedOrders / data.totalOrders) * 100 : 0,
+      averageDeliveryTime: avgDeliveryTime,
       cashCollected: {
         usd: data.cashUsd,
         lbp: data.cashLbp
       },
       cities: Object.entries(data.cities).map(([cityName, cityData]) => {
+        // Calculate average delivery time for city
+        const cityAvgDeliveryTime = cityData.deliveryTimes.length > 0
+          ? cityData.deliveryTimes.reduce((sum, time) => sum + time, 0) / cityData.deliveryTimes.length
+          : 0;
+        
         return {
           name: cityName,
           totalOrders: cityData.totalOrders,
-          successRate: cityData.totalOrders ? (cityData.successfulOrders / cityData.totalOrders) * 100 : 0,
-          failureRate: cityData.totalOrders ? (cityData.failedOrders / cityData.totalOrders) * 100 : 0,
+          successRate: cityData.totalOrders > 0 ? (cityData.successfulOrders / cityData.totalOrders) * 100 : 0,
+          failureRate: cityData.totalOrders > 0 ? (cityData.failedOrders / cityData.totalOrders) * 100 : 0,
+          averageDeliveryTime: cityAvgDeliveryTime,
           cashCollected: {
             usd: cityData.cashUsd,
             lbp: cityData.cashLbp
@@ -568,16 +1031,16 @@ export async function getGeographicalStats(): Promise<GeographicalStats> {
     };
   }).sort((a, b) => b.totalOrders - a.totalOrders);
   
-  // Mock courier locations for now (in a real app, you'd fetch from a locations table)
-  const courierLocations = [
-    { id: '1', name: 'Courier 1', lat: 33.8938, lng: 35.5018, status: 'active' as const },
-    { id: '2', name: 'Courier 2', lat: 33.8866, lng: 35.5133, status: 'idle' as const },
-    { id: '3', name: 'Courier 3', lat: 33.9032, lng: 35.4823, status: 'active' as const },
-    { id: '4', name: 'Courier 4', lat: 33.8688, lng: 35.5097, status: 'offline' as const }
-  ];
+  // Prepare data for map visualization
+  const mapData = regions.map(region => ({
+    name: region.name,
+    orders: region.totalOrders,
+    successRate: region.successRate,
+    color: regionColors[region.name] || '#6B7280' // Default to gray if no color defined
+  }));
   
   return {
     regions,
-    courierLocations
+    mapData
   };
 }

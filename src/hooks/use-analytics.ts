@@ -4,7 +4,9 @@ import {
   getDashboardStats, 
   getSparklineData,
   getFinancialStats,
-  getGeographicalStats
+  getGeographicalStats,
+  getDeliveryPerformanceStats,
+  getSalesInsightsStats
 } from '@/services/analytics';
 
 export function useDashboardStats() {
@@ -35,6 +37,22 @@ export function useGeographicalStats() {
   return useQuery({
     queryKey: ['geographicalStats'],
     queryFn: getGeographicalStats,
+    refetchInterval: 300000, // Refetch every 5 minutes
+  });
+}
+
+export function useDeliveryPerformanceStats(period: 'daily' | 'weekly' | 'monthly' = 'daily') {
+  return useQuery({
+    queryKey: ['deliveryPerformanceStats', period],
+    queryFn: () => getDeliveryPerformanceStats(period),
+    refetchInterval: 300000, // Refetch every 5 minutes
+  });
+}
+
+export function useSalesInsightsStats() {
+  return useQuery({
+    queryKey: ['salesInsightsStats'],
+    queryFn: getSalesInsightsStats,
     refetchInterval: 300000, // Refetch every 5 minutes
   });
 }
