@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Bell, Plus, Search, Settings, LifeBuoy, LogOut, ChevronDown, Command, Menu, MoreHorizontal, Package, Clock, Wallet, BarChart, Box } from 'lucide-react';
+import { Bell, Plus, Search, Settings, LifeBuoy, LogOut, ChevronDown, Command, Menu, MoreHorizontal, Package, Clock, Wallet, BarChart, Box, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
@@ -8,11 +9,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut } from '@/components/ui/command';
+
 const TopBar: React.FC = () => {
   const userName = 'MK';
   const [open, setOpen] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [quickCreateDialogOpen, setQuickCreateDialogOpen] = useState(false);
+  
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -23,21 +26,27 @@ const TopBar: React.FC = () => {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
-  return <>
-      <header className="h-16 border-b border-border/5 bg-white px-6 flex items-center justify-between shadow-[0_1px_3px_0_rgba(0,0,0,0.05)]">
+  
+  return (
+    <>
+      <header className="h-16 border-b border-border/10 bg-white px-6 flex items-center justify-between shadow-sm sticky top-0 z-10">
         <div className="flex items-center gap-4 lg:w-1/3">
           <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9" onClick={() => setShowMobileMenu(!showMobileMenu)}>
             <Menu className="h-[18px] w-[18px]" />
           </Button>
           
           <div className="relative hidden lg:flex max-w-md w-full">
-            <Button variant="outline" onClick={() => setOpen(true)} className="w-full justify-between h-9 border-none shadow-sm bg-muted/20 hover:bg-muted/30 focus-visible:ring-primary/20 gap-2 px-[17px] text-base font-normal rounded-none">
+            <Button 
+              variant="outline" 
+              onClick={() => setOpen(true)} 
+              className="w-full justify-between h-10 border-border/20 shadow-sm bg-background hover:bg-muted/20 focus-visible:ring-primary/20 gap-2 px-4 text-base font-normal rounded-xl"
+            >
               <div className="flex items-center gap-2">
                 <Search className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground text-sm">Search anything...</span>
               </div>
               <div className="hidden md:flex items-center gap-1">
-                <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-border/20 bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
                   <span className="text-xs">⌘</span>K
                 </kbd>
               </div>
@@ -46,13 +55,11 @@ const TopBar: React.FC = () => {
         </div>
         
         <div className="flex items-center space-x-4">
-          
-          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative rounded-full h-9 w-9 transition-all hover:bg-muted/30">
                 <Bell className="h-[18px] w-[18px] text-muted-foreground" />
-                <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+                <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-topspeed-600 animate-pulse"></span>
                 <span className="sr-only">Notifications</span>
               </Button>
             </DropdownMenuTrigger>
@@ -64,12 +71,12 @@ const TopBar: React.FC = () => {
                 </Button>
               </div>
               <div className="max-h-[420px] overflow-y-auto py-1">
-                <div className="bg-muted/5 border-l-2 border-primary px-4 py-3">
+                <div className="bg-muted/5 border-l-2 border-topspeed-600 px-4 py-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-3">
                       <Avatar className="h-9 w-9 mt-0.5">
                         <AvatarImage src="https://i.pravatar.cc/100?img=11" />
-                        <AvatarFallback className="bg-primary/10 text-primary">JD</AvatarFallback>
+                        <AvatarFallback className="bg-topspeed-100 text-topspeed-600">JD</AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="text-sm font-medium">
@@ -81,7 +88,7 @@ const TopBar: React.FC = () => {
                         <div className="flex items-center gap-1 mt-1.5">
                           <span className="text-[10px] text-muted-foreground">10 minutes ago</span>
                           <span className="w-1 h-1 rounded-full bg-muted-foreground/30"></span>
-                          <span className="text-[10px] text-primary font-medium">Orders</span>
+                          <span className="text-[10px] text-topspeed-600 font-medium">Orders</span>
                         </div>
                       </div>
                     </div>
@@ -135,7 +142,7 @@ const TopBar: React.FC = () => {
                 </div>
               </div>
               <div className="border-t border-border/5 p-2 flex justify-center">
-                <Button variant="ghost" size="sm" className="w-full text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted/30 justify-center">
+                <Button variant="ghost" size="sm" className="w-full text-sm font-medium text-muted-foreground hover:text-topspeed-600 hover:bg-muted/30 justify-center">
                   View all notifications
                 </Button>
               </div>
@@ -144,7 +151,7 @@ const TopBar: React.FC = () => {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 gap-2 border-primary/15 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/20 font-medium rounded-full px-4">
+              <Button variant="outline" size="sm" className="h-9 gap-2 border-topspeed-200 bg-topspeed-50 text-topspeed-600 hover:bg-topspeed-100 hover:border-topspeed-300 font-medium rounded-full px-4">
                 <span>Create</span>
                 <Plus className="h-3.5 w-3.5" />
               </Button>
@@ -152,129 +159,54 @@ const TopBar: React.FC = () => {
             <DropdownMenuContent align="end" className="shadow-lg border-border/10 rounded-xl p-1.5 min-w-[180px]">
               <DropdownMenuItem asChild className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer">
                 <Link to="/orders/new" className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-topspeed-600" />
                   <span className="font-medium">New Order</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer">
-                
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer">
-                <Link to="/pickups/new" className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <DropdownMenuItem className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
                   <span className="font-medium">Schedule Pickup</span>
-                </Link>
+                </div>
               </DropdownMenuItem>
-              
-              <Dialog open={quickCreateDialogOpen} onOpenChange={setQuickCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] rounded-xl p-0 gap-0">
-                  <DialogHeader className="p-5 border-b border-border/10">
-                    <DialogTitle>Quick Create</DialogTitle>
-                    <DialogDescription>
-                      Quickly create new orders, pickups, or products.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="p-5 space-y-4">
-                    <div className={cn("flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-primary/20 hover:bg-primary/5 cursor-pointer transition-all", "hover:shadow-sm")}>
-                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                        <Package className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium">New Order</h4>
-                        <p className="text-xs text-muted-foreground">Create a new delivery order</p>
-                      </div>
-                    </div>
-                    
-                    <div className={cn("flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-blue-500/20 hover:bg-blue-500/5 cursor-pointer transition-all", "hover:shadow-sm")}>
-                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                        <Clock className="h-5 w-5 text-blue-500" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium">Schedule Pickup</h4>
-                        <p className="text-xs text-muted-foreground">Create a new pickup request</p>
-                      </div>
-                    </div>
-                    
-                    <div className={cn("flex items-center gap-3 p-2.5 rounded-lg border border-border/20 hover:border-green-500/20 hover:bg-green-500/5 cursor-pointer transition-all", "hover:shadow-sm")}>
-                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                        <Box className="h-5 w-5 text-green-500" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium">New Product</h4>
-                        <p className="text-xs text-muted-foreground">Add a new product to your inventory</p>
-                      </div>
-                    </div>
-                  </div>
-                  <DialogFooter className="px-5 py-4 border-t border-border/10">
-                    <Button variant="outline" className="w-full rounded-lg">
-                      View All Options
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <DropdownMenuItem className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                  <span className="font-medium">Add Customer</span>
+                </div>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full flex items-center justify-center p-0 transition-all hover:bg-muted/30">
-                <Avatar className="h-9 w-9 border border-border/10 ring-2 ring-white">
-                  <AvatarImage src="https://i.pravatar.cc/100?img=13" alt="Mohammed Khatib" />
-                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-medium text-sm">{userName}</AvatarFallback>
+              <button className="h-9 w-9 rounded-full bg-muted/50 border border-border/10 flex items-center justify-center overflow-hidden">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="https://i.pravatar.cc/100?img=20" alt="User" />
+                  <AvatarFallback className="bg-topspeed-100 text-topspeed-700 text-sm font-medium">
+                    {userName}
+                  </AvatarFallback>
                 </Avatar>
-              </Button>
+              </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="shadow-lg border-border/10 rounded-xl p-2 min-w-[240px]">
-              <div className="flex items-center gap-3 px-2 py-2">
-                <Avatar className="h-10 w-10 ring-2 ring-white">
-                  <AvatarImage src="https://i.pravatar.cc/100?img=13" alt="Mohammed Khatib" />
-                  <AvatarFallback className="bg-primary/10 text-primary">{userName}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium">Mohammed Khatib</p>
-                  <p className="text-xs text-muted-foreground">m.khatib@genius.co.lb</p>
-                </div>
+            <DropdownMenuContent align="end" className="w-56 shadow-lg border-border/10 rounded-xl p-1.5">
+              <div className="flex flex-col space-y-4 p-2">
+                <p className="text-sm font-medium">Mohammed Kareem</p>
+                <p className="text-xs text-muted-foreground">m.kareem@example.com</p>
               </div>
-              <DropdownMenuSeparator className="bg-border/5 my-2" />
-              <DropdownMenuItem asChild className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer">
-                <Link to="/profile" className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-muted/50">
-                    <Avatar className="h-5 w-5">
-                      <AvatarImage src="https://i.pravatar.cc/100?img=13" />
-                      <AvatarFallback className="text-[10px]">{userName}</AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <span>Profile</span>
-                </Link>
+              <DropdownMenuSeparator className="bg-border/10 my-1" />
+              <DropdownMenuItem className="rounded-lg py-1.5 px-2.5 gap-3 cursor-pointer">
+                <Settings className="h-4 w-4 text-gray-500" />
+                <span>Settings</span>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer">
-                <Link to="/settings" className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-muted/50">
-                    <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-                  </div>
-                  <span>Settings</span>
-                </Link>
+              <DropdownMenuItem className="rounded-lg py-1.5 px-2.5 gap-3 cursor-pointer">
+                <LifeBuoy className="h-4 w-4 text-gray-500" />
+                <span>Support</span>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="rounded-lg py-1.5 px-2.5 hover:bg-muted/50 cursor-pointer">
-                <Link to="/support" className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-muted/50">
-                    <LifeBuoy className="h-3.5 w-3.5 text-muted-foreground" />
-                  </div>
-                  <span>Support</span>
-                </Link>
-              </DropdownMenuItem>
-              
-              <DropdownMenuSeparator className="bg-border/5 my-2" />
-              <DropdownMenuItem className="rounded-lg py-1.5 px-2.5 hover:bg-red-50 hover:text-red-600 focus:bg-red-50 focus:text-red-600 cursor-pointer">
-                <div className="flex items-center gap-2.5 w-full text-muted-foreground">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-muted/50">
-                    <LogOut className="h-3.5 w-3.5" />
-                  </div>
-                  <span>Log out</span>
-                </div>
+              <DropdownMenuSeparator className="bg-border/10 my-1" />
+              <DropdownMenuItem className="rounded-lg py-1.5 px-2.5 gap-3 text-topspeed-600 hover:text-topspeed-700 cursor-pointer">
+                <LogOut className="h-4 w-4" />
+                <span>Sign out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -282,45 +214,47 @@ const TopBar: React.FC = () => {
       </header>
       
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Search across Genius..." />
+        <CommandInput placeholder="Search for orders, customers, or help..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Suggestions">
-            <CommandItem className="py-2">
-              <Package className="mr-2 h-4 w-4" />
-              <span>Orders</span>
+          <CommandGroup heading="Orders">
+            <CommandItem className="flex items-center gap-2 py-2">
+              <Package className="h-4 w-4 text-muted-foreground" />
+              <span>Find an order</span>
+              <CommandShortcut>O</CommandShortcut>
             </CommandItem>
-            <CommandItem className="py-2">
-              <Clock className="mr-2 h-4 w-4" />
-              <span>Pickups</span>
-              <CommandShortcut>⌘P</CommandShortcut>
-            </CommandItem>
-            <CommandItem className="py-2">
-              <Wallet className="mr-2 h-4 w-4" />
-              <span>Wallet</span>
-            </CommandItem>
-            <CommandItem className="py-2">
-              <BarChart className="mr-2 h-4 w-4" />
-              <span>Analytics Dashboard</span>
+            <CommandItem className="flex items-center gap-2 py-2">
+              <Plus className="h-4 w-4 text-muted-foreground" />
+              <span>Create new order</span>
+              <CommandShortcut>N</CommandShortcut>
             </CommandItem>
           </CommandGroup>
           <CommandSeparator />
-          <CommandGroup heading="Recently Viewed">
-            <CommandItem className="py-2">
-              <div className="mr-2 h-4 w-4 flex items-center justify-center">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary"></span>
-              </div>
-              <span>Order #232940 - محمد الخطيب</span>
+          <CommandGroup heading="Pickups">
+            <CommandItem className="flex items-center gap-2 py-2">
+              <Truck className="h-4 w-4 text-muted-foreground" />
+              <span>View all pickups</span>
             </CommandItem>
-            <CommandItem className="py-2">
-              <div className="mr-2 h-4 w-4 flex items-center justify-center">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-              </div>
-              <span>Pickup #567 - Tripoli Branch</span>
+            <CommandItem className="flex items-center gap-2 py-2">
+              <Plus className="h-4 w-4 text-muted-foreground" />
+              <span>Schedule a pickup</span>
+            </CommandItem>
+          </CommandGroup>
+          <CommandSeparator />
+          <CommandGroup heading="Quick Actions">
+            <CommandItem className="flex items-center gap-2 py-2">
+              <BarChart className="h-4 w-4 text-muted-foreground" />
+              <span>View analytics</span>
+            </CommandItem>
+            <CommandItem className="flex items-center gap-2 py-2">
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+              <span>Check wallet balance</span>
             </CommandItem>
           </CommandGroup>
         </CommandList>
       </CommandDialog>
-    </>;
+    </>
+  );
 };
+
 export default TopBar;

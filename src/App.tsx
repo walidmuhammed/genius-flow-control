@@ -21,7 +21,19 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
+      <Sonner position="top-right" closeButton toastOptions={{
+        classNames: {
+          toast: "group border-border/10 shadow-lg",
+          title: "font-medium text-foreground",
+          description: "text-muted-foreground",
+          actionButton: "bg-topspeed-600 text-white",
+          cancelButton: "text-muted-foreground",
+          error: "bg-white border-l-4 border-l-topspeed-600",
+          success: "bg-white border-l-4 border-l-green-600",
+          warning: "bg-white border-l-4 border-l-amber-600",
+          info: "bg-white border-l-4 border-l-blue-600",
+        }
+      }} />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />

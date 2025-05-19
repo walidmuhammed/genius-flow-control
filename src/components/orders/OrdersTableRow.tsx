@@ -47,25 +47,25 @@ interface OrdersTableRowProps {
 const getStatusBadge = (status: OrderStatus) => {
   switch (status) {
     case 'New':
-      return <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">New</span>;
+      return <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>New</span>;
     case 'Pending Pickup':
-      return <span className="px-3 py-1 bg-orange-50 text-orange-600 rounded-full text-xs font-medium">Pending Pickup</span>;
+      return <span className="px-3 py-1 bg-orange-50 text-orange-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-orange-500"></span>Pending Pickup</span>;
     case 'In Progress':
-      return <span className="px-3 py-1 bg-yellow-50 text-yellow-600 rounded-full text-xs font-medium">In Progress</span>;
+      return <span className="px-3 py-1 bg-yellow-50 text-yellow-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-yellow-500"></span>In Progress</span>;
     case 'Heading to Customer':
-      return <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-medium">Heading to Customer</span>;
+      return <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>Heading to Customer</span>;
     case 'Heading to You':
-      return <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-xs font-medium">Heading to You</span>;
+      return <span className="px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-teal-500"></span>Heading to You</span>;
     case 'Successful':
-      return <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-medium">Successful</span>;
+      return <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Successful</span>;
     case 'Unsuccessful':
-      return <span className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-xs font-medium">Unsuccessful</span>;
+      return <span className="px-3 py-1 bg-topspeed-50 text-topspeed-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-topspeed-500"></span>Unsuccessful</span>;
     case 'Returned':
-      return <span className="px-3 py-1 bg-sky-50 text-sky-600 rounded-full text-xs font-medium">Returned</span>;
+      return <span className="px-3 py-1 bg-sky-50 text-sky-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-sky-500"></span>Returned</span>;
     case 'Paid':
-      return <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-medium">Paid</span>;
+      return <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>Paid</span>;
     default:
-      return <span className="px-3 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium">{status}</span>;
+      return <span className="px-3 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-gray-400"></span>{status}</span>;
   }
 };
 
@@ -92,15 +92,16 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   return (
     <TableRow 
       className={cn(
-        "hover:bg-gray-50 border-b border-gray-200 cursor-pointer", 
-        isSelected && "bg-gray-50"
+        "hover:bg-muted/40 border-b border-border/10 cursor-pointer transition-colors", 
+        isSelected && "bg-topspeed-50/40"
       )}
       onClick={handleRowClick}
     >
       <TableCell className="w-12 pl-4 pr-0" onClick={(e) => e.stopPropagation()}>
         <Checkbox 
           checked={isSelected} 
-          onCheckedChange={() => onToggleSelect(order.id)} 
+          onCheckedChange={() => onToggleSelect(order.id)}
+          className="data-[state=checked]:bg-topspeed-600 data-[state=checked]:border-topspeed-600" 
         />
       </TableCell>
       <TableCell className="py-4">
@@ -114,7 +115,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
                     <FileText className="h-3.5 w-3.5 text-gray-400" />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs border border-gray-200 shadow-lg rounded-md bg-white p-3">
+                <TooltipContent className="max-w-xs border border-border/10 shadow-lg rounded-lg bg-white p-3">
                   <p className="text-sm">{order.note || "No notes available for this order."}</p>
                 </TooltipContent>
               </Tooltip>
@@ -176,7 +177,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
         <TableCell>
           <div className="flex justify-center items-center gap-1" onClick={(e) => e.stopPropagation()}>
             <button 
-              className="h-8 w-8 rounded-md hover:bg-gray-100 flex items-center justify-center"
+              className="h-8 w-8 rounded-lg hover:bg-topspeed-50 hover:text-topspeed-600 flex items-center justify-center transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 if (onViewDetails) {
@@ -184,26 +185,26 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
                 }
               }}
             >
-              <Eye className="h-4 w-4 text-gray-500" />
+              <Eye className="h-4 w-4 text-muted-foreground" />
             </button>
-            <button className="h-8 w-8 rounded-md hover:bg-gray-100 flex items-center justify-center">
-              <Printer className="h-4 w-4 text-gray-500" />
+            <button className="h-8 w-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors">
+              <Printer className="h-4 w-4 text-muted-foreground" />
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button 
-                  className="h-8 w-8 rounded-md hover:bg-gray-100 flex items-center justify-center"
+                  className="h-8 w-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <MoreHorizontal className="h-4 w-4 text-gray-500" />
+                  <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px] shadow-lg border-gray-200 rounded-lg p-1">
-                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-gray-50">View Order Details</DropdownMenuItem>
-                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-gray-50">Edit Order</DropdownMenuItem>
-                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-gray-50">Print Shipping Label</DropdownMenuItem>
-                <DropdownMenuSeparator className="my-1.5 bg-gray-100" />
-                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-red-50 hover:text-red-600">Cancel Order</DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-[200px] shadow-lg border-border/10 rounded-lg p-1">
+                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">View Order Details</DropdownMenuItem>
+                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">Edit Order</DropdownMenuItem>
+                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">Print Shipping Label</DropdownMenuItem>
+                <DropdownMenuSeparator className="my-1.5 bg-border/10" />
+                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-topspeed-50 hover:text-topspeed-600">Cancel Order</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

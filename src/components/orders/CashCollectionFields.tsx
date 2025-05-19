@@ -56,56 +56,60 @@ const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
+    <div className="rounded-lg border border-border/20 p-5 bg-white shadow-sm transition-all duration-300 hover:border-topspeed-200/30">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <h3 className="font-medium">Cash Collection</h3>
+          <h3 className="font-semibold text-foreground">Cash Collection</h3>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="bg-white border-border/20 shadow-lg rounded-xl">
                 <p>Enable if you need to collect cash upon delivery</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
-        <Switch checked={enabled} onCheckedChange={onEnabledChange} />
+        <Switch 
+          checked={enabled} 
+          onCheckedChange={onEnabledChange} 
+          className="data-[state=checked]:bg-topspeed-600 data-[state=checked]:text-white"
+        />
       </div>
       
       {enabled && (
-        <div className="space-y-3">
+        <div className="space-y-4 pt-2 animate-slide-up">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm">USD Amount</span>
+              <span className="text-sm font-medium text-foreground/90">USD Amount</span>
               <CurrencySelector type="usd" />
             </div>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">$</div>
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">$</div>
               <input 
                 type="text" 
                 value={usdAmount} 
                 onChange={handleUsdInputChange}
-                className={`w-full pl-8 pr-12 py-2 border ${errors?.usdAmount ? 'border-red-500' : 'border-gray-300'} rounded-md`} 
+                className={`w-full pl-8 pr-12 py-2.5 border ${errors?.usdAmount ? 'border-topspeed-600 ring-1 ring-topspeed-600/20' : 'border-input'} rounded-lg bg-background shadow-sm focus:ring-2 focus:ring-topspeed-600/10 focus:border-topspeed-300 focus:outline-none transition-all`} 
                 placeholder="0.00" 
               />
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                 <button 
                   type="button" 
                   onClick={() => onUsdAmountChange('')} 
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted-foreground hover:text-topspeed-600 rounded-full h-5 w-5 flex items-center justify-center transition-colors"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
-            {errors?.usdAmount && <p className="text-red-500 text-xs mt-1">{errors.usdAmount}</p>}
+            {errors?.usdAmount && <p className="text-topspeed-600 text-xs mt-1.5">{errors.usdAmount}</p>}
           </div>
           
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm">LBP Amount</span>
+              <span className="text-sm font-medium text-foreground/90">LBP Amount</span>
               <CurrencySelector type="lbp" />
             </div>
             <div className="relative">
@@ -113,25 +117,25 @@ const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
                 type="text" 
                 value={lbpAmount} 
                 onChange={handleLbpInputChange}
-                className={`w-full pl-3 pr-12 py-2 border ${errors?.lbpAmount ? 'border-red-500' : 'border-gray-300'} rounded-md`} 
+                className={`w-full pl-3.5 pr-12 py-2.5 border ${errors?.lbpAmount ? 'border-topspeed-600 ring-1 ring-topspeed-600/20' : 'border-input'} rounded-lg bg-background shadow-sm focus:ring-2 focus:ring-topspeed-600/10 focus:border-topspeed-300 focus:outline-none transition-all`} 
                 placeholder="0" 
               />
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                 <button 
                   type="button" 
                   onClick={() => onLbpAmountChange('')} 
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted-foreground hover:text-topspeed-600 rounded-full h-5 w-5 flex items-center justify-center transition-colors"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
-            {errors?.lbpAmount && <p className="text-red-500 text-xs mt-1">{errors.lbpAmount}</p>}
+            {errors?.lbpAmount && <p className="text-topspeed-600 text-xs mt-1.5">{errors.lbpAmount}</p>}
           </div>
           
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center justify-between pt-1 bg-muted/20 p-3 rounded-lg mt-4">
             <div className="text-sm font-medium">Delivery Fee:</div>
-            <div className="text-sm">
+            <div className="text-sm font-medium">
               <CurrencyDisplay usd={deliveryFees.usd} lbp={deliveryFees.lbp} />
             </div>
           </div>

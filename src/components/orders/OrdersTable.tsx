@@ -38,18 +38,18 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
   
   return (
     <>
-      <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden bg-white mt-4">
+      <div className="rounded-xl border border-border/10 shadow-sm overflow-hidden bg-white mt-4">
         {selectedOrders.length > 0 && (
-          <div className="bg-gray-50 py-3 px-6 flex justify-between items-center border-b border-gray-200">
-            <div className="text-sm font-medium">
+          <div className="bg-topspeed-50/80 py-3 px-6 flex justify-between items-center border-b border-border/10">
+            <div className="text-sm font-medium text-topspeed-700">
               {selectedOrders.length} orders selected
             </div>
             <div className="flex gap-2">
-              <button className="px-4 py-1.5 rounded-md bg-white text-sm border border-gray-200 shadow-sm flex items-center gap-2">
+              <button className="px-4 py-1.5 rounded-lg bg-white text-sm border border-border/20 shadow-sm flex items-center gap-2 hover:border-topspeed-200 transition-colors">
                 Print Labels
               </button>
               <button 
-                className="px-4 py-1.5 rounded-md bg-white text-sm border border-gray-200 shadow-sm hover:text-red-600"
+                className="px-4 py-1.5 rounded-lg bg-white text-sm border border-border/20 shadow-sm hover:text-topspeed-600 transition-colors"
                 onClick={() => toggleSelectAll(false)}
               >
                 Cancel
@@ -60,11 +60,12 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-gray-50 hover:bg-gray-50 border-b border-gray-200">
+              <TableRow className="bg-muted/30 hover:bg-muted/40 border-b border-border/10">
                 <TableHead className="w-12 h-11 pl-4">
                   <Checkbox 
                     checked={selectedOrders.length === orders.length && orders.length > 0}
                     onCheckedChange={(checked) => toggleSelectAll(!!checked)}
+                    className="data-[state=checked]:bg-topspeed-600 data-[state=checked]:border-topspeed-600"
                   />
                 </TableHead>
                 <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
@@ -100,21 +101,21 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
             </TableBody>
           </Table>
         </div>
-        <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between">
-          <span className="text-sm text-gray-500">
-            Showing <span className="font-medium text-gray-700">1</span> to <span className="font-medium text-gray-700">{orders.length}</span> of <span className="font-medium text-gray-700">36</span> orders
+        <div className="bg-white border-t border-border/10 px-6 py-4 flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            Showing <span className="font-medium text-foreground">{1}</span> to <span className="font-medium text-foreground">{orders.length}</span> of <span className="font-medium text-foreground">36</span> orders
           </span>
           
           <div className="flex items-center gap-1">
-            <button className="p-2 border border-gray-200 rounded-md hover:bg-gray-50">
+            <button className="p-2 border border-border/20 rounded-lg hover:bg-muted/30 transition-colors">
               <ChevronLeft className="h-4 w-4" />
             </button>
             
-            <button className="h-8 w-8 bg-[#46d483] text-white rounded-md flex items-center justify-center text-sm font-medium">1</button>
-            <button className="h-8 w-8 text-gray-500 hover:bg-gray-100 rounded-md flex items-center justify-center text-sm">2</button>
-            <button className="h-8 w-8 text-gray-500 hover:bg-gray-100 rounded-md flex items-center justify-center text-sm">3</button>
+            <button className="h-8 w-8 bg-topspeed-600 text-white rounded-lg flex items-center justify-center text-sm font-medium shadow-sm">1</button>
+            <button className="h-8 w-8 text-muted-foreground hover:bg-muted/30 rounded-lg flex items-center justify-center text-sm transition-colors">2</button>
+            <button className="h-8 w-8 text-muted-foreground hover:bg-muted/30 rounded-lg flex items-center justify-center text-sm transition-colors">3</button>
             
-            <button className="p-2 border border-gray-200 rounded-md hover:bg-gray-50">
+            <button className="p-2 border border-border/20 rounded-lg hover:bg-muted/30 transition-colors">
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
