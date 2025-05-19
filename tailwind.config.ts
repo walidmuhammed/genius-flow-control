@@ -67,14 +67,26 @@ export default {
 				topspeed: {
 					50: '#fff1f2',
 					100: '#ffe2e4',
-					200: '#fecacd',
-					300: '#fda4a9',
-					400: '#fb7077',
-					500: '#f3404a',
-					600: '#ea384d',
-					700: '#cd1427',
-					800: '#a81226',
-					900: '#8b1225',
+					200: '#ffcacd',
+					300: '#ffa4a9',
+					400: '#fe7077',
+					500: '#f5404a',
+					600: '#DC291E', // Primary Red
+					700: '#c21d12',
+					800: '#a41812',
+					900: '#8c1513',
+				},
+				topblue: {
+					50: '#e6f6fd',
+					100: '#ccedfa',
+					200: '#99dbf5',
+					300: '#66c9f0',
+					400: '#33b7eb',
+					500: '#26A4DB', // Secondary Blue
+					600: '#1a84af',
+					700: '#136383',
+					800: '#0d4258',
+					900: '#06212c',
 				}
 			},
 			borderRadius: {
@@ -149,6 +161,14 @@ export default {
 						opacity: '1'
 					}
 				},
+				'glow': {
+					'0%, 100%': { 
+						boxShadow: '0 0 10px rgba(220, 41, 30, 0.5)' 
+					},
+					'50%': { 
+						boxShadow: '0 0 20px rgba(220, 41, 30, 0.8)' 
+					}
+				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -158,6 +178,7 @@ export default {
 				'scale-in': 'scale-in 0.2s ease-out',
 				'slide-up': 'slide-up 0.3s ease-out',
 				'slide-right': 'slide-right 0.3s ease-out',
+				'glow': 'glow 2s ease-in-out infinite',
 			}
 		}
 	},
