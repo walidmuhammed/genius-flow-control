@@ -1,532 +1,400 @@
 
-import React, { useState, useEffect } from 'react';
-import { ArrowUp, ArrowDown, Package, Check, Clock, AlertTriangle, DollarSign, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowUpRight, TrendingUp, Package, Clock, CheckCircle, AlertTriangle, CreditCard, DollarSign } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { cn } from '@/lib/utils';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import OrdersTable from '@/components/orders/OrdersTable';
-import OrderDetailsDialog from '@/components/orders/OrderDetailsDialog';
-import PickupDetailsDialog from '@/components/pickups/PickupDetailsDialog';
-import { useOrders, useOrdersByStatus } from '@/hooks/use-orders';
-import { usePickups } from '@/hooks/use-pickups';
-import { Order, OrderWithCustomer } from '@/services/orders';
-import { Pickup } from '@/services/pickups';
-import { toast } from 'sonner';
-import { Skeleton } from '@/components/ui/skeleton';
-import { supabase } from "@/integrations/supabase/client";
-import { mapOrdersToTableFormat } from "@/utils/orderMappers";
-import { mapPickupToComponentFormat, PickupData } from "@/utils/pickupMappers";
+import { Button } from '@/components/ui/button';
+import { useDashboardStats } from '@/hooks/use-analytics';
+import CurrencyToggle from '@/components/analytics/CurrencyToggle';
+import Sparkline from '@/components/analytics/Sparkline';
+import KpiCard from '@/components/analytics/KpiCard';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import FinancialSummary from '@/components/analytics/FinancialSummary';
+import DeliveryPerformance from '@/components/analytics/DeliveryPerformance';
+import TopRegionsChart from '@/components/analytics/TopRegionsChart';
+import { cn } from '@/lib/utils';
+import { useSparklineData } from '@/hooks/use-analytics';
 
 const Dashboard: React.FC = () => {
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
-  const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
-  const [selectedPickup, setSelectedPickup] = useState<PickupData | null>(null);
-  const [pickupDetailsOpen, setPickupDetailsOpen] = useState(false);
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  // Restore dashboardStats state
-  const [dashboardStats, setDashboardStats] = useState({
-    newOrders: { value: 0 },
-    delivered: { value: 0 },
-    inProgress: { value: 0 },
-    failedOrders: { value: 0 },
-    averageOrderValue: { value: "$0.00" },
-    collectedCash: {
-      usd: 0,
-      lbp: 0
-    }
-  });
-  
-  // Fetch recent orders
-  const { 
-    data: recentOrders, 
-    isLoading: ordersLoading, 
-    error: ordersError 
-  } = useOrdersByStatus('New');
-  
-  // Fetch upcoming pickups
-  const { 
-    data: pickups, 
-    isLoading: pickupsLoading, 
-    error: pickupsError 
-  } = usePickups();
-
-  useEffect(() => {
-    if (ordersError) {
-      toast.error("Failed to load recent orders");
-      console.error(ordersError);
-    }
-    
-    if (pickupsError) {
-      toast.error("Failed to load upcoming pickups");
-      console.error(pickupsError);
-    }
-  }, [ordersError, pickupsError]);
-
-  // Subscribe to realtime updates
-  useEffect(() => {
-    const ordersChannel = supabase
-      .channel('orders-changes')
-      .on(
-        'postgres_changes',
-        { 
-          event: '*', 
-          schema: 'public',
-          table: 'orders'
-        },
-        (payload) => {
-          console.log('Orders change received:', payload);
-          // Refresh the dashboard stats
-          fetchDashboardStats();
-          // The ordersByStatus query will be invalidated and refetched by React Query
-        }
-      )
-      .subscribe();
-
-    const pickupsChannel = supabase
-      .channel('pickups-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'pickups'
-        },
-        (payload) => {
-          console.log('Pickups change received:', payload);
-          // The pickups query will be invalidated and refetched by React Query
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(ordersChannel);
-      supabase.removeChannel(pickupsChannel);
-    };
-  }, []);
-
-  // Fetch dashboard statistics
-  const fetchDashboardStats = async () => {
-    try {
-      // Count of new orders
-      const { count: newOrdersCount, error: newOrdersError } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'New');
-
-      if (newOrdersError) throw newOrdersError;
-
-      // Count of delivered orders
-      const { count: deliveredCount, error: deliveredError } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'Successful');
-
-      if (deliveredError) throw deliveredError;
-
-      // Count of in-progress orders
-      const { count: inProgressCount, error: inProgressError } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'In Progress');
-
-      if (inProgressError) throw inProgressError;
-
-      // Count of failed orders
-      const { count: failedCount, error: failedError } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'Unsuccessful');
-
-      if (failedError) throw failedError;
-
-      // Collect successful orders for average and total calculations
-      const { data: successfulOrders, error: successfulOrdersError } = await supabase
-        .from('orders')
-        .select('cash_collection_usd, cash_collection_lbp')
-        .eq('status', 'Successful');
-
-      if (successfulOrdersError) throw successfulOrdersError;
-
-      // Calculate average order value
-      let totalUSD = 0;
-      let totalLBP = 0;
-      
-      if (successfulOrders.length > 0) {
-        successfulOrders.forEach(order => {
-          totalUSD += Number(order.cash_collection_usd || 0);
-          totalLBP += Number(order.cash_collection_lbp || 0);
-        });
-        
-        const averageUSD = successfulOrders.length > 0 
-          ? totalUSD / successfulOrders.length 
-          : 0;
-
-        setDashboardStats({
-          newOrders: { value: newOrdersCount || 0 },
-          delivered: { value: deliveredCount || 0 },
-          inProgress: { value: inProgressCount || 0 },
-          failedOrders: { value: failedCount || 0 },
-          averageOrderValue: { 
-            value: `$${averageUSD.toFixed(2)}` 
-          },
-          collectedCash: {
-            usd: totalUSD,
-            lbp: totalLBP
-          }
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching dashboard stats:", error);
-      toast.error("Failed to load dashboard statistics");
-    }
-  };
-
-  useEffect(() => {
-    fetchDashboardStats();
-  }, []);
-
-  // Handle viewing order details
-  const handleViewOrderDetails = (order: OrderWithCustomer) => {
-    setSelectedOrder(order);
-    setOrderDetailsOpen(true);
-  };
-
-  // Handle viewing pickup details - make sure to map the pickup first
-  const handleViewPickupDetails = (pickup: Pickup) => {
-    // Map the pickup to the expected format before setting it
-    const mappedPickup = mapPickupToComponentFormat(pickup);
-    setSelectedPickup(mappedPickup);
-    setPickupDetailsOpen(true);
-  };
-  
-  // Toggle select all orders
-  const toggleSelectAll = (checked: boolean) => {
-    if (checked && recentOrders) {
-      setSelectedOrders(recentOrders.map(order => order.id));
-    } else {
-      setSelectedOrders([]);
-    }
-  };
-  
-  // Toggle select individual order
-  const toggleSelectOrder = (orderId: string) => {
-    setSelectedOrders(prev => {
-      if (prev.includes(orderId)) {
-        return prev.filter(id => id !== orderId);
-      } else {
-        return [...prev, orderId];
-      }
-    });
-  };
-
-  // Format pickup date
-  const formatPickupDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  // Format current time and date
-  const currentTime = new Date().toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  const [currency, setCurrency] = useState<'USD' | 'LBP'>('USD');
+  const { data: dashboardStats, isLoading: isStatsLoading } = useDashboardStats();
+  const { data: ordersSparkline, isLoading: isOrdersSparklineLoading } = useSparklineData('orders');
 
   return (
     <MainLayout>
       <div className="space-y-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 px-[12px]">
+        {/* Header section */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-800 px-[11px]">Hello, Walid! 👋</h1>
-            <p className="text-gray-500 px-[11px]">{currentDate} • {currentTime}</p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Mission Control</h1>
+            <p className="text-muted-foreground mt-1">Real-time delivery analytics and performance metrics</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <CurrencyToggle currency={currency} onChange={setCurrency} />
+            <Button variant="outline" size="sm" className="gap-1">
+              <span>Refresh</span>
+              <span className="sr-only">Refresh dashboard data</span>
+            </Button>
           </div>
         </div>
 
-        <div className="px-[12px]">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4 px-[9px]">Today's Overview</h2>
+        {/* Quick stats cards */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <StatsCard 
+            title="Active Orders"
+            value={isStatsLoading ? '--' : dashboardStats?.ordersInTransit.toString() || '0'}
+            trend={dashboardStats?.ordersTrend || 0}
+            icon={<Package className="h-5 w-5" />}
+            description="Currently in transit"
+            chartData={ordersSparkline}
+            isLoading={isStatsLoading || isOrdersSparklineLoading}
+            trendLabel="from last period"
+          />
+          
+          <StatsCard 
+            title="Today's Deliveries"
+            value={isStatsLoading ? '--' : dashboardStats?.ordersCreatedToday.toString() || '0'}
+            trend={8.2}
+            icon={<Clock className="h-5 w-5" />}
+            description="Orders for today"
+            isLoading={isStatsLoading}
+            trendLabel="from yesterday"
+          />
+          
+          <StatsCard 
+            title="Success Rate"
+            value={isStatsLoading ? '--' : `${Math.round(dashboardStats?.successRate || 0)}%`}
+            trend={dashboardStats?.successRateTrend || 0}
+            icon={<CheckCircle className="h-5 w-5" />}
+            description="Successful deliveries"
+            variant="success"
+            isLoading={isStatsLoading}
+            trendLabel="vs target"
+          />
+          
+          <StatsCard 
+            title="Failed Deliveries"
+            value={isStatsLoading ? '--' : dashboardStats?.failedDeliveries.toString() || '0'}
+            trend={dashboardStats?.failedTrend || 0}
+            icon={<AlertTriangle className="h-5 w-5" />}
+            description="This week"
+            variant="danger"
+            isLoading={isStatsLoading}
+            trendLabel="change"
+          />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 px-[12px]">
-          {/* New Orders */}
-          <Card className="bg-white border-0 rounded-lg shadow-sm">
+        {/* Key metrics and custom charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2 overflow-hidden backdrop-blur-sm">
+            <CardHeader className="bg-card/30 backdrop-blur-md border-b border-border/10 pb-2">
+              <CardTitle className="text-lg font-semibold flex justify-between items-center">
+                <span>Revenue Snapshot</span>
+                <Badge variant="outline" className="font-normal">Real-time</Badge>
+              </CardTitle>
+              <CardDescription>
+                Daily revenue breakdown and collection performance
+              </CardDescription>
+            </CardHeader>
             <CardContent className="pt-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    New Orders In
-                  </h3>
-                  {dashboardStats ? (
-                    <p className="mt-2 text-3xl font-semibold">{dashboardStats.newOrders.value}</p>
-                  ) : (
-                    <Skeleton className="h-8 w-16 mt-2" />
-                  )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-muted-foreground">Today's Collection ({currency})</div>
+                  <div className="text-3xl font-bold">
+                    {currency === 'USD' 
+                      ? `$${dashboardStats?.cashCollectedToday.usd || 0}`
+                      : `${dashboardStats?.cashCollectedToday.lbp || 0} LBP`
+                    }
+                  </div>
+                  <div className="flex items-center gap-1 text-sm">
+                    <Badge variant="outline" className="bg-topspeed-50/30 text-topspeed-800 py-0 px-1.5">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      <span>+12%</span>
+                    </Badge>
+                    <span className="text-muted-foreground">vs. last week</span>
+                  </div>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-200 to-orange-100 flex items-center justify-center shadow-sm">
-                  <Package className="h-6 w-6 text-orange-500" strokeWidth={2.5} />
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-muted-foreground">Delivery Fees ({currency})</div>
+                  <div className="text-3xl font-bold">
+                    {currency === 'USD' 
+                      ? `$${dashboardStats?.deliveryFees?.usd || 0}`
+                      : `${dashboardStats?.deliveryFees?.lbp || 0} LBP`
+                    }
+                  </div>
+                  <div className="flex items-center gap-1 text-sm">
+                    <Badge variant="outline" className="bg-emerald-50/30 text-emerald-800 py-0 px-1.5">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      <span>+5%</span>
+                    </Badge>
+                    <span className="text-muted-foreground">vs. last week</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="h-[250px] mt-6">
+                {/* Placeholder for the main revenue chart */}
+                <div className="h-full w-full flex items-center justify-center">
+                  <p className="text-muted-foreground text-sm">Advanced revenue chart loading...</p>
                 </div>
               </div>
             </CardContent>
+            <CardFooter className="border-t border-border/10 bg-card/30 backdrop-blur-md">
+              <div className="flex justify-between items-center w-full">
+                <span className="text-sm text-muted-foreground">Last updated: {new Date().toLocaleTimeString()}</span>
+                <Button variant="ghost" size="sm" className="gap-1">
+                  <span>View Full Report</span>
+                  <ArrowUpRight className="h-3 w-3" />
+                </Button>
+              </div>
+            </CardFooter>
           </Card>
-          
-          {/* Delivered */}
-          <Card className="bg-white border-0 rounded-lg shadow-sm">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    Delivered
-                  </h3>
-                  {dashboardStats ? (
-                    <p className="mt-2 text-3xl font-semibold">{dashboardStats.delivered.value}</p>
-                  ) : (
-                    <Skeleton className="h-8 w-16 mt-2" />
-                  )}
-                </div>
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-green-200 to-green-100 flex items-center justify-center shadow-sm">
-                  <Check className="h-6 w-6 text-green-500" strokeWidth={2.5} />
-                </div>
+
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-card/30 backdrop-blur-md border-b border-border/10 pb-2">
+              <CardTitle className="text-lg font-semibold flex justify-between items-center">
+                <span>Performance Metrics</span>
+                <Badge variant="outline" className="font-normal">Today</Badge>
+              </CardTitle>
+              <CardDescription>
+                Key operational indicators
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6 px-3">
+              <div className="space-y-5">
+                <MetricItem 
+                  label="Delivery Efficiency"
+                  value={94}
+                  target={90}
+                  unit="%"
+                  status="success"
+                />
+                <MetricItem 
+                  label="On-time Rate" 
+                  value={87} 
+                  target={95}
+                  unit="%"
+                  status="warning"
+                />
+                <MetricItem 
+                  label="Cash Collection" 
+                  value={99} 
+                  target={99}
+                  unit="%"
+                  status="success"
+                />
+                <MetricItem 
+                  label="Customer Satisfaction" 
+                  value={4.8} 
+                  target={4.5}
+                  unit="/5"
+                  status="success"
+                />
               </div>
             </CardContent>
-          </Card>
-          
-          {/* In Progress */}
-          <Card className="bg-white border-0 rounded-lg shadow-sm">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    In Progress
-                  </h3>
-                  {dashboardStats ? (
-                    <p className="mt-2 text-3xl font-semibold">{dashboardStats.inProgress.value}</p>
-                  ) : (
-                    <Skeleton className="h-8 w-16 mt-2" />
-                  )}
-                </div>
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-200 to-blue-100 flex items-center justify-center shadow-sm">
-                  <Clock className="h-6 w-6 text-blue-500" strokeWidth={2.5} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Failed Orders */}
-          <Card className="bg-white border-0 rounded-lg shadow-sm">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 flex items-center">Canceled Orders</h3>
-                  {dashboardStats ? (
-                    <p className="mt-2 text-3xl font-semibold">{dashboardStats.failedOrders.value}</p>
-                  ) : (
-                    <Skeleton className="h-8 w-16 mt-2" />
-                  )}
-                </div>
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-red-200 to-red-100 flex items-center justify-center shadow-sm">
-                  <AlertTriangle className="h-6 w-6 text-red-500" strokeWidth={2.5} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Average Order Value */}
-          <Card className="bg-white border-0 rounded-lg shadow-sm">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    Avg. Order Value
-                  </h3>
-                  {dashboardStats ? (
-                    <p className="mt-2 text-3xl font-semibold">{dashboardStats.averageOrderValue.value}</p>
-                  ) : (
-                    <Skeleton className="h-8 w-16 mt-2" />
-                  )}
-                </div>
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-purple-200 to-purple-100 flex items-center justify-center shadow-sm">
-                  <DollarSign className="h-6 w-6 text-purple-500" strokeWidth={2.5} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Collected Cash */}
-          <Card className="bg-white border-0 rounded-lg shadow-sm">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 flex items-center">
-                    Collected Cash
-                  </h3>
-                  {dashboardStats ? (
-                    <div className="flex flex-col mt-2">
-                      <p className="text-2xl font-semibold">${dashboardStats.collectedCash.usd.toLocaleString()}</p>
-                      <p className="text-sm text-gray-500">{dashboardStats.collectedCash.lbp.toLocaleString()} LBP</p>
-                    </div>
-                  ) : (
-                    <>
-                      <Skeleton className="h-8 w-16 mt-2" />
-                      <Skeleton className="h-4 w-24 mt-1" />
-                    </>
-                  )}
-                </div>
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-amber-200 to-amber-100 flex items-center justify-center shadow-sm">
-                  <DollarSign className="h-6 w-6 text-amber-500" strokeWidth={2.5} />
-                </div>
-              </div>
-            </CardContent>
+            <CardFooter className="border-t border-border/10 bg-card/30 backdrop-blur-md">
+              <Button variant="ghost" size="sm" className="w-full">View All Metrics</Button>
+            </CardFooter>
           </Card>
         </div>
-        
-        {/* Tabbed Tables Section */}
-        <div className="px-[12px] mt-8">
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-0">
-              <Tabs defaultValue="recent-orders" className="w-full">
-                <div className="border-b">
-                  <TabsList className="bg-transparent h-14 w-full justify-start px-6 gap-8">
-                    <TabsTrigger value="recent-orders" className="data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:text-gray-900 border-0 data-[state=active]:shadow-none rounded-none h-14 text-gray-600">
-                      Recent Orders
-                    </TabsTrigger>
-                    <TabsTrigger value="upcoming-pickups" className="data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:text-gray-900 border-0 data-[state=active]:shadow-none rounded-none h-14 text-gray-600">
-                      Upcoming Pickups
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
-                
-                <TabsContent value="recent-orders" className="mt-0 p-4">
-                  {ordersLoading ? (
-                    <div className="p-12 text-center">
-                      <Skeleton className="h-8 w-1/2 mx-auto mb-4" />
-                      <Skeleton className="h-8 w-full mx-auto mb-2" />
-                      <Skeleton className="h-8 w-full mx-auto mb-2" />
-                      <Skeleton className="h-8 w-full mx-auto" />
-                    </div>
-                  ) : recentOrders && recentOrders.length > 0 ? (
-                    <OrdersTable 
-                      orders={recentOrders ? mapOrdersToTableFormat(recentOrders) : []} 
-                      selectedOrders={selectedOrders} 
-                      toggleSelectAll={toggleSelectAll} 
-                      toggleSelectOrder={toggleSelectOrder} 
-                      showActions={false}
-                    />
-                  ) : (
-                    <div className="p-12 text-center text-gray-500">
-                      No recent orders found
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-end p-4 border-t">
-                    <a href="/orders" className="text-sm font-medium text-orange-500 hover:text-orange-600 flex items-center gap-1">
-                      View all orders <ChevronRight className="h-4 w-4" />
-                    </a>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="upcoming-pickups" className="mt-0">
-                  {pickupsLoading ? (
-                    <div className="p-12 text-center">
-                      <Skeleton className="h-8 w-1/2 mx-auto mb-4" />
-                      <Skeleton className="h-8 w-full mx-auto mb-2" />
-                      <Skeleton className="h-8 w-full mx-auto mb-2" />
-                      <Skeleton className="h-8 w-full mx-auto" />
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="bg-gray-50 hover:bg-gray-50">
-                            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Pickup ID</TableHead>
-                            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
-                            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
-                            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Scheduled Date</TableHead>
-                            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Contact Person</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {pickups && pickups.length > 0 ? (
-                            pickups.map(pickup => {
-                              const pickupData = mapPickupToComponentFormat(pickup);
-                              return (
-                                <TableRow 
-                                  key={pickup.id} 
-                                  className="hover:bg-gray-50 cursor-pointer"
-                                  onClick={() => handleViewPickupDetails(pickup)}
-                                >
-                                  <TableCell className="font-medium">{pickupData.pickupId}</TableCell>
-                                  <TableCell>
-                                    <Badge className={cn(
-                                      "px-2 py-1 rounded-full", 
-                                      pickupData.status === "Scheduled" ? "bg-blue-50 text-blue-700" : 
-                                      pickupData.status === "In Progress" ? "bg-yellow-50 text-yellow-700" : 
-                                      pickupData.status === "Completed" ? "bg-green-50 text-green-700" : 
-                                      "bg-red-50 text-red-700"
-                                    )}>
-                                      {pickupData.status}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell>{pickupData.location}</TableCell>
-                                  <TableCell>{formatPickupDate(pickupData.pickupDate)}</TableCell>
-                                  <TableCell>
-                                    <div>
-                                      <div>{pickupData.contactPerson}</div>
-                                      <div className="text-xs text-gray-500">{pickupData.contactPhone}</div>
-                                    </div>
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })
-                          ) : (
-                            <TableRow>
-                              <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                                No upcoming pickups found
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-end p-4 border-t">
-                    <a href="/pickups" className="text-sm font-medium text-orange-500 hover:text-orange-600 flex items-center gap-1">
-                      View all pickups <ChevronRight className="h-4 w-4" />
-                    </a>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
+
+        {/* Tabs for different analytics views */}
+        <Tabs defaultValue="delivery" className="space-y-8">
+          <TabsList className="grid w-full grid-cols-3 h-12">
+            <TabsTrigger value="delivery" className="rounded-full text-base">
+              Delivery Performance
+            </TabsTrigger>
+            <TabsTrigger value="financial" className="rounded-full text-base">
+              Financial Summary
+            </TabsTrigger>
+            <TabsTrigger value="regional" className="rounded-full text-base">
+              Regional Insights
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="delivery" className="space-y-4 animate-in fade-in-50">
+            <DeliveryPerformance />
+          </TabsContent>
+
+          <TabsContent value="financial" className="space-y-4 animate-in fade-in-50">
+            <FinancialSummary />
+          </TabsContent>
+
+          <TabsContent value="regional" className="space-y-4 animate-in fade-in-50">
+            <Card className="overflow-hidden">
+              <CardHeader className="bg-card/30 backdrop-blur-md border-b border-border/10 pb-2">
+                <CardTitle className="text-xl font-semibold">Regional Distribution</CardTitle>
+                <CardDescription>Orders and performance by geographic region</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <TopRegionsChart />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-      
-      {/* Order Details Dialog */}
-      <OrderDetailsDialog 
-        order={selectedOrder}
-        open={orderDetailsOpen}
-        onOpenChange={setOrderDetailsOpen}
-      />
-      
-      {/* Pickup Details Dialog */}
-      <PickupDetailsDialog
-        pickup={selectedPickup}
-        open={pickupDetailsOpen}
-        onOpenChange={setPickupDetailsOpen}
-      />
     </MainLayout>
+  );
+};
+
+// Stats Card Component
+interface StatsCardProps {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  description: string;
+  trend?: number;
+  trendLabel?: string;
+  variant?: 'default' | 'success' | 'danger' | 'warning';
+  chartData?: { date: string; value: number }[];
+  isLoading?: boolean;
+}
+
+const StatsCard: React.FC<StatsCardProps> = ({
+  title,
+  value,
+  icon,
+  description,
+  trend = 0,
+  trendLabel = "vs previous",
+  variant = "default",
+  chartData,
+  isLoading = false
+}) => {
+  // Determine color scheme based on variant
+  const getVariantClasses = () => {
+    switch (variant) {
+      case 'success':
+        return 'from-emerald-500/5 to-emerald-900/5 border-emerald-500/10';
+      case 'danger':
+        return 'from-rose-500/5 to-rose-900/5 border-rose-500/10';
+      case 'warning':
+        return 'from-amber-500/5 to-amber-900/5 border-amber-500/10';
+      default:
+        return 'from-topspeed-500/5 to-topspeed-900/5 border-topspeed-500/10';
+    }
+  };
+
+  const getTrendColor = () => {
+    if (trend === 0) return 'text-muted-foreground';
+    if (variant === 'danger') {
+      return trend > 0 ? 'text-rose-500' : 'text-emerald-500';
+    }
+    return trend > 0 ? 'text-emerald-500' : 'text-rose-500';
+  };
+
+  const getTrendIcon = () => {
+    if (trend === 0) return null;
+    return trend > 0 ? 
+      <TrendingUp className="h-3 w-3 mr-1" /> : 
+      <TrendingUp className="h-3 w-3 mr-1 transform rotate-180" />;
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Card className={cn(
+        "overflow-hidden border backdrop-blur-lg", 
+        getVariantClasses(),
+        "bg-gradient-to-br"
+      )}>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className={cn(
+              "p-2 rounded-lg",
+              variant === 'success' ? 'bg-emerald-500/10 text-emerald-500' :
+              variant === 'danger' ? 'bg-rose-500/10 text-rose-500' :
+              variant === 'warning' ? 'bg-amber-500/10 text-amber-500' :
+              'bg-topspeed-500/10 text-topspeed-500'
+            )}>
+              {icon}
+            </div>
+            
+            {trend !== 0 && (
+              <div className={cn("flex items-center text-xs font-medium", getTrendColor())}>
+                {getTrendIcon()}
+                {trend > 0 ? '+' : ''}{Math.abs(trend)}%
+                <span className="ml-1 text-muted-foreground text-[10px]">{trendLabel}</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+            <div className="text-2xl font-bold">{isLoading ? '--' : value}</div>
+            <p className="text-xs text-muted-foreground">{description}</p>
+          </div>
+          
+          {chartData && chartData.length > 0 && (
+            <div className="mt-4 h-10">
+              <Sparkline 
+                data={chartData} 
+                isLoading={isLoading} 
+                color={
+                  variant === 'success' ? '#10b981' :
+                  variant === 'danger' ? '#e11d48' :
+                  variant === 'warning' ? '#f59e0b' :
+                  '#ea384d'
+                }
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
+
+// Metric Item Component
+interface MetricItemProps {
+  label: string;
+  value: number;
+  target: number;
+  unit: string;
+  status: 'success' | 'warning' | 'danger';
+}
+
+const MetricItem: React.FC<MetricItemProps> = ({ label, value, target, unit, status }) => {
+  const percentage = (value / target) * 100;
+  
+  const getStatusColor = () => {
+    switch (status) {
+      case 'success': return 'bg-emerald-500';
+      case 'warning': return 'bg-amber-500';
+      case 'danger': return 'bg-rose-500';
+      default: return 'bg-topspeed-500';
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-medium">{label}</span>
+        <span className="text-sm font-bold">{value}{unit}</span>
+      </div>
+      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+        <div 
+          className={cn("h-full rounded-full", getStatusColor())}
+          style={{ width: `${Math.min(percentage, 100)}%` }}
+        />
+      </div>
+      <div className="flex justify-between items-center text-xs text-muted-foreground">
+        <span>Target: {target}{unit}</span>
+        <span className={cn(
+          "font-medium",
+          status === 'success' ? 'text-emerald-500' :
+          status === 'warning' ? 'text-amber-500' :
+          'text-rose-500'
+        )}>
+          {Math.round(percentage)}%
+        </span>
+      </div>
+    </div>
   );
 };
 

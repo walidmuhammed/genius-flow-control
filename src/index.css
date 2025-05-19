@@ -14,35 +14,35 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    --primary: 354 100% 50%;
+    --primary: 354 100% 57%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 354 100% 95%;
-    --secondary-foreground: 354 100% 40%;
+    --secondary-foreground: 354 100% 47%;
 
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
 
     --accent: 354 80% 97%;
-    --accent-foreground: 354 100% 40%;
+    --accent-foreground: 354 100% 47%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 354 100% 50%;
+    --ring: 354 100% 57%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 354 100% 50%;
+    --sidebar-primary: 354 100% 57%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 354 100% 50%;
+    --sidebar-accent-foreground: 354 100% 57%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 354 100% 50%;
+    --sidebar-ring: 354 100% 57%;
   }
 
   .dark {
@@ -55,7 +55,7 @@
     --popover: 240 10% 6%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 354 100% 50%;
+    --primary: 354 100% 57%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 354 30% 15%;
@@ -72,16 +72,16 @@
 
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 354 100% 50%;
+    --ring: 354 100% 57%;
     
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 354 100% 50%;
+    --sidebar-primary: 354 100% 57%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 354 100% 50%;
+    --sidebar-ring: 354 100% 57%;
   }
 }
 
@@ -108,7 +108,7 @@
 
 @layer components {
   .stat-card {
-    @apply bg-white rounded-xl p-6 shadow-md border border-transparent hover:border-border/20 transition-all duration-200 relative overflow-hidden;
+    @apply bg-white/80 rounded-xl p-6 shadow-md border border-transparent hover:border-border/20 transition-all duration-200 relative overflow-hidden backdrop-blur-md;
   }
   
   .glass-card {
@@ -133,7 +133,7 @@
 
   /* Phone Input Styles */
   .PhoneInput {
-    @apply flex items-center border border-input rounded-xl overflow-hidden bg-background;
+    @apply flex items-center border border-input rounded-xl overflow-hidden bg-background/80 backdrop-blur-sm;
   }
 
   .PhoneInputCountry {
@@ -149,7 +149,7 @@
   }
 
   .PhoneInputInput {
-    @apply flex h-10 w-full bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 border-none md:text-sm;
+    @apply flex h-10 w-full bg-background/80 backdrop-blur-sm px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-topspeed-300/50 focus-visible:border-topspeed-300/50 disabled:cursor-not-allowed disabled:opacity-50 border-none md:text-sm;
   }
 
   /* Fix for the phone input container */
@@ -163,23 +163,23 @@
   }
   
   .status-new {
-    @apply bg-blue-50 text-blue-700;
+    @apply bg-blue-50/80 text-blue-700 backdrop-blur-sm;
   }
   
   .status-pending {
-    @apply bg-amber-50 text-amber-700;
+    @apply bg-amber-50/80 text-amber-700 backdrop-blur-sm;
   }
   
   .status-in-progress {
-    @apply bg-indigo-50 text-indigo-700;
+    @apply bg-indigo-50/80 text-indigo-700 backdrop-blur-sm;
   }
   
   .status-completed {
-    @apply bg-green-50 text-green-700;
+    @apply bg-green-50/80 text-green-700 backdrop-blur-sm;
   }
   
   .status-canceled {
-    @apply bg-red-50 text-red-700;
+    @apply bg-red-50/80 text-red-700 backdrop-blur-sm;
   }
 }
 

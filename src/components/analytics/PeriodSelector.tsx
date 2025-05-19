@@ -1,26 +1,33 @@
 
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Button } from '@/components/ui/button';
+import { Calendar } from 'lucide-react';
 
 interface PeriodSelectorProps {
   period: 'daily' | 'weekly' | 'monthly';
   onPeriodChange: (period: 'daily' | 'weekly' | 'monthly') => void;
-  className?: string;
 }
 
-export default function PeriodSelector({ period, onPeriodChange, className }: PeriodSelectorProps) {
+export default function PeriodSelector({ period, onPeriodChange }: PeriodSelectorProps) {
   return (
-    <div className={className}>
-      <Select value={period} onValueChange={(value) => onPeriodChange(value as 'daily' | 'weekly' | 'monthly')}>
-        <SelectTrigger className="w-[160px]">
-          <SelectValue placeholder="Select period" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="daily">Daily</SelectItem>
-          <SelectItem value="weekly">Weekly</SelectItem>
-          <SelectItem value="monthly">Monthly</SelectItem>
-        </SelectContent>
-      </Select>
+    <div className="flex items-center gap-2">
+      <ToggleGroup type="single" value={period} onValueChange={(value) => value && onPeriodChange(value as 'daily' | 'weekly' | 'monthly')}>
+        <ToggleGroupItem value="daily" aria-label="Toggle daily view" className="text-xs px-3 rounded-full">
+          Daily
+        </ToggleGroupItem>
+        <ToggleGroupItem value="weekly" aria-label="Toggle weekly view" className="text-xs px-3 rounded-full">
+          Weekly
+        </ToggleGroupItem>
+        <ToggleGroupItem value="monthly" aria-label="Toggle monthly view" className="text-xs px-3 rounded-full">
+          Monthly
+        </ToggleGroupItem>
+      </ToggleGroup>
+      
+      <Button variant="outline" size="sm" className="rounded-full w-9 h-9 p-0">
+        <Calendar className="h-4 w-4" />
+        <span className="sr-only">Calendar</span>
+      </Button>
     </div>
   );
 }

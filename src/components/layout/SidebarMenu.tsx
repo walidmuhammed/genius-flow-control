@@ -1,122 +1,125 @@
 
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { BarChart3, Clock, Home, Package, Settings, Shield, Truck, Users, Wallet } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Package, Truck, Home, Clock, Users, Wallet, BarChart3, Settings, Phone } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface SidebarMenuProps {
   collapsed: boolean;
 }
 
 interface MenuItem {
-  title: string;
+  label: string;
+  icon: React.ReactNode;
   path: string;
-  icon: React.ElementType;
-  badge?: number;
+  badge?: number | string;
 }
 
 const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed }) => {
   const location = useLocation();
   
-  const menuItems: MenuItem[] = [
-    {
-      title: 'Dashboard',
-      path: '/',
-      icon: Home,
-    },
-    {
-      title: 'Orders',
-      path: '/orders',
-      icon: Package,
-      badge: 8,
-    },
-    {
-      title: 'Pickups',
-      path: '/pickups',
-      icon: Truck,
-      badge: 3,
-    },
-    {
-      title: 'Customers',
-      path: '/customers',
-      icon: Users,
-    },
-    {
-      title: 'Wallet',
-      path: '/wallet',
-      icon: Wallet,
-    },
-    {
-      title: 'Analytics',
-      path: '/analytics',
-      icon: BarChart3,
-    },
+  const mainMenuItems: MenuItem[] = [
+    { label: 'Dashboard', icon: <Home className="h-4 w-4" />, path: '/' },
+    { label: 'Orders', icon: <Package className="h-4 w-4" />, path: '/orders', badge: 12 },
+    { label: 'Pickups', icon: <Clock className="h-4 w-4" />, path: '/pickups', badge: 5 },
+    { label: 'Customers', icon: <Users className="h-4 w-4" />, path: '/customers' },
+    { label: 'Wallet', icon: <Wallet className="h-4 w-4" />, path: '/wallet' },
+    { label: 'Analytics', icon: <BarChart3 className="h-4 w-4" />, path: '/analytics' },
   ];
   
   const secondaryMenuItems: MenuItem[] = [
-    {
-      title: 'Settings',
-      path: '/settings',
-      icon: Settings,
-    },
-    {
-      title: 'Support',
-      path: '/support',
-      icon: Shield,
-    },
+    { label: 'Settings', icon: <Settings className="h-4 w-4" />, path: '/settings' },
+    { label: 'Support', icon: <Phone className="h-4 w-4" />, path: '/support' },
   ];
   
-  const renderMenuItems = (items: MenuItem[]) => (
-    <div className="space-y-1.5">
-      {items.map((item) => {
-        const isActive = location.pathname === item.path || 
-                        (item.path !== '/' && location.pathname.startsWith(item.path));
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="space-y-1">
+        <div className="mb-2">
+          <h3 className={cn(
+            "text-xs font-medium text-muted-foreground px-4",
+            collapsed ? "text-center" : ""
+          )}>
+            {!collapsed ? "Main" : "—"}
+          </h3>
+        </div>
         
-        return (
-          <NavLink
+        {mainMenuItems.map((item) => (
+          <MenuItem
             key={item.path}
-            to={item.path}
-            className={({ isActive }) => cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
-              isActive 
-                ? "bg-topspeed-600 text-white font-medium" 
-                : "hover:bg-topspeed-50 text-foreground/80 hover:text-topspeed-600",
-              collapsed ? "justify-center" : ""
-            )}
-          >
-            <div className={cn(
-              "relative flex items-center justify-center",
-              isActive ? "text-white" : "text-muted-foreground"
-            )}>
-              <item.icon className={cn("h-[18px] w-[18px]")} />
-              {item.badge && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 text-[10px] flex items-center justify-center bg-topspeed-600 text-white rounded-full">
-                  {item.badge}
-                </span>
-              )}
-            </div>
-            {!collapsed && (
-              <span className={cn(
-                "text-sm",
-                isActive ? "text-white" : "text-foreground/80"
-              )}>
-                {item.title}
-              </span>
-            )}
-          </NavLink>
-        );
-      })}
+            collapsed={collapsed}
+            item={item}
+            isActive={location.pathname === item.path}
+          />
+        ))}
+      </div>
+      
+      <div className="space-y-1">
+        <div className="mb-2">
+          <h3 className={cn(
+            "text-xs font-medium text-muted-foreground px-4",
+            collapsed ? "text-center" : ""
+          )}>
+            {!collapsed ? "System" : "—"}
+          </h3>
+        </div>
+        
+        {secondaryMenuItems.map((item) => (
+          <MenuItem
+            key={item.path}
+            collapsed={collapsed}
+            item={item}
+            isActive={location.pathname === item.path}
+          />
+        ))}
+      </div>
     </div>
   );
-  
+};
+
+interface MenuItemProps {
+  item: MenuItem;
+  isActive: boolean;
+  collapsed: boolean;
+}
+
+const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, collapsed }) => {
   return (
-    <div className="space-y-6">
-      {renderMenuItems(menuItems)}
-      
-      {!collapsed && <div className="h-px bg-border/10 my-4" />}
-      
-      {renderMenuItems(secondaryMenuItems)}
-    </div>
+    <Link to={item.path}>
+      <motion.div
+        className={cn(
+          "flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium mb-1 transition-colors",
+          isActive 
+            ? "text-topspeed-600 bg-topspeed-50" 
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+          collapsed ? "justify-center px-1.5" : ""
+        )}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <span className={cn(
+          "flex items-center justify-center",
+          isActive ? "text-topspeed-600" : "text-muted-foreground"
+        )}>
+          {item.icon}
+        </span>
+        
+        {!collapsed && <span>{item.label}</span>}
+        
+        {!collapsed && item.badge && (
+          <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-topspeed-600/10 text-topspeed-600 text-xs font-medium">
+            {item.badge}
+          </span>
+        )}
+        
+        {collapsed && item.badge && (
+          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-topspeed-600 text-white text-[10px] font-medium">
+            {item.badge}
+          </span>
+        )}
+      </motion.div>
+    </Link>
   );
 };
 

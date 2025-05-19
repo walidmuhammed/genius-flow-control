@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { Toggle } from '@/components/ui/toggle';
-import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface CurrencyToggleProps {
   currency: 'USD' | 'LBP';
@@ -10,23 +9,21 @@ interface CurrencyToggleProps {
 
 export default function CurrencyToggle({ currency, onChange }: CurrencyToggleProps) {
   return (
-    <div className="inline-flex rounded-md shadow-sm bg-muted" role="group">
-      <Button
-        variant={currency === 'USD' ? 'default' : 'ghost'}
-        size="sm"
-        onClick={() => onChange('USD')}
-        className={`rounded-l-md rounded-r-none px-3 ${currency === 'USD' ? '' : 'text-muted-foreground bg-transparent hover:bg-muted'}`}
+    <ToggleGroup type="single" value={currency} onValueChange={(value) => value && onChange(value as 'USD' | 'LBP')} className="border rounded-full p-0.5">
+      <ToggleGroupItem 
+        value="USD" 
+        aria-label="Toggle USD currency"
+        className="data-[state=on]:bg-topspeed-600 data-[state=on]:text-white rounded-full text-xs px-3 h-7"
       >
         USD
-      </Button>
-      <Button
-        variant={currency === 'LBP' ? 'default' : 'ghost'}
-        size="sm"
-        onClick={() => onChange('LBP')}
-        className={`rounded-r-md rounded-l-none px-3 ${currency === 'LBP' ? '' : 'text-muted-foreground bg-transparent hover:bg-muted'}`}
+      </ToggleGroupItem>
+      <ToggleGroupItem 
+        value="LBP" 
+        aria-label="Toggle LBP currency"
+        className="data-[state=on]:bg-topspeed-600 data-[state=on]:text-white rounded-full text-xs px-3 h-7"
       >
         LBP
-      </Button>
-    </div>
+      </ToggleGroupItem>
+    </ToggleGroup>
   );
 }
