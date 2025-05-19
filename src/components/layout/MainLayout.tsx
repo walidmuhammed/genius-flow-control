@@ -13,15 +13,12 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
   return (
-    <div className="flex min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] overflow-hidden">
+    <div className="flex min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a]">
       <Sidebar />
-      <div className="flex-1 flex flex-col relative">
-        {/* Background gradient effect */}
-        <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-[#DC291E]/5 to-[#26A4DB]/5 blur-3xl pointer-events-none" />
-        
+      <div className="flex-1 flex flex-col">
         <TopBar />
         <main className={cn(
-          "p-4 md:p-6 overflow-y-auto h-[calc(100vh-64px)] transition-all", 
+          "p-6 overflow-y-auto h-[calc(100vh-64px)] transition-all", 
           className
         )}>
           <motion.div 
@@ -37,17 +34,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
           </motion.div>
         </main>
       </div>
-      <Toaster 
-        position="top-right"
-        toastOptions={{
-          style: { 
-            background: 'rgba(255, 255, 255, 0.8)', 
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(0, 0, 0, 0.05)',
-            color: '#000',
-          },
-        }} 
-      />
+      <Toaster position="top-right" />
     </div>
   );
 };
