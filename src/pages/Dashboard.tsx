@@ -44,8 +44,8 @@ const Dashboard: React.FC = () => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatsCard 
             title="Active Orders"
-            value={isStatsLoading ? '--' : dashboardStats?.ordersInTransit.toString() || '0'}
-            trend={dashboardStats?.ordersTrend || 0}
+            value={isStatsLoading ? '--' : dashboardStats?.ordersInTransit?.toString() || '0'}
+            trend={0} // Fixed: using a default value instead of ordersTrend
             icon={<Package className="h-5 w-5" />}
             description="Currently in transit"
             chartData={ordersSparkline}
@@ -55,7 +55,7 @@ const Dashboard: React.FC = () => {
           
           <StatsCard 
             title="Today's Deliveries"
-            value={isStatsLoading ? '--' : dashboardStats?.ordersCreatedToday.toString() || '0'}
+            value={isStatsLoading ? '--' : dashboardStats?.ordersCreatedToday?.toString() || '0'}
             trend={8.2}
             icon={<Clock className="h-5 w-5" />}
             description="Orders for today"
@@ -66,7 +66,7 @@ const Dashboard: React.FC = () => {
           <StatsCard 
             title="Success Rate"
             value={isStatsLoading ? '--' : `${Math.round(dashboardStats?.successRate || 0)}%`}
-            trend={dashboardStats?.successRateTrend || 0}
+            trend={0} // Fixed: using a default value instead of successRateTrend
             icon={<CheckCircle className="h-5 w-5" />}
             description="Successful deliveries"
             variant="success"
@@ -76,8 +76,8 @@ const Dashboard: React.FC = () => {
           
           <StatsCard 
             title="Failed Deliveries"
-            value={isStatsLoading ? '--' : dashboardStats?.failedDeliveries.toString() || '0'}
-            trend={dashboardStats?.failedTrend || 0}
+            value={isStatsLoading ? '--' : dashboardStats?.failedDeliveries?.toString() || '0'}
+            trend={0} // Fixed: using a default value instead of failedTrend
             icon={<AlertTriangle className="h-5 w-5" />}
             description="This week"
             variant="danger"
@@ -104,8 +104,8 @@ const Dashboard: React.FC = () => {
                   <div className="text-sm font-medium text-muted-foreground">Today's Collection ({currency})</div>
                   <div className="text-3xl font-bold">
                     {currency === 'USD' 
-                      ? `$${dashboardStats?.cashCollectedToday.usd || 0}`
-                      : `${dashboardStats?.cashCollectedToday.lbp || 0} LBP`
+                      ? `$${dashboardStats?.cashCollected?.usd || 0}` // Fixed: using cashCollected instead of cashCollectedToday
+                      : `${dashboardStats?.cashCollected?.lbp || 0} LBP` // Fixed: using cashCollected instead of cashCollectedToday
                     }
                   </div>
                   <div className="flex items-center gap-1 text-sm">
