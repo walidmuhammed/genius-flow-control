@@ -25,9 +25,7 @@ const TopBar: React.FC = () => {
       </div>
       
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="rounded-full" onClick={toggleTheme} aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}>
-          {theme === 'light' ? <Moon className="h-[1.2rem] w-[1.2rem]" /> : <Sun className="h-[1.2rem] w-[1.2rem]" />}
-        </Button>
+        
         
         <Button variant="ghost" size="icon" className="rounded-full relative" aria-label="Notifications">
           <Bell className="h-[1.2rem] w-[1.2rem]" />
