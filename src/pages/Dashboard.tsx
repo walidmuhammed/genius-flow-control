@@ -1,400 +1,297 @@
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowUpRight, TrendingUp, Package, Clock, CheckCircle, AlertTriangle, CreditCard, DollarSign } from 'lucide-react';
-import MainLayout from '@/components/layout/MainLayout';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { useDashboardStats } from '@/hooks/use-analytics';
-import CurrencyToggle from '@/components/analytics/CurrencyToggle';
-import Sparkline from '@/components/analytics/Sparkline';
-import KpiCard from '@/components/analytics/KpiCard';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import FinancialSummary from '@/components/analytics/FinancialSummary';
-import DeliveryPerformance from '@/components/analytics/DeliveryPerformance';
-import TopRegionsChart from '@/components/analytics/TopRegionsChart';
+import { Package, Clock, AlertCircle, DollarSign } from 'lucide-react';
+import MainLayout from '@/components/layout/MainLayout';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { useSparklineData } from '@/hooks/use-analytics';
+import OrdersTable from '@/components/orders/OrdersTable';
+import PickupsTable from '@/components/pickups/PickupsTable';
+import { useQuery } from '@tanstack/react-query';
+import { formatDate } from '@/utils/format';
+import { getOrders } from '@/services/orders';
+import { getPickups } from '@/services/pickups';
+import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 
 const Dashboard: React.FC = () => {
-  const [currency, setCurrency] = useState<'USD' | 'LBP'>('USD');
-  const { data: dashboardStats, isLoading: isStatsLoading } = useDashboardStats();
-  const { data: ordersSparkline, isLoading: isOrdersSparklineLoading } = useSparklineData('orders');
+  const today = new Date();
+  const dayStart = new Date(today);
+  dayStart.setHours(0, 0, 0, 0);
+  
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [selectedPickups, setSelectedPickups] = useState<string[]>([]);
+  
+  // Fetch all orders
+  const { data: allOrders = [], isLoading: isOrdersLoading } = useQuery({
+    queryKey: ['orders'],
+    queryFn: getOrders
+  });
+  
+  // Fetch all pickups
+  const { data: allPickups = [], isLoading: isPickupsLoading } = useQuery({
+    queryKey: ['pickups'],
+    queryFn: getPickups
+  });
+  
+  // Filter orders created today
+  const todayOrders = allOrders.filter(order => {
+    const orderDate = new Date(order.created_at);
+    return orderDate >= dayStart && orderDate <= today;
+  });
+  
+  // Filter orders with "In Progress" status
+  const inProgressOrders = allOrders.filter(order => order.status === 'In Progress');
+  
+  // Filter orders with "Awaiting Action" status (this is new - we'll consider certain statuses as awaiting action)
+  const awaitingActionOrders = allOrders.filter(order => 
+    order.status === 'New' || 
+    order.status === 'Pending Pickup' || 
+    order.status === 'Unsuccessful'
+  );
+  
+  // Calculate total expected cash from today's orders
+  const todayTotalCash = todayOrders.reduce((total, order) => {
+    return total + (Number(order.cash_collection_usd) || 0);
+  }, 0);
+  
+  // Filter pickups scheduled for today
+  const todayPickups = allPickups.filter(pickup => {
+    const pickupDate = new Date(pickup.pickup_date);
+    const todayDate = new Date();
+    return pickupDate.setHours(0,0,0,0) === todayDate.setHours(0,0,0,0);
+  });
+  
+  // Toggle select all orders
+  const toggleSelectAllOrders = (checked: boolean) => {
+    setSelectedOrders(checked ? todayOrders.map(order => order.id) : []);
+  };
+  
+  // Toggle select individual order
+  const toggleSelectOrder = (orderId: string) => {
+    setSelectedOrders(prev => 
+      prev.includes(orderId) 
+        ? prev.filter(id => id !== orderId)
+        : [...prev, orderId]
+    );
+  };
+  
+  // Toggle select all pickups
+  const toggleSelectAllPickups = (checked: boolean) => {
+    setSelectedPickups(checked ? todayPickups.map(pickup => pickup.id) : []);
+  };
+  
+  // Toggle select individual pickup
+  const toggleSelectPickup = (pickupId: string) => {
+    setSelectedPickups(prev => 
+      prev.includes(pickupId) 
+        ? prev.filter(id => id !== pickupId)
+        : [...prev, pickupId]
+    );
+  };
 
   return (
     <MainLayout>
       <div className="space-y-8">
-        {/* Header section */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Mission Control</h1>
-            <p className="text-muted-foreground mt-1">Real-time delivery analytics and performance metrics</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <CurrencyToggle currency={currency} onChange={setCurrency} />
-            <Button variant="outline" size="sm" className="gap-1">
-              <span>Refresh</span>
-              <span className="sr-only">Refresh dashboard data</span>
-            </Button>
-          </div>
-        </div>
+        {/* Greeting Header */}
+        <AnimatePresence>
+          <motion.div 
+            className="space-y-2"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.h2 
+              className="text-3xl font-bold tracking-tight text-foreground"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              Hello, Admin
+            </motion.h2>
+            <motion.p 
+              className="text-muted-foreground"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+            >
+              Today's Overview — {formatDate(new Date())}
+            </motion.p>
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Quick stats cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <StatsCard 
-            title="Active Orders"
-            value={isStatsLoading ? '--' : dashboardStats?.ordersInTransit?.toString() || '0'}
-            trend={0} // Fixed: using a default value instead of ordersTrend
-            icon={<Package className="h-5 w-5" />}
-            description="Currently in transit"
-            chartData={ordersSparkline}
-            isLoading={isStatsLoading || isOrdersSparklineLoading}
-            trendLabel="from last period"
-          />
-          
-          <StatsCard 
-            title="Today's Deliveries"
-            value={isStatsLoading ? '--' : dashboardStats?.ordersCreatedToday?.toString() || '0'}
-            trend={8.2}
-            icon={<Clock className="h-5 w-5" />}
-            description="Orders for today"
-            isLoading={isStatsLoading}
-            trendLabel="from yesterday"
-          />
-          
-          <StatsCard 
-            title="Success Rate"
-            value={isStatsLoading ? '--' : `${Math.round(dashboardStats?.successRate || 0)}%`}
-            trend={0} // Fixed: using a default value instead of successRateTrend
-            icon={<CheckCircle className="h-5 w-5" />}
-            description="Successful deliveries"
-            variant="success"
-            isLoading={isStatsLoading}
-            trendLabel="vs target"
-          />
-          
-          <StatsCard 
-            title="Failed Deliveries"
-            value={isStatsLoading ? '--' : dashboardStats?.failedDeliveries?.toString() || '0'}
-            trend={0} // Fixed: using a default value instead of failedTrend
-            icon={<AlertTriangle className="h-5 w-5" />}
-            description="This week"
-            variant="danger"
-            isLoading={isStatsLoading}
-            trendLabel="change"
-          />
-        </div>
-
-        {/* Key metrics and custom charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 overflow-hidden backdrop-blur-sm">
-            <CardHeader className="bg-card/30 backdrop-blur-md border-b border-border/10 pb-2">
-              <CardTitle className="text-lg font-semibold flex justify-between items-center">
-                <span>Revenue Snapshot</span>
-                <Badge variant="outline" className="font-normal">Real-time</Badge>
-              </CardTitle>
-              <CardDescription>
-                Daily revenue breakdown and collection performance
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-muted-foreground">Today's Collection ({currency})</div>
-                  <div className="text-3xl font-bold">
-                    {currency === 'USD' 
-                      ? `$${dashboardStats?.cashCollected?.usd || 0}` // Fixed: using cashCollected instead of cashCollectedToday
-                      : `${dashboardStats?.cashCollected?.lbp || 0} LBP` // Fixed: using cashCollected instead of cashCollectedToday
-                    }
-                  </div>
-                  <div className="flex items-center gap-1 text-sm">
-                    <Badge variant="outline" className="bg-topspeed-50/30 text-topspeed-800 py-0 px-1.5">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      <span>+12%</span>
-                    </Badge>
-                    <span className="text-muted-foreground">vs. last week</span>
+        {/* Overview Cards */}
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+          {/* New Orders Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+          >
+            <Card className="overflow-hidden border backdrop-blur-lg from-blue-500/5 to-blue-900/5 border-blue-500/10 bg-gradient-to-br">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
+                    <Package className="h-5 w-5" />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-muted-foreground">Delivery Fees ({currency})</div>
-                  <div className="text-3xl font-bold">
-                    {currency === 'USD' 
-                      ? `$${dashboardStats?.deliveryFees?.usd || 0}`
-                      : `${dashboardStats?.deliveryFees?.lbp || 0} LBP`
-                    }
+                
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-muted-foreground">New Orders</h3>
+                  <div className="text-2xl font-bold">
+                    {isOrdersLoading ? '--' : todayOrders.length}
                   </div>
-                  <div className="flex items-center gap-1 text-sm">
-                    <Badge variant="outline" className="bg-emerald-50/30 text-emerald-800 py-0 px-1.5">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      <span>+5%</span>
-                    </Badge>
-                    <span className="text-muted-foreground">vs. last week</span>
-                  </div>
+                  <p className="text-xs text-muted-foreground">The new orders registered today</p>
                 </div>
-              </div>
-              
-              <div className="h-[250px] mt-6">
-                {/* Placeholder for the main revenue chart */}
-                <div className="h-full w-full flex items-center justify-center">
-                  <p className="text-muted-foreground text-sm">Advanced revenue chart loading...</p>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="border-t border-border/10 bg-card/30 backdrop-blur-md">
-              <div className="flex justify-between items-center w-full">
-                <span className="text-sm text-muted-foreground">Last updated: {new Date().toLocaleTimeString()}</span>
-                <Button variant="ghost" size="sm" className="gap-1">
-                  <span>View Full Report</span>
-                  <ArrowUpRight className="h-3 w-3" />
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-card/30 backdrop-blur-md border-b border-border/10 pb-2">
-              <CardTitle className="text-lg font-semibold flex justify-between items-center">
-                <span>Performance Metrics</span>
-                <Badge variant="outline" className="font-normal">Today</Badge>
-              </CardTitle>
-              <CardDescription>
-                Key operational indicators
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 px-3">
-              <div className="space-y-5">
-                <MetricItem 
-                  label="Delivery Efficiency"
-                  value={94}
-                  target={90}
-                  unit="%"
-                  status="success"
-                />
-                <MetricItem 
-                  label="On-time Rate" 
-                  value={87} 
-                  target={95}
-                  unit="%"
-                  status="warning"
-                />
-                <MetricItem 
-                  label="Cash Collection" 
-                  value={99} 
-                  target={99}
-                  unit="%"
-                  status="success"
-                />
-                <MetricItem 
-                  label="Customer Satisfaction" 
-                  value={4.8} 
-                  target={4.5}
-                  unit="/5"
-                  status="success"
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="border-t border-border/10 bg-card/30 backdrop-blur-md">
-              <Button variant="ghost" size="sm" className="w-full">View All Metrics</Button>
-            </CardFooter>
-          </Card>
-        </div>
-
-        {/* Tabs for different analytics views */}
-        <Tabs defaultValue="delivery" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-3 h-12">
-            <TabsTrigger value="delivery" className="rounded-full text-base">
-              Delivery Performance
-            </TabsTrigger>
-            <TabsTrigger value="financial" className="rounded-full text-base">
-              Financial Summary
-            </TabsTrigger>
-            <TabsTrigger value="regional" className="rounded-full text-base">
-              Regional Insights
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="delivery" className="space-y-4 animate-in fade-in-50">
-            <DeliveryPerformance />
-          </TabsContent>
-
-          <TabsContent value="financial" className="space-y-4 animate-in fade-in-50">
-            <FinancialSummary />
-          </TabsContent>
-
-          <TabsContent value="regional" className="space-y-4 animate-in fade-in-50">
-            <Card className="overflow-hidden">
-              <CardHeader className="bg-card/30 backdrop-blur-md border-b border-border/10 pb-2">
-                <CardTitle className="text-xl font-semibold">Regional Distribution</CardTitle>
-                <CardDescription>Orders and performance by geographic region</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <TopRegionsChart />
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </MainLayout>
-  );
-};
+          </motion.div>
+          
+          {/* In Progress Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <Card className="overflow-hidden border backdrop-blur-lg from-amber-500/5 to-amber-900/5 border-amber-500/10 bg-gradient-to-br">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
+                    <Clock className="h-5 w-5" />
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-muted-foreground">In Progress</h3>
+                  <div className="text-2xl font-bold">
+                    {isOrdersLoading ? '--' : inProgressOrders.length}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Orders filtered as In Progress</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+          
+          {/* Awaiting Action Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <Card className="overflow-hidden border backdrop-blur-lg from-orange-500/5 to-orange-900/5 border-orange-500/10 bg-gradient-to-br">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500">
+                    <AlertCircle className="h-5 w-5" />
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-muted-foreground">Awaiting Action</h3>
+                  <div className="text-2xl font-bold">
+                    {isOrdersLoading ? '--' : awaitingActionOrders.length}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Orders requiring intervention</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+          
+          {/* Expected Cash Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <Card className="overflow-hidden border backdrop-blur-lg from-emerald-500/5 to-emerald-900/5 border-emerald-500/10 bg-gradient-to-br">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
+                    <DollarSign className="h-5 w-5" />
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-muted-foreground">Expected Cash</h3>
+                  <div className="text-2xl font-bold">
+                    {isOrdersLoading ? '--' : `$${todayTotalCash.toFixed(2)}`}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Total amount of today's orders</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
 
-// Stats Card Component
-interface StatsCardProps {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-  description: string;
-  trend?: number;
-  trendLabel?: string;
-  variant?: 'default' | 'success' | 'danger' | 'warning';
-  chartData?: { date: string; value: number }[];
-  isLoading?: boolean;
-}
-
-const StatsCard: React.FC<StatsCardProps> = ({
-  title,
-  value,
-  icon,
-  description,
-  trend = 0,
-  trendLabel = "vs previous",
-  variant = "default",
-  chartData,
-  isLoading = false
-}) => {
-  // Determine color scheme based on variant
-  const getVariantClasses = () => {
-    switch (variant) {
-      case 'success':
-        return 'from-emerald-500/5 to-emerald-900/5 border-emerald-500/10';
-      case 'danger':
-        return 'from-rose-500/5 to-rose-900/5 border-rose-500/10';
-      case 'warning':
-        return 'from-amber-500/5 to-amber-900/5 border-amber-500/10';
-      default:
-        return 'from-topspeed-500/5 to-topspeed-900/5 border-topspeed-500/10';
-    }
-  };
-
-  const getTrendColor = () => {
-    if (trend === 0) return 'text-muted-foreground';
-    if (variant === 'danger') {
-      return trend > 0 ? 'text-rose-500' : 'text-emerald-500';
-    }
-    return trend > 0 ? 'text-emerald-500' : 'text-rose-500';
-  };
-
-  const getTrendIcon = () => {
-    if (trend === 0) return null;
-    return trend > 0 ? 
-      <TrendingUp className="h-3 w-3 mr-1" /> : 
-      <TrendingUp className="h-3 w-3 mr-1 transform rotate-180" />;
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Card className={cn(
-        "overflow-hidden border backdrop-blur-lg", 
-        getVariantClasses(),
-        "bg-gradient-to-br"
-      )}>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className={cn(
-              "p-2 rounded-lg",
-              variant === 'success' ? 'bg-emerald-500/10 text-emerald-500' :
-              variant === 'danger' ? 'bg-rose-500/10 text-rose-500' :
-              variant === 'warning' ? 'bg-amber-500/10 text-amber-500' :
-              'bg-topspeed-500/10 text-topspeed-500'
-            )}>
-              {icon}
+        {/* Tabbed Data Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+        >
+          <Tabs defaultValue="new-orders" className="space-y-4">
+            <div className="bg-white/50 backdrop-blur-sm rounded-xl p-1 flex border border-border/10 shadow-sm">
+              <TabsList className="w-full h-12 grid grid-cols-3 bg-transparent gap-2 p-1">
+                <TabsTrigger 
+                  value="new-orders" 
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg text-base"
+                >
+                  New Orders ({todayOrders.length})
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="pickups" 
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg text-base"
+                >
+                  Pickup Exceptions ({todayPickups.length})
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="awaiting" 
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg text-base"
+                >
+                  Awaiting Action ({awaitingActionOrders.length})
+                </TabsTrigger>
+              </TabsList>
             </div>
             
-            {trend !== 0 && (
-              <div className={cn("flex items-center text-xs font-medium", getTrendColor())}>
-                {getTrendIcon()}
-                {trend > 0 ? '+' : ''}{Math.abs(trend)}%
-                <span className="ml-1 text-muted-foreground text-[10px]">{trendLabel}</span>
+            <TabsContent value="new-orders" className="animate-in fade-in-50 mt-6">
+              <div className="bg-white/50 backdrop-blur-sm rounded-xl border border-border/10 shadow-sm p-4">
+                <h3 className="text-lg font-semibold mb-4">Today's New Orders</h3>
+                <OrdersTable 
+                  orders={mapOrdersToTableFormat(todayOrders)}
+                  selectedOrders={selectedOrders}
+                  toggleSelectAll={toggleSelectAllOrders}
+                  toggleSelectOrder={toggleSelectOrder}
+                />
               </div>
-            )}
-          </div>
-          
-          <div className="space-y-1">
-            <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-            <div className="text-2xl font-bold">{isLoading ? '--' : value}</div>
-            <p className="text-xs text-muted-foreground">{description}</p>
-          </div>
-          
-          {chartData && chartData.length > 0 && (
-            <div className="mt-4 h-10">
-              <Sparkline 
-                data={chartData} 
-                isLoading={isLoading} 
-                color={
-                  variant === 'success' ? '#10b981' :
-                  variant === 'danger' ? '#e11d48' :
-                  variant === 'warning' ? '#f59e0b' :
-                  '#ea384d'
-                }
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-};
-
-// Metric Item Component
-interface MetricItemProps {
-  label: string;
-  value: number;
-  target: number;
-  unit: string;
-  status: 'success' | 'warning' | 'danger';
-}
-
-const MetricItem: React.FC<MetricItemProps> = ({ label, value, target, unit, status }) => {
-  const percentage = (value / target) * 100;
-  
-  const getStatusColor = () => {
-    switch (status) {
-      case 'success': return 'bg-emerald-500';
-      case 'warning': return 'bg-amber-500';
-      case 'danger': return 'bg-rose-500';
-      default: return 'bg-topspeed-500';
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <span className="text-sm font-medium">{label}</span>
-        <span className="text-sm font-bold">{value}{unit}</span>
+            </TabsContent>
+            
+            <TabsContent value="pickups" className="animate-in fade-in-50 mt-6">
+              <div className="bg-white/50 backdrop-blur-sm rounded-xl border border-border/10 shadow-sm p-4">
+                <h3 className="text-lg font-semibold mb-4">Today's Scheduled Pickups</h3>
+                <PickupsTable 
+                  pickups={todayPickups}
+                  selectedPickups={selectedPickups}
+                  toggleSelectAll={toggleSelectAllPickups}
+                  toggleSelectPickup={toggleSelectPickup}
+                />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="awaiting" className="animate-in fade-in-50 mt-6">
+              <div className="bg-white/50 backdrop-blur-sm rounded-xl border border-border/10 shadow-sm p-4">
+                <h3 className="text-lg font-semibold mb-4">Orders Awaiting Action</h3>
+                <OrdersTable 
+                  orders={mapOrdersToTableFormat(awaitingActionOrders)}
+                  selectedOrders={selectedOrders}
+                  toggleSelectAll={toggleSelectAllOrders}
+                  toggleSelectOrder={toggleSelectOrder}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
       </div>
-      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-        <div 
-          className={cn("h-full rounded-full", getStatusColor())}
-          style={{ width: `${Math.min(percentage, 100)}%` }}
-        />
-      </div>
-      <div className="flex justify-between items-center text-xs text-muted-foreground">
-        <span>Target: {target}{unit}</span>
-        <span className={cn(
-          "font-medium",
-          status === 'success' ? 'text-emerald-500' :
-          status === 'warning' ? 'text-amber-500' :
-          'text-rose-500'
-        )}>
-          {Math.round(percentage)}%
-        </span>
-      </div>
-    </div>
+    </MainLayout>
   );
 };
 

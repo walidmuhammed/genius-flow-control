@@ -34,7 +34,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
           </motion.div>
         </main>
       </div>
-      <Toaster position="top-right" />
+      <Toaster 
+        position="top-right" 
+        toastOptions={{
+          classNames: {
+            toast: "group border-border/10 shadow-lg bg-white/90 backdrop-blur-sm",
+            title: "font-medium text-foreground",
+            description: "text-muted-foreground",
+            actionButton: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90",
+            cancelButton: "text-muted-foreground",
+            error: "bg-white/90 backdrop-blur-sm border-l-4 border-l-[#DC291E]",
+            success: "bg-white/90 backdrop-blur-sm border-l-4 border-l-green-600",
+            warning: "bg-white/90 backdrop-blur-sm border-l-4 border-l-amber-600",
+            info: "bg-white/90 backdrop-blur-sm border-l-4 border-l-[#26A4DB]",
+          }
+        }}
+      />
     </div>
   );
 };
