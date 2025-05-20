@@ -13,9 +13,9 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
   return (
-    <div className="flex min-h-screen bg-[#fafbfc] dark:bg-[#0a0a0a] bg-gradient-to-br from-white to-slate-100/80">
+    <div className="flex min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a]">
       <Sidebar />
-      <div className="flex-1 flex flex-col relative">
+      <div className="flex-1 flex flex-col">
         <TopBar />
         <main className={cn(
           "p-6 overflow-y-auto h-[calc(100vh-64px)] transition-all", 
