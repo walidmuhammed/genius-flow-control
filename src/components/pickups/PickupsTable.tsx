@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Pickup } from '@/services/pickups';
 import { mapPickupToComponentFormat, PickupData } from '@/utils/pickupMappers';
-import { PickupDetailsDialog } from '@/components/pickups/PickupDetailsDialog';
+import PickupDetailsDialog from '@/components/pickups/PickupDetailsDialog';
 import { formatDate } from '@/utils/format';
 
 interface PickupsTableProps {
