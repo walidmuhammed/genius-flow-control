@@ -63,7 +63,7 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Topspeed brand colors
+				// Topspeed brand colors - updated with exact brand colors
 				topspeed: {
 					50: '#fff1f2',
 					100: '#ffe2e4',
@@ -71,10 +71,22 @@ export default {
 					300: '#fda4a9',
 					400: '#fb7077',
 					500: '#f3404a',
-					600: '#ea384d',
-					700: '#cd1427',
-					800: '#a81226',
+					600: '#DC291E', // Primary Red brand color
+					700: '#c11a10',
+					800: '#a5160c',
 					900: '#8b1225',
+				},
+				blue: {
+					50: '#edf4f8',
+					100: '#d6e8f1',
+					200: '#aed1e3',
+					300: '#85b9d5',
+					400: '#5ca2c7',
+					500: '#348bb9',
+					600: '#26A4DB', // Secondary Blue brand color
+					700: '#1a849d',
+					800: '#146f83',
+					900: '#0d5b6b',
 				}
 			},
 			borderRadius: {
