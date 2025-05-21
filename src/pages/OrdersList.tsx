@@ -4,41 +4,81 @@ import { FileBarChart, PackageSearch, CheckCheck } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import OrdersTable from '@/components/orders/OrdersTable';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Order } from '@/components/orders/OrdersTableRow';
 
-// Mock data for orders
-const mockOrders = [
+// Mock data for orders with proper structure to match Order type
+const mockOrders: Order[] = [
   {
     id: "ORD-001",
     referenceNumber: "REF12345",
-    type: "Shipment",
-    customer: "John Doe",
-    location: "Beirut",
-    amount: "$120.00",
-    deliveryFees: "$5.00",
-    status: "Pending",
-    notes: "Handle with care"
+    type: "Deliver",
+    customer: {
+      name: "John Doe",
+      phone: "+961 1 234 567"
+    },
+    location: {
+      city: "Beirut",
+      area: "Downtown"
+    },
+    amount: {
+      valueLBP: 3600000,
+      valueUSD: 120
+    },
+    deliveryCharge: {
+      valueLBP: 150000,
+      valueUSD: 5
+    },
+    status: "New",
+    lastUpdate: "2023-05-20T14:30:00Z",
+    note: "Handle with care"
   },
   {
     id: "ORD-002",
     referenceNumber: "REF67890",
     type: "Exchange",
-    customer: "Jane Smith",
-    location: "Tripoli",
-    amount: "$85.50",
-    deliveryFees: "$3.50",
-    status: "New",
-    notes: "Fragile items"
+    customer: {
+      name: "Jane Smith",
+      phone: "+961 3 456 789"
+    },
+    location: {
+      city: "Tripoli",
+      area: "Al Mina"
+    },
+    amount: {
+      valueLBP: 2565000,
+      valueUSD: 85.50
+    },
+    deliveryCharge: {
+      valueLBP: 105000,
+      valueUSD: 3.50
+    },
+    status: "Pending Pickup",
+    lastUpdate: "2023-05-19T10:15:00Z",
+    note: "Fragile items"
   },
   {
     id: "ORD-003",
     referenceNumber: "REF54321",
-    type: "Shipment",
-    customer: "Robert Johnson",
-    location: "Sidon",
-    amount: "$210.75",
-    deliveryFees: "$7.25",
-    status: "Completed",
-    notes: "Express delivery"
+    type: "Deliver",
+    customer: {
+      name: "Robert Johnson",
+      phone: "+961 76 123 456"
+    },
+    location: {
+      city: "Sidon",
+      area: "Old City"
+    },
+    amount: {
+      valueLBP: 6322500,
+      valueUSD: 210.75
+    },
+    deliveryCharge: {
+      valueLBP: 217500,
+      valueUSD: 7.25
+    },
+    status: "Successful",
+    lastUpdate: "2023-05-18T09:45:00Z",
+    note: "Express delivery"
   }
 ];
 
