@@ -12,6 +12,7 @@ import { formatDate } from '@/utils/format';
 import { getOrders } from '@/services/orders';
 import { getPickups } from '@/services/pickups';
 import { mapOrdersToTableFormat } from '@/utils/orderMappers';
+
 const Dashboard: React.FC = () => {
   const today = new Date();
   const dayStart = new Date(today);
@@ -260,54 +261,95 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Tabbed Data Section - Improved Modern Design */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        delay: 0.5,
-        duration: 0.5
-      }} className="mt-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="mt-10"
+        >
           <Tabs defaultValue="new-orders" className="space-y-6">
-            <div className="bg-gray-100/70 dark:bg-gray-800/40 rounded-xl p-1.5 flex border border-gray-200/30 dark:border-gray-700/30 shadow-sm">
-              <TabsList className="w-full h-12 grid grid-cols-3 bg-transparent gap-2 p-1">
-                <TabsTrigger value="new-orders" className="data-[state=active]:text-white rounded-lg text-base transition-all duration-200 py-2.5 font-medium bg-[#db271e]">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-1.5 flex border border-gray-200/30 dark:border-gray-700/30">
+              <TabsList className="w-full h-14 grid grid-cols-3 bg-transparent gap-2 p-1">
+                <TabsTrigger 
+                  value="new-orders" 
+                  className="rounded-lg text-base transition-all duration-300 py-3 font-medium
+                  data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md
+                  hover:bg-gray-100 dark:hover:bg-gray-700/40"
+                >
                   New Orders ({todayOrders.length})
                 </TabsTrigger>
-                <TabsTrigger value="pickups" className="data-[state=active]:bg-topspeed-600 data-[state=active]:text-white rounded-lg text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80 py-2.5 font-medium">
+                <TabsTrigger 
+                  value="pickups" 
+                  className="rounded-lg text-base transition-all duration-300 py-3 font-medium
+                  data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md
+                  hover:bg-gray-100 dark:hover:bg-gray-700/40"
+                >
                   Pickup Exceptions ({todayPickups.length})
                 </TabsTrigger>
-                <TabsTrigger value="awaiting" className="data-[state=active]:bg-topspeed-600 data-[state=active]:text-white rounded-lg text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80 py-2.5 font-medium">
+                <TabsTrigger 
+                  value="awaiting" 
+                  className="rounded-lg text-base transition-all duration-300 py-3 font-medium
+                  data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md
+                  hover:bg-gray-100 dark:hover:bg-gray-700/40"
+                >
                   Awaiting Action ({awaitingActionOrders.length})
                 </TabsTrigger>
               </TabsList>
             </div>
             
-            <TabsContent value="new-orders" className="animate-in fade-in-50 mt-6">
-              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm p-6">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Today's New Orders</h3>
-                <OrdersTable orders={mapOrdersToTableFormat(todayOrders)} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAllOrders} toggleSelectOrder={toggleSelectOrder} />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="pickups" className="animate-in fade-in-50 mt-6">
-              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm p-6">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Today's Scheduled Pickups</h3>
-                <PickupsTable pickups={todayPickups} selectedPickups={selectedPickups} toggleSelectAll={toggleSelectAllPickups} toggleSelectPickup={toggleSelectPickup} />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="awaiting" className="animate-in fade-in-50 mt-6">
-              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm p-6">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Orders Awaiting Action</h3>
-                <OrdersTable orders={mapOrdersToTableFormat(awaitingActionOrders)} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAllOrders} toggleSelectOrder={toggleSelectOrder} />
-              </div>
-            </TabsContent>
+            <AnimatePresence mode="wait">
+              <TabsContent 
+                value="new-orders" 
+                className="animate-in fade-in-50 mt-6 transition-all duration-300"
+              >
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200/30 dark:border-gray-700/30 p-6"
+                >
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Today's New Orders</h3>
+                  <OrdersTable orders={mapOrdersToTableFormat(todayOrders)} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAllOrders} toggleSelectOrder={toggleSelectOrder} />
+                </motion.div>
+              </TabsContent>
+              
+              <TabsContent 
+                value="pickups" 
+                className="animate-in fade-in-50 mt-6 transition-all duration-300"
+              >
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200/30 dark:border-gray-700/30 p-6"
+                >
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Today's Scheduled Pickups</h3>
+                  <PickupsTable pickups={todayPickups} selectedPickups={selectedPickups} toggleSelectAll={toggleSelectAllPickups} toggleSelectPickup={toggleSelectPickup} />
+                </motion.div>
+              </TabsContent>
+              
+              <TabsContent 
+                value="awaiting" 
+                className="animate-in fade-in-50 mt-6 transition-all duration-300"
+              >
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200/30 dark:border-gray-700/30 p-6"
+                >
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Orders Awaiting Action</h3>
+                  <OrdersTable orders={mapOrdersToTableFormat(awaitingActionOrders)} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAllOrders} toggleSelectOrder={toggleSelectOrder} />
+                </motion.div>
+              </TabsContent>
+            </AnimatePresence>
           </Tabs>
         </motion.div>
       </div>
     </MainLayout>;
 };
+
 export default Dashboard;
