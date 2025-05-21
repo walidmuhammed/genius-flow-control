@@ -259,7 +259,7 @@ const Dashboard: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Tabbed Data Section - Premium Redesign */}
+        {/* Tabbed Data Section - Improved Modern Design */}
         <motion.div initial={{
         opacity: 0,
         y: 20
@@ -271,36 +271,45 @@ const Dashboard: React.FC = () => {
         duration: 0.5
       }} className="mt-10">
           <Tabs defaultValue="new-orders" className="space-y-6">
-            <div className="bg-gray-100/70 dark:bg-gray-800/40 backdrop-blur-md rounded-2xl p-1.5 flex border border-gray-200/30 dark:border-gray-700/30 shadow-sm px-[17px] py-[10px] my-0 mx-0">
+            <div className="bg-gray-100/70 dark:bg-gray-800/40 rounded-xl p-1.5 flex border border-gray-200/30 dark:border-gray-700/30 shadow-sm">
               <TabsList className="w-full h-12 grid grid-cols-3 bg-transparent gap-2 p-1">
-                <TabsTrigger value="new-orders" className="data-[state=active]:shadow-md rounded-xl text-base transition-all duration-200 py-[9px] my-0 mx-0 px-0 text-slate-50 bg-[_no_separator_line_no_shadow_no_gla] bg-[#db271e]">
+                <TabsTrigger 
+                  value="new-orders" 
+                  className="data-[state=active]:bg-topspeed-600 data-[state=active]:text-white rounded-lg text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80 py-2.5 font-medium"
+                >
                   New Orders ({todayOrders.length})
                 </TabsTrigger>
-                <TabsTrigger value="pickups" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-md rounded-xl text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80">
+                <TabsTrigger 
+                  value="pickups" 
+                  className="data-[state=active]:bg-topspeed-600 data-[state=active]:text-white rounded-lg text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80 py-2.5 font-medium"
+                >
                   Pickup Exceptions ({todayPickups.length})
                 </TabsTrigger>
-                <TabsTrigger value="awaiting" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-md rounded-xl text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80">
+                <TabsTrigger 
+                  value="awaiting" 
+                  className="data-[state=active]:bg-topspeed-600 data-[state=active]:text-white rounded-lg text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80 py-2.5 font-medium"
+                >
                   Awaiting Action ({awaitingActionOrders.length})
                 </TabsTrigger>
               </TabsList>
             </div>
             
             <TabsContent value="new-orders" className="animate-in fade-in-50 mt-6">
-              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm p-6">
+              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Today's New Orders</h3>
                 <OrdersTable orders={mapOrdersToTableFormat(todayOrders)} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAllOrders} toggleSelectOrder={toggleSelectOrder} />
               </div>
             </TabsContent>
             
             <TabsContent value="pickups" className="animate-in fade-in-50 mt-6">
-              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm p-6">
+              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Today's Scheduled Pickups</h3>
                 <PickupsTable pickups={todayPickups} selectedPickups={selectedPickups} toggleSelectAll={toggleSelectAllPickups} toggleSelectPickup={toggleSelectPickup} />
               </div>
             </TabsContent>
             
             <TabsContent value="awaiting" className="animate-in fade-in-50 mt-6">
-              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm p-6">
+              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Orders Awaiting Action</h3>
                 <OrdersTable orders={mapOrdersToTableFormat(awaitingActionOrders)} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAllOrders} toggleSelectOrder={toggleSelectOrder} />
               </div>
