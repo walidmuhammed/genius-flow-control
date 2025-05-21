@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Package, Clock, AlertCircle, DollarSign } from 'lucide-react';
+import { Package, Clock, AlertCircle, DollarSign, ShoppingCart, Calendar, Inbox } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,8 @@ import { formatDate } from '@/utils/format';
 import { getOrders } from '@/services/orders';
 import { getPickups } from '@/services/pickups';
 import { mapOrdersToTableFormat } from '@/utils/orderMappers';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Link } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
   const today = new Date();
@@ -81,6 +84,7 @@ const Dashboard: React.FC = () => {
   const toggleSelectPickup = (pickupId: string) => {
     setSelectedPickups(prev => prev.includes(pickupId) ? prev.filter(id => id !== pickupId) : [...prev, pickupId]);
   };
+  
   return <MainLayout>
       <div className="space-y-8">
         {/* Greeting Header */}
@@ -268,31 +272,55 @@ const Dashboard: React.FC = () => {
           className="mt-10"
         >
           <Tabs defaultValue="new-orders" className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-1.5 flex border border-gray-200/30 dark:border-gray-700/30">
-              <TabsList className="w-full h-14 grid grid-cols-3 bg-transparent gap-2 p-1">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-1.5 shadow-sm border border-gray-200/50 dark:border-gray-700/30">
+              <TabsList className="w-full h-16 grid grid-cols-3 bg-transparent gap-2 p-1">
                 <TabsTrigger 
                   value="new-orders" 
-                  className="rounded-lg text-base transition-all duration-300 py-3 font-medium
+                  className="rounded-lg text-base transition-all duration-300 py-3 px-4 font-medium flex items-center justify-center gap-2
                   data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md
                   hover:bg-gray-100 dark:hover:bg-gray-700/40"
                 >
-                  New Orders ({todayOrders.length})
+                  <ShoppingCart className="h-5 w-5" />
+                  <div className="flex items-center">
+                    <span>New Orders</span>
+                    {todayOrders.length > 0 && (
+                      <span className="ml-2 bg-white/20 text-white text-xs py-0.5 px-1.5 rounded-full">
+                        {todayOrders.length}
+                      </span>
+                    )}
+                  </div>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="pickups" 
-                  className="rounded-lg text-base transition-all duration-300 py-3 font-medium
+                  className="rounded-lg text-base transition-all duration-300 py-3 px-4 font-medium flex items-center justify-center gap-2
                   data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md
                   hover:bg-gray-100 dark:hover:bg-gray-700/40"
                 >
-                  Pickup Exceptions ({todayPickups.length})
+                  <Calendar className="h-5 w-5" />
+                  <div className="flex items-center">
+                    <span>Pickup Scheduled</span>
+                    {todayPickups.length > 0 && (
+                      <span className="ml-2 bg-white/20 text-white text-xs py-0.5 px-1.5 rounded-full">
+                        {todayPickups.length}
+                      </span>
+                    )}
+                  </div>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="awaiting" 
-                  className="rounded-lg text-base transition-all duration-300 py-3 font-medium
+                  className="rounded-lg text-base transition-all duration-300 py-3 px-4 font-medium flex items-center justify-center gap-2
                   data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md
                   hover:bg-gray-100 dark:hover:bg-gray-700/40"
                 >
-                  Awaiting Action ({awaitingActionOrders.length})
+                  <Inbox className="h-5 w-5" />
+                  <div className="flex items-center">
+                    <span>Awaiting Action</span>
+                    {awaitingActionOrders.length > 0 && (
+                      <span className="ml-2 bg-white/20 text-white text-xs py-0.5 px-1.5 rounded-full">
+                        {awaitingActionOrders.length}
+                      </span>
+                    )}
+                  </div>
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -310,7 +338,22 @@ const Dashboard: React.FC = () => {
                   className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200/30 dark:border-gray-700/30 p-6"
                 >
                   <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Today's New Orders</h3>
-                  <OrdersTable orders={mapOrdersToTableFormat(todayOrders)} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAllOrders} toggleSelectOrder={toggleSelectOrder} />
+                  {todayOrders.length > 0 ? (
+                    <OrdersTable 
+                      orders={mapOrdersToTableFormat(todayOrders)} 
+                      selectedOrders={selectedOrders} 
+                      toggleSelectAll={toggleSelectAllOrders} 
+                      toggleSelectOrder={toggleSelectOrder} 
+                    />
+                  ) : (
+                    <EmptyState
+                      icon={ShoppingCart}
+                      title="No new orders today"
+                      description="When new orders come in, they will appear here."
+                      actionLabel="Create Order"
+                      actionHref="/orders/new"
+                    />
+                  )}
                 </motion.div>
               </TabsContent>
               
@@ -326,7 +369,22 @@ const Dashboard: React.FC = () => {
                   className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200/30 dark:border-gray-700/30 p-6"
                 >
                   <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Today's Scheduled Pickups</h3>
-                  <PickupsTable pickups={todayPickups} selectedPickups={selectedPickups} toggleSelectAll={toggleSelectAllPickups} toggleSelectPickup={toggleSelectPickup} />
+                  {todayPickups.length > 0 ? (
+                    <PickupsTable 
+                      pickups={todayPickups} 
+                      selectedPickups={selectedPickups} 
+                      toggleSelectAll={toggleSelectAllPickups} 
+                      toggleSelectPickup={toggleSelectPickup} 
+                    />
+                  ) : (
+                    <EmptyState
+                      icon={Calendar}
+                      title="No pickups scheduled today"
+                      description="When pickups are scheduled for today, they will appear here."
+                      actionLabel="Schedule Pickup"
+                      actionHref="/pickups"
+                    />
+                  )}
                 </motion.div>
               </TabsContent>
               
@@ -342,7 +400,22 @@ const Dashboard: React.FC = () => {
                   className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200/30 dark:border-gray-700/30 p-6"
                 >
                   <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Orders Awaiting Action</h3>
-                  <OrdersTable orders={mapOrdersToTableFormat(awaitingActionOrders)} selectedOrders={selectedOrders} toggleSelectAll={toggleSelectAllOrders} toggleSelectOrder={toggleSelectOrder} />
+                  {awaitingActionOrders.length > 0 ? (
+                    <OrdersTable 
+                      orders={mapOrdersToTableFormat(awaitingActionOrders)} 
+                      selectedOrders={selectedOrders} 
+                      toggleSelectAll={toggleSelectAllOrders} 
+                      toggleSelectOrder={toggleSelectOrder} 
+                    />
+                  ) : (
+                    <EmptyState
+                      icon={Inbox}
+                      title="No orders are awaiting your action today"
+                      description="When orders need your attention, they will appear here."
+                      actionLabel="Create Order"
+                      actionHref="/orders/new"
+                    />
+                  )}
                 </motion.div>
               </TabsContent>
             </AnimatePresence>
