@@ -16,9 +16,7 @@ interface MenuItem {
   badge?: number | string;
 }
 
-const SidebarMenu: React.FC<SidebarMenuProps> = ({
-  collapsed
-}) => {
+const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed }) => {
   const location = useLocation();
   
   const mainMenuItems: MenuItem[] = [
@@ -73,22 +71,36 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
     <div className="flex flex-col gap-6">
       <div className="space-y-1">
         <div className="mb-2">
-          <h3 className="text-xs font-medium text-gray-500 px-4">
+          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 px-4">
             Main
           </h3>
         </div>
         
-        {mainMenuItems.map(item => <MenuItem key={item.path} collapsed={collapsed} item={item} isActive={location.pathname === item.path} />)}
+        {mainMenuItems.map(item => (
+          <MenuItem 
+            key={item.path} 
+            collapsed={collapsed} 
+            item={item} 
+            isActive={location.pathname === item.path} 
+          />
+        ))}
       </div>
       
       <div className="space-y-1">
         <div className="mb-2">
-          <h3 className="text-xs font-medium text-gray-500 px-4">
+          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 px-4">
             System
           </h3>
         </div>
         
-        {secondaryMenuItems.map(item => <MenuItem key={item.path} collapsed={collapsed} item={item} isActive={location.pathname === item.path} />)}
+        {secondaryMenuItems.map(item => (
+          <MenuItem 
+            key={item.path} 
+            collapsed={collapsed} 
+            item={item} 
+            isActive={location.pathname === item.path} 
+          />
+        ))}
       </div>
     </div>
   );
@@ -100,19 +112,15 @@ interface MenuItemProps {
   collapsed: boolean;
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({
-  item,
-  isActive,
-  collapsed
-}) => {
+const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, collapsed }) => {
   return (
     <Link to={item.path}>
       <motion.div 
         className={cn(
-          "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium mb-1 transition-all duration-200", 
+          "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium mb-1 transition-all duration-200", 
           isActive 
-            ? "bg-white text-[#DC291E] shadow-lg shadow-black/5" 
-            : "text-gray-700 hover:text-[#DC291E] hover:bg-white/60"
+            ? "bg-gray-200 dark:bg-gray-800 text-[#DC291E] dark:text-[#DC291E]" 
+            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
         )} 
         whileHover={{ 
           x: 4,
@@ -124,7 +132,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
           "flex items-center justify-center transition-all duration-200", 
           isActive 
             ? "text-[#DC291E]" 
-            : "text-gray-600"
+            : "text-gray-600 dark:text-gray-400"
         )}>
           {item.icon}
         </span>
@@ -143,7 +151,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
             "ml-auto flex h-5 min-w-5 items-center justify-center rounded-full text-[10px] font-medium px-1.5",
             isActive 
               ? "bg-[#DC291E]/10 text-[#DC291E]" 
-              : "bg-gray-200 text-gray-700"
+              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
           )}>
             {item.badge}
           </span>

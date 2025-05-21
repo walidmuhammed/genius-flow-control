@@ -13,7 +13,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-[#fafafa] to-[#f5f5f7] dark:from-[#101010] dark:to-[#141418]">
+    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-950">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <TopBar />
@@ -38,15 +38,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
         position="top-right" 
         toastOptions={{
           classNames: {
-            toast: "group border-border/10 shadow-xl bg-white/90 backdrop-blur-xl",
+            toast: "group border-border shadow-sm bg-white dark:bg-gray-900",
             title: "font-medium text-foreground",
             description: "text-muted-foreground",
             actionButton: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90",
             cancelButton: "text-muted-foreground",
-            error: "bg-white/90 backdrop-blur-xl border-l-4 border-l-[#DC291E] shadow-xl",
-            success: "bg-white/90 backdrop-blur-xl border-l-4 border-l-green-600 shadow-xl",
-            warning: "bg-white/90 backdrop-blur-xl border-l-4 border-l-amber-600 shadow-xl",
-            info: "bg-white/90 backdrop-blur-xl border-l-4 border-l-[#26A4DB] shadow-xl",
+            error: "border-l-4 border-l-[#DC291E]",
+            success: "border-l-4 border-l-green-600",
+            warning: "border-l-4 border-l-amber-600",
+            info: "border-l-4 border-l-[#26A4DB]",
           }
         }}
       />

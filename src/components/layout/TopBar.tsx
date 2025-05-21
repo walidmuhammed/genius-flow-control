@@ -27,13 +27,13 @@ const TopBar: React.FC = () => {
   };
 
   return (
-    <div className="sticky top-0 z-30 h-16 flex items-center justify-between px-4 md:px-6 bg-white/20 dark:bg-black/10 backdrop-blur-xl">
+    <div className="sticky top-0 z-30 h-16 flex items-center justify-between px-4 md:px-6 bg-white dark:bg-gray-950">
       <div className="flex items-center gap-2 lg:gap-4 w-full">
         <form className="hidden md:flex items-center w-3/5 max-w-md relative">
           <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input 
             placeholder="Search orders, customers, or couriers..." 
-            className="w-full pl-10 bg-white/40 dark:bg-black/20 backdrop-blur-lg border-transparent hover:border-gray-200 focus-visible:border-gray-300 focus-visible:ring-0 rounded-xl h-10 transition-all shadow-sm" 
+            className="w-full pl-10 bg-gray-50 dark:bg-gray-900 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus-visible:border-gray-300 dark:focus-visible:border-gray-600 focus-visible:ring-0 rounded-lg h-10 transition-all" 
           />
         </form>
       </div>
@@ -45,7 +45,7 @@ const TopBar: React.FC = () => {
               <Button 
                 variant="default" 
                 size="sm" 
-                className="rounded-xl gap-1 bg-gradient-to-r from-[#DC291E] to-[#DC291E]/90 hover:from-[#DC291E]/90 hover:to-[#DC291E] transition-all duration-300 shadow-md hover:shadow-lg"
+                className="rounded-lg gap-1 bg-[#DC291E] hover:bg-[#DC291E]/90 transition-all duration-300"
               >
                 <Plus className="h-4 w-4 mr-1" /> 
                 Create 
@@ -53,15 +53,15 @@ const TopBar: React.FC = () => {
               </Button>
             </motion.div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 mt-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-white/10 shadow-xl rounded-xl">
+          <DropdownMenuContent align="end" className="w-48 mt-1 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg">
             <Link to="/orders/new">
-              <DropdownMenuItem className="cursor-pointer rounded-lg transition-colors my-1 focus:bg-gray-100/80 dark:focus:bg-gray-800/50">
+              <DropdownMenuItem className="cursor-pointer rounded-lg transition-colors my-1 focus:bg-gray-100 dark:focus:bg-gray-800">
                 <Plus className="h-4 w-4 mr-2 text-[#DC291E]" />
                 <span>Create Order</span>
               </DropdownMenuItem>
             </Link>
             <Link to="/pickups">
-              <DropdownMenuItem className="cursor-pointer rounded-lg transition-colors my-1 focus:bg-gray-100/80 dark:focus:bg-gray-800/50">
+              <DropdownMenuItem className="cursor-pointer rounded-lg transition-colors my-1 focus:bg-gray-100 dark:focus:bg-gray-800">
                 <Plus className="h-4 w-4 mr-2 text-[#26A4DB]" />
                 <span>Schedule Pickup</span>
               </DropdownMenuItem>
@@ -73,11 +73,11 @@ const TopBar: React.FC = () => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="rounded-xl relative bg-white/40 dark:bg-gray-900/30 hover:bg-white/60 dark:hover:bg-gray-900/40 backdrop-blur-sm border border-transparent hover:border-gray-200/50 dark:hover:border-gray-800/50 transition-all shadow-sm" 
+            className="rounded-lg relative bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all" 
             aria-label="Notifications"
           >
             <Bell className="h-[1.2rem] w-[1.2rem] text-gray-700 dark:text-gray-200" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#DC291E] text-[10px] font-bold flex items-center justify-center text-white shadow-sm">3</span>
+            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#DC291E] text-[10px] font-bold flex items-center justify-center text-white">3</span>
           </Button>
         </motion.div>
         
@@ -86,7 +86,7 @@ const TopBar: React.FC = () => {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
               <Button 
                 variant="ghost" 
-                className="relative h-10 w-10 rounded-xl bg-white/40 dark:bg-gray-900/30 hover:bg-white/60 dark:hover:bg-gray-900/40 backdrop-blur-sm border border-transparent hover:border-gray-200/50 dark:hover:border-gray-800/50 transition-all shadow-sm" 
+                className="relative h-10 w-10 rounded-lg bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all" 
                 aria-label="User menu"
               >
                 <Avatar className="h-9 w-9">
@@ -97,7 +97,7 @@ const TopBar: React.FC = () => {
             </motion.div>
           </DropdownMenuTrigger>
           <DropdownMenuContent 
-            className="w-56 mt-1 mr-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/30 shadow-xl rounded-xl" 
+            className="w-56 mt-1 mr-1 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-lg" 
             align="end" 
             forceMount
           >
@@ -107,12 +107,12 @@ const TopBar: React.FC = () => {
                 <p className="text-xs leading-none text-muted-foreground">admin@topspeed.com</p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-gray-200/50 dark:bg-gray-700/50" />
-            <DropdownMenuItem className="rounded-lg transition-colors focus:bg-gray-100/80 dark:focus:bg-gray-800/50 my-0.5">Profile</DropdownMenuItem>
-            <DropdownMenuItem className="rounded-lg transition-colors focus:bg-gray-100/80 dark:focus:bg-gray-800/50 my-0.5">Settings</DropdownMenuItem>
-            <DropdownMenuItem className="rounded-lg transition-colors focus:bg-gray-100/80 dark:focus:bg-gray-800/50 my-0.5">Support</DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-gray-200/50 dark:bg-gray-700/50" />
-            <DropdownMenuItem className="rounded-lg transition-colors focus:bg-gray-100/80 dark:focus:bg-gray-800/50 my-0.5 text-[#DC291E] hover:text-[#DC291E]/90">
+            <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
+            <DropdownMenuItem className="rounded-lg transition-colors focus:bg-gray-100 dark:focus:bg-gray-800 my-0.5">Profile</DropdownMenuItem>
+            <DropdownMenuItem className="rounded-lg transition-colors focus:bg-gray-100 dark:focus:bg-gray-800 my-0.5">Settings</DropdownMenuItem>
+            <DropdownMenuItem className="rounded-lg transition-colors focus:bg-gray-100 dark:focus:bg-gray-800 my-0.5">Support</DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
+            <DropdownMenuItem className="rounded-lg transition-colors focus:bg-gray-100 dark:focus:bg-gray-800 my-0.5 text-[#DC291E] hover:text-[#DC291E]">
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
