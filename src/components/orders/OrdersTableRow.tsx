@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Eye, MoreHorizontal, Printer, FileText } from 'lucide-react';
+import { Eye, MoreHorizontal, Printer, MessageSquare } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
@@ -59,7 +59,7 @@ const getStatusBadge = (status: OrderStatus) => {
     case 'Successful':
       return <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Successful</span>;
     case 'Unsuccessful':
-      return <span className="px-3 py-1 bg-topspeed-50 text-topspeed-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-topspeed-500"></span>Unsuccessful</span>;
+      return <span className="px-3 py-1 bg-[#DB271E]/10 text-[#DB271E] rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-[#DB271E]"></span>Unsuccessful</span>;
     case 'Returned':
       return <span className="px-3 py-1 bg-sky-50 text-sky-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-sky-500"></span>Returned</span>;
     case 'Paid':
@@ -67,6 +67,29 @@ const getStatusBadge = (status: OrderStatus) => {
     default:
       return <span className="px-3 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-gray-400"></span>{status}</span>;
   }
+};
+
+const getTypeStyle = (type: OrderType) => {
+  switch (type) {
+    case 'Deliver':
+      return "px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium";
+    case 'Exchange':
+      return "px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium";
+    case 'Cash Collection':
+      return "px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium";
+    case 'Return':
+      return "px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium";
+    default:
+      return "px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium";
+  }
+};
+
+// Helper to display shipment type consistently
+const getShipmentDisplayType = (type: OrderType) => {
+  if (type === 'Deliver' || type === 'Cash Collection') {
+    return 'Shipment';
+  }
+  return type;
 };
 
 const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
@@ -89,11 +112,14 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
     }
   };
 
+  // Determine the shipment type for display
+  const displayType = getShipmentDisplayType(order.type);
+
   return (
     <TableRow 
       className={cn(
-        "hover:bg-muted/40 border-b border-border/10 cursor-pointer transition-colors", 
-        isSelected && "bg-topspeed-50/40"
+        "hover:bg-muted/20 border-b border-border/10 cursor-pointer transition-colors", 
+        isSelected && "bg-[#DB271E]/5"
       )}
       onClick={handleRowClick}
     >
@@ -101,7 +127,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
         <Checkbox 
           checked={isSelected} 
           onCheckedChange={() => onToggleSelect(order.id)}
-          className="data-[state=checked]:bg-topspeed-600 data-[state=checked]:border-topspeed-600" 
+          className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]" 
         />
       </TableCell>
       <TableCell className="py-4">
@@ -109,13 +135,16 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
           <span className="font-medium text-gray-900">#{order.id}</span>
           {order.note && (
             <TooltipProvider>
-              <Tooltip>
+              <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
-                  <div className="cursor-help">
-                    <FileText className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="cursor-help transition-opacity hover:opacity-80">
+                    <MessageSquare className="h-3.5 w-3.5 text-gray-500 hover:text-[#DB271E] transition-colors" />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs border border-border/10 shadow-lg rounded-lg bg-white p-3">
+                <TooltipContent 
+                  className="max-w-xs border border-border/10 shadow-lg rounded-lg bg-white p-3 animate-in fade-in-50 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+                  sideOffset={5}
+                >
                   <p className="text-sm">{order.note || "No notes available for this order."}</p>
                 </TooltipContent>
               </Tooltip>
@@ -127,8 +156,8 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
         <span className="font-medium text-gray-900">{order.referenceNumber}</span>
       </TableCell>
       <TableCell className="py-4">
-        <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-          {order.type}
+        <span className={getTypeStyle(order.type)}>
+          {displayType}
         </span>
       </TableCell>
       <TableCell className="py-4">
@@ -175,9 +204,9 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
       </TableCell>
       {showActions && (
         <TableCell>
-          <div className="flex justify-center items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <div className="flex justify-center items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
             <button 
-              className="h-8 w-8 rounded-lg hover:bg-topspeed-50 hover:text-topspeed-600 flex items-center justify-center transition-colors"
+              className="h-8 w-8 rounded-lg hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center justify-center transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 if (onViewDetails) {
@@ -185,18 +214,18 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
                 }
               }}
             >
-              <Eye className="h-4 w-4 text-muted-foreground" />
+              <Eye className="h-4 w-4" />
             </button>
-            <button className="h-8 w-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors">
-              <Printer className="h-4 w-4 text-muted-foreground" />
+            <button className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors">
+              <Printer className="h-4 w-4" />
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button 
-                  className="h-8 w-8 rounded-lg hover:bg-muted flex items-center justify-center transition-colors"
+                  className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                  <MoreHorizontal className="h-4 w-4" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[200px] shadow-lg border-border/10 rounded-lg p-1">
@@ -204,7 +233,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
                 <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">Edit Order</DropdownMenuItem>
                 <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">Print Shipping Label</DropdownMenuItem>
                 <DropdownMenuSeparator className="my-1.5 bg-border/10" />
-                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-topspeed-50 hover:text-topspeed-600">Cancel Order</DropdownMenuItem>
+                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E]">Cancel Order</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

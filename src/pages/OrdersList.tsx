@@ -9,12 +9,16 @@ import { Order } from '@/components/orders/OrdersTableRow';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { DateRangePicker } from '@/components/orders/DateRangePicker';
+import OrdersFilter from '@/components/orders/OrdersFilter';
+import { EmptyState } from '@/components/ui/empty-state';
+import { FileBarChart, PackageSearch, ClockCheck } from 'lucide-react';
 
 const OrdersList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>('all');
+  const [date, setDate] = useState<Date | undefined>(undefined);
 
   // Mock data with Lebanese localized content
   const mockOrders: Order[] = [{
@@ -163,20 +167,91 @@ const OrdersList: React.FC = () => {
 
   // Filter orders based on the active tab
   const getFilteredOrders = () => {
-    if (activeTab === 'all') return mockOrders;
-    return mockOrders.filter(order => {
-      switch (activeTab) {
-        case 'new': return order.status === 'New';
-        case 'pending': return order.status === 'Pending Pickup';
-        case 'process': return order.status === 'In Progress';
-        case 'completed': return order.status === 'Successful';
-        case 'unsuccessful': return order.status === 'Unsuccessful';
-        case 'returned': return order.status === 'Returned';
-        case 'paid': return order.status === 'Paid';
-        default: return true;
-      }
-    });
+    if (!mockOrders.length) return [];
+    
+    let filteredOrders = mockOrders;
+    
+    // Apply tab filter
+    if (activeTab !== 'all') {
+      filteredOrders = filteredOrders.filter(order => {
+        switch (activeTab) {
+          case 'new': return order.status === 'New';
+          case 'pending': return order.status === 'Pending Pickup';
+          case 'process': return order.status === 'In Progress';
+          case 'completed': return order.status === 'Successful';
+          case 'unsuccessful': return order.status === 'Unsuccessful';
+          case 'returned': return order.status === 'Returned';
+          case 'paid': return order.status === 'Paid';
+          case 'awaitingAction': 
+            // Orders that require action (New, In Progress, or Pending Pickup)
+            return ['New', 'In Progress', 'Pending Pickup'].includes(order.status);
+          default: return true;
+        }
+      });
+    }
+    
+    // Apply search filter if query exists
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filteredOrders = filteredOrders.filter(order => 
+        order.id.toLowerCase().includes(query) ||
+        order.referenceNumber.toLowerCase().includes(query) ||
+        order.customer.name.toLowerCase().includes(query) ||
+        order.customer.phone.toLowerCase().includes(query) ||
+        order.location.city.toLowerCase().includes(query) ||
+        order.location.area.toLowerCase().includes(query)
+      );
+    }
+    
+    return filteredOrders;
   };
+
+  const renderEmptyState = () => {
+    switch(activeTab) {
+      case 'new':
+        return (
+          <EmptyState 
+            icon={FileBarChart}
+            title="No new orders today"
+            description="No new orders have been created today."
+            actionLabel="Create Order"
+            actionHref="/orders/new"
+          />
+        );
+      case 'pending':
+        return (
+          <EmptyState 
+            icon={PackageSearch}
+            title="No pending pickups"
+            description="No orders are pending pickup at the moment."
+            actionLabel="Schedule Pickup"
+            actionHref="/pickups"
+          />
+        );
+      case 'awaitingAction':
+        return (
+          <EmptyState 
+            icon={ClockCheck}
+            title="No orders awaiting action"
+            description="There are no orders that require your attention right now."
+            actionLabel="Create Order"
+            actionHref="/orders/new"
+          />
+        );
+      default:
+        return (
+          <EmptyState 
+            icon={FileBarChart}
+            title="No orders found"
+            description="There are no orders matching your current filters."
+            actionLabel="Create Order"
+            actionHref="/orders/new"
+          />
+        );
+    }
+  };
+  
+  const filteredOrders = getFilteredOrders();
   
   return (
     <MainLayout>
@@ -197,117 +272,59 @@ const OrdersList: React.FC = () => {
         </div>
 
         <Card className="border-0 shadow-sm bg-white">
-          <CardHeader className="border-b">
+          <CardHeader className="border-b p-0">
             <div className="pb-1">
               <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="bg-transparent p-0 h-auto">
-                  <TabsTrigger value="all" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
+                <TabsList className="bg-transparent p-0 h-auto overflow-x-auto">
+                  <TabsTrigger value="all" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#DB271E] font-medium">
                     All Orders
                   </TabsTrigger>
-                  <TabsTrigger value="new" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
+                  <TabsTrigger value="new" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#DB271E] font-medium">
                     New
                   </TabsTrigger>
-                  <TabsTrigger value="pending" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
+                  <TabsTrigger value="pending" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#DB271E] font-medium">
                     Pending Pickup
                   </TabsTrigger>
-                  <TabsTrigger value="process" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
+                  <TabsTrigger value="process" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#DB271E] font-medium">
                     In Progress
                   </TabsTrigger>
-                  <TabsTrigger value="completed" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
+                  <TabsTrigger value="completed" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#DB271E] font-medium">
                     Successful
                   </TabsTrigger>
-                  <TabsTrigger value="unsuccessful" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
+                  <TabsTrigger value="unsuccessful" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#DB271E] font-medium">
                     Unsuccessful
                   </TabsTrigger>
-                  <TabsTrigger value="returned" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
+                  <TabsTrigger value="returned" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#DB271E] font-medium">
                     Returned
                   </TabsTrigger>
-                  <TabsTrigger value="paid" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#46d483] font-medium">
+                  <TabsTrigger value="paid" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#DB271E] font-medium">
                     Paid
+                  </TabsTrigger>
+                  <TabsTrigger value="awaitingAction" className="py-2.5 px-4 rounded-t-md data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#DB271E] font-medium">
+                    Awaiting Action
                   </TabsTrigger>
                 </TabsList>
                 
                 <CardContent className="p-4">
-                  <div className="flex justify-between gap-4">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input placeholder="Search orders..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10 bg-white border-gray-200" />
-                    </div>
-                    
-                    <DateRangePicker />
-                  </div>
+                  <OrdersFilter 
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    date={date}
+                    setDate={setDate}
+                    statusFilter={statusFilter}
+                    handleStatusFilterChange={handleStatusFilterChange}
+                  />
                 
-                  <TabsContent value="all" className="p-0 mt-4">
+                  {filteredOrders.length > 0 ? (
                     <OrdersTable 
-                      orders={getFilteredOrders()} 
+                      orders={filteredOrders} 
                       selectedOrders={selectedOrders} 
                       toggleSelectAll={toggleSelectAll} 
                       toggleSelectOrder={toggleSelectOrder} 
                     />
-                  </TabsContent>
-                  
-                  <TabsContent value="new" className="p-0 mt-4">
-                    <OrdersTable 
-                      orders={getFilteredOrders()} 
-                      selectedOrders={selectedOrders} 
-                      toggleSelectAll={toggleSelectAll} 
-                      toggleSelectOrder={toggleSelectOrder} 
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="pending" className="p-0 mt-4">
-                    <OrdersTable 
-                      orders={getFilteredOrders()} 
-                      selectedOrders={selectedOrders} 
-                      toggleSelectAll={toggleSelectAll} 
-                      toggleSelectOrder={toggleSelectOrder} 
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="process" className="p-0 mt-4">
-                    <OrdersTable 
-                      orders={getFilteredOrders()} 
-                      selectedOrders={selectedOrders} 
-                      toggleSelectAll={toggleSelectAll} 
-                      toggleSelectOrder={toggleSelectOrder} 
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="completed" className="p-0 mt-4">
-                    <OrdersTable 
-                      orders={getFilteredOrders()} 
-                      selectedOrders={selectedOrders} 
-                      toggleSelectAll={toggleSelectAll} 
-                      toggleSelectOrder={toggleSelectOrder} 
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="unsuccessful" className="p-0 mt-4">
-                    <OrdersTable 
-                      orders={getFilteredOrders()} 
-                      selectedOrders={selectedOrders} 
-                      toggleSelectAll={toggleSelectAll} 
-                      toggleSelectOrder={toggleSelectOrder} 
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="returned" className="p-0 mt-4">
-                    <OrdersTable 
-                      orders={getFilteredOrders()} 
-                      selectedOrders={selectedOrders} 
-                      toggleSelectAll={toggleSelectAll} 
-                      toggleSelectOrder={toggleSelectOrder} 
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="paid" className="p-0 mt-4">
-                    <OrdersTable 
-                      orders={getFilteredOrders()} 
-                      selectedOrders={selectedOrders} 
-                      toggleSelectAll={toggleSelectAll} 
-                      toggleSelectOrder={toggleSelectOrder} 
-                    />
-                  </TabsContent>
+                  ) : (
+                    renderEmptyState()
+                  )}
                 </CardContent>
               </Tabs>
             </div>

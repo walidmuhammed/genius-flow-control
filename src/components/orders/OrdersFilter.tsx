@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { Filter, Search, Download, ChevronDown, X, Calendar as CalendarIcon, Info, Check, Clock, Wallet } from 'lucide-react';
+import { Filter, Search, Download, ChevronDown, X, Calendar, Info, Check, Clock, Wallet, AlertCircle, Package, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar } from '@/components/ui/calendar';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { 
   Popover, 
   PopoverContent, 
@@ -14,6 +14,7 @@ import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
 
 interface OrdersFilterProps {
   searchQuery: string;
@@ -54,6 +55,7 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
     handleStatusFilterChange('Delayed');
     handleStatusFilterChange('Pending');
     handleStatusFilterChange('In Progress');
+    handleStatusFilterChange('Awaiting Action');
   };
 
   return (
@@ -63,19 +65,19 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input 
             placeholder="Search by order ID, phone, or customer name" 
-            className="pl-10 border-border/10 focus-visible:ring-primary/20 rounded-lg shadow-sm"
+            className="pl-10 border-border/10 focus-visible:ring-[#DB271E]/20 rounded-lg shadow-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           {searchQuery && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="absolute right-1.5 top-1/2 transform -translate-y-1/2 h-7 w-7 rounded-full hover:bg-muted"
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="absolute right-1.5 top-1/2 transform -translate-y-1/2 h-7 w-7 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
               onClick={() => setSearchQuery('')}
             >
               <X className="h-3.5 w-3.5" />
-            </Button>
+            </motion.button>
           )}
         </div>
         <div className="flex gap-2">
@@ -85,7 +87,7 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
                 <Filter className="h-4 w-4" />
                 <span>Filters</span>
                 {activeFiltersCount > 0 && (
-                  <Badge variant="secondary" className="ml-1 bg-primary text-white rounded-full h-5 w-5 p-0 flex items-center justify-center text-[10px]">
+                  <Badge variant="secondary" className="ml-1 bg-[#DB271E] text-white rounded-full h-5 w-5 p-0 flex items-center justify-center text-[10px]">
                     {activeFiltersCount}
                   </Badge>
                 )}
@@ -99,7 +101,7 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="h-7 text-xs hover:bg-muted px-2"
+                    className="h-7 text-xs hover:bg-muted px-2 hover:text-[#DB271E]"
                     onClick={clearAllFilters}
                   >
                     Clear all
@@ -113,7 +115,7 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-6 px-2 text-xs hover:bg-muted"
+                      className="h-6 px-2 text-xs hover:bg-muted hover:text-[#DB271E]"
                       onClick={() => setDate(undefined)}
                     >
                       Clear
@@ -127,12 +129,12 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
                         variant="outline"
                         className={`w-full justify-start text-left font-normal border-border/10 shadow-sm h-9 rounded-lg px-3 text-sm ${!date && "text-muted-foreground"}`}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <Calendar className="mr-2 h-4 w-4" />
                         {date ? format(date, 'PPP') : <span>Pick a date</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 shadow-lg rounded-lg border-border/10" align="start">
-                      <Calendar
+                      <CalendarComponent
                         mode="single"
                         selected={date}
                         onSelect={setDate}
@@ -150,7 +152,7 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-6 px-2 text-xs hover:bg-muted"
+                      className="h-6 px-2 text-xs hover:bg-muted hover:text-[#DB271E]"
                       onClick={() => setPriceRange([0, 100])}
                     >
                       Clear
@@ -183,13 +185,14 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="h-6 px-2 text-xs hover:bg-muted"
+                      className="h-6 px-2 text-xs hover:bg-muted hover:text-[#DB271E]"
                       onClick={() => {
                         handleStatusFilterChange('Successful');
                         handleStatusFilterChange('Returned');
                         handleStatusFilterChange('Delayed');
                         handleStatusFilterChange('Pending');
                         handleStatusFilterChange('In Progress');
+                        handleStatusFilterChange('Awaiting Action');
                       }}
                     >
                       Clear
@@ -253,15 +256,31 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
                       className="rounded-sm data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
                     />
                     <div className="flex items-center gap-1.5">
-                      <Clock className="h-3 w-3 text-blue-500" />
+                      <Truck className="h-3 w-3 text-blue-500" />
                       <label htmlFor="inProgress" className="text-sm cursor-pointer">In Progress</label>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="awaitingAction" 
+                      checked={statusFilter.includes('Awaiting Action')}
+                      onCheckedChange={() => handleStatusFilterChange('Awaiting Action')}
+                      className="rounded-sm data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
+                    />
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle className="h-3 w-3 text-[#DB271E]" />
+                      <label htmlFor="awaitingAction" className="text-sm cursor-pointer">Awaiting Action</label>
                     </div>
                   </div>
                 </div>
               </div>
               <Separator className="my-0" />
               <div className="flex justify-end p-3 bg-muted/5">
-                <Button size="sm" className="rounded-lg px-6 shadow-sm" onClick={() => setIsFilterMenuOpen(false)}>
+                <Button 
+                  size="sm" 
+                  className="rounded-lg px-6 shadow-sm bg-[#DB271E] hover:bg-[#c0211a] text-white" 
+                  onClick={() => setIsFilterMenuOpen(false)}
+                >
                   Apply Filters
                 </Button>
               </div>
@@ -281,76 +300,100 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
       {activeFiltersCount > 0 && (
         <div className="flex flex-wrap gap-2 items-center">
           {date && (
-            <Badge 
-              variant="secondary" 
-              className="pl-2 pr-1 py-1 gap-1 rounded-lg bg-muted/60 hover:bg-muted border-border/10 h-7"
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
             >
-              <div className="flex items-center gap-1.5">
-                <CalendarIcon className="h-3 w-3 text-muted-foreground" />
-                <span>{format(date, 'PP')}</span>
-              </div>
-              <Button 
-                variant="ghost" 
-                className="h-5 w-5 p-0 rounded-full ml-1 hover:bg-muted-foreground/20"
-                onClick={() => setDate(undefined)}
+              <Badge 
+                variant="secondary" 
+                className="pl-2 pr-1 py-1 gap-1 rounded-lg bg-muted/60 hover:bg-muted border-border/10 h-7"
               >
-                <X className="h-3 w-3" />
-              </Button>
-            </Badge>
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-3 w-3 text-[#DB271E]" />
+                  <span>{format(date, 'PP')}</span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  className="h-5 w-5 p-0 rounded-full ml-1 hover:bg-[#DB271E]/20"
+                  onClick={() => setDate(undefined)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            </motion.div>
           )}
           
           {statusFilter.length > 0 && (
-            <Badge 
-              variant="secondary" 
-              className="pl-2 pr-1 py-1 gap-1 rounded-lg bg-muted/60 hover:bg-muted border-border/10 h-7"
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
             >
-              <div className="flex items-center gap-1.5">
-                <Filter className="h-3 w-3 text-muted-foreground" />
-                <span>{statusFilter.length} statuses</span>
-              </div>
-              <Button 
-                variant="ghost" 
-                className="h-5 w-5 p-0 rounded-full ml-1 hover:bg-muted-foreground/20"
-                onClick={() => {
-                  handleStatusFilterChange('Successful');
-                  handleStatusFilterChange('Returned');
-                  handleStatusFilterChange('Delayed');
-                  handleStatusFilterChange('Pending');
-                  handleStatusFilterChange('In Progress');
-                }}
+              <Badge 
+                variant="secondary" 
+                className="pl-2 pr-1 py-1 gap-1 rounded-lg bg-muted/60 hover:bg-muted border-border/10 h-7"
               >
-                <X className="h-3 w-3" />
-              </Button>
-            </Badge>
+                <div className="flex items-center gap-1.5">
+                  <Filter className="h-3 w-3 text-[#DB271E]" />
+                  <span>{statusFilter.length} statuses</span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  className="h-5 w-5 p-0 rounded-full ml-1 hover:bg-[#DB271E]/20"
+                  onClick={() => {
+                    handleStatusFilterChange('Successful');
+                    handleStatusFilterChange('Returned');
+                    handleStatusFilterChange('Delayed');
+                    handleStatusFilterChange('Pending');
+                    handleStatusFilterChange('In Progress');
+                    handleStatusFilterChange('Awaiting Action');
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            </motion.div>
           )}
           
           {(priceRange[0] > 0 || priceRange[1] < 100) && (
-            <Badge 
-              variant="secondary" 
-              className="pl-2 pr-1 py-1 gap-1 rounded-lg bg-muted/60 hover:bg-muted border-border/10 h-7"
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
             >
-              <div className="flex items-center gap-1.5">
-                <Wallet className="h-3 w-3 text-muted-foreground" />
-                <span>${priceRange[0]} - ${priceRange[1]}</span>
-              </div>
-              <Button 
-                variant="ghost" 
-                className="h-5 w-5 p-0 rounded-full ml-1 hover:bg-muted-foreground/20"
-                onClick={() => setPriceRange([0, 100])}
+              <Badge 
+                variant="secondary" 
+                className="pl-2 pr-1 py-1 gap-1 rounded-lg bg-muted/60 hover:bg-muted border-border/10 h-7"
               >
-                <X className="h-3 w-3" />
-              </Button>
-            </Badge>
+                <div className="flex items-center gap-1.5">
+                  <Wallet className="h-3 w-3 text-[#DB271E]" />
+                  <span>${priceRange[0]} - ${priceRange[1]}</span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  className="h-5 w-5 p-0 rounded-full ml-1 hover:bg-[#DB271E]/20"
+                  onClick={() => setPriceRange([0, 100])}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Badge>
+            </motion.div>
           )}
           
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-7 px-2.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted/80"
-            onClick={clearAllFilters}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            Clear All
-          </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 px-2.5 rounded-lg text-xs text-[#DB271E] hover:bg-[#DB271E]/10"
+              onClick={clearAllFilters}
+            >
+              Clear All
+            </Button>
+          </motion.div>
         </div>
       )}
     </div>

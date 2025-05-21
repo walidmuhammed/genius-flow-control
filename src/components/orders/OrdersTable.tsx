@@ -40,16 +40,16 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
     <>
       <div className="rounded-xl border border-border/10 shadow-sm overflow-hidden bg-white mt-4">
         {selectedOrders.length > 0 && (
-          <div className="bg-topspeed-50/80 py-3 px-6 flex justify-between items-center border-b border-border/10">
-            <div className="text-sm font-medium text-topspeed-700">
+          <div className="bg-[#DB271E]/5 py-3 px-6 flex justify-between items-center border-b border-border/10">
+            <div className="text-sm font-medium text-[#DB271E]">
               {selectedOrders.length} orders selected
             </div>
             <div className="flex gap-2">
-              <button className="px-4 py-1.5 rounded-lg bg-white text-sm border border-border/20 shadow-sm flex items-center gap-2 hover:border-topspeed-200 transition-colors">
+              <button className="px-4 py-1.5 rounded-lg bg-white text-sm border border-border/20 shadow-sm flex items-center gap-2 hover:border-[#DB271E]/50 transition-colors">
                 Print Labels
               </button>
               <button 
-                className="px-4 py-1.5 rounded-lg bg-white text-sm border border-border/20 shadow-sm hover:text-topspeed-600 transition-colors"
+                className="px-4 py-1.5 rounded-lg bg-white text-sm border border-border/20 shadow-sm hover:text-[#DB271E] transition-colors"
                 onClick={() => toggleSelectAll(false)}
               >
                 Cancel
@@ -60,12 +60,12 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/30 hover:bg-muted/40 border-b border-border/10">
+              <TableRow className="bg-muted/20 hover:bg-muted/30 border-b border-border/10">
                 <TableHead className="w-12 h-11 pl-4">
                   <Checkbox 
                     checked={selectedOrders.length === orders.length && orders.length > 0}
                     onCheckedChange={(checked) => toggleSelectAll(!!checked)}
-                    className="data-[state=checked]:bg-topspeed-600 data-[state=checked]:border-topspeed-600"
+                    className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
                   />
                 </TableHead>
                 <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
@@ -111,7 +111,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
               <ChevronLeft className="h-4 w-4" />
             </button>
             
-            <button className="h-8 w-8 bg-topspeed-600 text-white rounded-lg flex items-center justify-center text-sm font-medium shadow-sm">1</button>
+            <button className="h-8 w-8 bg-[#DB271E] text-white rounded-lg flex items-center justify-center text-sm font-medium shadow-sm">1</button>
             <button className="h-8 w-8 text-muted-foreground hover:bg-muted/30 rounded-lg flex items-center justify-center text-sm transition-colors">2</button>
             <button className="h-8 w-8 text-muted-foreground hover:bg-muted/30 rounded-lg flex items-center justify-center text-sm transition-colors">3</button>
             
