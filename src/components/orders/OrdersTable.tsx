@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Filter, Search } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
@@ -12,6 +12,10 @@ import {
 } from '@/components/ui/table';
 import OrdersTableRow, { Order } from './OrdersTableRow';
 import OrderDetailsDialog from './OrderDetailsDialog';
+import { useScreenSize } from '@/hooks/useScreenSize';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import OrdersTableMobile from './OrdersTableMobile';
 
 interface OrdersTableProps {
   orders: Order[];
@@ -30,11 +34,32 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
 }) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const { isMobile } = useScreenSize();
   
   const handleViewOrderDetails = (order: Order) => {
     setSelectedOrder(order);
     setDetailsDialogOpen(true);
   };
+  
+  if (isMobile) {
+    return (
+      <>
+        <OrdersTableMobile
+          orders={orders}
+          selectedOrders={selectedOrders}
+          toggleSelectOrder={toggleSelectOrder}
+          onViewDetails={handleViewOrderDetails}
+          showActions={showActions}
+        />
+        
+        <OrderDetailsDialog 
+          order={selectedOrder}
+          open={detailsDialogOpen}
+          onOpenChange={setDetailsDialogOpen}
+        />
+      </>
+    );
+  }
   
   return (
     <>

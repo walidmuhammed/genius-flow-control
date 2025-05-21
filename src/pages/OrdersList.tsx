@@ -1,10 +1,21 @@
 
 import React, { useState, useMemo } from 'react';
-import { FileBarChart, PackageSearch, CheckCheck, AlertCircle } from 'lucide-react';
+import { FileBarChart, PackageSearch, CheckCheck, AlertCircle, Filter, Search, Download } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import OrdersTable from '@/components/orders/OrdersTable';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Order } from '@/components/orders/OrdersTableRow';
+import { useScreenSize } from '@/hooks/useScreenSize';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Mock data for orders with proper structure to match Order type
 const mockOrders: Order[] = [
@@ -181,6 +192,9 @@ const mockOrders: Order[] = [
 const OrdersList: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const { isMobile, isTablet } = useScreenSize();
   
   const filteredOrders = useMemo(() => {
     if (activeTab === 'all') {
@@ -282,79 +296,218 @@ const OrdersList: React.FC = () => {
         );
     }
   };
+
+  const renderMobileTabsMenu = () => (
+    <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <span>{activeTab === 'all' ? 'All Orders' : 
+                 activeTab === 'new' ? 'New' :
+                 activeTab === 'pending' ? 'Pending Pickup' :
+                 activeTab === 'inProgress' ? 'In Progress' :
+                 activeTab === 'successful' ? 'Successful' :
+                 activeTab === 'unsuccessful' ? 'Unsuccessful' :
+                 activeTab === 'returned' ? 'Returned' :
+                 activeTab === 'awaitingAction' ? 'Awaiting Action' :
+                 activeTab === 'paid' ? 'Paid' : 'Filter'}</span>
+          <Filter className="h-4 w-4" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="bottom" className="h-[85vh] rounded-t-xl">
+        <SheetHeader>
+          <SheetTitle>Filter Orders</SheetTitle>
+        </SheetHeader>
+        <ScrollArea className="h-full py-4">
+          <div className="space-y-2">
+            <Button 
+              variant={activeTab === 'all' ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => {
+                setActiveTab('all');
+                setFilterSheetOpen(false);
+              }}
+            >
+              All Orders
+            </Button>
+            <Button 
+              variant={activeTab === 'new' ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => {
+                setActiveTab('new');
+                setFilterSheetOpen(false);
+              }}
+            >
+              New
+            </Button>
+            <Button 
+              variant={activeTab === 'pending' ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => {
+                setActiveTab('pending');
+                setFilterSheetOpen(false);
+              }}
+            >
+              Pending Pickup
+            </Button>
+            <Button 
+              variant={activeTab === 'inProgress' ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => {
+                setActiveTab('inProgress');
+                setFilterSheetOpen(false);
+              }}
+            >
+              In Progress
+            </Button>
+            <Button 
+              variant={activeTab === 'successful' ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => {
+                setActiveTab('successful');
+                setFilterSheetOpen(false);
+              }}
+            >
+              Successful
+            </Button>
+            <Button 
+              variant={activeTab === 'unsuccessful' ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => {
+                setActiveTab('unsuccessful');
+                setFilterSheetOpen(false);
+              }}
+            >
+              Unsuccessful
+            </Button>
+            <Button 
+              variant={activeTab === 'returned' ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => {
+                setActiveTab('returned');
+                setFilterSheetOpen(false);
+              }}
+            >
+              Returned
+            </Button>
+            <Button 
+              variant={activeTab === 'awaitingAction' ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => {
+                setActiveTab('awaitingAction');
+                setFilterSheetOpen(false);
+              }}
+            >
+              Awaiting Action
+            </Button>
+            <Button 
+              variant={activeTab === 'paid' ? "default" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => {
+                setActiveTab('paid');
+                setFilterSheetOpen(false);
+              }}
+            >
+              Paid
+            </Button>
+          </div>
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
+  );
   
   return (
     <MainLayout>
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Orders</h1>
-        <div className="flex gap-2">
-          <button className="px-4 py-2 bg-white border border-border/10 rounded-lg text-sm font-medium shadow-sm hover:bg-muted/10 transition-colors">
-            Import
-          </button>
-          <button className="px-4 py-2 bg-[#DB271E] text-white rounded-lg text-sm font-medium shadow-sm hover:bg-[#c0211a] transition-colors">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Orders</h1>
+        <div className="flex gap-2 w-full sm:w-auto">
+          {isMobile && (
+            <Button variant="outline" size="sm" className="flex-1">
+              Import
+            </Button>
+          )}
+          <Button className="bg-[#DB271E] text-white flex-1 sm:flex-none">
             Create Order
-          </button>
+          </Button>
         </div>
       </div>
       
-      <div className="mt-6">
-        <div className="flex gap-4 border-b border-border/10 overflow-x-auto">
-          <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'all' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setActiveTab('all')}
-          >
-            All Orders
-          </button>
-          <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'new' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setActiveTab('new')}
-          >
-            New
-          </button>
-          <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'pending' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setActiveTab('pending')}
-          >
-            Pending Pickup
-          </button>
-          <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'inProgress' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setActiveTab('inProgress')}
-          >
-            In Progress
-          </button>
-          <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'successful' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setActiveTab('successful')}
-          >
-            Successful
-          </button>
-          <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'unsuccessful' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setActiveTab('unsuccessful')}
-          >
-            Unsuccessful
-          </button>
-          <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'returned' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setActiveTab('returned')}
-          >
-            Returned
-          </button>
-          <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'awaitingAction' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setActiveTab('awaitingAction')}
-          >
-            Awaiting Action
-          </button>
-          <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'paid' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-            onClick={() => setActiveTab('paid')}
-          >
-            Paid
-          </button>
+      {/* Mobile search and filter row */}
+      {isMobile && (
+        <div className="mt-4 flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Input 
+              placeholder="Search orders..." 
+              className="pl-10" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          {renderMobileTabsMenu()}
         </div>
-      </div>
+      )}
+      
+      {/* Desktop tabs */}
+      {!isMobile && (
+        <div className="mt-6">
+          <div className="flex gap-4 border-b border-border/10 overflow-x-auto">
+            <button 
+              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'all' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setActiveTab('all')}
+            >
+              All Orders
+            </button>
+            <button 
+              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'new' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setActiveTab('new')}
+            >
+              New
+            </button>
+            <button 
+              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'pending' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setActiveTab('pending')}
+            >
+              Pending Pickup
+            </button>
+            <button 
+              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'inProgress' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setActiveTab('inProgress')}
+            >
+              In Progress
+            </button>
+            <button 
+              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'successful' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setActiveTab('successful')}
+            >
+              Successful
+            </button>
+            <button 
+              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'unsuccessful' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setActiveTab('unsuccessful')}
+            >
+              Unsuccessful
+            </button>
+            <button 
+              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'returned' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setActiveTab('returned')}
+            >
+              Returned
+            </button>
+            <button 
+              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'awaitingAction' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setActiveTab('awaitingAction')}
+            >
+              Awaiting Action
+            </button>
+            <button 
+              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'paid' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setActiveTab('paid')}
+            >
+              Paid
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* Render orders table or empty state */}
       {filteredOrders.length > 0 ? (
@@ -366,8 +519,13 @@ const OrdersList: React.FC = () => {
           showActions={true}
         />
       ) : (
-        renderEmptyState()
+        <div className="mt-4">
+          {renderEmptyState()}
+        </div>
       )}
+      
+      {/* Add padding at the bottom for mobile to account for the navigation bar */}
+      {isMobile && <div className="h-16" />}
     </MainLayout>
   );
 };

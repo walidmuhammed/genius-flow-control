@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import SidebarMenu from './SidebarMenu';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { useScreenSize } from '@/hooks/useScreenSize';
 
 interface SidebarProps {
   className?: string;
@@ -13,6 +14,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const [darkMode, setDarkMode] = useState(false);
+  const { isMobile } = useScreenSize();
   
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -26,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   return (
     <motion.aside 
       className={cn(
-        "flex flex-col w-[260px] min-w-[260px] bg-gray-50 dark:bg-gray-900 h-screen relative border-r border-gray-200 dark:border-gray-800",
+        "flex flex-col w-full sm:w-[260px] sm:min-w-[260px] bg-gray-50 dark:bg-gray-900 h-full relative border-r border-gray-200 dark:border-gray-800",
         className
       )}
       layout

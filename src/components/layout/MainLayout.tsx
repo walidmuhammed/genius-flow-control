@@ -2,9 +2,13 @@
 import React from 'react';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
+import MobileNavigation from './MobileNavigation';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/sonner';
 import { motion } from 'framer-motion';
+import { useScreenSize } from '@/hooks/useScreenSize';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import useLayoutStore from '@/stores/layoutStore';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -12,17 +16,31 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
+  const { isMobile, isTablet } = useScreenSize();
+  const { sidebarOpen, closeSidebar } = useLayoutStore();
+
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Sidebar />
+      {/* Desktop Sidebar */}
+      {!isMobile && <Sidebar />}
+      
+      {/* Mobile Sidebar as Sheet */}
+      {isMobile && (
+        <Sheet open={sidebarOpen} onOpenChange={closeSidebar}>
+          <SheetContent side="left" className="p-0 sm:max-w-[260px] w-[85vw]">
+            <Sidebar />
+          </SheetContent>
+        </Sheet>
+      )}
+      
       <div className="flex-1 flex flex-col">
         <TopBar />
         <main className={cn(
-          "p-6 overflow-y-auto h-[calc(100vh-64px)] transition-all bg-gray-50 dark:bg-gray-900", 
+          "p-3 sm:p-4 md:p-6 overflow-y-auto h-[calc(100vh-64px)] transition-all bg-gray-50 dark:bg-gray-900",
           className
         )}>
           <motion.div 
-            className="w-full max-w-[1600px] mx-auto space-y-8"
+            className="w-full max-w-[1600px] mx-auto space-y-4 md:space-y-8"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
@@ -33,7 +51,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
             {children}
           </motion.div>
         </main>
+        
+        {/* Mobile Bottom Navigation */}
+        {isMobile && <MobileNavigation />}
       </div>
+      
       <Toaster 
         position="top-right" 
         toastOptions={{
