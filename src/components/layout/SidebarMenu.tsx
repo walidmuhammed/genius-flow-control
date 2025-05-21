@@ -73,7 +73,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
     <div className="flex flex-col gap-6">
       <div className="space-y-1">
         <div className="mb-2">
-          <h3 className="text-xs font-medium text-white/70 px-4">
+          <h3 className="text-xs font-medium text-gray-500 px-4">
             Main
           </h3>
         </div>
@@ -83,7 +83,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
       
       <div className="space-y-1">
         <div className="mb-2">
-          <h3 className="text-xs font-medium text-white/70 px-4">
+          <h3 className="text-xs font-medium text-gray-500 px-4">
             System
           </h3>
         </div>
@@ -109,25 +109,28 @@ const MenuItem: React.FC<MenuItemProps> = ({
     <Link to={item.path}>
       <motion.div 
         className={cn(
-          "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium mb-1 transition-all", 
+          "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium mb-1 transition-all duration-200", 
           isActive 
-            ? "bg-white/15 text-white shadow-lg" 
-            : "text-white/80 hover:text-white hover:bg-white/10"
+            ? "bg-white text-[#DC291E] shadow-lg shadow-black/5" 
+            : "text-gray-700 hover:text-[#DC291E] hover:bg-white/60"
         )} 
-        whileHover={{ x: 4 }}
+        whileHover={{ 
+          x: 4,
+          transition: { duration: 0.2 }
+        }}
         whileTap={{ scale: 0.98 }}
       >
         <span className={cn(
-          "flex items-center justify-center", 
+          "flex items-center justify-center transition-all duration-200", 
           isActive 
-            ? "text-white" 
-            : "text-white/80"
+            ? "text-[#DC291E]" 
+            : "text-gray-600"
         )}>
           {item.icon}
         </span>
         
         <span className={cn(
-          "transition-all",
+          "transition-all duration-200",
           isActive 
             ? "font-medium" 
             : ""
@@ -136,7 +139,12 @@ const MenuItem: React.FC<MenuItemProps> = ({
         </span>
         
         {item.badge && (
-          <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 text-white text-[10px] font-medium px-1.5">
+          <span className={cn(
+            "ml-auto flex h-5 min-w-5 items-center justify-center rounded-full text-[10px] font-medium px-1.5",
+            isActive 
+              ? "bg-[#DC291E]/10 text-[#DC291E]" 
+              : "bg-gray-200 text-gray-700"
+          )}>
             {item.badge}
           </span>
         )}

@@ -13,7 +13,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-[#fafafa] to-[#f3f3f5] dark:from-[#0a0a0a] dark:to-[#111114]">
+    <div className="flex min-h-screen bg-gradient-to-br from-[#fafafa] to-[#f5f5f7] dark:from-[#101010] dark:to-[#141418]">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <TopBar />

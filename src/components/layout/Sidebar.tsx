@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <motion.aside 
       className={cn(
-        "flex flex-col w-[260px] min-w-[260px] border-r border-white/5 bg-gradient-to-b from-[#DC291E] to-[#B01E18] h-screen shadow-xl relative z-20",
+        "flex flex-col w-[260px] min-w-[260px] bg-gradient-to-b from-[#F1F1F1] to-[#E5E5E5] h-screen relative z-20 shadow-[5px_0_25px_-12px_rgba(0,0,0,0.1)]",
         className
       )}
       layout
@@ -37,7 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         ease: "easeInOut"
       }}
     >
-      <div className="flex h-16 items-center px-5 border-b border-white/10">
+      <div className="flex h-16 items-center px-5 border-b border-gray-200/30">
         <Link to="/" className="flex items-center gap-2.5 mx-auto">
           <motion.div 
             className="flex items-center"
@@ -45,49 +45,49 @@ const Sidebar: React.FC<SidebarProps> = ({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="bg-white text-[#DC291E] h-8 w-8 rounded-md flex items-center justify-center shadow-md">
-              <Truck className="h-4 w-4" />
+            <div className="bg-gradient-to-br from-[#DC291E] to-[#B01E18] h-9 w-9 rounded-xl flex items-center justify-center shadow-md shadow-[#DC291E]/10">
+              <Truck className="h-5 w-5 text-white" />
             </div>
-            <span className="tracking-tight text-white font-bold text-xl px-2">
+            <span className="tracking-tight text-[#222] font-bold text-xl px-2">
               Topspeed
             </span>
           </motion.div>
         </Link>
       </div>
       
-      <div className="flex-1 overflow-y-auto py-6 px-3">
+      <div className="flex-1 overflow-y-auto py-6 px-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
         <SidebarMenu collapsed={false} />
       </div>
       
-      <div className="p-4 border-t border-white/10 flex flex-col gap-3">
+      <div className="p-5 border-t border-gray-200/50 flex flex-col gap-3">
         <motion.button
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.02, backgroundColor: "rgba(0,0,0,0.05)" }}
           whileTap={{ scale: 0.98 }}
           onClick={toggleDarkMode}
           className={cn(
-            "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium",
-            "hover:bg-white/10 transition-colors text-white/90"
+            "flex items-center gap-3 w-full p-3 rounded-xl text-sm font-medium",
+            "hover:bg-black/5 transition-all duration-200 text-gray-700"
           )}
         >
           {darkMode ? (
             <>
-              <Sun className="h-4 w-4 text-white" />
+              <Sun className="h-4 w-4 text-gray-600" />
               <span>Light Mode</span>
             </>
           ) : (
             <>
-              <Moon className="h-4 w-4 text-white" />
+              <Moon className="h-4 w-4 text-gray-600" />
               <span>Dark Mode</span>
             </>
           )}
         </motion.button>
         
         <motion.button
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.02, backgroundColor: "rgba(0,0,0,0.05)" }}
           whileTap={{ scale: 0.98 }}
           className={cn(
-            "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium text-white",
-            "hover:bg-white/10 transition-colors"
+            "flex items-center gap-3 w-full p-3 rounded-xl text-sm font-medium text-gray-700",
+            "hover:bg-black/5 transition-all duration-200"
           )}
         >
           <LogOut className="h-4 w-4" />

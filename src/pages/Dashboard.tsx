@@ -102,7 +102,7 @@ const Dashboard: React.FC = () => {
             transition={{ duration: 0.5 }}
           >
             <motion.h2 
-              className="text-3xl font-bold tracking-tight text-foreground"
+              className="text-3xl font-bold tracking-tight text-gray-800 dark:text-gray-100"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
@@ -110,7 +110,7 @@ const Dashboard: React.FC = () => {
               Hello, Admin
             </motion.h2>
             <motion.p 
-              className="text-muted-foreground"
+              className="text-gray-500 dark:text-gray-400"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.5 }}
@@ -121,7 +121,7 @@ const Dashboard: React.FC = () => {
         </AnimatePresence>
 
         {/* Overview Cards */}
-        <div className="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {/* New Orders Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -129,7 +129,7 @@ const Dashboard: React.FC = () => {
             transition={{ delay: 0.1, duration: 0.5 }}
             whileHover={{ y: -4, transition: { duration: 0.2 } }}
           >
-            <Card className="overflow-hidden border-0 shadow-lg shadow-blue-500/5 backdrop-blur-lg bg-gradient-to-br from-white/80 to-white/50 dark:from-slate-900/90 dark:to-slate-900/50 rounded-2xl">
+            <Card className="overflow-hidden border-0 shadow-lg shadow-blue-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500 shadow-sm">
@@ -138,11 +138,11 @@ const Dashboard: React.FC = () => {
                 </div>
                 
                 <div className="space-y-1.5">
-                  <h3 className="text-sm font-medium text-muted-foreground">New Orders</h3>
-                  <div className="text-2xl font-bold">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">New Orders</h3>
+                  <div className="text-2xl font-bold text-gray-800 dark:text-white">
                     {isOrdersLoading ? '--' : todayOrders.length}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">The new orders registered today</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">The new orders registered today</p>
                 </div>
               </CardContent>
             </Card>
@@ -155,7 +155,7 @@ const Dashboard: React.FC = () => {
             transition={{ delay: 0.2, duration: 0.5 }}
             whileHover={{ y: -4, transition: { duration: 0.2 } }}
           >
-            <Card className="overflow-hidden border-0 shadow-lg shadow-amber-500/5 backdrop-blur-lg bg-gradient-to-br from-white/80 to-white/50 dark:from-slate-900/90 dark:to-slate-900/50 rounded-2xl">
+            <Card className="overflow-hidden border-0 shadow-lg shadow-amber-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-500 shadow-sm">
@@ -164,11 +164,11 @@ const Dashboard: React.FC = () => {
                 </div>
                 
                 <div className="space-y-1.5">
-                  <h3 className="text-sm font-medium text-muted-foreground">In Progress</h3>
-                  <div className="text-2xl font-bold">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">In Progress</h3>
+                  <div className="text-2xl font-bold text-gray-800 dark:text-white">
                     {isOrdersLoading ? '--' : inProgressOrders.length}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">Orders filtered as In Progress</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Orders filtered as In Progress</p>
                 </div>
               </CardContent>
             </Card>
@@ -181,7 +181,7 @@ const Dashboard: React.FC = () => {
             transition={{ delay: 0.3, duration: 0.5 }}
             whileHover={{ y: -4, transition: { duration: 0.2 } }}
           >
-            <Card className="overflow-hidden border-0 shadow-lg shadow-orange-500/5 backdrop-blur-lg bg-gradient-to-br from-white/80 to-white/50 dark:from-slate-900/90 dark:to-slate-900/50 rounded-2xl">
+            <Card className="overflow-hidden border-0 shadow-lg shadow-orange-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-2.5 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 shadow-sm">
@@ -190,11 +190,11 @@ const Dashboard: React.FC = () => {
                 </div>
                 
                 <div className="space-y-1.5">
-                  <h3 className="text-sm font-medium text-muted-foreground">Awaiting Action</h3>
-                  <div className="text-2xl font-bold">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Awaiting Action</h3>
+                  <div className="text-2xl font-bold text-gray-800 dark:text-white">
                     {isOrdersLoading ? '--' : awaitingActionOrders.length}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">Orders requiring intervention</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Orders requiring intervention</p>
                 </div>
               </CardContent>
             </Card>
@@ -207,7 +207,7 @@ const Dashboard: React.FC = () => {
             transition={{ delay: 0.4, duration: 0.5 }}
             whileHover={{ y: -4, transition: { duration: 0.2 } }}
           >
-            <Card className="overflow-hidden border-0 shadow-lg shadow-emerald-500/5 backdrop-blur-lg bg-gradient-to-br from-white/80 to-white/50 dark:from-slate-900/90 dark:to-slate-900/50 rounded-2xl">
+            <Card className="overflow-hidden border-0 shadow-lg shadow-emerald-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 shadow-sm">
@@ -216,18 +216,18 @@ const Dashboard: React.FC = () => {
                 </div>
                 
                 <div className="space-y-1.5">
-                  <h3 className="text-sm font-medium text-muted-foreground">Expected Cash</h3>
-                  <div className="text-2xl font-bold">
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Expected Cash</h3>
+                  <div className="text-2xl font-bold text-gray-800 dark:text-white">
                     {isOrdersLoading ? '--' : `$${todayTotalCash.toFixed(2)}`}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">Total amount of today's orders</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total amount of today's orders</p>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
         </div>
 
-        {/* Tabbed Data Section - Redesigned */}
+        {/* Tabbed Data Section - Premium Redesign */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -235,23 +235,23 @@ const Dashboard: React.FC = () => {
           className="mt-10"
         >
           <Tabs defaultValue="new-orders" className="space-y-6">
-            <div className="bg-gray-100/80 dark:bg-gray-900/50 backdrop-blur-md rounded-2xl p-1.5 flex border border-gray-200/30 dark:border-gray-800/30 shadow-sm">
+            <div className="bg-gray-100/70 dark:bg-gray-800/40 backdrop-blur-md rounded-2xl p-1.5 flex border border-gray-200/30 dark:border-gray-700/30 shadow-sm">
               <TabsList className="w-full h-12 grid grid-cols-3 bg-transparent gap-2 p-1">
                 <TabsTrigger 
                   value="new-orders" 
-                  className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-foreground data-[state=active]:shadow-md rounded-xl text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-800/80"
+                  className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-md rounded-xl text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80"
                 >
                   New Orders ({todayOrders.length})
                 </TabsTrigger>
                 <TabsTrigger 
                   value="pickups" 
-                  className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-foreground data-[state=active]:shadow-md rounded-xl text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-800/80"
+                  className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-md rounded-xl text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80"
                 >
                   Pickup Exceptions ({todayPickups.length})
                 </TabsTrigger>
                 <TabsTrigger 
                   value="awaiting" 
-                  className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-foreground data-[state=active]:shadow-md rounded-xl text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-800/80"
+                  className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-gray-900 dark:data-[state=active]:text-gray-100 data-[state=active]:shadow-md rounded-xl text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80"
                 >
                   Awaiting Action ({awaitingActionOrders.length})
                 </TabsTrigger>
@@ -259,8 +259,8 @@ const Dashboard: React.FC = () => {
             </div>
             
             <TabsContent value="new-orders" className="animate-in fade-in-50 mt-6">
-              <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-md rounded-2xl border border-gray-200/30 dark:border-gray-800/30 shadow-sm p-6">
-                <h3 className="text-lg font-semibold mb-4 text-foreground">Today's New Orders</h3>
+              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Today's New Orders</h3>
                 <OrdersTable 
                   orders={mapOrdersToTableFormat(todayOrders)}
                   selectedOrders={selectedOrders}
@@ -271,8 +271,8 @@ const Dashboard: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="pickups" className="animate-in fade-in-50 mt-6">
-              <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-md rounded-2xl border border-gray-200/30 dark:border-gray-800/30 shadow-sm p-6">
-                <h3 className="text-lg font-semibold mb-4 text-foreground">Today's Scheduled Pickups</h3>
+              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Today's Scheduled Pickups</h3>
                 <PickupsTable 
                   pickups={todayPickups}
                   selectedPickups={selectedPickups}
@@ -283,8 +283,8 @@ const Dashboard: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="awaiting" className="animate-in fade-in-50 mt-6">
-              <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-md rounded-2xl border border-gray-200/30 dark:border-gray-800/30 shadow-sm p-6">
-                <h3 className="text-lg font-semibold mb-4 text-foreground">Orders Awaiting Action</h3>
+              <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm p-6">
+                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Orders Awaiting Action</h3>
                 <OrdersTable 
                   orders={mapOrdersToTableFormat(awaitingActionOrders)}
                   selectedOrders={selectedOrders}

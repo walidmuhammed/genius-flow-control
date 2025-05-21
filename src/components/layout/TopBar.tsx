@@ -27,13 +27,13 @@ const TopBar: React.FC = () => {
   };
 
   return (
-    <div className="sticky top-0 z-30 h-16 flex items-center justify-between px-4 md:px-6 border-b border-white/5 bg-white/50 dark:bg-black/20 backdrop-blur-xl shadow-sm">
+    <div className="sticky top-0 z-30 h-16 flex items-center justify-between px-4 md:px-6 bg-white/20 dark:bg-black/10 backdrop-blur-xl">
       <div className="flex items-center gap-2 lg:gap-4 w-full">
         <form className="hidden md:flex items-center w-3/5 max-w-md relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input 
             placeholder="Search orders, customers, or couriers..." 
-            className="w-full pl-10 bg-white/80 dark:bg-black/20 backdrop-blur-lg border-transparent hover:border-muted-foreground/20 focus:border-muted-foreground/30 rounded-full h-9 transition-all shadow-sm" 
+            className="w-full pl-10 bg-white/40 dark:bg-black/20 backdrop-blur-lg border-transparent hover:border-gray-200 focus-visible:border-gray-300 focus-visible:ring-0 rounded-xl h-10 transition-all shadow-sm" 
           />
         </form>
       </div>
@@ -45,7 +45,7 @@ const TopBar: React.FC = () => {
               <Button 
                 variant="default" 
                 size="sm" 
-                className="rounded-full gap-1 bg-gradient-to-r from-[#DC291E] to-[#DC291E]/90 hover:from-[#DC291E]/90 hover:to-[#DC291E] transition-all duration-300 shadow-md hover:shadow-lg"
+                className="rounded-xl gap-1 bg-gradient-to-r from-[#DC291E] to-[#DC291E]/90 hover:from-[#DC291E]/90 hover:to-[#DC291E] transition-all duration-300 shadow-md hover:shadow-lg"
               >
                 <Plus className="h-4 w-4 mr-1" /> 
                 Create 
@@ -73,11 +73,11 @@ const TopBar: React.FC = () => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="rounded-full relative bg-white/80 dark:bg-gray-900/50 hover:bg-white/90 dark:hover:bg-gray-900/70 backdrop-blur-sm border border-transparent hover:border-gray-200 dark:hover:border-gray-800 transition-all shadow-sm" 
+            className="rounded-xl relative bg-white/40 dark:bg-gray-900/30 hover:bg-white/60 dark:hover:bg-gray-900/40 backdrop-blur-sm border border-transparent hover:border-gray-200/50 dark:hover:border-gray-800/50 transition-all shadow-sm" 
             aria-label="Notifications"
           >
-            <Bell className="h-[1.2rem] w-[1.2rem]" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#DC291E] text-[10px] font-bold flex items-center justify-center text-white">3</span>
+            <Bell className="h-[1.2rem] w-[1.2rem] text-gray-700 dark:text-gray-200" />
+            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#DC291E] text-[10px] font-bold flex items-center justify-center text-white shadow-sm">3</span>
           </Button>
         </motion.div>
         
@@ -86,7 +86,7 @@ const TopBar: React.FC = () => {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
               <Button 
                 variant="ghost" 
-                className="relative h-9 w-9 rounded-full bg-white/80 dark:bg-gray-900/50 hover:bg-white/90 dark:hover:bg-gray-900/70 backdrop-blur-sm border border-transparent hover:border-gray-200 dark:hover:border-gray-800 transition-all shadow-sm" 
+                className="relative h-10 w-10 rounded-xl bg-white/40 dark:bg-gray-900/30 hover:bg-white/60 dark:hover:bg-gray-900/40 backdrop-blur-sm border border-transparent hover:border-gray-200/50 dark:hover:border-gray-800/50 transition-all shadow-sm" 
                 aria-label="User menu"
               >
                 <Avatar className="h-9 w-9">
@@ -97,7 +97,7 @@ const TopBar: React.FC = () => {
             </motion.div>
           </DropdownMenuTrigger>
           <DropdownMenuContent 
-            className="w-56 mt-1 mr-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-white/10 shadow-xl rounded-xl" 
+            className="w-56 mt-1 mr-1 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/30 shadow-xl rounded-xl" 
             align="end" 
             forceMount
           >
