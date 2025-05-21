@@ -74,7 +74,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
                   </div>
                 </TableHead>
                 <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                  Reference Number
+                  Reference No.
                 </TableHead>
                 <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Type</TableHead>
                 <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Customer</TableHead>

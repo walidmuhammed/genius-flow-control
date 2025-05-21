@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { FileBarChart, PackageSearch, CheckCheck } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { FileBarChart, PackageSearch, CheckCheck, AlertCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import OrdersTable from '@/components/orders/OrdersTable';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -79,12 +79,142 @@ const mockOrders: Order[] = [
     status: "Successful",
     lastUpdate: "2023-05-18T09:45:00Z",
     note: "Express delivery"
+  },
+  {
+    id: "ORD-004",
+    referenceNumber: "REF98765",
+    type: "Cash Collection",
+    customer: {
+      name: "Emily Chen",
+      phone: "+961 71 234 567"
+    },
+    location: {
+      city: "Beirut",
+      area: "Hamra"
+    },
+    amount: {
+      valueLBP: 4500000,
+      valueUSD: 150
+    },
+    deliveryCharge: {
+      valueLBP: 180000,
+      valueUSD: 6
+    },
+    status: "In Progress",
+    lastUpdate: "2023-05-17T16:20:00Z",
+    note: "Call before delivery"
+  },
+  {
+    id: "ORD-005",
+    referenceNumber: "REF45678",
+    type: "Deliver",
+    customer: {
+      name: "Ahmad Hassan",
+      phone: "+961 3 987 654"
+    },
+    location: {
+      city: "Tyre",
+      area: "Old Town"
+    },
+    amount: {
+      valueLBP: 1800000,
+      valueUSD: 60
+    },
+    deliveryCharge: {
+      valueLBP: 195000,
+      valueUSD: 6.5
+    },
+    status: "Unsuccessful",
+    lastUpdate: "2023-05-16T11:45:00Z",
+    note: "Customer not available"
+  },
+  {
+    id: "ORD-006",
+    referenceNumber: "REF34567",
+    type: "Exchange",
+    customer: {
+      name: "Sarah Williams",
+      phone: "+961 70 123 987"
+    },
+    location: {
+      city: "Jounieh",
+      area: "Maameltein"
+    },
+    amount: {
+      valueLBP: 5100000,
+      valueUSD: 170
+    },
+    deliveryCharge: {
+      valueLBP: 240000,
+      valueUSD: 8
+    },
+    status: "Returned",
+    lastUpdate: "2023-05-15T09:30:00Z",
+    note: "Wrong item shipped"
+  },
+  {
+    id: "ORD-007",
+    referenceNumber: "REF23456",
+    type: "Cash Collection",
+    customer: {
+      name: "Michael Brown",
+      phone: "+961 71 876 543"
+    },
+    location: {
+      city: "Byblos",
+      area: "Downtown"
+    },
+    amount: {
+      valueLBP: 7500000,
+      valueUSD: 250
+    },
+    deliveryCharge: {
+      valueLBP: 270000,
+      valueUSD: 9
+    },
+    status: "Paid",
+    lastUpdate: "2023-05-14T14:15:00Z",
+    note: "Payment received in full"
   }
 ];
 
 const OrdersList: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  
+  const filteredOrders = useMemo(() => {
+    if (activeTab === 'all') {
+      return mockOrders;
+    } else if (activeTab === 'awaitingAction') {
+      // For "Awaiting Action", filter orders that need attention
+      return mockOrders.filter(order => 
+        order.status === "Unsuccessful" || 
+        order.status === "Returned"
+      );
+    } else {
+      // For other tabs, filter by the exact status
+      return mockOrders.filter(order => {
+        switch (activeTab) {
+          case 'new':
+            return order.status === 'New';
+          case 'pending':
+            return order.status === 'Pending Pickup';
+          case 'inProgress':
+            return order.status === 'In Progress';  
+          case 'successful':
+            return order.status === 'Successful';
+          case 'unsuccessful':
+            return order.status === 'Unsuccessful';
+          case 'returned':
+            return order.status === 'Returned';
+          case 'paid':
+            return order.status === 'Paid';
+          default:
+            return true;
+        }
+      });
+    }
+  }, [activeTab]);
   
   const toggleSelectOrder = (orderId: string) => {
     setSelectedOrders(prev => 
@@ -95,7 +225,7 @@ const OrdersList: React.FC = () => {
   };
   
   const toggleSelectAll = (checked: boolean) => {
-    setSelectedOrders(checked ? mockOrders.map(order => order.id) : []);
+    setSelectedOrders(checked ? filteredOrders.map(order => order.id) : []);
   };
   
   const renderEmptyState = () => {
@@ -123,9 +253,19 @@ const OrdersList: React.FC = () => {
       case 'awaitingAction':
         return (
           <EmptyState 
-            icon={CheckCheck}
+            icon={AlertCircle}
             title="No orders awaiting action"
             description="There are no orders that require your attention right now."
+            actionLabel="Create Order"
+            actionHref="/orders/new"
+          />
+        );
+      case 'successful':
+        return (
+          <EmptyState 
+            icon={CheckCheck}
+            title="No successful orders"
+            description="There are no successful orders matching your current filters."
             actionLabel="Create Order"
             actionHref="/orders/new"
           />
@@ -158,41 +298,72 @@ const OrdersList: React.FC = () => {
       </div>
       
       <div className="mt-6">
-        <div className="flex gap-4 border-b border-border/10">
+        <div className="flex gap-4 border-b border-border/10 overflow-x-auto">
           <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors ${activeTab === 'all' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'all' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
             onClick={() => setActiveTab('all')}
           >
             All Orders
           </button>
           <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors ${activeTab === 'new' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'new' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
             onClick={() => setActiveTab('new')}
           >
             New
           </button>
           <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors ${activeTab === 'pending' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'pending' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
             onClick={() => setActiveTab('pending')}
           >
-            Pending
+            Pending Pickup
           </button>
           <button 
-            className={`px-4 py-2.5 text-sm font-medium transition-colors ${activeTab === 'awaitingAction' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'inProgress' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+            onClick={() => setActiveTab('inProgress')}
+          >
+            In Progress
+          </button>
+          <button 
+            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'successful' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+            onClick={() => setActiveTab('successful')}
+          >
+            Successful
+          </button>
+          <button 
+            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'unsuccessful' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+            onClick={() => setActiveTab('unsuccessful')}
+          >
+            Unsuccessful
+          </button>
+          <button 
+            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'returned' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+            onClick={() => setActiveTab('returned')}
+          >
+            Returned
+          </button>
+          <button 
+            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'awaitingAction' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
             onClick={() => setActiveTab('awaitingAction')}
           >
             Awaiting Action
+          </button>
+          <button 
+            className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'paid' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
+            onClick={() => setActiveTab('paid')}
+          >
+            Paid
           </button>
         </div>
       </div>
       
       {/* Render orders table or empty state */}
-      {mockOrders.length > 0 ? (
+      {filteredOrders.length > 0 ? (
         <OrdersTable 
-          orders={mockOrders}
+          orders={filteredOrders}
           selectedOrders={selectedOrders}
           toggleSelectAll={toggleSelectAll}
           toggleSelectOrder={toggleSelectOrder}
+          showActions={true}
         />
       ) : (
         renderEmptyState()

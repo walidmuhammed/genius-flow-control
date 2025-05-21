@@ -4,7 +4,6 @@ import { Eye, MoreHorizontal, Printer, MessageSquare } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
@@ -118,7 +117,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   return (
     <TableRow 
       className={cn(
-        "hover:bg-muted/20 border-b border-border/10 cursor-pointer transition-colors", 
+        "hover:bg-muted/20 border-b border-border/10 cursor-pointer transition-colors group", 
         isSelected && "bg-[#DB271E]/5"
       )}
       onClick={handleRowClick}
@@ -203,22 +202,33 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
         {getStatusBadge(order.status)}
       </TableCell>
       {showActions && (
-        <TableCell>
-          <div className="flex justify-center items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-            <button 
-              className="h-8 w-8 rounded-lg hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center justify-center transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onViewDetails) {
-                  onViewDetails(order);
-                }
-              }}
-            >
-              <Eye className="h-4 w-4" />
-            </button>
-            <button className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors">
-              <Printer className="h-4 w-4" />
-            </button>
+        <TableCell className="py-4">
+          <div className="flex justify-center items-center gap-1 transition-all">
+            {/* Only 3-dot menu is visible by default */}
+            <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Button to view details */}
+              <button 
+                className="h-8 w-8 rounded-lg hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center justify-center transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onViewDetails) {
+                    onViewDetails(order);
+                  }
+                }}
+              >
+                <Eye className="h-4 w-4" />
+              </button>
+              
+              {/* Print button visible on hover */}
+              <button 
+                className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Printer className="h-4 w-4" />
+              </button>
+            </div>
+            
+            {/* 3-dot menu always visible */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button 
