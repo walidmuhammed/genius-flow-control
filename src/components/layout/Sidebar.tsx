@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronLeft, Moon, Sun, Package, Truck, Home, Clock, Users, Wallet, BarChart3, Settings, Phone, LogOut } from 'lucide-react';
+import { Moon, Sun, Package, Truck, Home, Clock, Users, Wallet, BarChart3, Settings, Phone, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import SidebarMenu from './SidebarMenu';
 import { Button } from '@/components/ui/button';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface SidebarProps {
   className?: string;
@@ -14,7 +14,6 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({
   className
 }) => {
-  const [collapsed, setCollapsed] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   
   const toggleDarkMode = () => {
@@ -29,8 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <motion.aside 
       className={cn(
-        "flex flex-col border-r border-border/10 bg-sidebar h-screen shadow-md relative z-20",
-        collapsed ? "w-[70px]" : "w-[260px]", 
+        "flex flex-col w-[260px] min-w-[260px] border-r border-white/5 bg-gradient-to-b from-[#DC291E] to-[#B01E18] h-screen shadow-xl relative z-20",
         className
       )}
       layout
@@ -39,90 +37,62 @@ const Sidebar: React.FC<SidebarProps> = ({
         ease: "easeInOut"
       }}
     >
-      <div className="flex h-16 items-center px-4 border-b border-border/10">
+      <div className="flex h-16 items-center px-5 border-b border-white/10">
         <Link to="/" className="flex items-center gap-2.5 mx-auto">
-          <AnimatePresence mode="wait">
-            {!collapsed ? (
-              <motion.div 
-                className="flex items-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                key="expanded-logo"
-              >
-                <div className="bg-topspeed-600 text-white h-8 w-8 rounded-md flex items-center justify-center">
-                  <Truck className="h-4 w-4" />
-                </div>
-                <span className="tracking-tight text-topspeed-600 font-bold text-xl px-2">
-                  Topspeed
-                </span>
-              </motion.div>
-            ) : (
-              <motion.div 
-                className="w-9 h-9 rounded-md bg-topspeed-600 flex items-center justify-center text-white"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
-                key="collapsed-logo"
-              >
-                <Truck className="h-5 w-5" />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <motion.div 
+            className="flex items-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="bg-white text-[#DC291E] h-8 w-8 rounded-md flex items-center justify-center shadow-md">
+              <Truck className="h-4 w-4" />
+            </div>
+            <span className="tracking-tight text-white font-bold text-xl px-2">
+              Topspeed
+            </span>
+          </motion.div>
         </Link>
-        
-        <Button 
-          onClick={() => setCollapsed(!collapsed)} 
-          className={cn(
-            "absolute -right-3 top-20 rounded-full p-1 bg-white border border-border/20 shadow-md text-gray-500 transition-colors hover:text-topspeed-600",
-            "h-6 w-6 flex items-center justify-center"
-          )} 
-          variant="ghost"
-          size="icon"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          <ChevronLeft className={cn("h-3.5 w-3.5 transition-transform duration-300", collapsed && "transform rotate-180")} />
-        </Button>
       </div>
       
       <div className="flex-1 overflow-y-auto py-6 px-3">
-        <SidebarMenu collapsed={collapsed} />
+        <SidebarMenu collapsed={false} />
       </div>
       
-      <div className="p-3 border-t border-border/10 flex flex-col gap-2">
-        <button
+      <div className="p-4 border-t border-white/10 flex flex-col gap-3">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={toggleDarkMode}
           className={cn(
-            "flex items-center gap-3 w-full p-2.5 rounded-lg text-sm font-medium",
-            "hover:bg-muted/80 transition-colors",
-            collapsed ? "justify-center" : ""
+            "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium",
+            "hover:bg-white/10 transition-colors text-white/90"
           )}
         >
           {darkMode ? (
             <>
-              <Sun className="h-4 w-4 text-amber-500" />
-              {!collapsed && <span>Light Mode</span>}
+              <Sun className="h-4 w-4 text-white" />
+              <span>Light Mode</span>
             </>
           ) : (
             <>
-              <Moon className="h-4 w-4 text-indigo-500" />
-              {!collapsed && <span>Dark Mode</span>}
+              <Moon className="h-4 w-4 text-white" />
+              <span>Dark Mode</span>
             </>
           )}
-        </button>
+        </motion.button>
         
-        <button
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           className={cn(
-            "flex items-center gap-3 w-full p-2.5 rounded-lg text-sm font-medium text-topspeed-600",
-            "hover:bg-topspeed-50 transition-colors",
-            collapsed ? "justify-center" : ""
+            "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium text-white",
+            "hover:bg-white/10 transition-colors"
           )}
         >
           <LogOut className="h-4 w-4" />
-          {!collapsed && <span>Sign Out</span>}
-        </button>
+          <span>Sign Out</span>
+        </motion.button>
       </div>
     </motion.aside>
   );

@@ -13,7 +13,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
   return (
-    <div className="flex min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a]">
+    <div className="flex min-h-screen bg-gradient-to-br from-[#fafafa] to-[#f3f3f5] dark:from-[#0a0a0a] dark:to-[#111114]">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <TopBar />
@@ -22,11 +22,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
           className
         )}>
           <motion.div 
-            className="w-full max-w-[1600px] mx-auto space-y-6"
+            className="w-full max-w-[1600px] mx-auto space-y-8"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
-              duration: 0.3,
+              duration: 0.4,
               ease: [0.4, 0.0, 0.2, 1]
             }}
           >
@@ -38,15 +38,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
         position="top-right" 
         toastOptions={{
           classNames: {
-            toast: "group border-border/10 shadow-lg bg-white/90 backdrop-blur-sm",
+            toast: "group border-border/10 shadow-xl bg-white/90 backdrop-blur-xl",
             title: "font-medium text-foreground",
             description: "text-muted-foreground",
             actionButton: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90",
             cancelButton: "text-muted-foreground",
-            error: "bg-white/90 backdrop-blur-sm border-l-4 border-l-[#DC291E]",
-            success: "bg-white/90 backdrop-blur-sm border-l-4 border-l-green-600",
-            warning: "bg-white/90 backdrop-blur-sm border-l-4 border-l-amber-600",
-            info: "bg-white/90 backdrop-blur-sm border-l-4 border-l-[#26A4DB]",
+            error: "bg-white/90 backdrop-blur-xl border-l-4 border-l-[#DC291E] shadow-xl",
+            success: "bg-white/90 backdrop-blur-xl border-l-4 border-l-green-600 shadow-xl",
+            warning: "bg-white/90 backdrop-blur-xl border-l-4 border-l-amber-600 shadow-xl",
+            info: "bg-white/90 backdrop-blur-xl border-l-4 border-l-[#26A4DB] shadow-xl",
           }
         }}
       />
