@@ -24,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     duration: 0.2,
     ease: "easeInOut"
   }}>
-      <div className="flex h-16 items-center px-5 border-b border-gray-200/30 bg-slate-50">
+      <div className="flex h-16 items-center px-5 border-b border-gray-200/30 bg-white">
         <Link to="/" className="flex items-center gap-2.5 mx-auto">
           <motion.div className="flex items-center" initial={{
           opacity: 0
@@ -43,11 +43,11 @@ const Sidebar: React.FC<SidebarProps> = ({
         </Link>
       </div>
       
-      <div className="flex-1 overflow-y-auto py-6 px-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-slate-50">
+      <div className="flex-1 overflow-y-auto py-6 px-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-white">
         <SidebarMenu collapsed={false} />
       </div>
       
-      <div className="p-5 border-t border-gray-200/50 flex flex-col gap-3 bg-slate-50">
+      <div className="p-5 border-t border-gray-200/50 flex flex-col gap-3 bg-white">
         <motion.button whileHover={{
         scale: 1.02,
         backgroundColor: "rgba(0,0,0,0.05)"
