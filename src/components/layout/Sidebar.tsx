@@ -26,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   return (
     <motion.aside 
       className={cn(
-        "flex flex-col w-[260px] min-w-[260px] bg-gray-50 dark:bg-gray-900 h-screen relative z-20",
+        "flex flex-col w-[260px] min-w-[260px] bg-gray-50 dark:bg-gray-900 h-screen relative border-r border-gray-200 dark:border-gray-800",
         className
       )}
       layout
@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         ease: "easeInOut"
       }}
     >
-      <div className="flex h-16 items-center px-5 bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-16 items-center px-5">
         <Link to="/" className="flex items-center gap-2.5 mx-auto">
           <motion.div 
             className="flex items-center" 
@@ -53,11 +53,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         </Link>
       </div>
       
-      <div className="flex-1 overflow-y-auto py-6 px-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-gray-50 dark:bg-gray-900">
+      <div className="flex-1 overflow-y-auto py-6 px-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
         <SidebarMenu collapsed={false} />
       </div>
       
-      <div className="p-5 flex flex-col gap-3 bg-gray-50 dark:bg-gray-900">
+      <div className="p-5 flex flex-col gap-3">
         <motion.button 
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
