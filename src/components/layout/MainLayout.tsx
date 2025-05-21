@@ -13,20 +13,20 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-[#fcfcfc] to-[#f5f5f5] dark:from-[#0e0e0e] dark:to-[#151515]">
+    <div className="flex min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a]">
       <Sidebar />
-      <div className="flex-1 flex flex-col ml-[260px]">
+      <div className="flex-1 flex flex-col">
         <TopBar />
         <main className={cn(
           "p-6 overflow-y-auto h-[calc(100vh-64px)] transition-all", 
           className
         )}>
           <motion.div 
-            className="w-full max-w-[1600px] mx-auto space-y-8"
-            initial={{ opacity: 0, y: 15 }}
+            className="w-full max-w-[1600px] mx-auto space-y-6"
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
-              duration: 0.4,
+              duration: 0.3,
               ease: [0.4, 0.0, 0.2, 1]
             }}
           >
@@ -38,15 +38,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
         position="top-right" 
         toastOptions={{
           classNames: {
-            toast: "group border-border/10 shadow-xl bg-white/95 backdrop-blur-md rounded-xl",
+            toast: "group border-border/10 shadow-lg bg-white/90 backdrop-blur-sm",
             title: "font-medium text-foreground",
             description: "text-muted-foreground",
-            actionButton: "bg-topspeed-600 hover:bg-topspeed-700 text-white transition-colors rounded-lg",
-            cancelButton: "text-muted-foreground hover:text-foreground",
-            error: "bg-white/95 backdrop-blur-md border-l-4 border-l-topspeed-600",
-            success: "bg-white/95 backdrop-blur-md border-l-4 border-l-green-600",
-            warning: "bg-white/95 backdrop-blur-md border-l-4 border-l-amber-600",
-            info: "bg-white/95 backdrop-blur-md border-l-4 border-l-[#26A4DB]",
+            actionButton: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90",
+            cancelButton: "text-muted-foreground",
+            error: "bg-white/90 backdrop-blur-sm border-l-4 border-l-[#DC291E]",
+            success: "bg-white/90 backdrop-blur-sm border-l-4 border-l-green-600",
+            warning: "bg-white/90 backdrop-blur-sm border-l-4 border-l-amber-600",
+            info: "bg-white/90 backdrop-blur-sm border-l-4 border-l-[#26A4DB]",
           }
         }}
       />

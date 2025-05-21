@@ -57,25 +57,20 @@ const PickupsTable: React.FC<PickupsTableProps> = ({
   
   return (
     <>
-      <div className="rounded-2xl border border-white/40 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden bg-white/85 backdrop-blur-md mt-4 transition-all duration-300 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)]">
+      <div className="rounded-xl border border-border/10 shadow-sm overflow-hidden bg-white mt-4">
         {selectedPickups.length > 0 && (
-          <div className="bg-topspeed-50/90 py-3 px-6 flex justify-between items-center border-b border-border/10">
+          <div className="bg-topspeed-50/80 py-3 px-6 flex justify-between items-center border-b border-border/10">
             <div className="text-sm font-medium text-topspeed-700">
               {selectedPickups.length} pickups selected
             </div>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="rounded-xl border border-border/30 hover:bg-topspeed-50 hover:text-topspeed-600 transition-colors duration-200"
-              >
+              <Button variant="outline" size="sm">
                 Print Details
               </Button>
               <Button 
                 variant="outline"
                 size="sm"
                 onClick={() => toggleSelectAll(false)}
-                className="rounded-xl border border-border/30 hover:bg-topspeed-50 hover:text-topspeed-600 transition-colors duration-200"
               >
                 Cancel
               </Button>
@@ -85,7 +80,7 @@ const PickupsTable: React.FC<PickupsTableProps> = ({
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/20 hover:bg-muted/30 border-b border-border/10">
+              <TableRow className="bg-muted/30 hover:bg-muted/40 border-b border-border/10">
                 <TableHead className="w-12 h-11 pl-4">
                   <Checkbox 
                     checked={selectedPickups.length === pickups.length && pickups.length > 0}
@@ -119,7 +114,7 @@ const PickupsTable: React.FC<PickupsTableProps> = ({
               {pickups.map((pickup) => (
                 <TableRow 
                   key={pickup.id} 
-                  className="border-b border-border/5 hover:bg-muted/20 transition-colors duration-200"
+                  className="border-b border-border/5 hover:bg-muted/30 transition-colors"
                 >
                   <TableCell className="pl-4">
                     <Checkbox 
@@ -151,7 +146,7 @@ const PickupsTable: React.FC<PickupsTableProps> = ({
                   <TableCell>
                     <Badge 
                       variant="outline" 
-                      className={`${getStatusColor(pickup.status)} border px-2.5 py-0.5 text-xs font-medium rounded-full shadow-sm`}
+                      className={`${getStatusColor(pickup.status)} border px-2 py-0.5 text-xs font-medium`}
                     >
                       {pickup.status}
                     </Badge>
@@ -162,7 +157,7 @@ const PickupsTable: React.FC<PickupsTableProps> = ({
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 rounded-lg hover:bg-muted/50 transition-all duration-200" 
+                          className="h-8 w-8" 
                           onClick={() => handleViewPickupDetails(pickup)}
                         >
                           <Eye className="h-4 w-4" />
@@ -172,7 +167,7 @@ const PickupsTable: React.FC<PickupsTableProps> = ({
                           <Button
                             variant="ghost" 
                             size="icon"
-                            className="h-8 w-8 rounded-lg text-green-600 hover:text-green-700 hover:bg-green-50 transition-all duration-200"
+                            className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
                           >
                             <Check className="h-4 w-4" />
                             <span className="sr-only">Complete</span>
@@ -182,7 +177,7 @@ const PickupsTable: React.FC<PickupsTableProps> = ({
                           <Button
                             variant="ghost" 
                             size="icon"
-                            className="h-8 w-8 rounded-lg text-rose-600 hover:text-rose-700 hover:bg-rose-50 transition-all duration-200"
+                            className="h-8 w-8 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
                           >
                             <X className="h-4 w-4" />
                             <span className="sr-only">Cancel</span>
@@ -202,13 +197,13 @@ const PickupsTable: React.FC<PickupsTableProps> = ({
           </span>
           
           <div className="flex items-center gap-1">
-            <button className="p-2 border border-border/20 rounded-lg hover:bg-muted/30 transition-colors duration-200">
+            <button className="p-2 border border-border/20 rounded-lg hover:bg-muted/30 transition-colors">
               <ChevronLeft className="h-4 w-4" />
             </button>
             
-            <button className="h-8 w-8 bg-topspeed-600 text-white rounded-lg flex items-center justify-center text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200">1</button>
+            <button className="h-8 w-8 bg-topspeed-600 text-white rounded-lg flex items-center justify-center text-sm font-medium shadow-sm">1</button>
             
-            <button className="p-2 border border-border/20 rounded-lg hover:bg-muted/30 transition-colors duration-200">
+            <button className="p-2 border border-border/20 rounded-lg hover:bg-muted/30 transition-colors">
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>

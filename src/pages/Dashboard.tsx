@@ -99,7 +99,7 @@ const Dashboard: React.FC = () => {
             className="space-y-2"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.5 }}
           >
             <motion.h2 
               className="text-3xl font-bold tracking-tight text-foreground"
@@ -110,7 +110,7 @@ const Dashboard: React.FC = () => {
               Hello, Admin
             </motion.h2>
             <motion.p 
-              className="text-muted-foreground text-lg"
+              className="text-muted-foreground"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.5 }}
@@ -121,32 +121,28 @@ const Dashboard: React.FC = () => {
         </AnimatePresence>
 
         {/* Overview Cards */}
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {/* New Orders Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
-            whileHover={{ y: -5 }}
-            className="transition-all duration-300"
           >
-            <Card className="stat-card border-blue-100/50 h-full">
+            <Card className="overflow-hidden border backdrop-blur-lg from-blue-500/5 to-blue-900/5 border-blue-500/10 bg-gradient-to-br">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <div className="p-3 rounded-xl bg-blue-500/10 text-blue-600 shadow-md">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
                     <Package className="h-5 w-5" />
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <h3 className="text-base font-medium text-blue-800/80">New Orders</h3>
-                  <div className="text-3xl font-bold text-foreground">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-muted-foreground">New Orders</h3>
+                  <div className="text-2xl font-bold">
                     {isOrdersLoading ? '--' : todayOrders.length}
                   </div>
-                  <p className="text-sm text-blue-600/70">The new orders registered today</p>
+                  <p className="text-xs text-muted-foreground">The new orders registered today</p>
                 </div>
-                
-                <div className="absolute top-0 right-0 h-full w-1/3 bg-gradient-to-l from-blue-50/30 to-transparent opacity-60" />
               </CardContent>
             </Card>
           </motion.div>
@@ -156,26 +152,22 @@ const Dashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            whileHover={{ y: -5 }}
-            className="transition-all duration-300"
           >
-            <Card className="stat-card border-amber-100/50 h-full">
+            <Card className="overflow-hidden border backdrop-blur-lg from-amber-500/5 to-amber-900/5 border-amber-500/10 bg-gradient-to-br">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <div className="p-3 rounded-xl bg-amber-500/10 text-amber-600 shadow-md">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
                     <Clock className="h-5 w-5" />
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <h3 className="text-base font-medium text-amber-800/80">In Progress</h3>
-                  <div className="text-3xl font-bold text-foreground">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-muted-foreground">In Progress</h3>
+                  <div className="text-2xl font-bold">
                     {isOrdersLoading ? '--' : inProgressOrders.length}
                   </div>
-                  <p className="text-sm text-amber-600/70">Orders filtered as In Progress</p>
+                  <p className="text-xs text-muted-foreground">Orders filtered as In Progress</p>
                 </div>
-                
-                <div className="absolute top-0 right-0 h-full w-1/3 bg-gradient-to-l from-amber-50/30 to-transparent opacity-60" />
               </CardContent>
             </Card>
           </motion.div>
@@ -185,26 +177,22 @@ const Dashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            whileHover={{ y: -5 }}
-            className="transition-all duration-300"
           >
-            <Card className="stat-card border-orange-100/50 h-full">
+            <Card className="overflow-hidden border backdrop-blur-lg from-orange-500/5 to-orange-900/5 border-orange-500/10 bg-gradient-to-br">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <div className="p-3 rounded-xl bg-orange-500/10 text-orange-600 shadow-md">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500">
                     <AlertCircle className="h-5 w-5" />
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <h3 className="text-base font-medium text-orange-800/80">Awaiting Action</h3>
-                  <div className="text-3xl font-bold text-foreground">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-muted-foreground">Awaiting Action</h3>
+                  <div className="text-2xl font-bold">
                     {isOrdersLoading ? '--' : awaitingActionOrders.length}
                   </div>
-                  <p className="text-sm text-orange-600/70">Orders requiring intervention</p>
+                  <p className="text-xs text-muted-foreground">Orders requiring intervention</p>
                 </div>
-                
-                <div className="absolute top-0 right-0 h-full w-1/3 bg-gradient-to-l from-orange-50/30 to-transparent opacity-60" />
               </CardContent>
             </Card>
           </motion.div>
@@ -214,26 +202,22 @@ const Dashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            whileHover={{ y: -5 }}
-            className="transition-all duration-300"
           >
-            <Card className="stat-card border-emerald-100/50 h-full">
+            <Card className="overflow-hidden border backdrop-blur-lg from-emerald-500/5 to-emerald-900/5 border-emerald-500/10 bg-gradient-to-br">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-600 shadow-md">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
                     <DollarSign className="h-5 w-5" />
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <h3 className="text-base font-medium text-emerald-800/80">Expected Cash</h3>
-                  <div className="text-3xl font-bold text-foreground">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-muted-foreground">Expected Cash</h3>
+                  <div className="text-2xl font-bold">
                     {isOrdersLoading ? '--' : `$${todayTotalCash.toFixed(2)}`}
                   </div>
-                  <p className="text-sm text-emerald-600/70">Total amount of today's orders</p>
+                  <p className="text-xs text-muted-foreground">Total amount of today's orders</p>
                 </div>
-                
-                <div className="absolute top-0 right-0 h-full w-1/3 bg-gradient-to-l from-emerald-50/30 to-transparent opacity-60" />
               </CardContent>
             </Card>
           </motion.div>
@@ -245,24 +229,24 @@ const Dashboard: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
         >
-          <Tabs defaultValue="new-orders" className="space-y-6">
-            <div className="premium-tabs">
-              <TabsList className="w-full h-14 grid grid-cols-3 bg-transparent gap-2 p-1.5">
+          <Tabs defaultValue="new-orders" className="space-y-4">
+            <div className="bg-white/50 backdrop-blur-sm rounded-xl p-1 flex border border-border/10 shadow-sm">
+              <TabsList className="w-full h-12 grid grid-cols-3 bg-transparent gap-2 p-1">
                 <TabsTrigger 
                   value="new-orders" 
-                  className="premium-tab data-[state=active]:premium-tab-active"
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg text-base"
                 >
                   New Orders ({todayOrders.length})
                 </TabsTrigger>
                 <TabsTrigger 
                   value="pickups" 
-                  className="premium-tab data-[state=active]:premium-tab-active"
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg text-base"
                 >
                   Pickup Exceptions ({todayPickups.length})
                 </TabsTrigger>
                 <TabsTrigger 
                   value="awaiting" 
-                  className="premium-tab data-[state=active]:premium-tab-active"
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg text-base"
                 >
                   Awaiting Action ({awaitingActionOrders.length})
                 </TabsTrigger>
@@ -270,8 +254,8 @@ const Dashboard: React.FC = () => {
             </div>
             
             <TabsContent value="new-orders" className="animate-in fade-in-50 mt-6">
-              <div className="premium-card p-6">
-                <h3 className="text-xl font-semibold mb-4 text-foreground/90">Today's New Orders</h3>
+              <div className="bg-white/50 backdrop-blur-sm rounded-xl border border-border/10 shadow-sm p-4">
+                <h3 className="text-lg font-semibold mb-4">Today's New Orders</h3>
                 <OrdersTable 
                   orders={mapOrdersToTableFormat(todayOrders)}
                   selectedOrders={selectedOrders}
@@ -282,8 +266,8 @@ const Dashboard: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="pickups" className="animate-in fade-in-50 mt-6">
-              <div className="premium-card p-6">
-                <h3 className="text-xl font-semibold mb-4 text-foreground/90">Today's Scheduled Pickups</h3>
+              <div className="bg-white/50 backdrop-blur-sm rounded-xl border border-border/10 shadow-sm p-4">
+                <h3 className="text-lg font-semibold mb-4">Today's Scheduled Pickups</h3>
                 <PickupsTable 
                   pickups={todayPickups}
                   selectedPickups={selectedPickups}
@@ -294,8 +278,8 @@ const Dashboard: React.FC = () => {
             </TabsContent>
             
             <TabsContent value="awaiting" className="animate-in fade-in-50 mt-6">
-              <div className="premium-card p-6">
-                <h3 className="text-xl font-semibold mb-4 text-foreground/90">Orders Awaiting Action</h3>
+              <div className="bg-white/50 backdrop-blur-sm rounded-xl border border-border/10 shadow-sm p-4">
+                <h3 className="text-lg font-semibold mb-4">Orders Awaiting Action</h3>
                 <OrdersTable 
                   orders={mapOrdersToTableFormat(awaitingActionOrders)}
                   selectedOrders={selectedOrders}
