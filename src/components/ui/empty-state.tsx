@@ -44,7 +44,7 @@ export function EmptyState({
         <Button
           onClick={onAction}
           {...(actionHref ? { as: 'a', href: actionHref } : {})}
-          className="mt-2"
+          className="mt-2 bg-[#DB271E] hover:bg-[#c0211a] text-white"
         >
           {actionLabel}
         </Button>

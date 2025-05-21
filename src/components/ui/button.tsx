@@ -10,7 +10,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-topspeed-600 text-white hover:bg-topspeed-700 shadow-sm shadow-topspeed-600/10",
+        default: "bg-[#DB271E] text-white hover:bg-[#c0211a] shadow-sm shadow-[#DB271E]/10",
         destructive:
           "bg-rose-600 text-white hover:bg-rose-700 shadow-sm shadow-rose-600/10",
         outline:
@@ -18,8 +18,8 @@ const buttonVariants = cva(
         secondary:
           "bg-muted text-muted-foreground hover:bg-muted/80 backdrop-blur-sm",
         ghost: "hover:bg-muted hover:text-foreground",
-        link: "text-topspeed-600 underline-offset-4 hover:underline",
-        premium: "bg-gradient-to-r from-topspeed-600 to-topspeed-800 text-white hover:from-topspeed-700 hover:to-topspeed-900 shadow-md shadow-topspeed-700/20"
+        link: "text-[#DB271E] underline-offset-4 hover:underline",
+        premium: "bg-gradient-to-r from-[#DB271E] to-[#c0211a] text-white hover:from-[#c0211a] hover:to-[#a61c16] shadow-md shadow-[#DB271E]/20"
       },
       size: {
         default: "h-10 px-4 py-2 rounded-lg",
