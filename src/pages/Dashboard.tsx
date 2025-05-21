@@ -273,22 +273,13 @@ const Dashboard: React.FC = () => {
           <Tabs defaultValue="new-orders" className="space-y-6">
             <div className="bg-gray-100/70 dark:bg-gray-800/40 rounded-xl p-1.5 flex border border-gray-200/30 dark:border-gray-700/30 shadow-sm">
               <TabsList className="w-full h-12 grid grid-cols-3 bg-transparent gap-2 p-1">
-                <TabsTrigger 
-                  value="new-orders" 
-                  className="data-[state=active]:bg-topspeed-600 data-[state=active]:text-white rounded-lg text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80 py-2.5 font-medium"
-                >
+                <TabsTrigger value="new-orders" className="data-[state=active]:text-white rounded-lg text-base transition-all duration-200 py-2.5 font-medium bg-[#db271e]">
                   New Orders ({todayOrders.length})
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="pickups" 
-                  className="data-[state=active]:bg-topspeed-600 data-[state=active]:text-white rounded-lg text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80 py-2.5 font-medium"
-                >
+                <TabsTrigger value="pickups" className="data-[state=active]:bg-topspeed-600 data-[state=active]:text-white rounded-lg text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80 py-2.5 font-medium">
                   Pickup Exceptions ({todayPickups.length})
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="awaiting" 
-                  className="data-[state=active]:bg-topspeed-600 data-[state=active]:text-white rounded-lg text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80 py-2.5 font-medium"
-                >
+                <TabsTrigger value="awaiting" className="data-[state=active]:bg-topspeed-600 data-[state=active]:text-white rounded-lg text-base transition-all duration-200 hover:bg-white/80 dark:hover:bg-gray-700/80 py-2.5 font-medium">
                   Awaiting Action ({awaitingActionOrders.length})
                 </TabsTrigger>
               </TabsList>
