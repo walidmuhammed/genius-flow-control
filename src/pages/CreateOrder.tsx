@@ -340,7 +340,7 @@ const CreateOrder = () => {
   return <MainLayout className="p-0">
       <div className="flex flex-col h-full" key={formKey}>
         {/* Header with title and action buttons */}
-        <div className="border-b bg-white shadow-sm my-0 mx-[29px] py-[16px] px-[24px] rounded-2xl">
+        <div className="border-b bg-white shadow-sm my-0 mx-[29px] py-[16px] px-[24px] rounded">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-semibold tracking-tight">Create a New  Order</h1>
             <div className="flex items-center gap-3">
