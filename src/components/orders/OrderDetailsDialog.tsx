@@ -1,12 +1,5 @@
-
 import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Printer, Share2, MessageSquare } from 'lucide-react';
@@ -17,26 +10,23 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import OrderProgressBar from './OrderProgressBar';
 import OrderActivityLogs, { mockActivityLogs } from './OrderActivityLogs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 interface OrderDetailsDialogProps {
   order: Order | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
 const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   order,
   open,
-  onOpenChange,
+  onOpenChange
 }) => {
-  const { isMobile } = useScreenSize();
+  const {
+    isMobile
+  } = useScreenSize();
   const [activeTab, setActiveTab] = useState('details');
-
   if (!order) return null;
-
   const getStatusBadge = (status: string) => {
     const baseClasses = "py-1 px-2 text-xs font-medium rounded-full";
-    
     switch (status.toLowerCase()) {
       case 'new':
         return <Badge className={`${baseClasses} bg-blue-50 text-blue-700`}>{status}</Badge>;
@@ -58,13 +48,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         return <Badge className={`${baseClasses} bg-gray-50 text-gray-700`}>{status}</Badge>;
     }
   };
-
-  const content = (
-    <Tabs
-      value={activeTab}
-      onValueChange={setActiveTab}
-      className="w-full"
-    >
+  const content = <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="grid grid-cols-2 mb-4 w-full">
         <TabsTrigger value="details">Order Details</TabsTrigger>
         <TabsTrigger value="activity">Activity Logs</TabsTrigger>
@@ -137,10 +121,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                   <span className="text-sm text-gray-500">Name:</span>
                   <span className="text-sm font-medium">Ali Hassan</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500">Phone:</span>
-                  <span className="text-sm font-medium">+961 71 123 456</span>
-                </div>
+                
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-500">Note:</span>
                   <span className="text-sm font-medium">Will deliver by 5 PM</span>
@@ -188,8 +169,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           </div>
         </div>
 
-        {order.note && (
-          <div>
+        {order.note && <div>
             <div className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
               <MessageSquare className="h-4 w-4" />
               <h3>Note</h3>
@@ -197,8 +177,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             <div className="mt-2 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
               <p className="text-sm">{order.note}</p>
             </div>
-          </div>
-        )}
+          </div>}
       </TabsContent>
 
       <TabsContent value="activity" className="space-y-4">
@@ -206,23 +185,17 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           <OrderActivityLogs logs={mockActivityLogs} />
         </div>
       </TabsContent>
-    </Tabs>
-  );
-
-  const footerButtons = (
-    <>
+    </Tabs>;
+  const footerButtons = <>
       <Button variant="outline" className="gap-1">
         <Share2 className="h-4 w-4" /> Share
       </Button>
       <Button className="gap-1">
         <Printer className="h-4 w-4" /> Print
       </Button>
-    </>
-  );
-
+    </>;
   if (isMobile) {
-    return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
+    return <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="bottom" className="h-[90vh] rounded-t-xl">
           <SheetHeader>
             <SheetTitle>Order Details</SheetTitle>
@@ -234,12 +207,9 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             {footerButtons}
           </SheetFooter>
         </SheetContent>
-      </Sheet>
-    );
+      </Sheet>;
   }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+  return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[750px] max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Order Details</DialogTitle>
@@ -251,8 +221,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           {footerButtons}
         </DialogFooter>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
-
 export default OrderDetailsDialog;
