@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Eye, Edit, Printer, Ticket, Trash2, Ban, MoreHorizontal } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,7 +11,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { useRouter } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid' | 'Awaiting Action';
 export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection' | 'Return';
@@ -107,7 +106,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   onViewDetails,
   showActions = true
 }) => {
-  const router = useRouter();
+  const navigate = useNavigate();
   const isNewStatus = order.status === 'New';
   
   const formatCurrency = (amount: number) => {
@@ -126,7 +125,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   const handleCreateTicket = (e: React.MouseEvent) => {
     e.stopPropagation();
     // Navigate to support page with order reference
-    router.navigate(`/support?order=${order.referenceNumber}`);
+    navigate(`/support?order=${order.referenceNumber}`);
   };
 
   // Determine the shipment type for display
