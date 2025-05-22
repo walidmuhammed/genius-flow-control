@@ -20,7 +20,7 @@ export interface Order {
   cash_collection_lbp: number;
   delivery_fees_usd: number;
   delivery_fees_lbp: number;
-  note?: string;
+  note?: string; // This field stores delivery notes
   status: OrderStatus;
   created_at: string;
   updated_at: string;
@@ -29,6 +29,49 @@ export interface Order {
 export interface OrderWithCustomer extends Order {
   customer: CustomerWithLocation;
 }
+
+// Transforms raw data to match our interface
+const transformOrderData = (order: any): OrderWithCustomer => {
+  const customerData = order.customer as any;
+  
+  // Ensure type is correctly cast to one of the allowed types
+  let orderType = order.type;
+  if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
+    orderType = 'Deliver';
+  }
+
+  // Ensure package_type is correctly cast to one of the allowed types
+  let packageType = order.package_type;
+  if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
+    packageType = 'parcel';
+  }
+  
+  // Ensure status is correctly cast to one of the allowed types
+  let statusType = order.status;
+  if (statusType !== 'New' && 
+      statusType !== 'Pending Pickup' && 
+      statusType !== 'In Progress' && 
+      statusType !== 'Heading to Customer' && 
+      statusType !== 'Heading to You' && 
+      statusType !== 'Successful' && 
+      statusType !== 'Unsuccessful' && 
+      statusType !== 'Returned' && 
+      statusType !== 'Paid') {
+    statusType = 'New';
+  }
+  
+  return {
+    ...order,
+    type: orderType as OrderType,
+    package_type: packageType as PackageType,
+    status: statusType as OrderStatus,
+    customer: {
+      ...customerData,
+      city_name: customerData.cities?.name,
+      governorate_name: customerData.governorates?.name
+    }
+  };
+};
 
 export async function getOrders() {
   const { data, error } = await supabase
@@ -49,47 +92,7 @@ export async function getOrders() {
   }
   
   // Transform the data to match our interface
-  const transformedData: OrderWithCustomer[] = data.map(order => {
-    const customerData = order.customer as any;
-    
-    // Ensure type is correctly cast to one of the allowed types
-    let orderType = order.type;
-    if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
-      orderType = 'Deliver';
-    }
-
-    // Ensure package_type is correctly cast to one of the allowed types
-    let packageType = order.package_type;
-    if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
-      packageType = 'parcel';
-    }
-    
-    // Ensure status is correctly cast to one of the allowed types
-    let statusType = order.status;
-    if (statusType !== 'New' && 
-        statusType !== 'Pending Pickup' && 
-        statusType !== 'In Progress' && 
-        statusType !== 'Heading to Customer' && 
-        statusType !== 'Heading to You' && 
-        statusType !== 'Successful' && 
-        statusType !== 'Unsuccessful' && 
-        statusType !== 'Returned' && 
-        statusType !== 'Paid') {
-      statusType = 'New';
-    }
-    
-    return {
-      ...order,
-      type: orderType as OrderType,
-      package_type: packageType as PackageType,
-      status: statusType as OrderStatus,
-      customer: {
-        ...customerData,
-        city_name: customerData.cities?.name,
-        governorate_name: customerData.governorates?.name
-      }
-    };
-  });
+  const transformedData: OrderWithCustomer[] = data.map(transformOrderData);
   
   return transformedData;
 }
@@ -166,45 +169,7 @@ export async function getOrderById(id: string) {
     throw error;
   }
   
-  const customerData = data.customer as any;
-  
-  // Ensure type is correctly cast to one of the allowed types
-  let orderType = data.type;
-  if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
-    orderType = 'Deliver';
-  }
-  
-  // Ensure package_type is correctly cast to one of the allowed types
-  let packageType = data.package_type;
-  if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
-    packageType = 'parcel';
-  }
-  
-  // Ensure status is correctly cast to one of the allowed types
-  let statusType = data.status;
-  if (statusType !== 'New' && 
-      statusType !== 'Pending Pickup' && 
-      statusType !== 'In Progress' && 
-      statusType !== 'Heading to Customer' && 
-      statusType !== 'Heading to You' && 
-      statusType !== 'Successful' && 
-      statusType !== 'Unsuccessful' && 
-      statusType !== 'Returned' && 
-      statusType !== 'Paid') {
-    statusType = 'New';
-  }
-  
-  const order: OrderWithCustomer = {
-    ...data,
-    type: orderType as OrderType,
-    package_type: packageType as PackageType,
-    status: statusType as OrderStatus,
-    customer: {
-      ...customerData,
-      city_name: customerData.cities?.name,
-      governorate_name: customerData.governorates?.name
-    }
-  };
+  const order = transformOrderData(data);
   
   return order;
 }
@@ -261,47 +226,7 @@ export async function getOrdersWithDateRange(startDate: string, endDate: string)
   }
   
   // Transform the data to match our interface
-  const transformedData: OrderWithCustomer[] = data.map(order => {
-    const customerData = order.customer as any;
-    
-    // Ensure type is correctly cast to one of the allowed types
-    let orderType = order.type;
-    if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
-      orderType = 'Deliver';
-    }
-    
-    // Ensure package_type is correctly cast to one of the allowed types
-    let packageType = order.package_type;
-    if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
-      packageType = 'parcel';
-    }
-    
-    // Ensure status is correctly cast to one of the allowed types
-    let statusType = order.status;
-    if (statusType !== 'New' && 
-        statusType !== 'Pending Pickup' && 
-        statusType !== 'In Progress' && 
-        statusType !== 'Heading to Customer' && 
-        statusType !== 'Heading to You' && 
-        statusType !== 'Successful' && 
-        statusType !== 'Unsuccessful' && 
-        statusType !== 'Returned' && 
-        statusType !== 'Paid') {
-      statusType = 'New';
-    }
-    
-    return {
-      ...order,
-      type: orderType as OrderType,
-      package_type: packageType as PackageType,
-      status: statusType as OrderStatus,
-      customer: {
-        ...customerData,
-        city_name: customerData.cities?.name,
-        governorate_name: customerData.governorates?.name
-      }
-    };
-  });
+  const transformedData: OrderWithCustomer[] = data.map(transformOrderData);
   
   return transformedData;
 }
