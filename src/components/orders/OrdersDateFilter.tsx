@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { format, subDays, startOfDay, endOfDay, subMonths, startOfWeek, startOfMonth, startOfQuarter, startOfYear } from 'date-fns';
-import { Calendar, ChevronDown } from 'lucide-react';
+import { Calendar, ChevronDown, X, Check } from 'lucide-react'; // Added X and Check icons
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
