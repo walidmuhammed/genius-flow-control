@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Info, Check, Plus, MapPin, Search, Phone, Package, FileText, ScrollText, AlertTriangle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,8 +25,13 @@ import { CustomerWithLocation } from '@/services/customers';
 import { Order } from '@/services/orders';
 import { cn } from '@/lib/utils';
 
+// Create a unique form key for forcing re-render
+const getUniqueFormKey = () => `order-form-${Date.now()}`;
+
 const CreateOrder = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [formKey, setFormKey] = useState(getUniqueFormKey());
 
   // Form state
   const [orderType, setOrderType] = useState<'shipment' | 'exchange'>('shipment');
@@ -89,17 +94,65 @@ const CreateOrder = () => {
   const createCustomer = useCreateCustomer();
   const createOrder = useCreateOrder();
 
-  // Reset form on page load and on refresh
+  // Clear any cached form data from localStorage
+  const clearCachedFormData = () => {
+    // Clear any form-related items from localStorage
+    const formKeys = [
+      'order-form-data',
+      'order-form-customer',
+      'order-form-phone',
+      'order-form-address',
+      'order-form-governorate',
+      'order-form-city'
+    ];
+    
+    formKeys.forEach(key => {
+      localStorage.removeItem(key);
+    });
+  };
+
+  // Reset form function
+  const resetForm = () => {
+    setOrderType('shipment');
+    setPhone('+961');
+    setSecondaryPhone('');
+    setIsSecondaryPhone(false);
+    setName('');
+    setIsWorkAddress(false);
+    setPackageType('parcel');
+    setSelectedGovernorateId('');
+    setSelectedCityId('');
+    setSelectedGovernorateName('');
+    setSelectedCityName('');
+    setCashCollection(true);
+    setUsdAmount('');
+    setLbpAmount('');
+    setAddress('');
+    setDescription('');
+    setItemsCount(1);
+    setOrderReference('');
+    setDeliveryNotes('');
+    setAllowOpening(false);
+    setExistingCustomer(null);
+    setErrors({});
+    
+    // Clear any cached form data
+    clearCachedFormData();
+    
+    // Force re-render the form with a new key
+    setFormKey(getUniqueFormKey());
+  };
+
+  // Reset form on component mount, navigation and path changes
   useEffect(() => {
+    // Reset the form when the component mounts
     resetForm();
     
-    // Add this to ensure form resets when component mounts or window is refreshed
-    window.addEventListener('beforeunload', resetForm);
-    
+    // Clean up function to ensure form is reset when component unmounts
     return () => {
-      window.removeEventListener('beforeunload', resetForm);
+      clearCachedFormData();
     };
-  }, []);
+  }, [location.pathname]); // Re-run when the path changes
 
   // Watch for customer search results - auto-fill customer info
   useEffect(() => {
@@ -234,31 +287,6 @@ const CreateOrder = () => {
     }
   };
 
-  const resetForm = () => {
-    setOrderType('shipment');
-    setPhone('+961');
-    setSecondaryPhone('');
-    setIsSecondaryPhone(false);
-    setName('');
-    setIsWorkAddress(false);
-    setPackageType('parcel');
-    setSelectedGovernorateId('');
-    setSelectedCityId('');
-    setSelectedGovernorateName('');
-    setSelectedCityName('');
-    setCashCollection(true);
-    setUsdAmount('');
-    setLbpAmount('');
-    setAddress('');
-    setDescription('');
-    setItemsCount(1);
-    setOrderReference('');
-    setDeliveryNotes('');
-    setAllowOpening(false);
-    setExistingCustomer(null);
-    setErrors({});
-  };
-
   const handleGovernorateChange = (governorateId: string, governorateName: string) => {
     setSelectedGovernorateId(governorateId);
     setSelectedGovernorateName(governorateName);
@@ -289,7 +317,7 @@ const CreateOrder = () => {
 
   return (
     <MainLayout className="p-0">
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full" key={formKey}>
         {/* Header with back button and actions */}
         <div className="sticky top-0 border-b bg-white px-6 py-4 flex items-center justify-between z-10 shadow-sm">
           <div className="flex items-center gap-3">
