@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Info, Check, Plus, MapPin, Search, Phone, Package, FileText, ScrollText, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -359,12 +358,12 @@ const CreateOrder = () => {
         {/* Redesigned Header with back button and actions */}
         <div className="sticky top-0 border-b bg-white z-10 shadow-sm">
           <div className="container max-w-screen-2xl mx-auto px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={handleCloseModal} 
-                className="rounded-full hover:bg-gray-100"
+                className="h-9 w-9 rounded-lg hover:bg-gray-100"
               >
                 <X className="h-5 w-5" />
               </Button>
@@ -616,18 +615,47 @@ const CreateOrder = () => {
                 </div>
               </CardContent>
             </Card>
-            
-            {/* Package Type + Allow Opening Section */}
-            <Card className="shadow-sm border-border/30">
-              <CardHeader className="pb-3">
-                <CardTitle>Package Type</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Package Type Selector */}
-                <div className="flex space-x-2">
+          </div>
+          
+          {/* Right sidebar with order type, payment, and now package type and additional info */}
+          <div className="w-96 border-l overflow-y-auto bg-gray-50">
+            <div className="p-6 space-y-6">
+              {/* Order Type Selector */}
+              <div className="space-y-3">
+                <h3 className="font-medium text-base">Order Type</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    variant={orderType === 'shipment' ? "default" : "outline"} 
+                    onClick={() => setOrderType('shipment')} 
+                    className={cn(
+                      orderType === 'shipment' ? "bg-primary text-primary-foreground" : "",
+                      "shadow-sm h-10"
+                    )}
+                  >
+                    Shipment
+                  </Button>
+                  <Button 
+                    variant={orderType === 'exchange' ? "default" : "outline"} 
+                    onClick={() => setOrderType('exchange')} 
+                    className={cn(
+                      orderType === 'exchange' ? "bg-primary text-primary-foreground" : "",
+                      "shadow-sm h-10"
+                    )}
+                  >
+                    Exchange
+                  </Button>
+                </div>
+              </div>
+
+              <Separator className="my-4" />
+              
+              {/* Package Type Section - Moved from main content */}
+              <div className="space-y-3">
+                <h3 className="font-medium text-base">Package Type</h3>
+                <div className="grid grid-cols-3 gap-2">
                   <Button 
                     variant={packageType === "parcel" ? "default" : "outline"} 
-                    className="flex-1 flex gap-1.5" 
+                    className="flex gap-1.5 h-10 text-sm py-2" 
                     onClick={() => setPackageType("parcel")}
                   >
                     <Package className="h-4 w-4" />
@@ -635,7 +663,7 @@ const CreateOrder = () => {
                   </Button>
                   <Button 
                     variant={packageType === "document" ? "default" : "outline"} 
-                    className="flex-1 flex gap-1.5" 
+                    className="flex gap-1.5 h-10 text-sm py-2" 
                     onClick={() => setPackageType("document")}
                   >
                     <FileText className="h-4 w-4" />
@@ -643,7 +671,7 @@ const CreateOrder = () => {
                   </Button>
                   <Button 
                     variant={packageType === "bulky" ? "default" : "outline"} 
-                    className="flex-1 flex gap-1.5" 
+                    className="flex gap-1.5 h-10 text-sm py-2" 
                     onClick={() => setPackageType("bulky")}
                   >
                     <Package className="h-4 w-4" />
@@ -681,76 +709,44 @@ const CreateOrder = () => {
                     </TooltipProvider>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-            
-            {/* Additional Information */}
-            <Card className="shadow-sm border-border/30">
-              <CardHeader className="pb-3">
-                <CardTitle>Additional Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label htmlFor="order-reference">Order Reference</Label>
-                    <span className="text-xs text-muted-foreground">Optional</span>
-                  </div>
-                  <Input 
-                    id="order-reference" 
-                    placeholder="For easier tracking (e.g. internal order number)" 
-                    value={orderReference} 
-                    onChange={e => setOrderReference(e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label htmlFor="delivery-notes" className="flex items-center gap-1.5">
-                      <ScrollText className="h-4 w-4" />
-                      Delivery notes
-                    </Label>
-                    <span className="text-xs text-muted-foreground">Optional</span>
-                  </div>
-                  <Textarea 
-                    id="delivery-notes" 
-                    placeholder="Special instructions for delivery (e.g. 'Call before arrival')" 
-                    rows={3} 
-                    value={deliveryNotes} 
-                    onChange={e => setDeliveryNotes(e.target.value)}
-                    className="resize-none"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Right sidebar with order type and payment - redesigned for better spacing */}
-          <div className="w-96 border-l overflow-y-auto bg-gray-50">
-            <div className="p-6 space-y-6">
-              {/* Order Type Selector - Using the component with proper spacing */}
+              </div>
+
+              <Separator className="my-4" />
+              
+              {/* Additional Information - Moved from main content */}
               <div className="space-y-3">
-                <h3 className="font-medium text-base">Order Type</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button 
-                    variant={orderType === 'shipment' ? "default" : "outline"} 
-                    onClick={() => setOrderType('shipment')} 
-                    className={cn(
-                      orderType === 'shipment' ? "bg-primary text-primary-foreground" : "",
-                      "shadow-sm h-10"
-                    )}
-                  >
-                    Shipment
-                  </Button>
-                  <Button 
-                    variant={orderType === 'exchange' ? "default" : "outline"} 
-                    onClick={() => setOrderType('exchange')} 
-                    className={cn(
-                      orderType === 'exchange' ? "bg-primary text-primary-foreground" : "",
-                      "shadow-sm h-10"
-                    )}
-                  >
-                    Exchange
-                  </Button>
+                <h3 className="font-medium text-base">Additional Information</h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <Label htmlFor="order-reference">Order Reference</Label>
+                      <span className="text-xs text-muted-foreground">Optional</span>
+                    </div>
+                    <Input 
+                      id="order-reference" 
+                      placeholder="For easier tracking" 
+                      value={orderReference} 
+                      onChange={e => setOrderReference(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <Label htmlFor="delivery-notes" className="flex items-center gap-1.5">
+                        <ScrollText className="h-3.5 w-3.5" />
+                        Delivery notes
+                      </Label>
+                      <span className="text-xs text-muted-foreground">Optional</span>
+                    </div>
+                    <Textarea 
+                      id="delivery-notes" 
+                      placeholder="Special instructions for delivery" 
+                      rows={3} 
+                      value={deliveryNotes} 
+                      onChange={e => setDeliveryNotes(e.target.value)}
+                      className="resize-none"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -800,4 +796,3 @@ const CreateOrder = () => {
 };
 
 export default CreateOrder;
-
