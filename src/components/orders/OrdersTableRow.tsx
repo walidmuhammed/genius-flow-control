@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Eye, Edit, MoreHorizontal, Printer, MessageSquare } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -6,10 +5,8 @@ import { TableRow, TableCell } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-
 export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid' | 'Awaiting Action';
 export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection' | 'Return';
-
 export interface Order {
   id: string;
   referenceNumber: string;
@@ -34,7 +31,6 @@ export interface Order {
   lastUpdate: string;
   note?: string;
 }
-
 interface OrdersTableRowProps {
   order: Order;
   isSelected: boolean;
@@ -42,7 +38,6 @@ interface OrdersTableRowProps {
   onViewDetails?: (order: Order) => void;
   showActions?: boolean;
 }
-
 const getStatusBadge = (status: OrderStatus) => {
   switch (status) {
     case 'New':
@@ -69,7 +64,6 @@ const getStatusBadge = (status: OrderStatus) => {
       return <span className="px-3 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-gray-400"></span>{status}</span>;
   }
 };
-
 const getTypeStyle = (type: OrderType) => {
   switch (type) {
     case 'Deliver':
@@ -92,7 +86,6 @@ const getShipmentDisplayType = (type: OrderType) => {
   }
   return type;
 };
-
 const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   order,
   isSelected,
@@ -106,7 +99,6 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
       maximumFractionDigits: 2
     });
   };
-  
   const handleRowClick = () => {
     if (onViewDetails) {
       onViewDetails(order);
@@ -115,42 +107,25 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
 
   // Determine the shipment type for display
   const displayType = getShipmentDisplayType(order.type);
-
-  return (
-    <TableRow 
-      className={cn(
-        "hover:bg-muted/20 border-b border-border/10 cursor-pointer transition-colors group", 
-        isSelected && "bg-[#DB271E]/5"
-      )}
-      onClick={handleRowClick}
-    >
-      <TableCell className="w-12 pl-4 pr-0" onClick={(e) => e.stopPropagation()}>
-        <Checkbox 
-          checked={isSelected} 
-          onCheckedChange={() => onToggleSelect(order.id)}
-          className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]" 
-        />
+  return <TableRow className={cn("hover:bg-muted/20 border-b border-border/10 cursor-pointer transition-colors group", isSelected && "bg-[#DB271E]/5")} onClick={handleRowClick}>
+      <TableCell className="w-12 pl-4 pr-0" onClick={e => e.stopPropagation()}>
+        <Checkbox checked={isSelected} onCheckedChange={() => onToggleSelect(order.id)} className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]" />
       </TableCell>
       <TableCell className="py-4">
         <div className="flex items-center gap-1.5">
           <span className="font-medium text-gray-900">#{order.id}</span>
-          {order.note && (
-            <TooltipProvider>
+          {order.note && <TooltipProvider>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <div className="cursor-help transition-opacity hover:opacity-80">
                     <MessageSquare className="h-3.5 w-3.5 text-gray-500 hover:text-[#DB271E] transition-colors" />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent 
-                  className="max-w-xs border border-border/10 shadow-lg rounded-lg bg-white p-3 animate-in fade-in-50 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
-                  sideOffset={5}
-                >
+                <TooltipContent className="max-w-xs border border-border/10 shadow-lg rounded-lg bg-white p-3 animate-in fade-in-50 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95" sideOffset={5}>
                   <p className="text-sm">{order.note || "No notes available for this order."}</p>
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
-          )}
+            </TooltipProvider>}
         </div>
       </TableCell>
       <TableCell className="py-4">
@@ -174,67 +149,44 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
         </div>
       </TableCell>
       <TableCell className="py-4">
-        {order.amount && (order.amount.valueUSD > 0 || order.amount.valueLBP > 0) ? (
-          <div className="flex flex-col">
+        {order.amount && (order.amount.valueUSD > 0 || order.amount.valueLBP > 0) ? <div className="flex flex-col">
             <span className="text-gray-900 font-medium">
               ${formatCurrency(order.amount.valueUSD)}
             </span>
             <span className="mt-0.5 text-xs font-medium text-gray-700">
               {formatCurrency(order.amount.valueLBP)} LBP
             </span>
-          </div>
-        ) : (
-          <div className="flex flex-col">
+          </div> : <div className="flex flex-col">
             <span className="text-gray-500">$0</span>
             <span className="text-gray-500 text-xs mt-0.5">0 LBP</span>
-          </div>
-        )}
+          </div>}
       </TableCell>
       <TableCell className="py-4">
-        {order.deliveryCharge && (
-          <div className="flex flex-col">
+        {order.deliveryCharge && <div className="flex flex-col">
             <span className="text-gray-900 font-medium">
               ${formatCurrency(order.deliveryCharge.valueUSD)}
             </span>
             <span className="text-xs mt-0.5 font-medium text-gray-800">
               {formatCurrency(order.deliveryCharge.valueLBP)} LBP
             </span>
-          </div>
-        )}
+          </div>}
       </TableCell>
       <TableCell className="py-4">
         {getStatusBadge(order.status)}
       </TableCell>
-      {showActions && (
-        <TableCell className="py-4">
+      {showActions && <TableCell className="py-4">
           <div className="flex justify-center items-center gap-1 transition-all">
             {/* Actions container with improved hover effect */}
             <div className="flex items-center relative">
               {/* Hidden actions that appear on hover */}
               <div className="absolute right-full pr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
-                <button 
-                  className="h-8 w-8 rounded-lg hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center justify-center transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (onViewDetails) {
-                      onViewDetails(order);
-                    }
-                  }}
-                >
-                  <Eye className="h-4 w-4" />
-                </button>
                 
-                <button 
-                  className="h-8 w-8 rounded-lg hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center justify-center transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                
+                <button className="h-8 w-8 rounded-lg hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center justify-center transition-colors" onClick={e => e.stopPropagation()}>
                   <Edit className="h-4 w-4" />
                 </button>
                 
-                <button 
-                  className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <button className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors" onClick={e => e.stopPropagation()}>
                   <Printer className="h-4 w-4" />
                 </button>
               </div>
@@ -242,10 +194,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
               {/* 3-dot menu always visible */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button 
-                    className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <button className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors" onClick={e => e.stopPropagation()}>
                     <MoreHorizontal className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
@@ -259,10 +208,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
               </DropdownMenu>
             </div>
           </div>
-        </TableCell>
-      )}
-    </TableRow>
-  );
+        </TableCell>}
+    </TableRow>;
 };
-
 export default OrdersTableRow;
