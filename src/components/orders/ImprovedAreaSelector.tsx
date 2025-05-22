@@ -72,7 +72,7 @@ export function ImprovedAreaSelector({
       if (governorate) {
         onGovernorateChange(itemId, governorate.name);
         setSelectedGovernorate(governorate.name);
-        setSelectedCityId("");
+        setSelectedCity("");  // Fixed: Changed setSelectedCityId to setSelectedCity
       }
     } else if (itemType === 'city') {
       const city = cities.find(c => c.id === itemId);
