@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Info, Check, Plus, MapPin, Search, Phone, Package, FileText, ScrollText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +20,7 @@ import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CustomerWithLocation } from '@/services/customers';
 import { Order } from '@/services/orders';
+import { cn } from '@/lib/utils';
 
 const CreateOrder = () => {
   const navigate = useNavigate();
