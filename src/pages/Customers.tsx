@@ -344,7 +344,7 @@ const Customers: React.FC = () => {
               }}>
                     <X className="h-4 w-4 mr-1" /> Cancel
                   </Button>
-                  <Button size="sm" className="h-8 px-3 py-1 text-sm bg-[#46d483] hover:bg-[#3bb36e]" onClick={handleSaveChanges}>
+                  <Button size="sm" onClick={handleSaveChanges} className="h-8 px-3 py-1 text-sm bg-[#dc291e]">
                     <Check className="h-4 w-4 mr-1" /> Save Changes
                   </Button>
                 </> : <Button variant="outline" size="sm" className="h-8 px-3 py-1 text-sm" onClick={handleEditToggle}>
