@@ -5,13 +5,13 @@ import {
   Box,
   ShieldCheck,
   PackageOpen,
-  Tape,
   Lightbulb,
   Siren,
   Droplets,
   Flame,
   Utensils,
-  Banknote
+  Banknote,
+  PackagePlus
 } from 'lucide-react';
 import {
   Dialog,
@@ -121,7 +121,7 @@ export function PackageGuidelinesModal({ open, onOpenChange }: PackageGuidelines
                 />
                 
                 <PackagingGuidelineItem
-                  icon={Tape}
+                  icon={PackagePlus}
                   title="Secure sealing"
                   description="Use quality packing tape (not duct or masking tape) in an H-pattern"
                 />
