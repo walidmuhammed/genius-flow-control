@@ -1,5 +1,6 @@
-import React from 'react';
-import { Eye, Edit, Printer, Ticket, Trash2, Ban, MoreHorizontal } from 'lucide-react';
+
+import React, { useState } from 'react';
+import { StickyNote, Edit, Printer, Ticket, Trash2, Ban, MoreHorizontal, FileText } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid' | 'Awaiting Action';
 export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection' | 'Return';
@@ -27,6 +29,7 @@ export interface Order {
   location: {
     city: string;
     area: string;
+    address?: string; // Added address field
   };
   amount: {
     valueLBP: number;
@@ -108,6 +111,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
 }) => {
   const navigate = useNavigate();
   const isNewStatus = order.status === 'New';
+  const [isHovered, setIsHovered] = useState(false);
   
   const formatCurrency = (amount: number) => {
     return amount.toLocaleString(undefined, {
@@ -128,6 +132,12 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
     navigate(`/support?order=${order.referenceNumber}`);
   };
 
+  const handlePrintLabel = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Implement print label functionality
+    console.log(`Printing label for order ${order.id}`);
+  };
+
   // Determine the shipment type for display
   const displayType = getShipmentDisplayType(order.type);
   
@@ -136,8 +146,10 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
       className={cn(
         "hover:bg-muted/20 border-b border-border/10 cursor-pointer transition-colors", 
         isSelected && "bg-[#DB271E]/5"
-      )} 
+      )}
       onClick={handleRowClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <TableCell className="w-12 pl-4 pr-0" onClick={e => e.stopPropagation()}>
         <Checkbox 
@@ -154,14 +166,14 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <div className="cursor-help transition-opacity hover:opacity-80">
-                    <Eye className="h-3.5 w-3.5 text-gray-500 hover:text-[#DB271E] transition-colors" />
+                    <StickyNote className="h-3.5 w-3.5 text-gray-500 hover:text-[#DB271E] transition-colors" />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent 
                   className="max-w-xs border border-border/10 shadow-lg rounded-lg bg-white p-3 animate-in fade-in-50 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95" 
                   sideOffset={5}
                 >
-                  <p className="text-sm">{order.note || "No notes available for this order."}</p>
+                  <p className="text-sm break-words">{order.note || "No notes available for this order."}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -222,91 +234,117 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
       </TableCell>
       
       {showActions && (
-        <TableCell className="py-4 w-16 text-right" onClick={e => e.stopPropagation()}>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button 
-                className="h-8 w-8 rounded-lg text-gray-500 hover:bg-muted/60 hover:text-gray-700 flex items-center justify-center transition-colors"
+        <TableCell className="py-4 w-24 text-right" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-end gap-1">
+            {(isHovered || window.innerWidth < 768) && (
+              <TooltipProvider>
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-lg text-gray-500 hover:bg-muted/60 hover:text-gray-700"
+                      onClick={handlePrintLabel}
+                    >
+                      <Printer className="h-4 w-4" />
+                      <span className="sr-only">Print Label</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p className="text-xs">Print Label</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg text-gray-500 hover:bg-muted/60 hover:text-gray-700"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                align="end" 
+                className="w-[180px] shadow-lg border-border/10 rounded-lg p-1 bg-white"
+                sideOffset={5}
+                alignOffset={-5}
               >
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Open menu</span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align="end" 
-              className="w-[180px] shadow-lg border-border/10 rounded-lg p-1 bg-white"
-              sideOffset={5}
-              alignOffset={-5}
-            >
-              {/* View Details - Always available */}
-              <DropdownMenuItem 
-                className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
-                onClick={e => {
-                  e.stopPropagation();
-                  if (onViewDetails) onViewDetails(order);
-                }}
-              >
-                <Eye className="h-4 w-4 text-gray-500" />
-                <span>View Details</span>
-              </DropdownMenuItem>
-              
-              {/* Edit Order - Only for New status */}
-              <DropdownMenuItem 
-                className={cn(
-                  "rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm",
-                  !isNewStatus && "opacity-50 pointer-events-none"
-                )}
-                disabled={!isNewStatus}
-              >
-                <Edit className="h-4 w-4 text-gray-500" />
-                <span>Edit Order</span>
-              </DropdownMenuItem>
-              
-              {/* Print Label - Always available */}
-              <DropdownMenuItem 
-                className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
-              >
-                <Printer className="h-4 w-4 text-gray-500" />
-                <span>Print Label</span>
-              </DropdownMenuItem>
-              
-              {/* Create Ticket - Always available */}
-              <DropdownMenuItem 
-                className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
-                onClick={handleCreateTicket}
-              >
-                <Ticket className="h-4 w-4 text-gray-500" />
-                <span>Create Ticket</span>
-              </DropdownMenuItem>
-              
-              {/* Separator before destructive actions */}
-              <DropdownMenuSeparator className="my-1 bg-border/10" />
-              
-              {/* Cancel Order - Only for New status */}
-              <DropdownMenuItem 
-                className={cn(
-                  "rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center gap-2 text-sm",
-                  !isNewStatus && "opacity-50 pointer-events-none"
-                )}
-                disabled={!isNewStatus}
-              >
-                <Ban className="h-4 w-4" />
-                <span>Cancel Order</span>
-              </DropdownMenuItem>
-              
-              {/* Delete Order - Only for New status */}
-              <DropdownMenuItem 
-                className={cn(
-                  "rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center gap-2 text-sm",
-                  !isNewStatus && "opacity-50 pointer-events-none"
-                )}
-                disabled={!isNewStatus}
-              >
-                <Trash2 className="h-4 w-4" />
-                <span>Delete Order</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {/* View Details - Always available */}
+                <DropdownMenuItem 
+                  className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
+                  onClick={e => {
+                    e.stopPropagation();
+                    if (onViewDetails) onViewDetails(order);
+                  }}
+                >
+                  <FileText className="h-4 w-4 text-gray-500" />
+                  <span>View Details</span>
+                </DropdownMenuItem>
+                
+                {/* Edit Order - Only for New status */}
+                <DropdownMenuItem 
+                  className={cn(
+                    "rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm",
+                    !isNewStatus && "opacity-50 pointer-events-none"
+                  )}
+                  disabled={!isNewStatus}
+                >
+                  <Edit className="h-4 w-4 text-gray-500" />
+                  <span>Edit Order</span>
+                </DropdownMenuItem>
+                
+                {/* Print Label - Always available */}
+                <DropdownMenuItem 
+                  className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
+                  onClick={handlePrintLabel}
+                >
+                  <Printer className="h-4 w-4 text-gray-500" />
+                  <span>Print Label</span>
+                </DropdownMenuItem>
+                
+                {/* Create Ticket - Always available */}
+                <DropdownMenuItem 
+                  className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
+                  onClick={handleCreateTicket}
+                >
+                  <Ticket className="h-4 w-4 text-gray-500" />
+                  <span>Create Ticket</span>
+                </DropdownMenuItem>
+                
+                {/* Separator before destructive actions */}
+                <DropdownMenuSeparator className="my-1 bg-border/10" />
+                
+                {/* Cancel Order - Only for New status */}
+                <DropdownMenuItem 
+                  className={cn(
+                    "rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center gap-2 text-sm",
+                    !isNewStatus && "opacity-50 pointer-events-none"
+                  )}
+                  disabled={!isNewStatus}
+                >
+                  <Ban className="h-4 w-4" />
+                  <span>Cancel Order</span>
+                </DropdownMenuItem>
+                
+                {/* Delete Order - Only for New status */}
+                <DropdownMenuItem 
+                  className={cn(
+                    "rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center gap-2 text-sm",
+                    !isNewStatus && "opacity-50 pointer-events-none"
+                  )}
+                  disabled={!isNewStatus}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Delete Order</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </TableCell>
       )}
     </TableRow>

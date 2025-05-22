@@ -1,5 +1,6 @@
+
 import React, { useState, useMemo, useCallback } from 'react';
-import { FileBarChart, PackageSearch, CheckCheck, AlertCircle } from 'lucide-react';
+import { FileBarChart, PackageSearch, CheckCheck, AlertCircle, Download, Upload } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import OrdersTable from '@/components/orders/OrdersTable';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -540,10 +541,11 @@ const OrdersList: React.FC = () => {
           <Button 
             variant="outline" 
             size="sm" 
-            className="flex-1 sm:flex-none"
+            className="flex-1 sm:flex-none items-center gap-1.5 border-border/20 shadow-sm transition-all hover:border-border/40"
             onClick={() => setImportModalOpen(true)}
           >
-            Import
+            <Upload className="h-4 w-4 text-gray-600" />
+            <span>Import</span>
           </Button>
           <ExportOrdersDropdown 
             selectedOrdersCount={selectedOrders.length}
@@ -555,15 +557,15 @@ const OrdersList: React.FC = () => {
       
       {/* Unified full-width search and filter bar - mobile and desktop */}
       <div className="mt-4 space-y-4">
-        {/* Full width search bar */}
+        {/* Full width search and date filter */}
         <div className="flex flex-col md:flex-row gap-3">
-          <OrdersSearch 
-            onSearch={handleSearch}
-            className="flex-1"
-          />
           <OrdersDateFilter 
             onDateChange={handleDateChange} 
-            className="w-full md:w-auto"
+            className="w-full md:w-auto order-1 md:order-1"
+          />
+          <OrdersSearch 
+            onSearch={handleSearch}
+            className="flex-1 order-2 md:order-2"
           />
         </div>
         

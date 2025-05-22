@@ -41,9 +41,14 @@ export const ExportOrdersDropdown: React.FC<ExportOrdersDropdownProps> = ({
   
   return (
     <>
-      <Button variant="outline" size="sm" className={className} onClick={() => setOpen(true)}>
-        <Download className="mr-2 h-4 w-4" />
-        Export
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className={`items-center gap-1.5 border-border/20 shadow-sm transition-all hover:border-border/40 ${className}`}
+        onClick={() => setOpen(true)}
+      >
+        <Download className="h-4 w-4 text-gray-600" />
+        <span>Export</span>
       </Button>
       
       <Dialog open={open} onOpenChange={setOpen}>
