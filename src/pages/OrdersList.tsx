@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { FileBarChart, PackageSearch, CheckCheck, AlertCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -562,7 +561,10 @@ const OrdersList: React.FC = () => {
             onSearch={handleSearch}
             className="flex-1"
           />
-          <OrdersDateFilter onDateChange={handleDateChange} className="w-full md:w-auto" />
+          <OrdersDateFilter 
+            onDateChange={handleDateChange} 
+            className="w-full md:w-auto"
+          />
         </div>
         
         {/* Mobile status filter */}

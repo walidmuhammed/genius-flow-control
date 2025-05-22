@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type DateRange = {
   from: Date | undefined;
@@ -75,13 +76,6 @@ export const OrdersDateFilter: React.FC<OrdersDateFilterProps> = ({
       })
     },
     {
-      name: 'Last 365 days',
-      getValue: () => ({
-        from: subDays(today, 364),
-        to: today
-      })
-    },
-    {
       name: 'Last month',
       getValue: () => {
         const lastMonth = subMonths(today, 1);
@@ -90,30 +84,6 @@ export const OrdersDateFilter: React.FC<OrdersDateFilterProps> = ({
           to: endOfDay(subDays(startOfMonth(today), 1))
         };
       }
-    },
-    {
-      name: 'Last 12 months',
-      getValue: () => ({
-        from: subMonths(today, 12),
-        to: today
-      })
-    },
-    {
-      name: 'Last year',
-      getValue: () => {
-        const lastYear = subMonths(today, 12);
-        return {
-          from: startOfYear(lastYear),
-          to: endOfDay(subDays(startOfYear(today), 1))
-        };
-      }
-    },
-    {
-      name: 'Week to date',
-      getValue: () => ({
-        from: startOfWeek(today),
-        to: today
-      })
     },
     {
       name: 'Month to date',
@@ -147,13 +117,12 @@ export const OrdersDateFilter: React.FC<OrdersDateFilterProps> = ({
   };
 
   const handleCalendarSelect = (range: DateRange) => {
-    // Only update if we have a complete range
+    setSelectedDateRange(range);
+    
+    // If we have a complete range, automatically apply it
     if (range.from && range.to) {
-      setSelectedDateRange(range);
       setSelectedPreset(null);
       onDateChange(range);
-    } else {
-      setSelectedDateRange(range);
     }
   };
 
@@ -161,10 +130,19 @@ export const OrdersDateFilter: React.FC<OrdersDateFilterProps> = ({
     if (selectedPreset) return selectedPreset;
     
     if (selectedDateRange.from && selectedDateRange.to) {
-      return `${format(selectedDateRange.from, 'MMM d, yyyy')} - ${format(selectedDateRange.to, 'MMM d, yyyy')}`;
+      if (selectedDateRange.from.toDateString() === selectedDateRange.to.toDateString()) {
+        return format(selectedDateRange.from, 'MMM d, yyyy');
+      }
+      return `${format(selectedDateRange.from, 'MMM d')} - ${format(selectedDateRange.to, 'MMM d, yyyy')}`;
     }
     
     return 'Select date range';
+  };
+
+  const handleClear = () => {
+    setSelectedDateRange({ from: undefined, to: undefined });
+    setSelectedPreset(null);
+    onDateChange({ from: undefined, to: undefined });
   };
 
   return (
@@ -173,38 +151,42 @@ export const OrdersDateFilter: React.FC<OrdersDateFilterProps> = ({
         <PopoverTrigger asChild>
           <Button 
             variant="outline" 
-            className="flex items-center gap-2 whitespace-nowrap w-full md:w-auto shadow-sm border-border/20"
+            className="flex items-center gap-2 whitespace-nowrap w-full md:w-auto shadow-sm border-border/20 h-10"
           >
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">{formatDisplayText()}</span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium truncate">{formatDisplayText()}</span>
+            <ChevronDown className="h-4 w-4 text-gray-400 ml-auto" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 bg-white shadow-lg" align="start">
           <div className="flex max-h-[500px] flex-col md:flex-row">
-            <div className="border-r border-border/10 p-3 space-y-1 min-w-[150px] max-h-[350px] overflow-y-auto">
+            <div className="border-b md:border-b-0 md:border-r p-3 md:min-w-[150px] md:max-h-none">
               <h4 className="font-medium text-sm px-2 py-1.5">Preset Ranges</h4>
-              {presets.map((preset) => (
-                <Button
-                  key={preset.name}
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "w-full justify-start font-normal text-sm",
-                    selectedPreset === preset.name && "bg-muted"
-                  )}
-                  onClick={() => handlePresetClick(preset)}
-                >
-                  {preset.name}
-                </Button>
-              ))}
+              <ScrollArea className="h-full max-h-[200px] md:max-h-[350px] overflow-y-auto pr-2">
+                <div className="space-y-1 pt-1">
+                  {presets.map((preset) => (
+                    <Button
+                      key={preset.name}
+                      variant="ghost"
+                      size="sm"
+                      className={cn(
+                        "w-full justify-start font-normal text-sm",
+                        selectedPreset === preset.name && "bg-muted"
+                      )}
+                      onClick={() => handlePresetClick(preset)}
+                    >
+                      {preset.name}
+                    </Button>
+                  ))}
+                </div>
+              </ScrollArea>
             </div>
             <div className="p-3">
               <CalendarComponent
                 mode="range"
                 selected={selectedDateRange}
                 onSelect={handleCalendarSelect}
-                numberOfMonths={2}
+                numberOfMonths={1}
                 className="pointer-events-auto"
                 initialFocus
               />
@@ -215,26 +197,22 @@ export const OrdersDateFilter: React.FC<OrdersDateFilterProps> = ({
               )}
             </div>
           </div>
-          <div className="border-t border-border/10 p-3 flex justify-end">
+          <div className="border-t border-border/10 p-3 flex justify-between">
             <Button 
               size="sm"
-              variant="outline"
-              className="mr-2"
-              onClick={() => {
-                setSelectedDateRange({ from: undefined, to: undefined });
-                setSelectedPreset(null);
-                onDateChange({ from: undefined, to: undefined });
-                setOpen(false);
-              }}
+              variant="ghost"
+              className="text-sm"
+              onClick={handleClear}
             >
-              Clear
+              <X className="h-4 w-4 mr-1" /> Clear
             </Button>
             <Button 
               size="sm"
               onClick={() => setOpen(false)}
-              disabled={!selectedDateRange.from || !selectedDateRange.to}
+              disabled={!selectedDateRange.from}
+              className="bg-[#ff243a] hover:bg-[#e01e32] text-white"
             >
-              Apply Range
+              <Check className="h-4 w-4 mr-1" /> Apply
             </Button>
           </div>
         </PopoverContent>
