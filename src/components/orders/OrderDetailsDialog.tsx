@@ -103,15 +103,15 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                     {new Date(order.lastUpdate).toLocaleString()}
                   </span>
                 </div>
-                
-                {/* Adding courier information */}
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-500">Courier:</span>
-                  <span className="text-sm font-medium">Ali Hassan</span>
+                  <span className="text-sm text-gray-500">Created At:</span>
+                  <span className="text-sm font-medium">
+                    {new Date(order.lastUpdate).toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-500">Courier Note:</span>
-                  <span className="text-sm font-medium">Will deliver by 5 PM</span>
+                  <span className="text-sm text-gray-500">Created By:</span>
+                  <span className="text-sm font-medium">Admin User</span>
                 </div>
               </div>
             </div>
@@ -126,6 +126,24 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-500">Phone:</span>
                   <span className="text-sm font-medium">{order.customer.phone}</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">Courier Information</h3>
+              <div className="mt-2 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500">Name:</span>
+                  <span className="text-sm font-medium">Ali Hassan</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500">Phone:</span>
+                  <span className="text-sm font-medium">+961 71 123 456</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500">Note:</span>
+                  <span className="text-sm font-medium">Will deliver by 5 PM</span>
                 </div>
               </div>
             </div>
