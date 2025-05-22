@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Info, Check, Plus, MapPin, Search, Phone, Package, FileText, ScrollText, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -24,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CustomerWithLocation } from '@/services/customers';
 import { Order } from '@/services/orders';
 import { cn } from '@/lib/utils';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Create a unique form key for forcing re-render
 const getUniqueFormKey = () => `order-form-${Date.now()}`;
@@ -31,7 +31,9 @@ const getUniqueFormKey = () => `order-form-${Date.now()}`;
 const CreateOrder = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const [formKey, setFormKey] = useState(getUniqueFormKey());
+  const initialRenderRef = useRef(true);
 
   // Form state
   const [orderType, setOrderType] = useState<'shipment' | 'exchange'>('shipment');
@@ -58,6 +60,7 @@ const CreateOrder = () => {
   const [allowOpening, setAllowOpening] = useState<boolean>(false);
   const [existingCustomer, setExistingCustomer] = useState<CustomerWithLocation | null>(null);
   const [guidelinesModalOpen, setGuidelinesModalOpen] = useState<boolean>(false);
+  const [searchEnabled, setSearchEnabled] = useState<boolean>(false);
 
   // Delivery fees (calculated or fixed)
   const deliveryFees = {
@@ -87,7 +90,8 @@ const CreateOrder = () => {
   
   const {
     data: foundCustomers,
-    isLoading: searchingCustomers
+    isLoading: searchingCustomers,
+    refetch: refetchCustomers
   } = useSearchCustomersByPhone(phone);
 
   // Mutations
@@ -135,9 +139,13 @@ const CreateOrder = () => {
     setAllowOpening(false);
     setExistingCustomer(null);
     setErrors({});
+    setSearchEnabled(false);
     
     // Clear any cached form data
     clearCachedFormData();
+    
+    // Clear React Query cache for customer search
+    queryClient.removeQueries({ queryKey: ['customers', 'search'] });
     
     // Force re-render the form with a new key
     setFormKey(getUniqueFormKey());
@@ -151,11 +159,20 @@ const CreateOrder = () => {
     // Clean up function to ensure form is reset when component unmounts
     return () => {
       clearCachedFormData();
+      queryClient.removeQueries({ queryKey: ['customers', 'search'] });
     };
-  }, [location.pathname]); // Re-run when the path changes
+  }, [location.pathname, queryClient]); // Re-run when the path changes
 
   // Watch for customer search results - auto-fill customer info
   useEffect(() => {
+    // Skip during initial render to prevent autofill from cached query results
+    if (initialRenderRef.current) {
+      initialRenderRef.current = false;
+      return;
+    }
+
+    if (!searchEnabled) return;
+
     if (foundCustomers && foundCustomers.length > 0) {
       const customer = foundCustomers[0];
       setExistingCustomer(customer);
@@ -177,10 +194,17 @@ const CreateOrder = () => {
         setIsSecondaryPhone(true);
       }
       toast.info("Customer information auto-filled");
-    } else if (phone.length > 5 && !searchingCustomers) {
+    } else if (phone.length > 5 && !searchingCustomers && searchEnabled) {
       setExistingCustomer(null);
     }
-  }, [foundCustomers]);
+  }, [foundCustomers, searchingCustomers, searchEnabled, phone]);
+
+  // Enable search only after user has changed the phone field
+  useEffect(() => {
+    if (phone !== '+961') {
+      setSearchEnabled(true);
+    }
+  }, [phone]);
 
   const validateForm = () => {
     const newErrors: {
@@ -315,6 +339,18 @@ const CreateOrder = () => {
     }
   };
 
+  const handlePhoneChange = (value: string) => {
+    setPhone(value);
+    
+    // Clear phone error if it exists
+    if (errors.phone) {
+      setErrors(prev => ({
+        ...prev,
+        phone: undefined
+      }));
+    }
+  };
+
   return (
     <MainLayout className="p-0">
       <div className="flex flex-col h-full" key={formKey}>
@@ -367,16 +403,7 @@ const CreateOrder = () => {
                   <PhoneInput 
                     id="phone" 
                     value={phone} 
-                    onChange={value => {
-                      setPhone(value);
-                      // Clear phone error if it exists
-                      if (errors.phone) {
-                        setErrors(prev => ({
-                          ...prev,
-                          phone: undefined
-                        }));
-                      }
-                    }} 
+                    onChange={handlePhoneChange} 
                     defaultCountry="LB" 
                     onValidationChange={setPhoneValid} 
                     placeholder="Enter phone number" 
@@ -384,7 +411,7 @@ const CreateOrder = () => {
                     errorMessage={errors.phone} 
                   />
                   {searchingCustomers && <p className="text-xs text-gray-500">Searching for existing customer...</p>}
-                  {existingCustomer && <p className="text-xs text-green-500 flex items-center gap-1"><Check className="h-3 w-3" />Existing customer found!</p>}
+                  {existingCustomer && searchEnabled && <p className="text-xs text-green-500 flex items-center gap-1"><Check className="h-3 w-3" />Existing customer found!</p>}
                 </div>
                 
                 {/* Secondary Phone Field */}

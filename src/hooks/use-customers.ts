@@ -62,6 +62,10 @@ export function useSearchCustomersByPhone(phone: string) {
   return useQuery({
     queryKey: ['customers', 'search', phone],
     queryFn: () => phone ? searchCustomersByPhone(phone) : Promise.resolve([]),
-    enabled: phone.length > 2
+    enabled: phone.length > 2,
+    staleTime: 0, // Don't cache results
+    gcTime: 0, // Don't keep results in cache
+    refetchOnWindowFocus: false, // Don't refetch when window gets focus
+    refetchOnMount: true // Always refetch when component mounts
   });
 }
