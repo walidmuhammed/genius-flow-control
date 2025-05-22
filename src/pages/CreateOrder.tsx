@@ -342,22 +342,12 @@ const CreateOrder = () => {
         {/* Header with title and action buttons */}
         <div className="border-b bg-white shadow-sm px-6 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold tracking-tight">Create a New Delivery Order</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Create a New  Order</h1>
             <div className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => handleSubmit(true)}
-                className="whitespace-nowrap"
-              >
+              <Button variant="outline" size="sm" onClick={() => handleSubmit(true)} className="whitespace-nowrap">
                 Confirm & Create Another
               </Button>
-              <Button 
-                variant="default" 
-                size="sm"
-                onClick={() => handleSubmit(false)}
-                className="whitespace-nowrap"
-              >
+              <Button variant="default" size="sm" onClick={() => handleSubmit(false)} className="whitespace-nowrap">
                 Confirm Order
               </Button>
             </div>
@@ -444,14 +434,10 @@ const CreateOrder = () => {
                 {/* Area Selection - using the improved selector */}
                 <div className="space-y-2">
                   <Label htmlFor="area" className={errors.area ? "text-red-500" : ""}>Area</Label>
-                  <AreaSelector 
-                    selectedArea={selectedCityName}
-                    selectedGovernorate={selectedGovernorateName}
-                    onAreaSelected={(governorateName, cityName, governorateId, cityId) => {
-                      if (governorateId) handleGovernorateChange(governorateId, governorateName);
-                      if (cityId) handleCityChange(cityId, cityName, governorateName);
-                    }}
-                  />
+                  <AreaSelector selectedArea={selectedCityName} selectedGovernorate={selectedGovernorateName} onAreaSelected={(governorateName, cityName, governorateId, cityId) => {
+                  if (governorateId) handleGovernorateChange(governorateId, governorateName);
+                  if (cityId) handleCityChange(cityId, cityName, governorateName);
+                }} />
                 </div>
                 
                 {/* Address Details */}
