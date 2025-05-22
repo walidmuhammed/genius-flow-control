@@ -342,7 +342,7 @@ const CreateOrder = () => {
         {/* Header with title and action buttons */}
         <div className="border-b bg-white shadow-sm my-0 mx-[29px] py-[16px] px-[24px] rounded-xl">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold tracking-tight">Create a New  Order</h1>
+            <h1 className="font-semibold tracking-tight text-xl">Create a New  Order</h1>
             <div className="flex items-center gap-3">
               <Button variant="outline" size="sm" onClick={() => handleSubmit(true)} className="whitespace-nowrap">
                 Confirm & Create Another
