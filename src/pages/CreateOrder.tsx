@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Info, Check, Plus, MapPin, Search, Phone, Package, FileText, ScrollText, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -24,6 +25,7 @@ import { CustomerWithLocation } from '@/services/customers';
 import { Order } from '@/services/orders';
 import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
+import OrderTypeSelector from '@/components/dashboard/OrderTypeSelector';
 
 // Create a unique form key for forcing re-render
 const getUniqueFormKey = () => `order-form-${Date.now()}`;
@@ -354,32 +356,39 @@ const CreateOrder = () => {
   return (
     <MainLayout className="p-0">
       <div className="flex flex-col h-full" key={formKey}>
-        {/* Header with back button and actions */}
-        <div className="sticky top-0 border-b bg-white px-6 py-4 flex items-center justify-between z-10 shadow-sm">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={handleCloseModal} className="rounded-full hover:bg-gray-100">
-              <X className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl font-bold">Create New Order</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => handleSubmit(true)} 
-              disabled={createCustomer.isPending || createOrder.isPending}
-              className="border-gray-200 shadow-sm hover:bg-gray-50"
-            >
-              Confirm & Create Another
-            </Button>
-            <Button 
-              variant="default" 
-              onClick={() => handleSubmit(false)} 
-              disabled={createCustomer.isPending || createOrder.isPending} 
-              className="bg-primary hover:bg-primary/90 shadow-sm"
-            >
-              <Check className="mr-1.5 h-4 w-4" />
-              Confirm Order
-            </Button>
+        {/* Redesigned Header with back button and actions */}
+        <div className="sticky top-0 border-b bg-white z-10 shadow-sm">
+          <div className="container max-w-screen-2xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleCloseModal} 
+                className="rounded-full hover:bg-gray-100"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+              <h1 className="text-xl font-semibold">Create New Order</h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => handleSubmit(true)} 
+                disabled={createCustomer.isPending || createOrder.isPending}
+                className="border-gray-200 shadow-sm hover:bg-gray-50"
+              >
+                Confirm & Create Another
+              </Button>
+              <Button 
+                variant="default" 
+                onClick={() => handleSubmit(false)} 
+                disabled={createCustomer.isPending || createOrder.isPending} 
+                className="bg-primary hover:bg-primary/90 shadow-sm"
+              >
+                <Check className="mr-1.5 h-4 w-4" />
+                Confirm Order
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -605,41 +614,77 @@ const CreateOrder = () => {
                     />
                   </div>
                 </div>
-                
+              </CardContent>
+            </Card>
+            
+            {/* Package Type + Allow Opening Section */}
+            <Card className="shadow-sm border-border/30">
+              <CardHeader className="pb-3">
+                <CardTitle>Package Type</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 {/* Package Type Selector */}
-                <div>
-                  <div className="mb-2 text-sm font-medium">Package type</div>
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant={packageType === "parcel" ? "default" : "outline"} 
-                      className="flex-1 flex gap-1.5" 
-                      onClick={() => setPackageType("parcel")}
+                <div className="flex space-x-2">
+                  <Button 
+                    variant={packageType === "parcel" ? "default" : "outline"} 
+                    className="flex-1 flex gap-1.5" 
+                    onClick={() => setPackageType("parcel")}
+                  >
+                    <Package className="h-4 w-4" />
+                    Parcel
+                  </Button>
+                  <Button 
+                    variant={packageType === "document" ? "default" : "outline"} 
+                    className="flex-1 flex gap-1.5" 
+                    onClick={() => setPackageType("document")}
+                  >
+                    <FileText className="h-4 w-4" />
+                    Document
+                  </Button>
+                  <Button 
+                    variant={packageType === "bulky" ? "default" : "outline"} 
+                    className="flex-1 flex gap-1.5" 
+                    onClick={() => setPackageType("bulky")}
+                  >
+                    <Package className="h-4 w-4" />
+                    Bulky
+                  </Button>
+                </div>
+                
+                {/* Allow Opening Checkbox */}
+                <div className="flex items-center space-x-2 pt-2">
+                  <Checkbox 
+                    id="allow-opening" 
+                    checked={allowOpening} 
+                    onCheckedChange={checked => {
+                      if (typeof checked === 'boolean') {
+                        setAllowOpening(checked);
+                      }
+                    }} 
+                  />
+                  <div className="flex items-center">
+                    <label 
+                      htmlFor="allow-opening" 
+                      className="text-sm font-medium leading-none"
                     >
-                      <Package className="h-4 w-4" />
-                      Parcel
-                    </Button>
-                    <Button 
-                      variant={packageType === "document" ? "default" : "outline"} 
-                      className="flex-1 flex gap-1.5" 
-                      onClick={() => setPackageType("document")}
-                    >
-                      <FileText className="h-4 w-4" />
-                      Document
-                    </Button>
-                    <Button 
-                      variant={packageType === "bulky" ? "default" : "outline"} 
-                      className="flex-1 flex gap-1.5" 
-                      onClick={() => setPackageType("bulky")}
-                    >
-                      <Package className="h-4 w-4" />
-                      Bulky
-                    </Button>
+                      Allow customers to open packages
+                    </label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="h-3.5 w-3.5 ml-1 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Allow customers to inspect the contents before accepting</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            {/* Order Reference */}
+            {/* Additional Information */}
             <Card className="shadow-sm border-border/30">
               <CardHeader className="pb-3">
                 <CardTitle>Additional Information</CardTitle>
@@ -679,19 +724,19 @@ const CreateOrder = () => {
             </Card>
           </div>
           
-          {/* Right sidebar with order type and payment */}
-          <div className="w-96 border-l overflow-y-auto p-6 bg-gray-50">
-            <div className="space-y-6">
-              {/* Order Type Selector */}
+          {/* Right sidebar with order type and payment - redesigned for better spacing */}
+          <div className="w-96 border-l overflow-y-auto bg-gray-50">
+            <div className="p-6 space-y-6">
+              {/* Order Type Selector - Using the component with proper spacing */}
               <div className="space-y-3">
-                <h3 className="font-medium">Order Type</h3>
-                <div className="grid grid-cols-2 gap-2">
+                <h3 className="font-medium text-base">Order Type</h3>
+                <div className="grid grid-cols-2 gap-3">
                   <Button 
                     variant={orderType === 'shipment' ? "default" : "outline"} 
                     onClick={() => setOrderType('shipment')} 
                     className={cn(
                       orderType === 'shipment' ? "bg-primary text-primary-foreground" : "",
-                      "shadow-sm"
+                      "shadow-sm h-10"
                     )}
                   >
                     Shipment
@@ -701,7 +746,7 @@ const CreateOrder = () => {
                     onClick={() => setOrderType('exchange')} 
                     className={cn(
                       orderType === 'exchange' ? "bg-primary text-primary-foreground" : "",
-                      "shadow-sm"
+                      "shadow-sm h-10"
                     )}
                   >
                     Exchange
@@ -709,7 +754,7 @@ const CreateOrder = () => {
                 </div>
               </div>
 
-              <Separator />
+              <Separator className="my-4" />
               
               {/* Improved Cash Collection Fields */}
               <ImprovedCashCollectionFields
@@ -743,38 +788,6 @@ const CreateOrder = () => {
                   lbpAmount: errors.lbpAmount,
                 }}
               />
-              
-              <div className="space-y-4 pt-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="allow-opening" 
-                    checked={allowOpening} 
-                    onCheckedChange={checked => {
-                      if (typeof checked === 'boolean') {
-                        setAllowOpening(checked);
-                      }
-                    }} 
-                  />
-                  <div className="flex items-center">
-                    <label 
-                      htmlFor="allow-opening" 
-                      className="text-sm font-medium leading-none"
-                    >
-                      Allow customers to open packages
-                    </label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="h-3.5 w-3.5 ml-1 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Allow customers to inspect the contents before accepting</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -787,3 +800,4 @@ const CreateOrder = () => {
 };
 
 export default CreateOrder;
+
