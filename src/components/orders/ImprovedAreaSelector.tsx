@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { MapPin, Check, ChevronDown } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { MapPin, Search, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGovernorates } from "@/hooks/use-governorates";
 import { useCitiesByGovernorate } from "@/hooks/use-cities";
@@ -25,14 +25,23 @@ export function ImprovedAreaSelector({
   error,
   placeholder = "Select an area"
 }: ImprovedAreaSelectorProps) {
-  const [open, setOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  const [selectedGovernorate, setSelectedGovernorate] = useState<string>("");
-  const [selectedCity, setSelectedCity] = useState<string>("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeGovernorate, setActiveGovernorate] = useState<string | null>(selectedGovernorateId || null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [displayValue, setDisplayValue] = useState<string>("");
-
+  
   const { data: governorates = [] } = useGovernorates();
-  const { data: cities = [] } = useCitiesByGovernorate(selectedGovernorateId);
+  const { data: cities = [] } = useCitiesByGovernorate(activeGovernorate || undefined);
+
+  const lebanonGovernorates = [
+    "Beirut", 
+    "Mount Lebanon", 
+    "North Lebanon", 
+    "Akkar", 
+    "Beqaa", 
+    "Baalbek-Hermel", 
+    "South Lebanon"
+  ];
 
   // Update display value when selection changes
   useEffect(() => {
@@ -42,142 +51,131 @@ export function ImprovedAreaSelector({
       
       if (city && governorate) {
         setDisplayValue(`${city.name}, ${governorate.name}`);
-        setSelectedGovernorate(governorate.name);
-        setSelectedCity(city.name);
       }
     } else {
       setDisplayValue("");
     }
   }, [selectedGovernorateId, selectedCityId, governorates, cities]);
-
-  // Filter governorates and cities based on search
-  const filteredGovernorates = searchValue
-    ? governorates.filter(g => 
-        g.name.toLowerCase().includes(searchValue.toLowerCase()))
-    : governorates;
   
-  // Include cities in search results
-  const citySearchResults = searchValue
-    ? cities
-        .filter(c => c.name.toLowerCase().includes(searchValue.toLowerCase()))
-        .map(c => {
-          const governorate = governorates.find(g => g.id === selectedGovernorateId);
-          return { cityId: c.id, cityName: c.name, governorateName: governorate?.name || "" };
-        })
-    : [];
+  // Filter governorates and cities based on search
+  const filteredGovernorates = searchQuery 
+    ? governorates.filter(g => g.name.toLowerCase().includes(searchQuery.toLowerCase())) 
+    : governorates;
     
-  const handleSelect = (itemId: string, itemType: 'governorate' | 'city', cityGovName?: string) => {
-    if (itemType === 'governorate') {
-      const governorate = governorates.find(g => g.id === itemId);
-      if (governorate) {
-        onGovernorateChange(itemId, governorate.name);
-        setSelectedGovernorate(governorate.name);
-        setSelectedCity("");  // Fixed: Changed setSelectedCityId to setSelectedCity
-      }
-    } else if (itemType === 'city') {
-      const city = cities.find(c => c.id === itemId);
-      const governorate = governorates.find(g => g.id === selectedGovernorateId);
-      
-      if (city && governorate) {
-        onCityChange(itemId, city.name, governorate.name);
-        setSelectedCity(city.name);
-        setOpen(false);
-      }
+  const filteredCities = searchQuery && cities
+    ? cities.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : cities;
+
+  const handleSelectArea = (governorate: string, area: string, governorateId?: string, areaId?: string) => {
+    if (governorateId && areaId) {
+      onCityChange(areaId, area, governorate);
     }
+    setIsOpen(false);
   };
 
   return (
     <div className="w-full">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className={cn(
-              "w-full justify-between border-input bg-transparent hover:bg-muted/30",
-              error ? "border-red-500 ring-1 ring-red-500/20" : "",
-              "h-10 px-3 py-2 text-left font-normal"
-            )}
-          >
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-muted-foreground/70" />
-              <span className="truncate">
-                {displayValue || placeholder}
-              </span>
-            </div>
-            <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0">
-          <Command>
-            <CommandInput
-              placeholder="Search area or governorate..."
-              value={searchValue}
-              onValueChange={setSearchValue}
-              className="h-9"
+      {/* Area Selector Trigger */}
+      <div 
+        className={cn(
+          "flex items-center justify-between p-2.5 border rounded-md cursor-pointer hover:bg-gray-50",
+          error ? "border-red-500 ring-1 ring-red-500/20" : "border-input bg-background",
+        )}
+        onClick={() => setIsOpen(true)}
+      >
+        <div className="flex items-center">
+          <MapPin className="h-4 w-4 text-muted-foreground mr-2" />
+          <span className="text-sm">
+            {displayValue || placeholder}
+          </span>
+        </div>
+        <div className="text-xs text-muted-foreground">Click to select</div>
+      </div>
+      
+      {/* Area Selection Modal */}
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select Area</DialogTitle>
+          </DialogHeader>
+          
+          <div className="relative mt-2">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input 
+              placeholder="Search areas..." 
+              className="pl-9" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <CommandList className="max-h-[320px]">
-              <CommandEmpty>No matches found.</CommandEmpty>
+          </div>
+          
+          <div className="flex h-[400px] mt-4 border rounded-md overflow-hidden">
+            {/* Governorates List */}
+            <div className="w-1/2 border-r overflow-y-auto">
+              <div className="p-2 bg-gray-50 border-b">
+                <h3 className="text-sm font-medium">Governorate</h3>
+              </div>
               
-              {/* Search Results section */}
-              {searchValue && citySearchResults.length > 0 && (
-                <CommandGroup heading="Search Results">
-                  {citySearchResults.map(({ cityId, cityName, governorateName }) => (
-                    <CommandItem
-                      key={cityId}
-                      value={`city-${cityId}`}
-                      onSelect={() => handleSelect(cityId, 'city', governorateName)}
-                      className="flex items-center gap-2"
-                    >
-                      <span className="flex-1">{cityName}, {governorateName}</span>
-                      {selectedCityId === cityId && <Check className="h-4 w-4" />}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              )}
-
-              {/* Governorates section */}
-              {filteredGovernorates.length > 0 && (
-                <CommandGroup heading="Governorates">
-                  {filteredGovernorates.map(governorate => (
-                    <CommandItem
+              <div>
+                {filteredGovernorates
+                  .filter(governorate => lebanonGovernorates.includes(governorate.name))
+                  .map((governorate) => (
+                    <div
                       key={governorate.id}
-                      value={`gov-${governorate.id}`}
-                      onSelect={() => handleSelect(governorate.id, 'governorate')}
-                      className="flex items-center gap-2 font-medium"
-                    >
-                      <span>{governorate.name}</span>
-                      {selectedGovernorateId === governorate.id && !selectedCityId && (
-                        <Check className="h-4 w-4 ml-auto" />
+                      className={cn(
+                        "p-2.5 text-sm cursor-pointer hover:bg-gray-50",
+                        activeGovernorate === governorate.id ? 'bg-blue-50 text-blue-600' : ''
                       )}
-                    </CommandItem>
+                      onClick={() => setActiveGovernorate(governorate.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>{governorate.name}</span>
+                        {activeGovernorate === governorate.id && 
+                          <Check className="h-4 w-4 text-blue-600" />
+                        }
+                      </div>
+                    </div>
                   ))}
-                </CommandGroup>
+              </div>
+            </div>
+            
+            {/* Cities List */}
+            <div className="w-1/2 overflow-y-auto">
+              <div className="p-2 bg-gray-50 border-b">
+                <h3 className="text-sm font-medium">City/Area</h3>
+              </div>
+              
+              {!activeGovernorate ? (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  Select a governorate first
+                </div>
+              ) : filteredCities.length > 0 ? (
+                <div>
+                  {filteredCities.map((city) => (
+                    <div
+                      key={city.id}
+                      className="p-2.5 text-sm cursor-pointer hover:bg-gray-50"
+                      onClick={() => {
+                        const governorate = governorates.find(g => g.id === city.governorate_id);
+                        if (governorate) {
+                          handleSelectArea(governorate.name, city.name, governorate.id, city.id);
+                        }
+                      }}
+                    >
+                      {city.name}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  No cities found in this governorate
+                </div>
               )}
-
-              {/* Areas/Cities section - only show if a governorate is selected */}
-              {selectedGovernorateId && cities.length > 0 && (
-                <CommandGroup heading={`Areas in ${selectedGovernorate}`}>
-                  {cities
-                    .filter(city => !searchValue || city.name.toLowerCase().includes(searchValue.toLowerCase()))
-                    .map(city => (
-                      <CommandItem
-                        key={city.id}
-                        value={`city-${city.id}`}
-                        onSelect={() => handleSelect(city.id, 'city')}
-                        className="pl-6"
-                      >
-                        <span>{city.name}</span>
-                        {selectedCityId === city.id && <Check className="h-4 w-4 ml-auto" />}
-                      </CommandItem>
-                    ))}
-                </CommandGroup>
-              )}
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
       {error && <p className="text-xs text-red-500 mt-1.5">{error}</p>}
     </div>
   );

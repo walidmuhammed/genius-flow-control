@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Info, Check, Plus, MapPin, Search, Phone, Package, FileText, ScrollText, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -263,23 +262,41 @@ const CreateOrder = () => {
     try {
       // First ensure we have a customer
       let customerId = existingCustomer?.id;
+      
+      // Prepare full address data (city, governorate and details)
+      const fullAddressData = {
+        address,
+        city_id: selectedCityId || null,
+        governorate_id: selectedGovernorateId || null,
+        is_work_address: isWorkAddress
+      };
+      
       if (!customerId) {
         // Create a new customer
         const customerData = {
           name,
           phone,
           secondary_phone: isSecondaryPhone ? secondaryPhone : undefined,
-          address,
-          city_id: selectedCityId || null,
-          governorate_id: selectedGovernorateId || null,
-          is_work_address: isWorkAddress
+          ...fullAddressData
         };
         
         const newCustomer = await createCustomer.mutateAsync(customerData);
         customerId = newCustomer.id;
+      } else if (existingCustomer) {
+        // If address data changed for existing customer, update their profile
+        const hasAddressChanged = 
+          existingCustomer.address !== address ||
+          existingCustomer.city_id !== selectedCityId ||
+          existingCustomer.governorate_id !== selectedGovernorateId ||
+          existingCustomer.is_work_address !== isWorkAddress;
+        
+        if (hasAddressChanged) {
+          // In a real app, we would update the customer's address info here
+          console.log("Address data changed, customer profile would be updated");
+        }
       }
 
-      // Then create the order
+      // Then create the order with full address data
       const orderData: Omit<Order, 'id' | 'reference_number' | 'created_at' | 'updated_at'> = {
         type: orderType === 'exchange' ? 'Exchange' : 'Deliver',
         customer_id: customerId,
@@ -356,7 +373,7 @@ const CreateOrder = () => {
   return (
     <MainLayout className="p-0">
       <div className="flex flex-col h-full" key={formKey}>
-        {/* Redesigned Header with back button and title */}
+        {/* Simplified Header with back button and title */}
         <div className="border-b bg-white shadow-sm">
           <div className="container max-w-screen-2xl mx-auto px-6 py-5">
             <div className="flex items-center gap-3">
@@ -598,8 +615,8 @@ const CreateOrder = () => {
               </CardContent>
             </Card>
             
-            {/* Action Buttons - Moved from header to bottom of main content */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-end gap-3 sticky bottom-6 px-2">
+            {/* Action Buttons - Position above the form end */}
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 bg-white p-4 rounded-lg border border-border/30 shadow-sm">
               <Button 
                 variant="outline" 
                 onClick={() => handleSubmit(true)} 
@@ -612,7 +629,7 @@ const CreateOrder = () => {
                 variant="default" 
                 onClick={() => handleSubmit(false)} 
                 disabled={createCustomer.isPending || createOrder.isPending} 
-                className="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-sm"
+                className="w-full sm:w-auto bg-[#DB271E] hover:bg-[#c0211a] text-white shadow-sm transition-all duration-300 ease-in-out"
               >
                 <Check className="mr-1.5 h-4 w-4" />
                 Confirm Order
@@ -620,7 +637,7 @@ const CreateOrder = () => {
             </div>
           </div>
           
-          {/* Right sidebar with order type, payment, and now package type and additional info */}
+          {/* Right sidebar with order type, payment, and package type */}
           <div className="w-96 border-l overflow-y-auto bg-gray-50">
             <div className="p-6 space-y-6">
               {/* Order Type Selector */}
@@ -648,6 +665,41 @@ const CreateOrder = () => {
                     Exchange
                   </Button>
                 </div>
+              </div>
+              
+              {/* Cash Collection - Moved higher up as requested */}
+              <div className="pt-2">
+                <ImprovedCashCollectionFields
+                  enabled={cashCollection}
+                  onEnabledChange={setCashCollection}
+                  usdAmount={usdAmount}
+                  lbpAmount={lbpAmount}
+                  onUsdAmountChange={(value) => {
+                    setUsdAmount(value);
+                    if (errors.usdAmount || errors.lbpAmount) {
+                      setErrors(prev => ({
+                        ...prev,
+                        usdAmount: undefined,
+                        lbpAmount: undefined
+                      }));
+                    }
+                  }}
+                  onLbpAmountChange={(value) => {
+                    setLbpAmount(value);
+                    if (errors.usdAmount || errors.lbpAmount) {
+                      setErrors(prev => ({
+                        ...prev,
+                        usdAmount: undefined,
+                        lbpAmount: undefined
+                      }));
+                    }
+                  }}
+                  deliveryFees={deliveryFees}
+                  errors={{
+                    usdAmount: errors.usdAmount,
+                    lbpAmount: errors.lbpAmount,
+                  }}
+                />
               </div>
 
               <Separator className="my-4" />
@@ -716,7 +768,7 @@ const CreateOrder = () => {
 
               <Separator className="my-4" />
               
-              {/* Additional Information - Moved from main content */}
+              {/* Additional Information */}
               <div className="space-y-3">
                 <h3 className="font-medium text-base">Additional Information</h3>
                 <div className="space-y-4">
@@ -752,41 +804,6 @@ const CreateOrder = () => {
                   </div>
                 </div>
               </div>
-
-              <Separator className="my-4" />
-              
-              {/* Improved Cash Collection Fields */}
-              <ImprovedCashCollectionFields
-                enabled={cashCollection}
-                onEnabledChange={setCashCollection}
-                usdAmount={usdAmount}
-                lbpAmount={lbpAmount}
-                onUsdAmountChange={(value) => {
-                  setUsdAmount(value);
-                  if (errors.usdAmount || errors.lbpAmount) {
-                    setErrors(prev => ({
-                      ...prev,
-                      usdAmount: undefined,
-                      lbpAmount: undefined
-                    }));
-                  }
-                }}
-                onLbpAmountChange={(value) => {
-                  setLbpAmount(value);
-                  if (errors.usdAmount || errors.lbpAmount) {
-                    setErrors(prev => ({
-                      ...prev,
-                      usdAmount: undefined,
-                      lbpAmount: undefined
-                    }));
-                  }
-                }}
-                deliveryFees={deliveryFees}
-                errors={{
-                  usdAmount: errors.usdAmount,
-                  lbpAmount: errors.lbpAmount,
-                }}
-              />
             </div>
           </div>
         </div>
