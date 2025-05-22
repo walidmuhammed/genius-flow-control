@@ -28,7 +28,6 @@ import OrderTypeSelector from '@/components/dashboard/OrderTypeSelector';
 
 // Create a unique form key for forcing re-render
 const getUniqueFormKey = () => `order-form-${Date.now()}`;
-
 const CreateOrder = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,11 +83,9 @@ const CreateOrder = () => {
   const {
     data: governorates
   } = useGovernorates();
-  
   const {
     data: cities
   } = useCitiesByGovernorate(selectedGovernorateId);
-  
   const {
     data: foundCustomers,
     isLoading: searchingCustomers,
@@ -102,15 +99,7 @@ const CreateOrder = () => {
   // Clear any cached form data from localStorage
   const clearCachedFormData = () => {
     // Clear any form-related items from localStorage
-    const formKeys = [
-      'order-form-data',
-      'order-form-customer',
-      'order-form-phone',
-      'order-form-address',
-      'order-form-governorate',
-      'order-form-city'
-    ];
-    
+    const formKeys = ['order-form-data', 'order-form-customer', 'order-form-phone', 'order-form-address', 'order-form-governorate', 'order-form-city'];
     formKeys.forEach(key => {
       localStorage.removeItem(key);
     });
@@ -141,13 +130,15 @@ const CreateOrder = () => {
     setExistingCustomer(null);
     setErrors({});
     setSearchEnabled(false);
-    
+
     // Clear any cached form data
     clearCachedFormData();
-    
+
     // Clear React Query cache for customer search
-    queryClient.removeQueries({ queryKey: ['customers', 'search'] });
-    
+    queryClient.removeQueries({
+      queryKey: ['customers', 'search']
+    });
+
     // Force re-render the form with a new key
     setFormKey(getUniqueFormKey());
   };
@@ -156,11 +147,13 @@ const CreateOrder = () => {
   useEffect(() => {
     // Reset the form when the component mounts
     resetForm();
-    
+
     // Clean up function to ensure form is reset when component unmounts
     return () => {
       clearCachedFormData();
-      queryClient.removeQueries({ queryKey: ['customers', 'search'] });
+      queryClient.removeQueries({
+        queryKey: ['customers', 'search']
+      });
     };
   }, [location.pathname, queryClient]); // Re-run when the path changes
 
@@ -171,9 +164,7 @@ const CreateOrder = () => {
       initialRenderRef.current = false;
       return;
     }
-
     if (!searchEnabled) return;
-
     if (foundCustomers && foundCustomers.length > 0) {
       const customer = foundCustomers[0];
       setExistingCustomer(customer);
@@ -206,7 +197,6 @@ const CreateOrder = () => {
       setSearchEnabled(true);
     }
   }, [phone]);
-
   const validateForm = () => {
     const newErrors: {
       phone?: string;
@@ -217,52 +207,42 @@ const CreateOrder = () => {
       usdAmount?: string;
       lbpAmount?: string;
     } = {};
-    
     if (!phoneValid) {
       newErrors.phone = 'Valid phone number is required';
     }
-    
     if (isSecondaryPhone && !secondaryPhoneValid && secondaryPhone) {
       newErrors.secondaryPhone = 'Valid secondary phone number is required';
     }
-    
     if (!name.trim()) {
       newErrors.name = 'Name is required';
     }
-    
     if (!selectedGovernorateId || !selectedCityId) {
       newErrors.area = 'Both governorate and area selection are required';
     }
-    
     if (!address.trim()) {
       newErrors.address = 'Address is required';
     }
-    
     if (cashCollection) {
       if (Number(usdAmount) === 0 && Number(lbpAmount) === 0) {
         newErrors.usdAmount = 'At least one currency amount must be provided';
         newErrors.lbpAmount = 'At least one currency amount must be provided';
       }
     }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleCloseModal = () => {
     navigate(-1);
   };
-
   const handleSubmit = async (createAnother: boolean = false) => {
     if (!validateForm()) {
       toast.error("Please fix the errors in the form");
       return;
     }
-    
     try {
       // First ensure we have a customer
       let customerId = existingCustomer?.id;
-      
+
       // Prepare full address data (city, governorate and details)
       const fullAddressData = {
         address,
@@ -270,7 +250,6 @@ const CreateOrder = () => {
         governorate_id: selectedGovernorateId || null,
         is_work_address: isWorkAddress
       };
-      
       if (!customerId) {
         // Create a new customer
         const customerData = {
@@ -279,17 +258,11 @@ const CreateOrder = () => {
           secondary_phone: isSecondaryPhone ? secondaryPhone : undefined,
           ...fullAddressData
         };
-        
         const newCustomer = await createCustomer.mutateAsync(customerData);
         customerId = newCustomer.id;
       } else if (existingCustomer) {
         // If address data changed for existing customer, update their profile
-        const hasAddressChanged = 
-          existingCustomer.address !== address ||
-          existingCustomer.city_id !== selectedCityId ||
-          existingCustomer.governorate_id !== selectedGovernorateId ||
-          existingCustomer.is_work_address !== isWorkAddress;
-        
+        const hasAddressChanged = existingCustomer.address !== address || existingCustomer.city_id !== selectedCityId || existingCustomer.governorate_id !== selectedGovernorateId || existingCustomer.is_work_address !== isWorkAddress;
         if (hasAddressChanged) {
           // In a real app, we would update the customer's address info here
           console.log("Address data changed, customer profile would be updated");
@@ -312,9 +285,7 @@ const CreateOrder = () => {
         note: deliveryNotes || undefined,
         status: 'New'
       };
-      
       await createOrder.mutateAsync(orderData);
-      
       if (createAnother) {
         // Reset form for creating another order
         resetForm();
@@ -329,7 +300,6 @@ const CreateOrder = () => {
       toast.error("Failed to create the order. Please try again.");
     }
   };
-
   const handleGovernorateChange = (governorateId: string, governorateName: string) => {
     setSelectedGovernorateId(governorateId);
     setSelectedGovernorateName(governorateName);
@@ -344,7 +314,6 @@ const CreateOrder = () => {
       }));
     }
   };
-
   const handleCityChange = (cityId: string, cityName: string, governorateName: string) => {
     setSelectedCityId(cityId);
     setSelectedCityName(cityName);
@@ -357,10 +326,9 @@ const CreateOrder = () => {
       }));
     }
   };
-
   const handlePhoneChange = (value: string) => {
     setPhone(value);
-    
+
     // Clear phone error if it exists
     if (errors.phone) {
       setErrors(prev => ({
@@ -369,25 +337,11 @@ const CreateOrder = () => {
       }));
     }
   };
-
-  return (
-    <MainLayout className="p-0">
+  return <MainLayout className="p-0">
       <div className="flex flex-col h-full" key={formKey}>
         {/* Simplified Header with back button and title */}
         <div className="border-b bg-white shadow-sm">
-          <div className="container max-w-screen-2xl mx-auto px-6 py-5">
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={handleCloseModal} 
-                className="h-9 w-9 rounded-lg hover:bg-gray-100"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-              <h1 className="text-xl font-semibold">Create New Order</h1>
-            </div>
-          </div>
+          
         </div>
 
         <div className="flex flex-1 overflow-hidden">
@@ -407,37 +361,20 @@ const CreateOrder = () => {
                       Phone number
                     </span>
                   </Label>
-                  <PhoneInput 
-                    id="phone" 
-                    value={phone} 
-                    onChange={handlePhoneChange} 
-                    defaultCountry="LB" 
-                    onValidationChange={setPhoneValid} 
-                    placeholder="Enter phone number" 
-                    className={errors.phone ? "border-red-500" : ""} 
-                    errorMessage={errors.phone} 
-                  />
+                  <PhoneInput id="phone" value={phone} onChange={handlePhoneChange} defaultCountry="LB" onValidationChange={setPhoneValid} placeholder="Enter phone number" className={errors.phone ? "border-red-500" : ""} errorMessage={errors.phone} />
                   {searchingCustomers && <p className="text-xs text-gray-500">Searching for existing customer...</p>}
                   {existingCustomer && searchEnabled && <p className="text-xs text-green-500 flex items-center gap-1"><Check className="h-3 w-3" />Existing customer found!</p>}
                 </div>
                 
                 {/* Secondary Phone Field */}
-                {!isSecondaryPhone && (
-                  <div>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      className="text-sm flex items-center gap-1" 
-                      onClick={() => setIsSecondaryPhone(true)}
-                    >
+                {!isSecondaryPhone && <div>
+                    <Button type="button" variant="outline" className="text-sm flex items-center gap-1" onClick={() => setIsSecondaryPhone(true)}>
                       <Plus className="h-3.5 w-3.5" />
                       Add secondary phone number
                     </Button>
-                  </div>
-                )}
+                  </div>}
 
-                {isSecondaryPhone && (
-                  <div className="space-y-2">
+                {isSecondaryPhone && <div className="space-y-2">
                     <div className="flex justify-between">
                       <Label htmlFor="secondary-phone" className={errors.secondaryPhone ? "text-red-500" : ""}>
                         <span className="flex items-center gap-1.5">
@@ -445,114 +382,75 @@ const CreateOrder = () => {
                           Secondary phone
                         </span>
                       </Label>
-                      <Button 
-                        variant="link" 
-                        className="text-xs text-muted-foreground h-auto p-0" 
-                        onClick={() => {
-                          setIsSecondaryPhone(false);
-                          setSecondaryPhone('');
-                          if (errors.secondaryPhone) {
-                            setErrors(prev => ({
-                              ...prev,
-                              secondaryPhone: undefined
-                            }));
-                          }
-                        }}
-                      >
+                      <Button variant="link" className="text-xs text-muted-foreground h-auto p-0" onClick={() => {
+                    setIsSecondaryPhone(false);
+                    setSecondaryPhone('');
+                    if (errors.secondaryPhone) {
+                      setErrors(prev => ({
+                        ...prev,
+                        secondaryPhone: undefined
+                      }));
+                    }
+                  }}>
                         Remove
                       </Button>
                     </div>
-                    <PhoneInput 
-                      id="secondary-phone" 
-                      value={secondaryPhone} 
-                      onChange={value => {
-                        setSecondaryPhone(value);
-                        if (errors.secondaryPhone) {
-                          setErrors(prev => ({
-                            ...prev,
-                            secondaryPhone: undefined
-                          }));
-                        }
-                      }} 
-                      defaultCountry="LB" 
-                      onValidationChange={setSecondaryPhoneValid} 
-                      placeholder="Enter secondary phone" 
-                      className={errors.secondaryPhone ? "border-red-500" : ""} 
-                      errorMessage={errors.secondaryPhone} 
-                    />
-                  </div>
-                )}
+                    <PhoneInput id="secondary-phone" value={secondaryPhone} onChange={value => {
+                  setSecondaryPhone(value);
+                  if (errors.secondaryPhone) {
+                    setErrors(prev => ({
+                      ...prev,
+                      secondaryPhone: undefined
+                    }));
+                  }
+                }} defaultCountry="LB" onValidationChange={setSecondaryPhoneValid} placeholder="Enter secondary phone" className={errors.secondaryPhone ? "border-red-500" : ""} errorMessage={errors.secondaryPhone} />
+                  </div>}
                 
                 {/* Customer Name Field */}
                 <div className="space-y-2">
                   <Label htmlFor="name" className={errors.name ? "text-red-500" : ""}>Full name</Label>
-                  <Input 
-                    id="name" 
-                    placeholder="Enter customer name" 
-                    value={name} 
-                    onChange={e => {
-                      setName(e.target.value);
-                      if (errors.name) {
-                        setErrors(prev => ({
-                          ...prev,
-                          name: undefined
-                        }));
-                      }
-                    }} 
-                    className={errors.name ? "border-red-500" : ""} 
-                  />
+                  <Input id="name" placeholder="Enter customer name" value={name} onChange={e => {
+                  setName(e.target.value);
+                  if (errors.name) {
+                    setErrors(prev => ({
+                      ...prev,
+                      name: undefined
+                    }));
+                  }
+                }} className={errors.name ? "border-red-500" : ""} />
                   {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
                 </div>
                 
                 {/* Area Selection - using the improved selector */}
                 <div className="space-y-2">
                   <Label htmlFor="area" className={errors.area ? "text-red-500" : ""}>Area</Label>
-                  <ImprovedAreaSelector 
-                    selectedGovernorateId={selectedGovernorateId}
-                    selectedCityId={selectedCityId}
-                    onGovernorateChange={handleGovernorateChange}
-                    onCityChange={handleCityChange}
-                    error={errors.area}
-                  />
+                  <ImprovedAreaSelector selectedGovernorateId={selectedGovernorateId} selectedCityId={selectedCityId} onGovernorateChange={handleGovernorateChange} onCityChange={handleCityChange} error={errors.area} />
                 </div>
                 
                 {/* Address Details */}
                 <div className="space-y-2">
                   <Label htmlFor="address" className={errors.address ? "text-red-500" : ""}>Address details</Label>
-                  <Input 
-                    id="address" 
-                    placeholder="Enter full address" 
-                    value={address} 
-                    onChange={e => {
-                      setAddress(e.target.value);
-                      if (errors.address) {
-                        setErrors(prev => ({
-                          ...prev,
-                          address: undefined
-                        }));
-                      }
-                    }} 
-                    className={errors.address ? "border-red-500" : ""} 
-                  />
+                  <Input id="address" placeholder="Enter full address" value={address} onChange={e => {
+                  setAddress(e.target.value);
+                  if (errors.address) {
+                    setErrors(prev => ({
+                      ...prev,
+                      address: undefined
+                    }));
+                  }
+                }} className={errors.address ? "border-red-500" : ""} />
                   {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
                 </div>
                 
                 {/* Work Address Checkbox */}
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="work-address" 
-                    checked={isWorkAddress} 
-                    onCheckedChange={checked => {
-                      if (typeof checked === 'boolean') {
-                        setIsWorkAddress(checked);
-                      }
-                    }} 
-                  />
+                  <Checkbox id="work-address" checked={isWorkAddress} onCheckedChange={checked => {
+                  if (typeof checked === 'boolean') {
+                    setIsWorkAddress(checked);
+                  }
+                }} />
                   <div className="flex items-center">
-                    <label 
-                      htmlFor="work-address" 
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
+                    <label htmlFor="work-address" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                       This is a work address
                     </label>
                     <TooltipProvider>
@@ -575,11 +473,7 @@ const CreateOrder = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle>Package</CardTitle>
-                  <Button 
-                    variant="link" 
-                    className="text-blue-600 text-sm p-0" 
-                    onClick={() => setGuidelinesModalOpen(true)}
-                  >
+                  <Button variant="link" className="text-blue-600 text-sm p-0" onClick={() => setGuidelinesModalOpen(true)}>
                     <AlertTriangle className="h-3.5 w-3.5 mr-1.5" />
                     Packaging Guidelines & Restrictions
                   </Button>
@@ -591,25 +485,14 @@ const CreateOrder = () => {
                     <Label htmlFor="description">Description</Label>
                     <span className="text-xs text-muted-foreground">Optional</span>
                   </div>
-                  <Input 
-                    id="description" 
-                    placeholder="Product name - code - color - size" 
-                    value={description} 
-                    onChange={e => setDescription(e.target.value)} 
-                  />
+                  <Input id="description" placeholder="Product name - code - color - size" value={description} onChange={e => setDescription(e.target.value)} />
                   <p className="text-xs text-muted-foreground">Provide a brief description of the package contents</p>
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="items-count">Number of items</Label>
                   <div className="relative">
-                    <Input 
-                      id="items-count" 
-                      type="number" 
-                      min={1} 
-                      value={itemsCount} 
-                      onChange={e => setItemsCount(parseInt(e.target.value) || 1)} 
-                    />
+                    <Input id="items-count" type="number" min={1} value={itemsCount} onChange={e => setItemsCount(parseInt(e.target.value) || 1)} />
                   </div>
                 </div>
               </CardContent>
@@ -617,20 +500,10 @@ const CreateOrder = () => {
             
             {/* Action Buttons - Position above the form end */}
             <div className="flex flex-col sm:flex-row items-center justify-end gap-3 bg-white p-4 rounded-lg border border-border/30 shadow-sm">
-              <Button 
-                variant="outline" 
-                onClick={() => handleSubmit(true)} 
-                disabled={createCustomer.isPending || createOrder.isPending}
-                className="w-full sm:w-auto border-gray-200 shadow-sm hover:bg-gray-50"
-              >
+              <Button variant="outline" onClick={() => handleSubmit(true)} disabled={createCustomer.isPending || createOrder.isPending} className="w-full sm:w-auto border-gray-200 shadow-sm hover:bg-gray-50">
                 Confirm & Create Another
               </Button>
-              <Button 
-                variant="default" 
-                onClick={() => handleSubmit(false)} 
-                disabled={createCustomer.isPending || createOrder.isPending} 
-                className="w-full sm:w-auto bg-[#DB271E] hover:bg-[#c0211a] text-white shadow-sm transition-all duration-300 ease-in-out"
-              >
+              <Button variant="default" onClick={() => handleSubmit(false)} disabled={createCustomer.isPending || createOrder.isPending} className="w-full sm:w-auto bg-[#DB271E] hover:bg-[#c0211a] text-white shadow-sm transition-all duration-300 ease-in-out">
                 <Check className="mr-1.5 h-4 w-4" />
                 Confirm Order
               </Button>
@@ -644,24 +517,10 @@ const CreateOrder = () => {
               <div className="space-y-3">
                 <h3 className="font-medium text-base">Order Type</h3>
                 <div className="grid grid-cols-2 gap-3">
-                  <Button 
-                    variant={orderType === 'shipment' ? "default" : "outline"} 
-                    onClick={() => setOrderType('shipment')} 
-                    className={cn(
-                      orderType === 'shipment' ? "bg-primary text-primary-foreground" : "",
-                      "shadow-sm h-10"
-                    )}
-                  >
+                  <Button variant={orderType === 'shipment' ? "default" : "outline"} onClick={() => setOrderType('shipment')} className={cn(orderType === 'shipment' ? "bg-primary text-primary-foreground" : "", "shadow-sm h-10")}>
                     Shipment
                   </Button>
-                  <Button 
-                    variant={orderType === 'exchange' ? "default" : "outline"} 
-                    onClick={() => setOrderType('exchange')} 
-                    className={cn(
-                      orderType === 'exchange' ? "bg-primary text-primary-foreground" : "",
-                      "shadow-sm h-10"
-                    )}
-                  >
+                  <Button variant={orderType === 'exchange' ? "default" : "outline"} onClick={() => setOrderType('exchange')} className={cn(orderType === 'exchange' ? "bg-primary text-primary-foreground" : "", "shadow-sm h-10")}>
                     Exchange
                   </Button>
                 </div>
@@ -669,37 +528,28 @@ const CreateOrder = () => {
               
               {/* Cash Collection - Moved higher up as requested */}
               <div className="pt-2">
-                <ImprovedCashCollectionFields
-                  enabled={cashCollection}
-                  onEnabledChange={setCashCollection}
-                  usdAmount={usdAmount}
-                  lbpAmount={lbpAmount}
-                  onUsdAmountChange={(value) => {
-                    setUsdAmount(value);
-                    if (errors.usdAmount || errors.lbpAmount) {
-                      setErrors(prev => ({
-                        ...prev,
-                        usdAmount: undefined,
-                        lbpAmount: undefined
-                      }));
-                    }
-                  }}
-                  onLbpAmountChange={(value) => {
-                    setLbpAmount(value);
-                    if (errors.usdAmount || errors.lbpAmount) {
-                      setErrors(prev => ({
-                        ...prev,
-                        usdAmount: undefined,
-                        lbpAmount: undefined
-                      }));
-                    }
-                  }}
-                  deliveryFees={deliveryFees}
-                  errors={{
-                    usdAmount: errors.usdAmount,
-                    lbpAmount: errors.lbpAmount,
-                  }}
-                />
+                <ImprovedCashCollectionFields enabled={cashCollection} onEnabledChange={setCashCollection} usdAmount={usdAmount} lbpAmount={lbpAmount} onUsdAmountChange={value => {
+                setUsdAmount(value);
+                if (errors.usdAmount || errors.lbpAmount) {
+                  setErrors(prev => ({
+                    ...prev,
+                    usdAmount: undefined,
+                    lbpAmount: undefined
+                  }));
+                }
+              }} onLbpAmountChange={value => {
+                setLbpAmount(value);
+                if (errors.usdAmount || errors.lbpAmount) {
+                  setErrors(prev => ({
+                    ...prev,
+                    usdAmount: undefined,
+                    lbpAmount: undefined
+                  }));
+                }
+              }} deliveryFees={deliveryFees} errors={{
+                usdAmount: errors.usdAmount,
+                lbpAmount: errors.lbpAmount
+              }} />
               </div>
 
               <Separator className="my-4" />
@@ -708,27 +558,15 @@ const CreateOrder = () => {
               <div className="space-y-3">
                 <h3 className="font-medium text-base">Package Type</h3>
                 <div className="grid grid-cols-3 gap-2">
-                  <Button 
-                    variant={packageType === "parcel" ? "default" : "outline"} 
-                    className="flex gap-1.5 h-10 text-sm py-2" 
-                    onClick={() => setPackageType("parcel")}
-                  >
+                  <Button variant={packageType === "parcel" ? "default" : "outline"} className="flex gap-1.5 h-10 text-sm py-2" onClick={() => setPackageType("parcel")}>
                     <Package className="h-4 w-4" />
                     Parcel
                   </Button>
-                  <Button 
-                    variant={packageType === "document" ? "default" : "outline"} 
-                    className="flex gap-1.5 h-10 text-sm py-2" 
-                    onClick={() => setPackageType("document")}
-                  >
+                  <Button variant={packageType === "document" ? "default" : "outline"} className="flex gap-1.5 h-10 text-sm py-2" onClick={() => setPackageType("document")}>
                     <FileText className="h-4 w-4" />
                     Document
                   </Button>
-                  <Button 
-                    variant={packageType === "bulky" ? "default" : "outline"} 
-                    className="flex gap-1.5 h-10 text-sm py-2" 
-                    onClick={() => setPackageType("bulky")}
-                  >
+                  <Button variant={packageType === "bulky" ? "default" : "outline"} className="flex gap-1.5 h-10 text-sm py-2" onClick={() => setPackageType("bulky")}>
                     <Package className="h-4 w-4" />
                     Bulky
                   </Button>
@@ -736,20 +574,13 @@ const CreateOrder = () => {
                 
                 {/* Allow Opening Checkbox */}
                 <div className="flex items-center space-x-2 pt-2">
-                  <Checkbox 
-                    id="allow-opening" 
-                    checked={allowOpening} 
-                    onCheckedChange={checked => {
-                      if (typeof checked === 'boolean') {
-                        setAllowOpening(checked);
-                      }
-                    }} 
-                  />
+                  <Checkbox id="allow-opening" checked={allowOpening} onCheckedChange={checked => {
+                  if (typeof checked === 'boolean') {
+                    setAllowOpening(checked);
+                  }
+                }} />
                   <div className="flex items-center">
-                    <label 
-                      htmlFor="allow-opening" 
-                      className="text-sm font-medium leading-none"
-                    >
+                    <label htmlFor="allow-opening" className="text-sm font-medium leading-none">
                       Allow customers to open packages
                     </label>
                     <TooltipProvider>
@@ -777,12 +608,7 @@ const CreateOrder = () => {
                       <Label htmlFor="order-reference">Order Reference</Label>
                       <span className="text-xs text-muted-foreground">Optional</span>
                     </div>
-                    <Input 
-                      id="order-reference" 
-                      placeholder="For easier tracking" 
-                      value={orderReference} 
-                      onChange={e => setOrderReference(e.target.value)}
-                    />
+                    <Input id="order-reference" placeholder="For easier tracking" value={orderReference} onChange={e => setOrderReference(e.target.value)} />
                   </div>
                   
                   <div className="space-y-2">
@@ -793,14 +619,7 @@ const CreateOrder = () => {
                       </Label>
                       <span className="text-xs text-muted-foreground">Optional</span>
                     </div>
-                    <Textarea 
-                      id="delivery-notes" 
-                      placeholder="Special instructions for delivery" 
-                      rows={3} 
-                      value={deliveryNotes} 
-                      onChange={e => setDeliveryNotes(e.target.value)}
-                      className="resize-none"
-                    />
+                    <Textarea id="delivery-notes" placeholder="Special instructions for delivery" rows={3} value={deliveryNotes} onChange={e => setDeliveryNotes(e.target.value)} className="resize-none" />
                   </div>
                 </div>
               </div>
@@ -811,8 +630,6 @@ const CreateOrder = () => {
       
       {/* Package Guidelines Modal */}
       <PackageGuidelinesModal open={guidelinesModalOpen} onOpenChange={setGuidelinesModalOpen} />
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default CreateOrder;
