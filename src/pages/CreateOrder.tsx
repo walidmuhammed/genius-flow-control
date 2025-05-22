@@ -499,15 +499,7 @@ const CreateOrder = () => {
             </Card>
             
             {/* Action Buttons - Position above the form end */}
-            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 bg-white p-4 rounded-lg border border-border/30 shadow-sm">
-              <Button variant="outline" onClick={() => handleSubmit(true)} disabled={createCustomer.isPending || createOrder.isPending} className="w-full sm:w-auto border-gray-200 shadow-sm hover:bg-gray-50">
-                Confirm & Create Another
-              </Button>
-              <Button variant="default" onClick={() => handleSubmit(false)} disabled={createCustomer.isPending || createOrder.isPending} className="w-full sm:w-auto bg-[#DB271E] hover:bg-[#c0211a] text-white shadow-sm transition-all duration-300 ease-in-out">
-                <Check className="mr-1.5 h-4 w-4" />
-                Confirm Order
-              </Button>
-            </div>
+            
           </div>
           
           {/* Right sidebar with order type, payment, and package type */}
