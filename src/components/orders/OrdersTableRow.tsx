@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Eye, Edit, Printer, Trash2, MoreHorizontal } from 'lucide-react';
+import { Eye, Edit, Printer, Ticket, Trash2, Ban, MoreHorizontal } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import { useRouter } from 'react-router-dom';
 
 export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid' | 'Awaiting Action';
 export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection' | 'Return';
@@ -106,6 +107,9 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   onViewDetails,
   showActions = true
 }) => {
+  const router = useRouter();
+  const isNewStatus = order.status === 'New';
+  
   const formatCurrency = (amount: number) => {
     return amount.toLocaleString(undefined, {
       minimumFractionDigits: 0,
@@ -117,6 +121,12 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
     if (onViewDetails) {
       onViewDetails(order);
     }
+  };
+
+  const handleCreateTicket = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Navigate to support page with order reference
+    router.navigate(`/support?order=${order.referenceNumber}`);
   };
 
   // Determine the shipment type for display
@@ -229,6 +239,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
               sideOffset={5}
               alignOffset={-5}
             >
+              {/* View Details - Always available */}
               <DropdownMenuItem 
                 className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
                 onClick={e => {
@@ -240,13 +251,19 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
                 <span>View Details</span>
               </DropdownMenuItem>
               
+              {/* Edit Order - Only for New status */}
               <DropdownMenuItem 
-                className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
+                className={cn(
+                  "rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm",
+                  !isNewStatus && "opacity-50 pointer-events-none"
+                )}
+                disabled={!isNewStatus}
               >
                 <Edit className="h-4 w-4 text-gray-500" />
                 <span>Edit Order</span>
               </DropdownMenuItem>
               
+              {/* Print Label - Always available */}
               <DropdownMenuItem 
                 className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
               >
@@ -254,18 +271,41 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
                 <span>Print Label</span>
               </DropdownMenuItem>
               
-              {/* Only show delete/cancel for New orders */}
-              {order.status === 'New' && (
-                <>
-                  <DropdownMenuSeparator className="my-1.5 bg-border/10" />
-                  <DropdownMenuItem 
-                    className="rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center gap-2 text-sm"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span>Cancel Order</span>
-                  </DropdownMenuItem>
-                </>
-              )}
+              {/* Create Ticket - Always available */}
+              <DropdownMenuItem 
+                className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
+                onClick={handleCreateTicket}
+              >
+                <Ticket className="h-4 w-4 text-gray-500" />
+                <span>Create Ticket</span>
+              </DropdownMenuItem>
+              
+              {/* Separator before destructive actions */}
+              <DropdownMenuSeparator className="my-1 bg-border/10" />
+              
+              {/* Cancel Order - Only for New status */}
+              <DropdownMenuItem 
+                className={cn(
+                  "rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center gap-2 text-sm",
+                  !isNewStatus && "opacity-50 pointer-events-none"
+                )}
+                disabled={!isNewStatus}
+              >
+                <Ban className="h-4 w-4" />
+                <span>Cancel Order</span>
+              </DropdownMenuItem>
+              
+              {/* Delete Order - Only for New status */}
+              <DropdownMenuItem 
+                className={cn(
+                  "rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center gap-2 text-sm",
+                  !isNewStatus && "opacity-50 pointer-events-none"
+                )}
+                disabled={!isNewStatus}
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>Delete Order</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </TableCell>
