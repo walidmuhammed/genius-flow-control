@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Info, Check, Plus, MapPin, Search, Phone, Package, FileText, ScrollText, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -355,9 +356,9 @@ const CreateOrder = () => {
   return (
     <MainLayout className="p-0">
       <div className="flex flex-col h-full" key={formKey}>
-        {/* Redesigned Header with back button and actions */}
-        <div className="sticky top-0 border-b bg-white z-10 shadow-sm">
-          <div className="container max-w-screen-2xl mx-auto px-4 py-4 flex items-center justify-between">
+        {/* Redesigned Header with back button and title */}
+        <div className="border-b bg-white shadow-sm">
+          <div className="container max-w-screen-2xl mx-auto px-6 py-5">
             <div className="flex items-center gap-3">
               <Button 
                 variant="ghost" 
@@ -368,25 +369,6 @@ const CreateOrder = () => {
                 <X className="h-5 w-5" />
               </Button>
               <h1 className="text-xl font-semibold">Create New Order</h1>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => handleSubmit(true)} 
-                disabled={createCustomer.isPending || createOrder.isPending}
-                className="border-gray-200 shadow-sm hover:bg-gray-50"
-              >
-                Confirm & Create Another
-              </Button>
-              <Button 
-                variant="default" 
-                onClick={() => handleSubmit(false)} 
-                disabled={createCustomer.isPending || createOrder.isPending} 
-                className="bg-primary hover:bg-primary/90 shadow-sm"
-              >
-                <Check className="mr-1.5 h-4 w-4" />
-                Confirm Order
-              </Button>
             </div>
           </div>
         </div>
@@ -615,6 +597,27 @@ const CreateOrder = () => {
                 </div>
               </CardContent>
             </Card>
+            
+            {/* Action Buttons - Moved from header to bottom of main content */}
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-end gap-3 sticky bottom-6 px-2">
+              <Button 
+                variant="outline" 
+                onClick={() => handleSubmit(true)} 
+                disabled={createCustomer.isPending || createOrder.isPending}
+                className="w-full sm:w-auto border-gray-200 shadow-sm hover:bg-gray-50"
+              >
+                Confirm & Create Another
+              </Button>
+              <Button 
+                variant="default" 
+                onClick={() => handleSubmit(false)} 
+                disabled={createCustomer.isPending || createOrder.isPending} 
+                className="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-sm"
+              >
+                <Check className="mr-1.5 h-4 w-4" />
+                Confirm Order
+              </Button>
+            </div>
           </div>
           
           {/* Right sidebar with order type, payment, and now package type and additional info */}
@@ -649,7 +652,7 @@ const CreateOrder = () => {
 
               <Separator className="my-4" />
               
-              {/* Package Type Section - Moved from main content */}
+              {/* Package Type Section */}
               <div className="space-y-3">
                 <h3 className="font-medium text-base">Package Type</h3>
                 <div className="grid grid-cols-3 gap-2">
