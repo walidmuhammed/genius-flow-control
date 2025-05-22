@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Download, Filter, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
@@ -13,8 +13,6 @@ import {
 import OrdersTableRow, { Order } from './OrdersTableRow';
 import OrderDetailsDialog from './OrderDetailsDialog';
 import { useScreenSize } from '@/hooks/useScreenSize';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import OrdersTableMobile from './OrdersTableMobile';
 
 interface OrdersTableProps {

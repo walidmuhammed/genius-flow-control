@@ -1,13 +1,12 @@
 
-import React, { useState, useMemo } from 'react';
-import { FileBarChart, PackageSearch, CheckCheck, AlertCircle, Filter, Search, Download } from 'lucide-react';
+import React, { useState, useMemo, useCallback } from 'react';
+import { FileBarChart, PackageSearch, CheckCheck, AlertCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import OrdersTable from '@/components/orders/OrdersTable';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Order } from '@/components/orders/OrdersTableRow';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Sheet,
   SheetContent,
@@ -16,6 +15,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { OrdersSearch } from '@/components/orders/OrdersSearch';
+import { OrdersDateFilter } from '@/components/orders/OrdersDateFilter';
+import { ImportOrdersModal } from '@/components/orders/ImportOrdersModal';
+import { ExportOrdersDropdown } from '@/components/orders/ExportOrdersDropdown';
 
 // Mock data for orders with proper structure to match Order type
 const mockOrders: Order[] = [
@@ -186,6 +189,54 @@ const mockOrders: Order[] = [
     status: "Paid",
     lastUpdate: "2023-05-14T14:15:00Z",
     note: "Payment received in full"
+  },
+  {
+    id: "ORD-008",
+    referenceNumber: "REF78901",
+    type: "Deliver",
+    customer: {
+      name: "Olivia Wilson",
+      phone: "+961 78 345 678"
+    },
+    location: {
+      city: "Beirut",
+      area: "Achrafieh"
+    },
+    amount: {
+      valueLBP: 3000000,
+      valueUSD: 100
+    },
+    deliveryCharge: {
+      valueLBP: 150000,
+      valueUSD: 5
+    },
+    status: "Awaiting Action",
+    lastUpdate: "2023-05-13T16:45:00Z",
+    note: "Customer requested delivery reschedule"
+  },
+  {
+    id: "ORD-009",
+    referenceNumber: "REF89012",
+    type: "Exchange",
+    customer: {
+      name: "Liam Davis",
+      phone: "+961 3 567 890"
+    },
+    location: {
+      city: "Zahle",
+      area: "Center"
+    },
+    amount: {
+      valueLBP: 4800000,
+      valueUSD: 160
+    },
+    deliveryCharge: {
+      valueLBP: 225000,
+      valueUSD: 7.5
+    },
+    status: "Awaiting Action",
+    lastUpdate: "2023-05-12T11:30:00Z",
+    note: "Product damaged on delivery"
   }
 ];
 
@@ -193,21 +244,69 @@ const OrdersList: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [dateRange, setDateRange] = useState<{from?: Date, to?: Date}>({});
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const { isMobile, isTablet } = useScreenSize();
   
-  const filteredOrders = useMemo(() => {
-    if (activeTab === 'all') {
-      return mockOrders;
-    } else if (activeTab === 'awaitingAction') {
-      // For "Awaiting Action", filter orders that need attention
-      return mockOrders.filter(order => 
-        order.status === "Unsuccessful" || 
-        order.status === "Returned"
+  // Search function for orders
+  const searchOrders = (orders: Order[], query: string) => {
+    if (!query.trim()) return orders;
+    
+    const lowercaseQuery = query.toLowerCase().trim();
+    
+    return orders.filter(order => {
+      return (
+        // Search by Order ID
+        order.id.toLowerCase().includes(lowercaseQuery) ||
+        // Search by Reference Number
+        order.referenceNumber.toLowerCase().includes(lowercaseQuery) ||
+        // Search by Customer Name
+        order.customer.name.toLowerCase().includes(lowercaseQuery) ||
+        // Search by Phone
+        order.customer.phone.toLowerCase().includes(lowercaseQuery) ||
+        // Search by Location
+        order.location.city.toLowerCase().includes(lowercaseQuery) ||
+        order.location.area.toLowerCase().includes(lowercaseQuery) ||
+        // Search by Amount (as string)
+        order.amount.valueUSD.toString().includes(lowercaseQuery) ||
+        // Search by Status
+        order.status.toLowerCase().includes(lowercaseQuery) ||
+        // Search by Type
+        order.type.toLowerCase().includes(lowercaseQuery) ||
+        // Search by Note
+        (order.note && order.note.toLowerCase().includes(lowercaseQuery))
       );
+    });
+  };
+  
+  // Filter orders by date range
+  const filterByDateRange = (orders: Order[], from?: Date, to?: Date) => {
+    if (!from && !to) return orders;
+    
+    return orders.filter(order => {
+      const orderDate = new Date(order.lastUpdate);
+      
+      if (from && to) {
+        return orderDate >= from && orderDate <= to;
+      } else if (from) {
+        return orderDate >= from;
+      } else if (to) {
+        return orderDate <= to;
+      }
+      
+      return true;
+    });
+  };
+  
+  // Filter by status based on active tab
+  const filterByStatus = (orders: Order[]) => {
+    if (activeTab === 'all') {
+      return orders;
+    } else if (activeTab === 'awaitingAction') {
+      return orders.filter(order => order.status === 'Awaiting Action');
     } else {
-      // For other tabs, filter by the exact status
-      return mockOrders.filter(order => {
+      return orders.filter(order => {
         switch (activeTab) {
           case 'new':
             return order.status === 'New';
@@ -228,7 +327,27 @@ const OrdersList: React.FC = () => {
         }
       });
     }
-  }, [activeTab]);
+  };
+  
+  // Combined filtering and searching
+  const filteredOrders = useMemo(() => {
+    // First filter by status
+    const statusFiltered = filterByStatus(mockOrders);
+    
+    // Then filter by date range
+    const dateFiltered = filterByDateRange(statusFiltered, dateRange.from, dateRange.to);
+    
+    // Finally filter by search query
+    return searchOrders(dateFiltered, searchQuery);
+  }, [activeTab, searchQuery, dateRange.from, dateRange.to]);
+  
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
+  
+  const handleDateChange = useCallback((range: {from: Date | undefined, to: Date | undefined}) => {
+    setDateRange(range);
+  }, []);
   
   const toggleSelectOrder = (orderId: string) => {
     setSelectedOrders(prev => 
@@ -310,7 +429,6 @@ const OrdersList: React.FC = () => {
                  activeTab === 'returned' ? 'Returned' :
                  activeTab === 'awaitingAction' ? 'Awaiting Action' :
                  activeTab === 'paid' ? 'Paid' : 'Filter'}</span>
-          <Filter className="h-4 w-4" />
         </Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[85vh] rounded-t-xl">
@@ -420,36 +538,40 @@ const OrdersList: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Orders</h1>
         <div className="flex gap-2 w-full sm:w-auto">
-          {isMobile && (
-            <Button variant="outline" size="sm" className="flex-1">
-              Import
-            </Button>
-          )}
-          <Button className="bg-[#DB271E] text-white flex-1 sm:flex-none">
-            Create Order
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1 sm:flex-none"
+            onClick={() => setImportModalOpen(true)}
+          >
+            Import
           </Button>
+          <ExportOrdersDropdown 
+            selectedOrdersCount={selectedOrders.length}
+            totalFilteredCount={filteredOrders.length}
+            className="flex-1 sm:flex-none"
+          />
         </div>
       </div>
       
-      {/* Mobile search and filter row */}
+      {/* Mobile search, filter, and date range */}
       {isMobile && (
-        <div className="mt-4 flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-            <Input 
-              placeholder="Search orders..." 
-              className="pl-10" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        <div className="mt-4 flex flex-col gap-2">
+          <OrdersSearch onSearch={handleSearch} />
+          <div className="flex gap-2">
+            {renderMobileTabsMenu()}
+            <OrdersDateFilter onDateChange={handleDateChange} className="flex-1" />
           </div>
-          {renderMobileTabsMenu()}
         </div>
       )}
       
-      {/* Desktop tabs */}
+      {/* Desktop search and filters */}
       {!isMobile && (
-        <div className="mt-6">
+        <div className="mt-4">
+          <div className="flex gap-4 mb-4">
+            <OrdersSearch onSearch={handleSearch} className="max-w-md" />
+            <OrdersDateFilter onDateChange={handleDateChange} />
+          </div>
           <div className="flex gap-4 border-b border-border/10 overflow-x-auto">
             <button 
               className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'all' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
@@ -523,6 +645,12 @@ const OrdersList: React.FC = () => {
           {renderEmptyState()}
         </div>
       )}
+      
+      {/* Import Modal */}
+      <ImportOrdersModal 
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+      />
       
       {/* Add padding at the bottom for mobile to account for the navigation bar */}
       {isMobile && <div className="h-16" />}

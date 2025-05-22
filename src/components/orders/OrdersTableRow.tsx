@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { Eye, MoreHorizontal, Printer, MessageSquare } from 'lucide-react';
+import { Eye, Edit, MoreHorizontal, Printer, MessageSquare } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid';
+export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid' | 'Awaiting Action';
 export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection' | 'Return';
 
 export interface Order {
@@ -63,6 +63,8 @@ const getStatusBadge = (status: OrderStatus) => {
       return <span className="px-3 py-1 bg-sky-50 text-sky-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-sky-500"></span>Returned</span>;
     case 'Paid':
       return <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>Paid</span>;
+    case 'Awaiting Action':
+      return <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-amber-600"></span>Awaiting Action</span>;
     default:
       return <span className="px-3 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-gray-400"></span>{status}</span>;
   }
@@ -172,7 +174,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
         </div>
       </TableCell>
       <TableCell className="py-4">
-        {order.amount.valueUSD > 0 || order.amount.valueLBP > 0 ? (
+        {order.amount && (order.amount.valueUSD > 0 || order.amount.valueLBP > 0) ? (
           <div className="flex flex-col">
             <span className="text-gray-900 font-medium">
               ${formatCurrency(order.amount.valueUSD)}
@@ -189,14 +191,16 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
         )}
       </TableCell>
       <TableCell className="py-4">
-        <div className="flex flex-col">
-          <span className="text-gray-900 font-medium">
-            ${formatCurrency(order.deliveryCharge.valueUSD)}
-          </span>
-          <span className="text-xs mt-0.5 font-medium text-gray-800">
-            {formatCurrency(order.deliveryCharge.valueLBP)} LBP
-          </span>
-        </div>
+        {order.deliveryCharge && (
+          <div className="flex flex-col">
+            <span className="text-gray-900 font-medium">
+              ${formatCurrency(order.deliveryCharge.valueUSD)}
+            </span>
+            <span className="text-xs mt-0.5 font-medium text-gray-800">
+              {formatCurrency(order.deliveryCharge.valueLBP)} LBP
+            </span>
+          </div>
+        )}
       </TableCell>
       <TableCell className="py-4">
         {getStatusBadge(order.status)}
@@ -204,48 +208,56 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
       {showActions && (
         <TableCell className="py-4">
           <div className="flex justify-center items-center gap-1 transition-all">
-            {/* Only 3-dot menu is visible by default */}
-            <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-              {/* Button to view details */}
-              <button 
-                className="h-8 w-8 rounded-lg hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center justify-center transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (onViewDetails) {
-                    onViewDetails(order);
-                  }
-                }}
-              >
-                <Eye className="h-4 w-4" />
-              </button>
-              
-              {/* Print button visible on hover */}
-              <button 
-                className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Printer className="h-4 w-4" />
-              </button>
-            </div>
-            
-            {/* 3-dot menu always visible */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            {/* Actions container with improved hover effect */}
+            <div className="flex items-center relative">
+              {/* Hidden actions that appear on hover */}
+              <div className="absolute right-full pr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
+                <button 
+                  className="h-8 w-8 rounded-lg hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center justify-center transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onViewDetails) {
+                      onViewDetails(order);
+                    }
+                  }}
+                >
+                  <Eye className="h-4 w-4" />
+                </button>
+                
+                <button 
+                  className="h-8 w-8 rounded-lg hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center justify-center transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Edit className="h-4 w-4" />
+                </button>
+                
                 <button 
                   className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  <Printer className="h-4 w-4" />
                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px] shadow-lg border-border/10 rounded-lg p-1">
-                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">View Order Details</DropdownMenuItem>
-                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">Edit Order</DropdownMenuItem>
-                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">Print Shipping Label</DropdownMenuItem>
-                <DropdownMenuSeparator className="my-1.5 bg-border/10" />
-                <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E]">Cancel Order</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </div>
+              
+              {/* 3-dot menu always visible */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button 
+                    className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px] shadow-lg border-border/10 rounded-lg p-1 bg-white">
+                  <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">View Order Details</DropdownMenuItem>
+                  <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">Edit Order</DropdownMenuItem>
+                  <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">Print Shipping Label</DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-1.5 bg-border/10" />
+                  <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E]">Cancel Order</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </TableCell>
       )}

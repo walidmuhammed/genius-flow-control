@@ -4,13 +4,14 @@ import { Order } from './OrdersTableRow';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Eye, Printer, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye, Printer, MoreVertical, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
 interface OrdersTableMobileProps {
@@ -46,6 +47,8 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
         return <Badge className={`${baseClasses} bg-yellow-50 text-yellow-700`}>{status}</Badge>;
       case 'paid':
         return <Badge className={`${baseClasses} bg-teal-50 text-teal-700`}>{status}</Badge>;
+      case 'awaiting action':
+        return <Badge className={`${baseClasses} bg-amber-100 text-amber-800`}>{status}</Badge>;
       default:
         return <Badge className={`${baseClasses} bg-gray-50 text-gray-700`}>{status}</Badge>;
     }
@@ -112,6 +115,13 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
                 size="sm"
                 className="h-8 w-8 p-0"
               >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+              >
                 <Printer className="h-4 w-4" />
               </Button>
               <DropdownMenu>
@@ -124,10 +134,12 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="bg-white">
+                  <DropdownMenuItem>View Order Details</DropdownMenuItem>
                   <DropdownMenuItem>Edit Order</DropdownMenuItem>
-                  <DropdownMenuItem>Cancel Order</DropdownMenuItem>
-                  <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                  <DropdownMenuItem>Print Shipping Label</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-red-600">Cancel Order</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
