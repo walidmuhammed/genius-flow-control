@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { ImprovedAreaSelector } from '@/components/orders/ImprovedAreaSelector';
+import { AreaSelector } from '@/components/orders/AreaSelector';
 import { ImprovedCashCollectionFields } from '@/components/orders/ImprovedCashCollectionFields';
 import { PackageGuidelinesModal } from '@/components/orders/PackageGuidelinesModal';
 import { useGovernorates } from '@/hooks/use-governorates';
@@ -339,9 +339,29 @@ const CreateOrder = () => {
   };
   return <MainLayout className="p-0">
       <div className="flex flex-col h-full" key={formKey}>
-        {/* Simplified Header with back button and title */}
-        <div className="border-b bg-white shadow-sm">
-          
+        {/* Header with title and action buttons */}
+        <div className="border-b bg-white shadow-sm px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-semibold tracking-tight">Create a New Delivery Order</h1>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleSubmit(true)}
+                className="whitespace-nowrap"
+              >
+                Confirm & Create Another
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={() => handleSubmit(false)}
+                className="whitespace-nowrap"
+              >
+                Confirm Order
+              </Button>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-1 overflow-hidden">
@@ -424,7 +444,14 @@ const CreateOrder = () => {
                 {/* Area Selection - using the improved selector */}
                 <div className="space-y-2">
                   <Label htmlFor="area" className={errors.area ? "text-red-500" : ""}>Area</Label>
-                  <ImprovedAreaSelector selectedGovernorateId={selectedGovernorateId} selectedCityId={selectedCityId} onGovernorateChange={handleGovernorateChange} onCityChange={handleCityChange} error={errors.area} />
+                  <AreaSelector 
+                    selectedArea={selectedCityName}
+                    selectedGovernorate={selectedGovernorateName}
+                    onAreaSelected={(governorateName, cityName, governorateId, cityId) => {
+                      if (governorateId) handleGovernorateChange(governorateId, governorateName);
+                      if (cityId) handleCityChange(cityId, cityName, governorateName);
+                    }}
+                  />
                 </div>
                 
                 {/* Address Details */}
@@ -497,9 +524,6 @@ const CreateOrder = () => {
                 </div>
               </CardContent>
             </Card>
-            
-            {/* Action Buttons - Position above the form end */}
-            
           </div>
           
           {/* Right sidebar with order type, payment, and package type */}

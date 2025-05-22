@@ -3,10 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Search, MapPin } from 'lucide-react';
+import { Search, MapPin, Check } from 'lucide-react';
 import { useGovernorates } from '@/hooks/use-governorates';
 import { useCitiesByGovernorate } from '@/hooks/use-cities';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface AreaSelectorProps {
   selectedArea: string;
@@ -25,6 +26,17 @@ const AreaSelector: React.FC<AreaSelectorProps> = ({
   
   const { data: governorates, isLoading: governoratesLoading, error: governoratesError } = useGovernorates();
   const { data: cities, isLoading: citiesLoading, error: citiesError } = useCitiesByGovernorate(activeGovernorate || undefined);
+  
+  // Lebanese governorates to show
+  const lebanonGovernorates = [
+    "Beirut", 
+    "Mount Lebanon", 
+    "North Lebanon", 
+    "Akkar", 
+    "Beqaa", 
+    "Baalbek-Hermel", 
+    "South Lebanon"
+  ];
   
   useEffect(() => {
     if (governoratesError) {
@@ -46,8 +58,11 @@ const AreaSelector: React.FC<AreaSelectorProps> = ({
   };
   
   const filteredGovernorates = searchQuery 
-    ? governorates?.filter(g => g.name.toLowerCase().includes(searchQuery.toLowerCase())) || []
-    : governorates || [];
+    ? governorates?.filter(g => 
+        g.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
+        lebanonGovernorates.includes(g.name)
+      ) || []
+    : governorates?.filter(g => lebanonGovernorates.includes(g.name)) || [];
     
   const filteredCities = searchQuery && cities
     ? cities.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -83,6 +98,7 @@ const AreaSelector: React.FC<AreaSelectorProps> = ({
               className="pl-9" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
             />
           </div>
           
@@ -100,10 +116,18 @@ const AreaSelector: React.FC<AreaSelectorProps> = ({
                   {filteredGovernorates.map((governorate) => (
                     <div
                       key={governorate.id}
-                      className={`p-2.5 text-sm cursor-pointer hover:bg-gray-50 ${activeGovernorate === governorate.id ? 'bg-blue-50 text-blue-600' : ''}`}
+                      className={cn(
+                        "p-2.5 text-sm cursor-pointer hover:bg-gray-50", 
+                        activeGovernorate === governorate.id ? 'bg-blue-50 text-blue-600' : ''
+                      )}
                       onClick={() => setActiveGovernorate(governorate.id)}
                     >
-                      {governorate.name}
+                      <div className="flex items-center justify-between">
+                        <span>{governorate.name}</span>
+                        {activeGovernorate === governorate.id && 
+                          <Check className="h-4 w-4 text-blue-600" />
+                        }
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -154,4 +178,4 @@ const AreaSelector: React.FC<AreaSelectorProps> = ({
   );
 };
 
-export default AreaSelector;
+export { AreaSelector };
