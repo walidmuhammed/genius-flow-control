@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { DayPickerRangeProps } from 'react-day-picker';
 
 // Update the type to match react-day-picker's DateRange type
 interface DateRange {
@@ -157,15 +156,15 @@ export function DateRangePicker({ className, onDateChange }: {
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="end">
         <div className="flex flex-col md:flex-row">
-          {/* Presets */}
-          <div className="border-b md:border-b-0 md:border-r p-3 space-y-2 bg-white w-full md:w-[160px]">
-            <h3 className="font-medium text-sm mb-3">Date presets</h3>
+          {/* Presets - more compact */}
+          <div className="border-b md:border-b-0 md:border-r p-2 space-y-1 bg-white w-full md:w-[140px]">
+            <h3 className="font-medium text-sm mb-2 px-1">Date presets</h3>
             {presets.map(preset => (
               <Button 
                 key={preset.name} 
                 variant="ghost" 
                 size="sm" 
-                className="w-full justify-start text-left font-normal" 
+                className="w-full justify-start text-left font-normal h-8 px-2" 
                 onClick={() => handleSelectPreset(preset)}
               >
                 {preset.label}
@@ -173,36 +172,36 @@ export function DateRangePicker({ className, onDateChange }: {
             ))}
           </div>
           
-          {/* Calendar */}
-          <div className="p-3">
+          {/* Calendar - show two months */}
+          <div className="p-2">
             <Calendar 
               mode="range" 
               selected={date} 
               onSelect={handleSelect} 
-              numberOfMonths={1} 
-              className="p-3 pointer-events-auto" 
+              numberOfMonths={2} 
+              className="p-2 pointer-events-auto" 
             />
             
             {/* Instruction text if selecting range */}
             {date.from && !date.to && (
-              <p className="text-center text-sm text-muted-foreground mt-2">
+              <p className="text-center text-sm text-muted-foreground mt-1">
                 Please select an end date
               </p>
             )}
             
             {/* Actions */}
-            <div className="flex items-center justify-between pt-3 border-t mt-3">
-              <Button variant="ghost" size="sm" className="text-sm" onClick={handleClear}>
-                <X className="h-4 w-4 mr-1" /> Clear
+            <div className="flex items-center justify-between pt-2 border-t mt-2">
+              <Button variant="ghost" size="sm" className="text-sm h-8" onClick={handleClear}>
+                <X className="h-3.5 w-3.5 mr-1" /> Clear
               </Button>
               
               <Button 
                 size="sm" 
                 onClick={handleApply} 
-                className="text-sm bg-[#ff243a] hover:bg-[#e01e32]"
+                className="text-sm bg-[#ff243a] hover:bg-[#e01e32] h-8"
                 disabled={!date.from}
               >
-                <Check className="h-4 w-4 mr-1" /> Apply
+                <Check className="h-3.5 w-3.5 mr-1" /> Apply
               </Button>
             </div>
           </div>

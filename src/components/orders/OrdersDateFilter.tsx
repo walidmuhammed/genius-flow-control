@@ -160,17 +160,18 @@ export const OrdersDateFilter: React.FC<OrdersDateFilterProps> = ({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0 bg-white shadow-lg" align="start">
           <div className="flex max-h-[500px] flex-col md:flex-row">
-            <div className="border-b md:border-b-0 md:border-r p-3 md:min-w-[150px] md:max-h-none">
-              <h4 className="font-medium text-sm px-2 py-1.5">Preset Ranges</h4>
-              <ScrollArea className="h-full max-h-[200px] md:max-h-[350px] overflow-y-auto pr-2">
-                <div className="space-y-1 pt-1">
+            {/* Presets column - more compact */}
+            <div className="border-b md:border-b-0 md:border-r p-2 md:min-w-[140px] md:max-w-[140px]">
+              <h4 className="font-medium text-sm px-2 py-1">Preset Ranges</h4>
+              <ScrollArea className="h-full max-h-[180px] md:max-h-[350px] overflow-y-auto pr-1">
+                <div className="space-y-0.5">
                   {presets.map((preset) => (
                     <Button
                       key={preset.name}
                       variant="ghost"
                       size="sm"
                       className={cn(
-                        "w-full justify-start font-normal text-sm",
+                        "w-full justify-start font-normal text-sm h-8 px-2",
                         selectedPreset === preset.name && "bg-muted"
                       )}
                       onClick={() => handlePresetClick(preset)}
@@ -181,38 +182,42 @@ export const OrdersDateFilter: React.FC<OrdersDateFilterProps> = ({
                 </div>
               </ScrollArea>
             </div>
-            <div className="p-3">
+            
+            {/* Calendar - show two months */}
+            <div className="p-2">
               <CalendarComponent
                 mode="range"
                 selected={selectedDateRange}
                 onSelect={handleCalendarSelect}
-                numberOfMonths={1}
+                numberOfMonths={2}
                 className="pointer-events-auto"
                 initialFocus
               />
               {selectedDateRange.from && !selectedDateRange.to && (
-                <p className="text-center text-sm text-muted-foreground mt-3">
+                <p className="text-center text-sm text-muted-foreground mt-2">
                   Now select the end date
                 </p>
               )}
             </div>
           </div>
-          <div className="border-t border-border/10 p-3 flex justify-between">
+          
+          {/* Footer actions */}
+          <div className="border-t border-border/10 p-2 flex justify-between">
             <Button 
               size="sm"
               variant="ghost"
-              className="text-sm"
+              className="text-sm h-8"
               onClick={handleClear}
             >
-              <X className="h-4 w-4 mr-1" /> Clear
+              <X className="h-3.5 w-3.5 mr-1" /> Clear
             </Button>
             <Button 
               size="sm"
               onClick={() => setOpen(false)}
               disabled={!selectedDateRange.from}
-              className="bg-[#ff243a] hover:bg-[#e01e32] text-white"
+              className="bg-[#ff243a] hover:bg-[#e01e32] text-white h-8"
             >
-              <Check className="h-4 w-4 mr-1" /> Apply
+              <Check className="h-3.5 w-3.5 mr-1" /> Apply
             </Button>
           </div>
         </PopoverContent>
