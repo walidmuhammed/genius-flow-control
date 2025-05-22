@@ -56,6 +56,7 @@ export function PhoneInput({
   const [open, setOpen] = React.useState(false);
   const [error, setError] = React.useState<string>("");
   const [isFocused, setIsFocused] = React.useState(false);
+  const [nationalNumber, setNationalNumber] = React.useState<string>("");
   
   // Auto-detect country from input value
   React.useEffect(() => {
@@ -67,6 +68,9 @@ export function PhoneInput({
           if (onCountryChange) {
             onCountryChange(parsed.country);
           }
+          
+          // Extract the national number from the full number
+          setNationalNumber(parsed.nationalNumber || "");
         }
       } catch (e) {
         // Silent fail on parse error
@@ -110,23 +114,11 @@ export function PhoneInput({
   const handleCountryChange = (country: CountryCode) => {
     const dialCode = `+${getCountryCallingCode(country)}`;
     
-    // If current value has a dial code, replace it
-    let newValue = value;
-    if (value.startsWith("+")) {
-      try {
-        const parsed = parsePhoneNumber(value);
-        newValue = parsed?.nationalNumber ? dialCode + " " + parsed.nationalNumber : dialCode;
-      } catch (e) {
-        newValue = dialCode;
-      }
-    } else if (!value || value === "") {
-      newValue = dialCode;
-    } else {
-      newValue = dialCode + " " + value.replace(/^\+\d+\s?/, "");
-    }
-    
+    // Keep only the national number part without dial code
+    let newValue = nationalNumber;
     setSelectedCountry(country);
-    onChange(newValue);
+    onChange(dialCode + (newValue ? " " + newValue : ""));
+    
     if (onCountryChange) {
       onCountryChange(country);
     }
@@ -137,19 +129,24 @@ export function PhoneInput({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let inputValue = e.target.value.replace(/\s+/g, "");
     
-    // If the user clears the input, reset to dial code
-    if (!inputValue || inputValue === "") {
-      onChange(`+${getCountryCallingCode(selectedCountry)}`);
-      return;
+    // Extract just the national number (no dial code)
+    let newNationalNumber = inputValue;
+    
+    // If user tries to enter a new plus sign or country code, ignore it
+    if (inputValue.includes("+")) {
+      newNationalNumber = inputValue.split("+")[1] || "";
+      // Remove country code if present
+      const countryCode = getCountryCallingCode(selectedCountry);
+      if (newNationalNumber.startsWith(countryCode)) {
+        newNationalNumber = newNationalNumber.substring(countryCode.length);
+      }
     }
     
-    // Handle case where user deletes the plus sign
-    if (!inputValue.startsWith("+")) {
-      inputValue = `+${inputValue}`;
-    }
+    setNationalNumber(newNationalNumber);
     
-    // Format as you type using AsYouType
-    const formattedNumber = new AsYouType(selectedCountry).input(inputValue);
+    // Always prepend the dial code
+    const dialCode = `+${getCountryCallingCode(selectedCountry)}`;
+    const formattedNumber = dialCode + (newNationalNumber ? " " + newNationalNumber : "");
     onChange(formattedNumber);
   };
   
@@ -199,6 +196,7 @@ export function PhoneInput({
                       <CommandItem
                         key={country.value}
                         onSelect={() => handleCountryChange(country.value)}
+                        className="flex items-center gap-2 py-2"
                       >
                         <span className="mr-2 text-base">{getFlagEmoji(country.value)}</span>
                         <span className="flex-1 truncate">{country.label}</span>
@@ -222,7 +220,7 @@ export function PhoneInput({
             error && "border-red-500 focus-visible:ring-red-500",
             inputClassName
           )}
-          value={value}
+          value={nationalNumber}
           onChange={handleInputChange}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
