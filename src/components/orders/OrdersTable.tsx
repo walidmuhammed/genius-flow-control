@@ -105,8 +105,9 @@ const OrdersTable: React.FC<OrdersTableProps> = ({
                 <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Amount</TableHead>
                 <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Delivery Fees</TableHead>
                 <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
+                {/* Removed the "Actions" title from the Actions column */}
                 {showActions && (
-                  <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider text-center">Actions</TableHead>
+                  <TableHead className="w-20"></TableHead>
                 )}
               </TableRow>
             </TableHeader>

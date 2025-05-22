@@ -554,24 +554,26 @@ const OrdersList: React.FC = () => {
         </div>
       </div>
       
-      {/* Mobile search, filter, and date range */}
-      {isMobile && (
-        <div className="mt-4 flex flex-col gap-2">
-          <OrdersSearch onSearch={handleSearch} />
+      {/* Unified full-width search and filter bar - mobile and desktop */}
+      <div className="mt-4 space-y-4">
+        {/* Full width search bar */}
+        <div className="flex flex-col md:flex-row gap-3">
+          <OrdersSearch 
+            onSearch={handleSearch}
+            className="flex-1"
+          />
+          <OrdersDateFilter onDateChange={handleDateChange} className="w-full md:w-auto" />
+        </div>
+        
+        {/* Mobile status filter */}
+        {isMobile && (
           <div className="flex gap-2">
             {renderMobileTabsMenu()}
-            <OrdersDateFilter onDateChange={handleDateChange} className="flex-1" />
           </div>
-        </div>
-      )}
-      
-      {/* Desktop search and filters */}
-      {!isMobile && (
-        <div className="mt-4">
-          <div className="flex gap-4 mb-4">
-            <OrdersSearch onSearch={handleSearch} className="max-w-md" />
-            <OrdersDateFilter onDateChange={handleDateChange} />
-          </div>
+        )}
+        
+        {/* Desktop tabs */}
+        {!isMobile && (
           <div className="flex gap-4 border-b border-border/10 overflow-x-auto">
             <button 
               className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'all' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
@@ -628,8 +630,8 @@ const OrdersList: React.FC = () => {
               Paid
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
       
       {/* Render orders table or empty state */}
       {filteredOrders.length > 0 ? (

@@ -171,22 +171,26 @@ export const OrdersDateFilter: React.FC<OrdersDateFilterProps> = ({
     <div className={cn("relative", className)}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="flex items-center gap-2 whitespace-nowrap">
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2 whitespace-nowrap w-full md:w-auto shadow-sm border-border/20"
+          >
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium">{formatDisplayText()}</span>
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 bg-white" align="start">
-          <div className="flex">
+        <PopoverContent className="w-auto p-0 bg-white shadow-lg" align="start">
+          <div className="flex max-h-[500px] flex-col md:flex-row">
             <div className="border-r border-border/10 p-3 space-y-1 min-w-[150px] max-h-[350px] overflow-y-auto">
+              <h4 className="font-medium text-sm px-2 py-1.5">Preset Ranges</h4>
               {presets.map((preset) => (
                 <Button
                   key={preset.name}
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "w-full justify-start font-normal",
+                    "w-full justify-start font-normal text-sm",
                     selectedPreset === preset.name && "bg-muted"
                   )}
                   onClick={() => handlePresetClick(preset)}
@@ -195,15 +199,43 @@ export const OrdersDateFilter: React.FC<OrdersDateFilterProps> = ({
                 </Button>
               ))}
             </div>
-            <div>
+            <div className="p-3">
               <CalendarComponent
                 mode="range"
                 selected={selectedDateRange}
                 onSelect={handleCalendarSelect}
                 numberOfMonths={2}
-                className="p-3 pointer-events-auto"
+                className="pointer-events-auto"
+                initialFocus
               />
+              {selectedDateRange.from && !selectedDateRange.to && (
+                <p className="text-center text-sm text-muted-foreground mt-3">
+                  Now select the end date
+                </p>
+              )}
             </div>
+          </div>
+          <div className="border-t border-border/10 p-3 flex justify-end">
+            <Button 
+              size="sm"
+              variant="outline"
+              className="mr-2"
+              onClick={() => {
+                setSelectedDateRange({ from: undefined, to: undefined });
+                setSelectedPreset(null);
+                onDateChange({ from: undefined, to: undefined });
+                setOpen(false);
+              }}
+            >
+              Clear
+            </Button>
+            <Button 
+              size="sm"
+              onClick={() => setOpen(false)}
+              disabled={!selectedDateRange.from || !selectedDateRange.to}
+            >
+              Apply Range
+            </Button>
           </div>
         </PopoverContent>
       </Popover>

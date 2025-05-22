@@ -20,6 +20,7 @@ export const OrdersSearch: React.FC<OrdersSearchProps> = ({
   debounceTime = 300
 }) => {
   const [searchQuery, setSearchQuery] = useState(initialValue);
+  const [isFocused, setIsFocused] = useState(false);
   
   // Debouncing implementation for search
   useEffect(() => {
@@ -31,13 +32,23 @@ export const OrdersSearch: React.FC<OrdersSearchProps> = ({
   }, [searchQuery, onSearch, debounceTime]);
   
   return (
-    <div className={cn("relative flex-1", className)}>
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className={cn(
+      "relative w-full", 
+      className
+    )}>
+      <div className={cn(
+        "absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground transition-colors",
+        isFocused && "text-foreground"
+      )}>
+        <Search className="h-4 w-4" />
+      </div>
       <Input 
         placeholder={placeholder}
-        className="pl-10 w-full"
+        className="pl-10 w-full shadow-sm border-border/20"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
       />
     </div>
   );
