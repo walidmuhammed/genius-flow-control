@@ -1,11 +1,17 @@
 
 import React from 'react';
-import { Eye, Edit, MoreHorizontal, Printer, MessageSquare, Trash2 } from 'lucide-react';
+import { Eye, Edit, Printer, Trash2, MoreHorizontal } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 
 export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid' | 'Awaiting Action';
 export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection' | 'Return';
@@ -119,7 +125,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   return (
     <TableRow 
       className={cn(
-        "hover:bg-muted/20 border-b border-border/10 cursor-pointer transition-colors group", 
+        "hover:bg-muted/20 border-b border-border/10 cursor-pointer transition-colors", 
         isSelected && "bg-[#DB271E]/5"
       )} 
       onClick={handleRowClick}
@@ -139,7 +145,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <div className="cursor-help transition-opacity hover:opacity-80">
-                    <MessageSquare className="h-3.5 w-3.5 text-gray-500 hover:text-[#DB271E] transition-colors" />
+                    <Eye className="h-3.5 w-3.5 text-gray-500 hover:text-[#DB271E] transition-colors" />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent 
@@ -207,72 +213,61 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
       </TableCell>
       
       {showActions && (
-        <TableCell className="py-4 text-center">
-          <div className="flex justify-center items-center transition-all">
-            <div className="flex items-center relative">
-              {/* Hidden actions that appear on hover */}
-              <div className="absolute right-full pr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
-                <button 
-                  className="h-8 w-8 rounded-lg hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center justify-center transition-colors" 
-                  onClick={e => e.stopPropagation()}
-                >
-                  <Edit className="h-4 w-4" />
-                </button>
-                
-                <button 
-                  className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors" 
-                  onClick={e => e.stopPropagation()}
-                >
-                  <Printer className="h-4 w-4" />
-                </button>
-                
-                {/* Only show delete for New orders */}
-                {order.status === 'New' && (
-                  <button 
-                    className="h-8 w-8 rounded-lg hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-colors" 
-                    onClick={e => e.stopPropagation()}
+        <TableCell className="py-4 w-16 text-right" onClick={e => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button 
+                className="h-8 w-8 rounded-lg text-gray-500 hover:bg-muted/60 hover:text-gray-700 flex items-center justify-center transition-colors"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+                <span className="sr-only">Open menu</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="end" 
+              className="w-[180px] shadow-lg border-border/10 rounded-lg p-1 bg-white"
+              sideOffset={5}
+              alignOffset={-5}
+            >
+              <DropdownMenuItem 
+                className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
+                onClick={e => {
+                  e.stopPropagation();
+                  if (onViewDetails) onViewDetails(order);
+                }}
+              >
+                <Eye className="h-4 w-4 text-gray-500" />
+                <span>View Details</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem 
+                className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
+              >
+                <Edit className="h-4 w-4 text-gray-500" />
+                <span>Edit Order</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem 
+                className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
+              >
+                <Printer className="h-4 w-4 text-gray-500" />
+                <span>Print Label</span>
+              </DropdownMenuItem>
+              
+              {/* Only show delete/cancel for New orders */}
+              {order.status === 'New' && (
+                <>
+                  <DropdownMenuSeparator className="my-1.5 bg-border/10" />
+                  <DropdownMenuItem 
+                    className="rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center gap-2 text-sm"
                   >
                     <Trash2 className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-              
-              {/* 3-dot menu always visible */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button 
-                    className="h-8 w-8 rounded-lg hover:bg-muted/60 flex items-center justify-center transition-colors" 
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[200px] shadow-lg border-border/10 rounded-lg p-1 bg-white">
-                  <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Order Details
+                    <span>Cancel Order</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Order
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted">
-                    <Printer className="mr-2 h-4 w-4" />
-                    Print Shipping Label
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="my-1.5 bg-border/10" />
-                  
-                  {/* Only show delete/cancel for New orders */}
-                  {order.status === 'New' && (
-                    <DropdownMenuItem className="rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E]">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Cancel Order
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </TableCell>
       )}
     </TableRow>
