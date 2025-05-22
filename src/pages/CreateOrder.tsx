@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Info, Check, Plus, MapPin, Search } from 'lucide-react';
+import { X, Info, Check, Plus, MapPin, Search, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -61,6 +61,7 @@ const CreateOrder = () => {
   // Form validation
   const [errors, setErrors] = useState<{
     phone?: string;
+    secondaryPhone?: string;
     name?: string;
     area?: string;
     address?: string;
@@ -105,6 +106,7 @@ const CreateOrder = () => {
   const validateForm = () => {
     const newErrors: {
       phone?: string;
+      secondaryPhone?: string;
       name?: string;
       area?: string;
       address?: string;
@@ -114,6 +116,10 @@ const CreateOrder = () => {
     
     if (!phoneValid) {
       newErrors.phone = 'Valid phone number is required';
+    }
+    
+    if (isSecondaryPhone && !secondaryPhoneValid && secondaryPhone) {
+      newErrors.secondaryPhone = 'Valid secondary phone number is required';
     }
     
     if (!name.trim()) {
@@ -278,8 +284,14 @@ const CreateOrder = () => {
                 <CardTitle>Customer</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Phone Number Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className={errors.phone ? "text-red-500" : ""}>Phone number</Label>
+                  <Label htmlFor="phone" className={errors.phone ? "text-red-500" : ""}>
+                    <span className="flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5" />
+                      Phone number
+                    </span>
+                  </Label>
                   <PhoneInput 
                     id="phone" 
                     value={phone} 
@@ -294,12 +306,73 @@ const CreateOrder = () => {
                     onValidationChange={setPhoneValid} 
                     placeholder="Enter phone number" 
                     className={errors.phone ? "border-red-500" : ""}
+                    errorMessage={errors.phone}
                   />
-                  {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
                   {searchingCustomers && <p className="text-xs text-gray-500">Searching for existing customer...</p>}
-                  {existingCustomer && <p className="text-xs text-green-500">Existing customer found!</p>}
+                  {existingCustomer && <p className="text-xs text-green-500 flex items-center gap-1"><Check className="h-3 w-3" />Existing customer found!</p>}
                 </div>
                 
+                {/* Secondary Phone Field - Moved up directly after primary phone */}
+                {!isSecondaryPhone && (
+                  <div>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="text-sm flex items-center gap-1" 
+                      onClick={() => setIsSecondaryPhone(true)}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Add secondary phone number
+                    </Button>
+                  </div>
+                )}
+
+                {isSecondaryPhone && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <Label 
+                        htmlFor="secondary-phone"
+                        className={errors.secondaryPhone ? "text-red-500" : ""}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Phone className="h-3.5 w-3.5" />
+                          Secondary phone
+                        </span>
+                      </Label>
+                      <Button 
+                        variant="link" 
+                        className="text-xs text-muted-foreground h-auto p-0" 
+                        onClick={() => {
+                          setIsSecondaryPhone(false);
+                          setSecondaryPhone('');
+                          if (errors.secondaryPhone) {
+                            setErrors(prev => ({ ...prev, secondaryPhone: undefined }));
+                          }
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                    <PhoneInput 
+                      id="secondary-phone" 
+                      value={secondaryPhone} 
+                      onChange={(value) => {
+                        setSecondaryPhone(value);
+                        // Clear secondary phone error if it exists
+                        if (errors.secondaryPhone) {
+                          setErrors(prev => ({ ...prev, secondaryPhone: undefined }));
+                        }
+                      }}
+                      defaultCountry="LB" 
+                      onValidationChange={setSecondaryPhoneValid} 
+                      placeholder="Enter secondary phone" 
+                      className={errors.secondaryPhone ? "border-red-500" : ""}
+                      errorMessage={errors.secondaryPhone}
+                    />
+                  </div>
+                )}
+                
+                {/* Customer Name Field */}
                 <div className="space-y-2">
                   <Label htmlFor="name" className={errors.name ? "text-red-500" : ""}>Full name</Label>
                   <Input 
@@ -318,43 +391,7 @@ const CreateOrder = () => {
                   {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
                 </div>
                 
-                {!isSecondaryPhone && (
-                  <div>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      className="text-sm flex items-center gap-1" 
-                      onClick={() => setIsSecondaryPhone(true)}
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      Add secondary phone number
-                    </Button>
-                  </div>
-                )}
-
-                {isSecondaryPhone && (
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <Label htmlFor="secondary-phone">Secondary phone</Label>
-                      <Button 
-                        variant="link" 
-                        className="text-xs text-muted-foreground h-auto p-0" 
-                        onClick={() => setIsSecondaryPhone(false)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                    <PhoneInput 
-                      id="secondary-phone" 
-                      value={secondaryPhone} 
-                      onChange={setSecondaryPhone} 
-                      defaultCountry="LB" 
-                      onValidationChange={setSecondaryPhoneValid} 
-                      placeholder="Enter secondary phone" 
-                    />
-                  </div>
-                )}
-                
+                {/* Area Selection */}
                 <div className="space-y-2">
                   <Label htmlFor="area" className={errors.area ? "text-red-500" : ""}>Area</Label>
                   <AreaSelector
@@ -365,6 +402,7 @@ const CreateOrder = () => {
                   {errors.area && <p className="text-xs text-red-500">{errors.area}</p>}
                 </div>
                 
+                {/* Address Details */}
                 <div className="space-y-2">
                   <Label htmlFor="address" className={errors.address ? "text-red-500" : ""}>Address details</Label>
                   <Input 
@@ -383,6 +421,7 @@ const CreateOrder = () => {
                   {errors.address && <p className="text-xs text-red-500">{errors.address}</p>}
                 </div>
                 
+                {/* Work Address Checkbox */}
                 <div className="flex items-center space-x-2">
                   <Checkbox 
                     id="work-address" 
