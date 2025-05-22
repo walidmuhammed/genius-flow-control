@@ -24,7 +24,6 @@ export interface Order {
   status: OrderStatus;
   created_at: string;
   updated_at: string;
-  order_reference?: string; // Added order reference field
 }
 
 export interface OrderWithCustomer extends Order {
