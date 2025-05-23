@@ -35,7 +35,7 @@ export function useCreateCustomer() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       toast.success("Customer created successfully");
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(`Error creating customer: ${error.message}`);
     }
   });
@@ -52,7 +52,7 @@ export function useUpdateCustomer() {
       queryClient.invalidateQueries({ queryKey: ['customer', variables.id] });
       toast.success("Customer updated successfully");
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(`Error updating customer: ${error.message}`);
     }
   });

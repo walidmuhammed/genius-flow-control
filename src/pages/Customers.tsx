@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -5,207 +6,254 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Filter, Download, Plus, Edit, Check, X } from "lucide-react";
+import { Search, Filter, Download, Plus, Edit, Check, X, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-interface CustomerData {
-  id: string;
-  name: string;
-  phone: string;
-  location: string;
-  address: string;
-  orderCount: number;
-  totalValueUSD: number;
-  totalValueLBP: number | null;
-  lastOrderDate: string;
-  status: "Active" | "Inactive";
-  city: string;
+import { useCustomers, useCustomer, useUpdateCustomer } from "@/hooks/use-customers";
+import { CustomerWithLocation } from "@/services/customers";
+import { formatDate } from "@/utils/format";
+import { useOrders } from "@/hooks/use-orders";
+import { toast } from "sonner";
+
+interface CustomerFormProps {
+  customer: CustomerWithLocation;
+  onUpdate: (updates: Partial<CustomerWithLocation>) => void;
+  cities: { id: string; name: string; governorate_id: string }[];
+  governorates: { id: string; name: string }[];
+  isLoading: boolean;
 }
 
-// Expanded customer data with recent orders
-interface CustomerWithOrders extends CustomerData {
-  recentOrders: {
-    id: string;
-    date: string;
-    amount: number;
-    status: string;
-  }[];
-}
-const customersData: CustomerWithOrders[] = [{
-  id: "CUST-001",
-  name: "Hiba's Bakery",
-  phone: "+961 3 123 456",
-  location: "Beirut",
-  address: "123 Hamra St, Beirut",
-  orderCount: 24,
-  totalValueUSD: 1250.75,
-  totalValueLBP: 19250000,
-  lastOrderDate: "May 2, 2025",
-  status: "Active",
-  city: "Beirut",
-  recentOrders: [{
-    id: "ORD-001",
-    date: "May 2, 2025",
-    amount: 150.25,
-    status: "Delivered"
-  }, {
-    id: "ORD-002",
-    date: "Apr 28, 2025",
-    amount: 215.50,
-    status: "Delivered"
-  }, {
-    id: "ORD-003",
-    date: "Apr 15, 2025",
-    amount: 89.75,
-    status: "Delivered"
-  }]
-}, {
-  id: "CUST-002",
-  name: "Café Najjar",
-  phone: "+961 1 987 654",
-  location: "Tripoli",
-  address: "45 Main St, Tripoli",
-  orderCount: 18,
-  totalValueUSD: 876.50,
-  totalValueLBP: null,
-  lastOrderDate: "May 1, 2025",
-  status: "Active",
-  city: "North Lebanon",
-  recentOrders: [{
-    id: "ORD-004",
-    date: "May 1, 2025",
-    amount: 125.00,
-    status: "Delivered"
-  }, {
-    id: "ORD-005",
-    date: "Apr 25, 2025",
-    amount: 175.25,
-    status: "Delivered"
-  }]
-}, {
-  id: "CUST-003",
-  name: "Beirut Supermarket",
-  phone: "+961 70 123 789",
-  location: "Jounieh",
-  address: "78 Coastal Rd, Jounieh",
-  orderCount: 31,
-  totalValueUSD: 2350.25,
-  totalValueLBP: 36150000,
-  lastOrderDate: "Apr 30, 2025",
-  status: "Active",
-  city: "Mount Lebanon",
-  recentOrders: [{
-    id: "ORD-006",
-    date: "Apr 30, 2025",
-    amount: 312.50,
-    status: "Delivered"
-  }, {
-    id: "ORD-007",
-    date: "Apr 27, 2025",
-    amount: 145.75,
-    status: "Delivered"
-  }, {
-    id: "ORD-008",
-    date: "Apr 20, 2025",
-    amount: 89.25,
-    status: "Delivered"
-  }]
-}, {
-  id: "CUST-004",
-  name: "Aishti Department Store",
-  phone: "+961 3 456 789",
-  location: "Beirut",
-  address: "Downtown, Beirut",
-  orderCount: 42,
-  totalValueUSD: 4150.00,
-  totalValueLBP: 63850000,
-  lastOrderDate: "Apr 28, 2025",
-  status: "Active",
-  city: "Beirut",
-  recentOrders: [{
-    id: "ORD-009",
-    date: "Apr 28, 2025",
-    amount: 527.75,
-    status: "Delivered"
-  }, {
-    id: "ORD-010",
-    date: "Apr 22, 2025",
-    amount: 318.50,
-    status: "Delivered"
-  }]
-}, {
-  id: "CUST-005",
-  name: "Cedar Pharmacy",
-  phone: "+961 81 234 567",
-  location: "Baalbek",
-  address: "12 Cedar St, Baalbek",
-  orderCount: 8,
-  totalValueUSD: 450.25,
-  totalValueLBP: 6930000,
-  lastOrderDate: "Apr 15, 2025",
-  status: "Inactive",
-  city: "Baalbek-Hermel",
-  recentOrders: [{
-    id: "ORD-011",
-    date: "Apr 15, 2025",
-    amount: 78.25,
-    status: "Delivered"
-  }]
-}];
+const CustomerForm: React.FC<CustomerFormProps> = ({ 
+  customer, 
+  onUpdate, 
+  cities, 
+  governorates, 
+  isLoading 
+}) => {
+  const [name, setName] = useState(customer.name);
+  const [phone, setPhone] = useState(customer.phone);
+  const [secondaryPhone, setSecondaryPhone] = useState(customer.secondary_phone || '');
+  const [address, setAddress] = useState(customer.address || '');
+  const [cityId, setCityId] = useState(customer.city_id || '');
+  const [governorateId, setGovernorateId] = useState(customer.governorate_id || '');
+  const [isWorkAddress, setIsWorkAddress] = useState(customer.is_work_address);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onUpdate({
+      name,
+      phone,
+      secondary_phone: secondaryPhone || null,
+      address: address || null,
+      city_id: cityId || null,
+      governorate_id: governorateId || null,
+      is_work_address: isWorkAddress
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="mt-1"
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
+        <Input
+          id="phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          required
+          className="mt-1"
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="secondaryPhone" className="block text-sm font-medium text-gray-700">Secondary Phone</label>
+        <Input
+          id="secondaryPhone"
+          value={secondaryPhone}
+          onChange={(e) => setSecondaryPhone(e.target.value)}
+          className="mt-1"
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="governorate" className="block text-sm font-medium text-gray-700">Governorate</label>
+        <Select value={governorateId} onValueChange={setGovernorateId}>
+          <SelectTrigger className="mt-1">
+            <SelectValue placeholder="Select a governorate" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">None</SelectItem>
+            {governorates.map(governorate => (
+              <SelectItem key={governorate.id} value={governorate.id}>{governorate.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div>
+        <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
+        <Select value={cityId} onValueChange={setCityId}>
+          <SelectTrigger className="mt-1">
+            <SelectValue placeholder="Select a city" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">None</SelectItem>
+            {cities
+              .filter(city => !governorateId || city.governorate_id === governorateId)
+              .map(city => (
+                <SelectItem key={city.id} value={city.id}>{city.name}</SelectItem>
+              ))
+            }
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div>
+        <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address</label>
+        <Input
+          id="address"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          className="mt-1"
+        />
+      </div>
+      
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          id="isWorkAddress"
+          checked={isWorkAddress}
+          onChange={(e) => setIsWorkAddress(e.target.checked)}
+          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+        />
+        <label htmlFor="isWorkAddress" className="ml-2 block text-sm text-gray-700">
+          Work Address
+        </label>
+      </div>
+      
+      <div className="flex justify-end mt-4">
+        <Button type="submit" disabled={isLoading} className="bg-[#dc291e]">
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+          Save Changes
+        </Button>
+      </div>
+    </form>
+  );
+};
+
 const Customers: React.FC = () => {
-  const [selectedCustomer, setSelectedCustomer] = useState<CustomerWithOrders | null>(null);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [isEditing, setIsEditing] = useState(false);
-  const [editedCustomer, setEditedCustomer] = useState<CustomerWithOrders | null>(null);
-  const filteredCustomers = customersData.filter(customer => {
-    const matchesSearch = customer.name.toLowerCase().includes(searchQuery.toLowerCase()) || customer.phone.includes(searchQuery) || customer.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCity = cityFilter === "all" || customer.city === cityFilter;
+  
+  // Fetch data
+  const { data: customers = [], isLoading: isLoadingCustomers, error: customersError } = useCustomers();
+  const { data: selectedCustomer, isLoading: isLoadingCustomer } = useCustomer(selectedCustomerId || undefined);
+  const { data: allOrders = [] } = useOrders();
+  const { mutate: updateCustomer, isPending: isUpdating } = useUpdateCustomer();
+  
+  // Get customer orders
+  const customerOrders = selectedCustomer ? allOrders.filter(
+    order => order.customer_id === selectedCustomer.id
+  ) : [];
+  
+  // Filter customers
+  const filteredCustomers = customers.filter(customer => {
+    const matchesSearch = 
+      customer.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      customer.phone.includes(searchQuery) || 
+      (customer.city_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (customer.governorate_name || '').toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCity = cityFilter === "all" || customer.city_id === cityFilter;
     return matchesSearch && matchesCity;
   });
-  const handleRowClick = (customer: CustomerWithOrders) => {
-    setSelectedCustomer(customer);
-    setEditedCustomer({
-      ...customer
-    });
+
+  // Get unique cities for the filter
+  const uniqueCities = Array.from(
+    new Set(
+      customers
+        .filter(c => c.city_id && c.city_name)
+        .map(c => JSON.stringify({ id: c.city_id, name: c.city_name }))
+    )
+  ).map(str => JSON.parse(str));
+
+  // Get governorates
+  const uniqueGovernorates = Array.from(
+    new Set(
+      customers
+        .filter(c => c.governorate_id && c.governorate_name)
+        .map(c => JSON.stringify({ id: c.governorate_id, name: c.governorate_name }))
+    )
+  ).map(str => JSON.parse(str));
+  
+  const handleRowClick = (customer: CustomerWithLocation) => {
+    setSelectedCustomerId(customer.id);
     setIsEditing(false);
   };
+  
   const closeModal = () => {
-    setSelectedCustomer(null);
-    setEditedCustomer(null);
+    setSelectedCustomerId(null);
     setIsEditing(false);
   };
+  
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
   };
-  const handleSaveChanges = () => {
-    if (editedCustomer) {
-      // Here you would typically save changes to your backend
-      // For this demo, we're just updating the local state
-      const updatedCustomers = customersData.map(c => c.id === editedCustomer.id ? editedCustomer : c);
-
-      // Update the selected customer to show the changes
-      setSelectedCustomer(editedCustomer);
-      setIsEditing(false);
-      console.log('Customer updated:', editedCustomer);
+  
+  const handleSaveChanges = (updates: Partial<CustomerWithLocation>) => {
+    if (selectedCustomerId) {
+      updateCustomer(
+        { id: selectedCustomerId, updates },
+        {
+          onSuccess: () => {
+            setIsEditing(false);
+          }
+        }
+      );
     }
   };
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!editedCustomer) return;
-    setEditedCustomer({
-      ...editedCustomer,
-      [e.target.name]: e.target.value
-    });
+
+  // Calculate customer stats
+  const calculateCustomerStats = (customerId: string) => {
+    const customerOrders = allOrders.filter(order => order.customer_id === customerId);
+    
+    const orderCount = customerOrders.length;
+    
+    const totalValueUSD = customerOrders.reduce((total, order) => {
+      return total + (Number(order.cash_collection_usd) || 0);
+    }, 0);
+    
+    const totalValueLBP = customerOrders.reduce((total, order) => {
+      return total + (Number(order.cash_collection_lbp) || 0);
+    }, 0);
+    
+    const lastOrderDate = customerOrders.length > 0 
+      ? new Date(Math.max(...customerOrders.map(o => new Date(o.created_at).getTime())))
+      : null;
+    
+    return {
+      orderCount,
+      totalValueUSD,
+      totalValueLBP: totalValueLBP > 0 ? totalValueLBP : null,
+      lastOrderDate: lastOrderDate ? formatDate(lastOrderDate) : 'N/A'
+    };
   };
-  const handleCityChange = (city: string) => {
-    if (!editedCustomer) return;
-    setEditedCustomer({
-      ...editedCustomer,
-      city
-    });
-  };
-  return <MainLayout>
+
+  return (
+    <MainLayout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -217,6 +265,12 @@ const Customers: React.FC = () => {
             Add Customer
           </Button>
         </div>
+
+        {customersError && (
+          <div className="p-4 bg-red-50 text-red-700 rounded-md">
+            Error loading customers: {(customersError as Error).message}
+          </div>
+        )}
 
         <Card>
           <CardContent className="p-0">
@@ -233,13 +287,9 @@ const Customers: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Cities</SelectItem>
-                      <SelectItem value="Beirut">Beirut</SelectItem>
-                      <SelectItem value="Mount Lebanon">Mount Lebanon</SelectItem>
-                      <SelectItem value="North Lebanon">North Lebanon</SelectItem>
-                      <SelectItem value="Akkar">Akkar</SelectItem>
-                      <SelectItem value="Beqaa">Beqaa</SelectItem>
-                      <SelectItem value="Baalbek-Hermel">Baalbek-Hermel</SelectItem>
-                      <SelectItem value="South Lebanon">South Lebanon</SelectItem>
+                      {uniqueCities.map(city => (
+                        <SelectItem key={city.id} value={city.id}>{city.name}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -251,68 +301,91 @@ const Customers: React.FC = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50 hover:bg-gray-50">
-                    <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                      Customer Name
-                    </TableHead>
-                    <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                      Phone Number
-                    </TableHead>
-                    <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                      Location
-                    </TableHead>
-                    <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider text-center">
-                      Orders
-                    </TableHead>
-                    <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider text-right">
-                      Total Value
-                    </TableHead>
-                    <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                      Last Order Date
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredCustomers.map(customer => <TableRow key={customer.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => handleRowClick(customer)}>
-                      <TableCell className="font-medium">
-                        {customer.name}
-                      </TableCell>
-                      <TableCell>
-                        {customer.phone}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div>{customer.location}</div>
-                          <div className="text-xs text-gray-500">{customer.address}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {customer.orderCount}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger className="cursor-help">
-                              <span>${customer.totalValueUSD.toFixed(2)}</span>
-                            </TooltipTrigger>
-                            <TooltipContent className="p-2">
-                              <div className="text-xs">
-                                <div className="font-semibold">Total Value:</div>
-                                <div>${customer.totalValueUSD.toFixed(2)} USD</div>
-                                {customer.totalValueLBP !== null && <div>{customer.totalValueLBP.toLocaleString()} LBP</div>}
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-gray-700">{customer.lastOrderDate}</span>
-                      </TableCell>
-                    </TableRow>)}
-                </TableBody>
-              </Table>
+              {isLoadingCustomers ? (
+                <div className="flex justify-center items-center p-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                </div>
+              ) : filteredCustomers.length === 0 ? (
+                <div className="p-8 text-center">
+                  <p className="text-gray-500">No customers found</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50 hover:bg-gray-50">
+                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
+                        Customer Name
+                      </TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
+                        Phone Number
+                      </TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
+                        Location
+                      </TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider text-center">
+                        Orders
+                      </TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider text-right">
+                        Total Value
+                      </TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
+                        Last Order Date
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredCustomers.map(customer => {
+                      const stats = calculateCustomerStats(customer.id);
+                      return (
+                        <TableRow 
+                          key={customer.id} 
+                          className="hover:bg-gray-50 transition-colors cursor-pointer" 
+                          onClick={() => handleRowClick(customer)}
+                        >
+                          <TableCell className="font-medium">
+                            {customer.name}
+                          </TableCell>
+                          <TableCell>
+                            {customer.phone}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div>{customer.city_name || customer.governorate_name || 'No location'}</div>
+                              <div className="text-xs text-gray-500">{customer.address || 'No address'}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {stats.orderCount}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {stats.totalValueUSD > 0 ? (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger className="cursor-help">
+                                    <span>${stats.totalValueUSD.toFixed(2)}</span>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="p-2">
+                                    <div className="text-xs">
+                                      <div className="font-semibold">Total Value:</div>
+                                      <div>${stats.totalValueUSD.toFixed(2)} USD</div>
+                                      {stats.totalValueLBP !== null && <div>{stats.totalValueLBP.toLocaleString()} LBP</div>}
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            ) : (
+                              <span>$0.00</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-gray-700">{stats.lastOrderDate}</span>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
             </div>
             
             <div className="bg-white border-t border-gray-200 px-6 py-4 flex justify-between items-center">
@@ -323,8 +396,8 @@ const Customers: React.FC = () => {
               </span>
               
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">Previous</Button>
-                <Button variant="outline" size="sm">Next</Button>
+                <Button variant="outline" size="sm" disabled>Previous</Button>
+                <Button variant="outline" size="sm" disabled>Next</Button>
               </div>
             </div>
           </CardContent>
@@ -332,124 +405,168 @@ const Customers: React.FC = () => {
       </div>
 
       {/* Customer Detail Modal */}
-      <Dialog open={!!selectedCustomer} onOpenChange={open => !open && closeModal()}>
+      <Dialog open={!!selectedCustomerId} onOpenChange={open => !open && closeModal()}>
         <DialogContent className="sm:max-w-[600px] p-0">
           <DialogHeader className="px-6 py-4 border-b flex flex-row justify-between items-center">
             <DialogTitle className="text-xl font-semibold">Customer Details</DialogTitle>
             <div className="flex items-center gap-2">
-              {isEditing ? <>
-                  <Button variant="outline" size="sm" className="h-8 px-3 py-1 text-sm" onClick={() => {
-                setIsEditing(false);
-                setEditedCustomer(selectedCustomer);
-              }}>
+              {isEditing ? (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8 px-3 py-1 text-sm" 
+                    onClick={() => setIsEditing(false)}
+                  >
                     <X className="h-4 w-4 mr-1" /> Cancel
                   </Button>
-                  <Button size="sm" onClick={handleSaveChanges} className="h-8 px-3 py-1 text-sm bg-[#dc291e]">
-                    <Check className="h-4 w-4 mr-1" /> Save Changes
-                  </Button>
-                </> : <Button variant="outline" size="sm" className="h-8 px-3 py-1 text-sm" onClick={handleEditToggle}>
+                </>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 px-3 py-1 text-sm" 
+                  onClick={handleEditToggle}
+                  disabled={isLoadingCustomer}
+                >
                   <Edit className="h-4 w-4 mr-1" /> Edit
-                </Button>}
+                </Button>
+              )}
             </div>
           </DialogHeader>
           
-          {selectedCustomer && editedCustomer && <div className="p-6">
+          {isLoadingCustomer ? (
+            <div className="p-6 flex justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            </div>
+          ) : selectedCustomer ? (
+            <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Customer Information</h3>
-                  <div className="mt-2 space-y-4">
-                    {isEditing ? <>
-                        <div>
-                          <label htmlFor="name" className="block text-xs text-gray-500 mb-1">Customer Name</label>
-                          <Input id="name" name="name" value={editedCustomer.name} onChange={handleInputChange} className="h-9" />
-                        </div>
-                        <div>
-                          <label htmlFor="phone" className="block text-xs text-gray-500 mb-1">Phone Number</label>
-                          <Input id="phone" name="phone" value={editedCustomer.phone} onChange={handleInputChange} className="h-9" />
-                        </div>
-                        <div>
-                          <label htmlFor="city" className="block text-xs text-gray-500 mb-1">City</label>
-                          <Select value={editedCustomer.city} onValueChange={handleCityChange}>
-                            <SelectTrigger id="city" className="h-9">
-                              <SelectValue placeholder="Select city" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Beirut">Beirut</SelectItem>
-                              <SelectItem value="Mount Lebanon">Mount Lebanon</SelectItem>
-                              <SelectItem value="North Lebanon">North Lebanon</SelectItem>
-                              <SelectItem value="Akkar">Akkar</SelectItem>
-                              <SelectItem value="Beqaa">Beqaa</SelectItem>
-                              <SelectItem value="Baalbek-Hermel">Baalbek-Hermel</SelectItem>
-                              <SelectItem value="South Lebanon">South Lebanon</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <label htmlFor="address" className="block text-xs text-gray-500 mb-1">Address</label>
-                          <Input id="address" name="address" value={editedCustomer.address} onChange={handleInputChange} className="h-9" />
-                        </div>
-                      </> : <>
-                        <p className="text-lg font-semibold">{selectedCustomer.name}</p>
-                        <p className="text-gray-700">{selectedCustomer.phone}</p>
-                        <p className="text-gray-700">{selectedCustomer.city}</p>
-                        <p className="text-gray-700">{selectedCustomer.address}</p>
-                      </>}
-                  </div>
+                  
+                  {isEditing ? (
+                    <CustomerForm 
+                      customer={selectedCustomer}
+                      onUpdate={handleSaveChanges}
+                      cities={uniqueCities}
+                      governorates={uniqueGovernorates}
+                      isLoading={isUpdating}
+                    />
+                  ) : (
+                    <div className="mt-2 space-y-4">
+                      <p className="text-lg font-semibold">{selectedCustomer.name}</p>
+                      <p className="text-gray-700">{selectedCustomer.phone}</p>
+                      {selectedCustomer.secondary_phone && (
+                        <p className="text-gray-700">{selectedCustomer.secondary_phone}</p>
+                      )}
+                      <p className="text-gray-700">
+                        {selectedCustomer.city_name || selectedCustomer.governorate_name || 'No location'}
+                        {selectedCustomer.is_work_address && ' (Work Address)'}
+                      </p>
+                      <p className="text-gray-700">{selectedCustomer.address || 'No address'}</p>
+                    </div>
+                  )}
                 </div>
                 
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Order Statistics</h3>
                   <div className="mt-2 space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Total Orders:</span>
-                      <span className="font-medium">{selectedCustomer.orderCount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Total Value (USD):</span>
-                      <span className="font-medium">${selectedCustomer.totalValueUSD.toFixed(2)}</span>
-                    </div>
-                    {selectedCustomer.totalValueLBP !== null && <div className="flex justify-between">
-                        <span className="text-gray-600">Total Value (LBP):</span>
-                        <span className="font-medium">{selectedCustomer.totalValueLBP.toLocaleString()}</span>
-                      </div>}
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Last Order:</span>
-                      <span className="font-medium">{selectedCustomer.lastOrderDate}</span>
-                    </div>
+                    {(() => {
+                      const stats = calculateCustomerStats(selectedCustomer.id);
+                      return (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Total Orders:</span>
+                            <span className="font-medium">{stats.orderCount}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Total Value (USD):</span>
+                            <span className="font-medium">${stats.totalValueUSD.toFixed(2)}</span>
+                          </div>
+                          {stats.totalValueLBP !== null && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Total Value (LBP):</span>
+                              <span className="font-medium">{stats.totalValueLBP.toLocaleString()}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Last Order:</span>
+                            <span className="font-medium">{stats.lastOrderDate}</span>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
               
               <div className="mt-6">
                 <h3 className="text-sm font-medium text-gray-500 mb-3">Recent Orders</h3>
-                <div className="border rounded-md overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-gray-50">
-                        <TableHead className="text-xs">Order ID</TableHead>
-                        <TableHead className="text-xs">Date</TableHead>
-                        <TableHead className="text-xs">Amount</TableHead>
-                        <TableHead className="text-xs">Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedCustomer.recentOrders.map(order => <TableRow key={order.id}>
-                          <TableCell className="font-medium">{order.id}</TableCell>
-                          <TableCell>{order.date}</TableCell>
-                          <TableCell>${order.amount.toFixed(2)}</TableCell>
-                          <TableCell>
-                            <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                              {order.status}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>)}
-                    </TableBody>
-                  </Table>
-                </div>
+                {customerOrders.length === 0 ? (
+                  <div className="text-sm text-gray-500 p-4 text-center border rounded-md">
+                    No orders found for this customer
+                  </div>
+                ) : (
+                  <div className="border rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50">
+                          <TableHead className="text-xs">Order ID</TableHead>
+                          <TableHead className="text-xs">Date</TableHead>
+                          <TableHead className="text-xs">Amount</TableHead>
+                          <TableHead className="text-xs">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {customerOrders.slice(0, 5).map(order => (
+                          <TableRow key={order.id}>
+                            <TableCell className="font-medium">{order.reference_number || order.id.substring(0, 8)}</TableCell>
+                            <TableCell>{formatDate(new Date(order.created_at))}</TableCell>
+                            <TableCell>
+                              {order.cash_collection_usd ? `$${Number(order.cash_collection_usd).toFixed(2)}` : ''}
+                              {order.cash_collection_usd && order.cash_collection_lbp ? ' / ' : ''}
+                              {order.cash_collection_lbp ? `${Number(order.cash_collection_lbp).toLocaleString()} LBP` : ''}
+                              {!order.cash_collection_usd && !order.cash_collection_lbp ? 'N/A' : ''}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={`
+                                ${order.status === 'Successful' ? 'bg-green-100 text-green-800' : 
+                                  order.status === 'Unsuccessful' ? 'bg-red-100 text-red-800' : 
+                                  order.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 
+                                  order.status === 'New' ? 'bg-purple-100 text-purple-800' : 
+                                  order.status === 'Pending Pickup' ? 'bg-amber-100 text-amber-800' :
+                                  order.status === 'Returned' ? 'bg-gray-100 text-gray-800' : 
+                                  'bg-gray-100 text-gray-800'}
+                                hover:bg-opacity-80
+                              `}>
+                                {order.status || 'Unknown'}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    {customerOrders.length > 5 && (
+                      <div className="p-2 text-center border-t">
+                        <Button variant="ghost" size="sm">
+                          View all {customerOrders.length} orders
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>}
+            </div>
+          ) : (
+            <div className="p-6 text-center text-gray-500">
+              Customer not found
+            </div>
+          )}
         </DialogContent>
       </Dialog>
-    </MainLayout>;
+    </MainLayout>
+  );
 };
+
 export default Customers;
