@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { FileBarChart, PackageSearch, CheckCheck, AlertCircle, Download, Upload } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -21,9 +22,10 @@ import { useOrders, useOrdersByStatus } from '@/hooks/use-orders';
 import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 import { toast } from 'sonner';
 import { Order } from '@/components/orders/OrdersTableRow';
+import { OrderWithCustomer } from '@/services/orders';
 
 // Transform Supabase data to match the Order interface used by the UI components
-const transformOrderData = (order: OrderType): Order => {
+const transformOrderData = (order: OrderWithCustomer): Order => {
   return {
     id: order.id,
     referenceNumber: order.reference_number || '',
