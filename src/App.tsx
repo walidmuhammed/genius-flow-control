@@ -15,6 +15,15 @@ import Pickups from "./pages/Pickups";
 import Customers from "./pages/Customers";
 import Wallet from "./pages/Wallet";
 
+// Admin Dashboard Pages
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminCouriers from "./pages/admin/AdminCouriers";
+import AdminDispatch from "./pages/admin/AdminDispatch";
+import AdminTickets from "./pages/admin/AdminTickets";
+import AdminActivity from "./pages/admin/AdminActivity";
+import AdminSettings from "./pages/admin/AdminSettings";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -36,6 +45,7 @@ const App = () => (
       }} />
       <BrowserRouter>
         <Routes>
+          {/* Client Dashboard Routes */}
           <Route path="/" element={<Index />} />
           <Route path="/orders" element={<OrdersList />} />
           <Route path="/orders/new" element={<CreateOrder />} />
@@ -45,6 +55,16 @@ const App = () => (
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/support" element={<Support />} />
+          
+          {/* Admin Dashboard Routes */}
+          <Route path="/dashboard/admin" element={<AdminDashboard />} />
+          <Route path="/dashboard/admin/orders" element={<AdminOrders />} />
+          <Route path="/dashboard/admin/couriers" element={<AdminCouriers />} />
+          <Route path="/dashboard/admin/dispatch" element={<AdminDispatch />} />
+          <Route path="/dashboard/admin/tickets" element={<AdminTickets />} />
+          <Route path="/dashboard/admin/activity" element={<AdminActivity />} />
+          <Route path="/dashboard/admin/settings" element={<AdminSettings />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
