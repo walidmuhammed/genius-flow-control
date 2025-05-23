@@ -6,11 +6,16 @@ import {
   getActivityLogsByEntityId,
   ActivityLog
 } from "@/services/activity";
+import { toast } from 'sonner';
 
 export function useActivityLogs(limit: number = 50) {
   return useQuery({
     queryKey: ['activity', { limit }],
-    queryFn: () => getActivityLogs(limit)
+    queryFn: () => getActivityLogs(limit),
+    onError: (error) => {
+      toast.error('Failed to load activity logs');
+      console.error('Error loading activity logs:', error);
+    }
   });
 }
 
@@ -18,7 +23,11 @@ export function useActivityLogsByEntityType(entityType: ActivityLog['entity_type
   return useQuery({
     queryKey: ['activity', 'entity-type', entityType, { limit }],
     queryFn: () => entityType ? getActivityLogsByEntityType(entityType, limit) : Promise.resolve([]),
-    enabled: !!entityType
+    enabled: !!entityType,
+    onError: (error) => {
+      toast.error(`Failed to load ${entityType} activity logs`);
+      console.error(`Error loading ${entityType} activity logs:`, error);
+    }
   });
 }
 
@@ -26,6 +35,10 @@ export function useActivityLogsByEntityId(entityId: string | undefined, limit: n
   return useQuery({
     queryKey: ['activity', 'entity-id', entityId, { limit }],
     queryFn: () => entityId ? getActivityLogsByEntityId(entityId, limit) : Promise.resolve([]),
-    enabled: !!entityId
+    enabled: !!entityId,
+    onError: (error) => {
+      toast.error('Failed to load activity logs for this item');
+      console.error(`Error loading activity logs for entity ${entityId}:`, error);
+    }
   });
 }

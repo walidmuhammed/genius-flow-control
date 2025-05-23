@@ -9,8 +9,10 @@ import {
   updateTicketStatus,
   type Ticket,
   type TicketMessage,
-  type TicketStatus 
+  type TicketStatus,
+  type TicketCategory 
 } from '@/services/tickets';
+import { toast } from 'sonner';
 
 export function useTickets() {
   return useQuery({
@@ -42,6 +44,11 @@ export function useCreateTicket() {
     mutationFn: createTicket,
     onSuccess: (newTicket) => {
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      toast.success('Support ticket created successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to create support ticket');
+      console.error('Error creating ticket:', error);
     }
   });
 }
@@ -55,7 +62,12 @@ export function useAddTicketMessage() {
       if (newMessage) {
         queryClient.invalidateQueries({ queryKey: ['ticket-messages', newMessage.ticket_id] });
         queryClient.invalidateQueries({ queryKey: ['tickets'] });
+        toast.success('Message sent successfully');
       }
+    },
+    onError: (error) => {
+      toast.error('Failed to send message');
+      console.error('Error sending message:', error);
     }
   });
 }
@@ -69,6 +81,11 @@ export function useUpdateTicketStatus() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['ticket', variables.ticketId] });
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      toast.success(`Ticket marked as ${variables.status}`);
+    },
+    onError: (error) => {
+      toast.error('Failed to update ticket status');
+      console.error('Error updating ticket status:', error);
     }
   });
 }

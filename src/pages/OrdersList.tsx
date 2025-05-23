@@ -4,7 +4,6 @@ import { FileBarChart, PackageSearch, CheckCheck, AlertCircle, Download, Upload 
 import MainLayout from '@/components/layout/MainLayout';
 import OrdersTable from '@/components/orders/OrdersTable';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Order } from '@/components/orders/OrdersTableRow';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,226 +18,39 @@ import { OrdersSearch } from '@/components/orders/OrdersSearch';
 import { OrdersDateFilter } from '@/components/orders/OrdersDateFilter';
 import { ImportOrdersModal } from '@/components/orders/ImportOrdersModal';
 import { ExportOrdersDropdown } from '@/components/orders/ExportOrdersDropdown';
+import { useOrders, useOrdersByStatus } from '@/hooks/use-orders';
+import type { Order as OrderType } from '@/services/orders';
+import { toast } from 'sonner';
+import { Order } from '@/components/orders/OrdersTableRow';
 
-// Mock data for orders with proper structure to match Order type
-const mockOrders: Order[] = [
-  {
-    id: "ORD-001",
-    referenceNumber: "REF12345",
-    type: "Deliver",
+// Transform Supabase data to match the Order interface used by the UI components
+const transformOrderData = (order: OrderType): Order => {
+  return {
+    id: order.id,
+    referenceNumber: order.reference_number || '',
+    type: order.type as any,
     customer: {
-      name: "John Doe",
-      phone: "+961 1 234 567"
+      name: order.customer?.name || 'Unknown',
+      phone: order.customer?.phone || 'N/A'
     },
     location: {
-      city: "Beirut",
-      area: "Downtown"
+      city: order.customer?.city_name || 'Unknown',
+      area: order.customer?.governorate_name || 'Unknown',
+      address: order.customer?.address
     },
     amount: {
-      valueLBP: 3600000,
-      valueUSD: 120
+      valueLBP: order.cash_collection_lbp ? Number(order.cash_collection_lbp) : 0,
+      valueUSD: order.cash_collection_usd ? Number(order.cash_collection_usd) : 0
     },
     deliveryCharge: {
-      valueLBP: 150000,
-      valueUSD: 5
+      valueLBP: order.delivery_fees_lbp ? Number(order.delivery_fees_lbp) : 0,
+      valueUSD: order.delivery_fees_usd ? Number(order.delivery_fees_usd) : 0
     },
-    status: "New",
-    lastUpdate: "2023-05-20T14:30:00Z",
-    note: "Handle with care"
-  },
-  {
-    id: "ORD-002",
-    referenceNumber: "REF67890",
-    type: "Exchange",
-    customer: {
-      name: "Jane Smith",
-      phone: "+961 3 456 789"
-    },
-    location: {
-      city: "Tripoli",
-      area: "Al Mina"
-    },
-    amount: {
-      valueLBP: 2565000,
-      valueUSD: 85.50
-    },
-    deliveryCharge: {
-      valueLBP: 105000,
-      valueUSD: 3.50
-    },
-    status: "Pending Pickup",
-    lastUpdate: "2023-05-19T10:15:00Z",
-    note: "Fragile items"
-  },
-  {
-    id: "ORD-003",
-    referenceNumber: "REF54321",
-    type: "Deliver",
-    customer: {
-      name: "Robert Johnson",
-      phone: "+961 76 123 456"
-    },
-    location: {
-      city: "Sidon",
-      area: "Old City"
-    },
-    amount: {
-      valueLBP: 6322500,
-      valueUSD: 210.75
-    },
-    deliveryCharge: {
-      valueLBP: 217500,
-      valueUSD: 7.25
-    },
-    status: "Successful",
-    lastUpdate: "2023-05-18T09:45:00Z",
-    note: "Express delivery"
-  },
-  {
-    id: "ORD-004",
-    referenceNumber: "REF98765",
-    type: "Cash Collection",
-    customer: {
-      name: "Emily Chen",
-      phone: "+961 71 234 567"
-    },
-    location: {
-      city: "Beirut",
-      area: "Hamra"
-    },
-    amount: {
-      valueLBP: 4500000,
-      valueUSD: 150
-    },
-    deliveryCharge: {
-      valueLBP: 180000,
-      valueUSD: 6
-    },
-    status: "In Progress",
-    lastUpdate: "2023-05-17T16:20:00Z",
-    note: "Call before delivery"
-  },
-  {
-    id: "ORD-005",
-    referenceNumber: "REF45678",
-    type: "Deliver",
-    customer: {
-      name: "Ahmad Hassan",
-      phone: "+961 3 987 654"
-    },
-    location: {
-      city: "Tyre",
-      area: "Old Town"
-    },
-    amount: {
-      valueLBP: 1800000,
-      valueUSD: 60
-    },
-    deliveryCharge: {
-      valueLBP: 195000,
-      valueUSD: 6.5
-    },
-    status: "Unsuccessful",
-    lastUpdate: "2023-05-16T11:45:00Z",
-    note: "Customer not available"
-  },
-  {
-    id: "ORD-006",
-    referenceNumber: "REF34567",
-    type: "Exchange",
-    customer: {
-      name: "Sarah Williams",
-      phone: "+961 70 123 987"
-    },
-    location: {
-      city: "Jounieh",
-      area: "Maameltein"
-    },
-    amount: {
-      valueLBP: 5100000,
-      valueUSD: 170
-    },
-    deliveryCharge: {
-      valueLBP: 240000,
-      valueUSD: 8
-    },
-    status: "Returned",
-    lastUpdate: "2023-05-15T09:30:00Z",
-    note: "Wrong item shipped"
-  },
-  {
-    id: "ORD-007",
-    referenceNumber: "REF23456",
-    type: "Cash Collection",
-    customer: {
-      name: "Michael Brown",
-      phone: "+961 71 876 543"
-    },
-    location: {
-      city: "Byblos",
-      area: "Downtown"
-    },
-    amount: {
-      valueLBP: 7500000,
-      valueUSD: 250
-    },
-    deliveryCharge: {
-      valueLBP: 270000,
-      valueUSD: 9
-    },
-    status: "Paid",
-    lastUpdate: "2023-05-14T14:15:00Z",
-    note: "Payment received in full"
-  },
-  {
-    id: "ORD-008",
-    referenceNumber: "REF78901",
-    type: "Deliver",
-    customer: {
-      name: "Olivia Wilson",
-      phone: "+961 78 345 678"
-    },
-    location: {
-      city: "Beirut",
-      area: "Achrafieh"
-    },
-    amount: {
-      valueLBP: 3000000,
-      valueUSD: 100
-    },
-    deliveryCharge: {
-      valueLBP: 150000,
-      valueUSD: 5
-    },
-    status: "Awaiting Action",
-    lastUpdate: "2023-05-13T16:45:00Z",
-    note: "Customer requested delivery reschedule"
-  },
-  {
-    id: "ORD-009",
-    referenceNumber: "REF89012",
-    type: "Exchange",
-    customer: {
-      name: "Liam Davis",
-      phone: "+961 3 567 890"
-    },
-    location: {
-      city: "Zahle",
-      area: "Center"
-    },
-    amount: {
-      valueLBP: 4800000,
-      valueUSD: 160
-    },
-    deliveryCharge: {
-      valueLBP: 225000,
-      valueUSD: 7.5
-    },
-    status: "Awaiting Action",
-    lastUpdate: "2023-05-12T11:30:00Z",
-    note: "Product damaged on delivery"
-  }
-];
+    status: order.status as any,
+    lastUpdate: order.updated_at,
+    note: order.note
+  };
+};
 
 const OrdersList: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
@@ -248,6 +60,29 @@ const OrdersList: React.FC = () => {
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const { isMobile, isTablet } = useScreenSize();
+  
+  // Fetch orders from the database using our hooks
+  const { data: allOrders, isLoading: isLoadingAllOrders, error: ordersError } = useOrders();
+  const { data: newOrders } = useOrdersByStatus('New');
+  const { data: pendingOrders } = useOrdersByStatus('Pending Pickup');
+  const { data: inProgressOrders } = useOrdersByStatus('In Progress');
+  const { data: successfulOrders } = useOrdersByStatus('Successful');
+  const { data: unsuccessfulOrders } = useOrdersByStatus('Unsuccessful');
+  const { data: returnedOrders } = useOrdersByStatus('Returned');
+  const { data: paidOrders } = useOrdersByStatus('Paid');
+  
+  // Show toast notification if there's an error loading orders
+  React.useEffect(() => {
+    if (ordersError) {
+      toast.error("Failed to load orders. Please try again.");
+      console.error("Error loading orders:", ordersError);
+    }
+  }, [ordersError]);
+
+  // Transform database order format to UI component order format
+  const transformedOrders = useMemo(() => {
+    return allOrders ? allOrders.map(transformOrderData) : [];
+  }, [allOrders]);
   
   // Search function for orders
   const searchOrders = (orders: Order[], query: string) => {
@@ -299,47 +134,45 @@ const OrdersList: React.FC = () => {
     });
   };
   
-  // Filter by status based on active tab
-  const filterByStatus = (orders: Order[]) => {
-    if (activeTab === 'all') {
-      return orders;
-    } else if (activeTab === 'awaitingAction') {
-      return orders.filter(order => order.status === 'Awaiting Action');
-    } else {
-      return orders.filter(order => {
-        switch (activeTab) {
-          case 'new':
-            return order.status === 'New';
-          case 'pending':
-            return order.status === 'Pending Pickup';
-          case 'inProgress':
-            return order.status === 'In Progress';  
-          case 'successful':
-            return order.status === 'Successful';
-          case 'unsuccessful':
-            return order.status === 'Unsuccessful';
-          case 'returned':
-            return order.status === 'Returned';
-          case 'paid':
-            return order.status === 'Paid';
-          default:
-            return true;
-        }
-      });
+  // Get currently active orders based on tab
+  const getActiveTabOrders = () => {
+    if (!allOrders) return [];
+    
+    switch (activeTab) {
+      case 'new':
+        return newOrders ? newOrders.map(transformOrderData) : [];
+      case 'pending':
+        return pendingOrders ? pendingOrders.map(transformOrderData) : [];
+      case 'inProgress':
+        return inProgressOrders ? inProgressOrders.map(transformOrderData) : [];
+      case 'successful':
+        return successfulOrders ? successfulOrders.map(transformOrderData) : [];
+      case 'unsuccessful':
+        return unsuccessfulOrders ? unsuccessfulOrders.map(transformOrderData) : [];
+      case 'returned':
+        return returnedOrders ? returnedOrders.map(transformOrderData) : [];
+      case 'paid':
+        return paidOrders ? paidOrders.map(transformOrderData) : [];
+      case 'awaitingAction':
+        // Filter orders with status 'Awaiting Action'
+        return transformedOrders.filter(order => order.status === 'Awaiting Action');
+      default:
+        return transformedOrders;
     }
   };
   
   // Combined filtering and searching
   const filteredOrders = useMemo(() => {
-    // First filter by status
-    const statusFiltered = filterByStatus(mockOrders);
+    // First filter by status/tab
+    const tabFilteredOrders = getActiveTabOrders();
     
     // Then filter by date range
-    const dateFiltered = filterByDateRange(statusFiltered, dateRange.from, dateRange.to);
+    const dateFiltered = filterByDateRange(tabFilteredOrders, dateRange.from, dateRange.to);
     
     // Finally filter by search query
     return searchOrders(dateFiltered, searchQuery);
-  }, [activeTab, searchQuery, dateRange.from, dateRange.to]);
+  }, [activeTab, searchQuery, dateRange.from, dateRange.to, allOrders, newOrders, pendingOrders, 
+      inProgressOrders, successfulOrders, unsuccessfulOrders, returnedOrders, paidOrders]);
   
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -368,7 +201,7 @@ const OrdersList: React.FC = () => {
           <EmptyState 
             icon={FileBarChart}
             title="No new orders today"
-            description="No new orders have been created today."
+            description="No new orders have been created yet. Start by creating a new order."
             actionLabel="Create Order"
             actionHref="/orders/new"
           />
@@ -637,19 +470,37 @@ const OrdersList: React.FC = () => {
         )}
       </div>
       
-      {/* Render orders table or empty state */}
-      {filteredOrders.length > 0 ? (
-        <OrdersTable 
-          orders={filteredOrders}
-          selectedOrders={selectedOrders}
-          toggleSelectAll={toggleSelectAll}
-          toggleSelectOrder={toggleSelectOrder}
-          showActions={true}
-        />
-      ) : (
-        <div className="mt-4">
-          {renderEmptyState()}
+      {/* Loading state */}
+      {isLoadingAllOrders && (
+        <div className="mt-8 flex justify-center">
+          <p className="text-muted-foreground">Loading orders...</p>
         </div>
+      )}
+
+      {/* Error state */}
+      {ordersError && (
+        <div className="mt-8 flex justify-center">
+          <p className="text-red-500">Failed to load orders. Please try again later.</p>
+        </div>
+      )}
+      
+      {/* Render orders table or empty state */}
+      {!isLoadingAllOrders && !ordersError && (
+        <>
+          {filteredOrders.length > 0 ? (
+            <OrdersTable 
+              orders={filteredOrders}
+              selectedOrders={selectedOrders}
+              toggleSelectAll={toggleSelectAll}
+              toggleSelectOrder={toggleSelectOrder}
+              showActions={true}
+            />
+          ) : (
+            <div className="mt-4">
+              {renderEmptyState()}
+            </div>
+          )}
+        </>
       )}
       
       {/* Import Modal */}

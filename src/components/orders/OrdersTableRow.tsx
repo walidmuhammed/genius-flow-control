@@ -25,7 +25,7 @@ export interface Order {
   location: {
     city: string;
     area: string;
-    address?: string; // Added address field
+    address?: string; 
   };
   amount: {
     valueLBP: number;
