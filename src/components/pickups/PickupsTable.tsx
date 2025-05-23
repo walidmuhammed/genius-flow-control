@@ -141,7 +141,7 @@ const PickupsTable: React.FC<PickupsTableProps> = ({
                     </div>
                   </TableCell>
                   <TableCell>
-                    {formatDate(pickup.pickup_date)}
+                    {formatDate(new Date(pickup.pickup_date))}
                   </TableCell>
                   <TableCell>
                     <Badge 
