@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Search, Filter, Clock, Package, ArrowLeft, Package2, Wallet, FileText, Send } from 'lucide-react';
+import { Search, Filter, Clock, Package, ArrowLeft, Package2, Wallet, FileText, Send, Loader2 } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,96 +10,93 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-
-type TicketStatus = 'Open' | 'Resolved' | 'Closed';
-type TicketCategory = 'Delay Delivery' | 'Other' | 'Technical Issue';
-
-interface Ticket {
-  id: string;
-  category: TicketCategory;
-  title: string;
-  content: string;
-  status: TicketStatus;
-  date: string;
-  time: string;
-}
-
-interface Message {
-  sender: string;
-  content: string;
-  timestamp: string;
-}
+import { useTickets, useTicket, useTicketMessages, useCreateTicket, useAddTicketMessage, useUpdateTicketStatus } from '@/hooks/use-tickets';
+import { format } from 'date-fns';
+import { toast } from 'sonner';
+import type { TicketCategory } from '@/services/tickets';
 
 const Support: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState<string>('');
   const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
   const [newTicketCategory, setNewTicketCategory] = useState<string>('orders');
+  const [newTicketTitle, setNewTicketTitle] = useState<string>('');
+  const [newTicketContent, setNewTicketContent] = useState<string>('');
+  
+  // Fetch tickets
+  const { data: tickets = [], isLoading: isLoadingTickets } = useTickets();
+  
+  // Fetch selected ticket
+  const { data: selectedTicket } = useTicket(selectedTicketId || undefined);
+  
+  // Fetch ticket messages
+  const { data: ticketMessages = [] } = useTicketMessages(selectedTicketId || undefined);
+  
+  // Mutations
+  const createTicketMutation = useCreateTicket();
+  const addTicketMessageMutation = useAddTicketMessage();
+  const updateTicketStatusMutation = useUpdateTicketStatus();
 
-  // Mock data
-  const mockTickets: Ticket[] = [
-    {
-      id: '267576',
-      category: 'Delay Delivery',
-      title: 'الاوردر مش picked up',
-      content: 'رجعني لي كتير لتصدق قرفني،اورقي السبورت الشحني ضروري هي جا، الاوردر مش picked up',
-      status: 'Open',
-      date: '18 Nov 2020',
-      time: '07:56 PM',
-    },
-    {
-      id: '281720',
-      category: 'Other',
-      title: 'To Finance Team',
-      content: 'Payment issue with the last order',
-      status: 'Resolved',
-      date: '07 Dec 2020',
-      time: '01:02 PM',
-    },
-    {
-      id: '264766',
-      category: 'Other',
-      title: '4373219',
-      content: 'Need assistance with order tracking',
-      status: 'Resolved',
-      date: '03 Dec 2020',
-      time: '09:34 PM',
-    },
-    {
-      id: '265054',
-      category: 'Technical Issue',
-      title: 'محافظة ليست لديكم الاختيارات',
-      content: 'App not showing all location options',
-      status: 'Resolved',
-      date: '16 Nov 2020',
-      time: '10:19 AM',
-    },
-    {
-      id: '269210',
-      category: 'Delay Delivery',
-      title: 'تاخير توصيل',
-      content: 'Order delayed over a week',
-      status: 'Closed',
-      date: '14 Nov 2020',
-      time: '02:32 PM',
-    },
-  ];
+  // Filter tickets based on search query
+  const filteredTickets = tickets.filter(ticket => 
+    ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    ticket.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    ticket.id.includes(searchQuery)
+  );
 
-  const mockMessages: Message[] = [
-    {
-      sender: 'Alaa Emad',
-      content: 'Hi Dimo,',
-      timestamp: '18 Nov, 05:24 PM',
-    },
-    {
-      sender: 'Alaa Emad',
-      content: 'يرجي العلم التواصيل مستمر حتي ٦ مساءا',
-      timestamp: '18 Nov, 05:25 PM',
-    },
-  ];
+  const handleTicketClick = (ticketId: string) => {
+    setSelectedTicketId(ticketId);
+  };
 
-  const getStatusBadge = (status: TicketStatus) => {
+  const handleSendMessage = async () => {
+    if (newMessage.trim() && selectedTicketId) {
+      await addTicketMessageMutation.mutateAsync({
+        ticket_id: selectedTicketId,
+        sender: 'Customer Service', // This should be the actual user name in a real system
+        content: newMessage
+      });
+      setNewMessage('');
+    }
+  };
+
+  const handleCreateNewTicket = async () => {
+    if (!newTicketTitle.trim()) {
+      toast.error('Please enter a ticket title');
+      return;
+    }
+    
+    if (!newTicketContent.trim()) {
+      toast.error('Please enter ticket details');
+      return;
+    }
+    
+    const newTicket = await createTicketMutation.mutateAsync({
+      category: getCategoryTitle(newTicketCategory),
+      title: newTicketTitle,
+      content: newTicketContent
+    });
+    
+    if (newTicket) {
+      setIsNewTicketModalOpen(false);
+      setNewTicketCategory('orders');
+      setNewTicketTitle('');
+      setNewTicketContent('');
+      setSelectedTicketId(newTicket.id);
+    }
+  };
+  
+  const handleCloseTicket = async () => {
+    if (selectedTicketId) {
+      await updateTicketStatusMutation.mutateAsync({
+        ticketId: selectedTicketId,
+        status: 'Closed'
+      });
+      setSelectedTicketId(null);
+    }
+  };
+  
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Open':
         return <Badge className="bg-blue-500">Open</Badge>;
@@ -110,21 +108,26 @@ const Support: React.FC = () => {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
-
-  const handleTicketClick = (ticket: Ticket) => {
-    setSelectedTicket(ticket);
-  };
-
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      console.log('Sending message:', newMessage);
-      setNewMessage('');
+  
+  const getCategoryTitle = (categoryKey: string): TicketCategory => {
+    switch (categoryKey) {
+      case 'orders': return 'Order Issue';
+      case 'pickups': return 'Pickup Issue';
+      case 'return': return 'Return Issue';
+      case 'packaging': return 'Packaging Issue';
+      case 'payment': return 'Payment Issue';
+      case 'technical': return 'Technical Issue';
+      case 'delay': return 'Delay Delivery';
+      default: return 'Other';
     }
   };
 
-  const handleCreateNewTicket = () => {
-    console.log('Creating new ticket with category:', newTicketCategory);
-    setIsNewTicketModalOpen(false);
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'dd MMM yyyy, hh:mm a');
+    } catch (error) {
+      return dateString;
+    }
   };
 
   return (
@@ -160,35 +163,46 @@ const Support: React.FC = () => {
           </div>
           
           <div className="p-4 text-sm text-muted-foreground">
-            Tickets ( {mockTickets.length} )
+            Tickets ( {filteredTickets.length} )
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {mockTickets.map((ticket) => (
-              <div
-                key={ticket.id}
-                className={`p-4 border-b cursor-pointer hover:bg-muted/40 transition-colors ${
-                  selectedTicket?.id === ticket.id ? 'bg-muted/40' : ''
-                }`}
-                onClick={() => handleTicketClick(ticket)}
-              >
-                <div className="flex justify-between">
-                  <Badge variant="outline" className="bg-muted/80 text-muted-foreground">
-                    {ticket.category}
-                  </Badge>
-                  {getStatusBadge(ticket.status)}
-                </div>
-
-                <div className="mt-2">
-                  <p className="font-medium">Ticket ID {ticket.id}</p>
-                  <p className="text-sm text-muted-foreground truncate">{ticket.title}</p>
-                </div>
-
-                <div className="mt-2 text-xs text-muted-foreground">
-                  {ticket.date} - {ticket.time}
-                </div>
+            {isLoadingTickets ? (
+              <div className="flex justify-center items-center p-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ))}
+            ) : filteredTickets.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                <Package className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p>No tickets found. Create a new ticket to get help.</p>
+              </div>
+            ) : (
+              filteredTickets.map((ticket) => (
+                <div
+                  key={ticket.id}
+                  className={`p-4 border-b cursor-pointer hover:bg-muted/40 transition-colors ${
+                    selectedTicketId === ticket.id ? 'bg-muted/40' : ''
+                  }`}
+                  onClick={() => handleTicketClick(ticket.id)}
+                >
+                  <div className="flex justify-between">
+                    <Badge variant="outline" className="bg-muted/80 text-muted-foreground">
+                      {ticket.category}
+                    </Badge>
+                    {getStatusBadge(ticket.status)}
+                  </div>
+
+                  <div className="mt-2">
+                    <p className="font-medium">Ticket ID {ticket.id.substring(0, 6)}</p>
+                    <p className="text-sm text-muted-foreground truncate">{ticket.title}</p>
+                  </div>
+
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    {formatDate(ticket.created_at)}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
         
@@ -199,7 +213,7 @@ const Support: React.FC = () => {
                 <div className="flex items-center">
                   <div>
                     <h2 className="text-lg font-medium flex items-center gap-2">
-                      Ticket ID {selectedTicket.id}
+                      Ticket ID {selectedTicket.id.substring(0, 6)}
                     </h2>
                     <p className="text-muted-foreground">{selectedTicket.title}</p>
                     <Badge variant="outline" className="bg-muted/80 text-muted-foreground mt-1">
@@ -207,8 +221,8 @@ const Support: React.FC = () => {
                     </Badge>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
-                  Close
+                <Button variant="outline" size="sm" onClick={handleCloseTicket}>
+                  {selectedTicket.status === 'Closed' ? 'Reopen' : 'Close'}
                 </Button>
               </div>
               
@@ -217,19 +231,19 @@ const Support: React.FC = () => {
                   <div className="flex gap-4">
                     <div className="flex-shrink-0">
                       <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
-                        {selectedTicket.title.charAt(0).toUpperCase()}
+                        C
                       </div>
                     </div>
                     <div className="bg-muted p-4 rounded-lg rounded-tl-none max-w-[80%]">
                       <p>{selectedTicket.content}</p>
                       <p className="text-xs text-muted-foreground mt-2">
-                        {selectedTicket.date}, {selectedTicket.time}
+                        {formatDate(selectedTicket.created_at)}
                       </p>
                     </div>
                   </div>
                   
-                  {mockMessages.map((message, index) => (
-                    <div className="flex gap-4" key={index}>
+                  {ticketMessages.map((message) => (
+                    <div className="flex gap-4" key={message.id}>
                       <div className="flex-shrink-0">
                         <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
                           {message.sender.charAt(0)}
@@ -238,7 +252,7 @@ const Support: React.FC = () => {
                       <div className="bg-muted p-4 rounded-lg rounded-tl-none max-w-[80%]">
                         <p>{message.content}</p>
                         <p className="text-xs text-muted-foreground mt-2">
-                          {message.timestamp}
+                          {formatDate(message.created_at)}
                         </p>
                       </div>
                     </div>
@@ -256,6 +270,7 @@ const Support: React.FC = () => {
                     className="min-h-12 resize-none"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
+                    disabled={selectedTicket.status === 'Closed'}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -263,8 +278,17 @@ const Support: React.FC = () => {
                       }
                     }}
                   />
-                  <Button size="icon" className="flex-shrink-0 bg-primary hover:bg-primary/90" onClick={handleSendMessage}>
-                    <Send className="h-5 w-5" />
+                  <Button 
+                    size="icon" 
+                    className="flex-shrink-0 bg-primary hover:bg-primary/90" 
+                    onClick={handleSendMessage}
+                    disabled={selectedTicket.status === 'Closed' || addTicketMessageMutation.isPending || !newMessage.trim()}
+                  >
+                    {addTicketMessageMutation.isPending ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Send className="h-5 w-5" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -301,6 +325,29 @@ const Support: React.FC = () => {
               </DialogDescription>
             </DialogHeader>
             
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Ticket Title</Label>
+                <Input 
+                  id="title" 
+                  value={newTicketTitle}
+                  onChange={(e) => setNewTicketTitle(e.target.value)}
+                  placeholder="Brief description of your issue"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="content">Details</Label>
+                <Textarea 
+                  id="content" 
+                  value={newTicketContent}
+                  onChange={(e) => setNewTicketContent(e.target.value)}
+                  placeholder="Provide details about your issue"
+                  rows={4}
+                />
+              </div>
+            </div>
+
             <RadioGroup 
               value={newTicketCategory}
               onValueChange={setNewTicketCategory}
@@ -378,14 +425,27 @@ const Support: React.FC = () => {
             </RadioGroup>
             
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsNewTicketModalOpen(false)}>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsNewTicketModalOpen(false);
+                  setNewTicketTitle('');
+                  setNewTicketContent('');
+                  setNewTicketCategory('orders');
+                }}
+              >
                 Cancel
               </Button>
               <Button 
                 onClick={handleCreateNewTicket}
                 className="bg-primary hover:bg-primary/90"
+                disabled={createTicketMutation.isPending || !newTicketTitle.trim() || !newTicketContent.trim()}
               >
-                Proceed
+                {createTicketMutation.isPending ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...</>
+                ) : (
+                  'Create Ticket'
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
