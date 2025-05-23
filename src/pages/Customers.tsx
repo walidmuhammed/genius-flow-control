@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -350,8 +349,15 @@ const Customers: React.FC = () => {
                           </TableCell>
                           <TableCell>
                             <div>
-                              <div>{customer.city_name || customer.governorate_name || 'No location'}</div>
-                              <div className="text-xs text-gray-500">{customer.address || 'No address'}</div>
+                              {customer.governorate_name && (
+                                <div className="font-medium text-gray-900">{customer.governorate_name}</div>
+                              )}
+                              {customer.city_name && (
+                                <div className="text-xs text-gray-500 mt-0.5">{customer.city_name}</div>
+                              )}
+                              {!customer.governorate_name && !customer.city_name && (
+                                <div className="text-gray-500">No location</div>
+                              )}
                             </div>
                           </TableCell>
                           <TableCell className="text-center">

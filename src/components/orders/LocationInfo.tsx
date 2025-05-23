@@ -7,21 +7,34 @@ interface LocationInfoProps {
   city: string;
   area: string;
   address?: string;
+  showAddressInline?: boolean;
 }
 
-const LocationInfo: React.FC<LocationInfoProps> = ({ city, area, address }) => {
+const LocationInfo: React.FC<LocationInfoProps> = ({ 
+  city, 
+  area, 
+  address,
+  showAddressInline = false
+}) => {
   return (
     <div className="flex flex-col">
       <span className="font-medium text-gray-900">{city}</span>
       <span className="text-gray-500 text-xs mt-0.5">{area}</span>
       
-      {address && (
+      {address && showAddressInline && (
+        <span className="text-gray-500 text-xs mt-1.5 line-clamp-2">
+          <MapPin className="h-3 w-3 inline mr-1" />
+          {address}
+        </span>
+      )}
+      
+      {address && !showAddressInline && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="text-gray-500 text-xs mt-1.5 line-clamp-2 cursor-pointer flex items-center gap-1">
+              <span className="text-gray-500 text-xs mt-1.5 cursor-pointer flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
-                {address}
+                View address
               </span>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="max-w-xs">

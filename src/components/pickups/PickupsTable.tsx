@@ -127,9 +127,19 @@ const PickupsTable: React.FC<PickupsTableProps> = ({
                   <TableCell>
                     <div className="flex flex-col">
                       <span className="font-medium">{pickup.location}</span>
-                      <span className="text-xs text-muted-foreground mt-0.5">
-                        {pickup.address || 'No address provided'}
-                      </span>
+                      {pickup.address && (
+                        <span className="text-xs text-muted-foreground mt-0.5 cursor-pointer hover:text-foreground">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-5 text-xs px-0" 
+                            onClick={() => handleViewPickupDetails(pickup)}
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            View address
+                          </Button>
+                        </span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
