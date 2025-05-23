@@ -93,7 +93,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             <SelectValue placeholder="Select a governorate" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">None</SelectItem>
+            <SelectItem value="_none">None</SelectItem>
             {governorates.map(governorate => (
               <SelectItem key={governorate.id} value={governorate.id}>{governorate.name}</SelectItem>
             ))}
@@ -108,7 +108,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
             <SelectValue placeholder="Select a city" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">None</SelectItem>
+            <SelectItem value="_none">None</SelectItem>
             {cities
               .filter(city => !governorateId || city.governorate_id === governorateId)
               .map(city => (

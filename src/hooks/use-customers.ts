@@ -45,8 +45,18 @@ export function useUpdateCustomer() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string, updates: Partial<Omit<Customer, 'id' | 'created_at' | 'updated_at'>> }) => 
-      updateCustomer(id, updates),
+    mutationFn: ({ id, updates }: { id: string, updates: Partial<Omit<Customer, 'id' | 'created_at' | 'updated_at'>> }) => {
+      // Transform "_none" values to null for city_id and governorate_id
+      const processedUpdates = { ...updates };
+      if (processedUpdates.city_id === "_none") {
+        processedUpdates.city_id = null;
+      }
+      if (processedUpdates.governorate_id === "_none") {
+        processedUpdates.governorate_id = null;
+      }
+      
+      return updateCustomer(id, processedUpdates);
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       queryClient.invalidateQueries({ queryKey: ['customer', variables.id] });
