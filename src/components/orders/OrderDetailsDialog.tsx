@@ -56,14 +56,14 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                       <Badge variant={
                         order.status === 'New' ? 'default' :
                         order.status === 'Pending Pickup' ? 'secondary' :
-                        order.status === 'In Progress' ? 'indigo' :
-                        order.status === 'Heading to Customer' ? 'blue' :
-                        order.status === 'Heading to You' ? 'yellow' :
-                        order.status === 'Successful' ? 'green' :
-                        order.status === 'Unsuccessful' ? 'red' :
-                        order.status === 'Returned' ? 'orange' :
-                        order.status === 'Paid' ? 'emerald' :
-                        order.status === 'Awaiting Action' ? 'amber' :
+                        order.status === 'In Progress' ? 'secondary' :
+                        order.status === 'Heading to Customer' ? 'secondary' :
+                        order.status === 'Heading to You' ? 'secondary' :
+                        order.status === 'Successful' ? 'secondary' :
+                        order.status === 'Unsuccessful' ? 'destructive' :
+                        order.status === 'Returned' ? 'destructive' :
+                        order.status === 'Paid' ? 'secondary' :
+                        order.status === 'Awaiting Action' ? 'outline' :
                         'default'
                       } className="mt-1">
                         {order.status}

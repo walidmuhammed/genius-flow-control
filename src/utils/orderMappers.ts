@@ -16,7 +16,8 @@ export function mapOrderToTableFormat(order: OrderWithCustomer): TableOrder {
     },
     location: {
       city: order.customer.city_name || '',
-      area: order.customer.governorate_name || ''
+      area: order.customer.governorate_name || '',
+      address: order.customer.address
     },
     amount: {
       valueLBP: Number(order.cash_collection_lbp),

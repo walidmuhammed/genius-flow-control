@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 export interface ActivityLog {
   id: string;
@@ -25,7 +24,7 @@ export async function getActivityLogs(limit: number = 50): Promise<ActivityLog[]
       return [];
     }
 
-    return data || [];
+    return data.map(transformActivityLog) || [];
   } catch (error) {
     console.error('Unexpected error fetching activity logs:', error);
     return [];
@@ -49,7 +48,7 @@ export async function getActivityLogsByEntityType(
       return [];
     }
 
-    return data || [];
+    return data.map(transformActivityLog) || [];
   } catch (error) {
     console.error(`Unexpected error fetching ${entityType} activity logs:`, error);
     return [];
@@ -73,9 +72,45 @@ export async function getActivityLogsByEntityId(
       return [];
     }
 
-    return data || [];
+    return data.map(transformActivityLog) || [];
   } catch (error) {
     console.error(`Unexpected error fetching activity logs for entity ${entityId}:`, error);
     return [];
   }
+}
+
+// Helper function to transform activity log data to match our interface
+function transformActivityLog(log: any): ActivityLog {
+  // Validate and ensure the entity_type is one of the expected values
+  let entityType: ActivityLog['entity_type'] = 'order';
+  if (
+    log.entity_type === 'order' || 
+    log.entity_type === 'customer' || 
+    log.entity_type === 'pickup' || 
+    log.entity_type === 'ticket' || 
+    log.entity_type === 'ticket_message'
+  ) {
+    entityType = log.entity_type;
+  }
+
+  // Validate and ensure action is one of the expected values
+  let action: ActivityLog['action'] = 'created';
+  if (
+    log.action === 'created' || 
+    log.action === 'updated' || 
+    log.action === 'deleted' || 
+    log.action === 'status_changed'
+  ) {
+    action = log.action;
+  }
+
+  return {
+    id: log.id,
+    entity_type: entityType,
+    entity_id: log.entity_id,
+    action: action,
+    details: log.details || {},
+    performed_by: log.performed_by || 'System',
+    created_at: log.created_at
+  };
 }

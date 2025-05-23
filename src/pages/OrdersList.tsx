@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { FileBarChart, PackageSearch, CheckCheck, AlertCircle, Download, Upload } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -19,7 +18,7 @@ import { OrdersDateFilter } from '@/components/orders/OrdersDateFilter';
 import { ImportOrdersModal } from '@/components/orders/ImportOrdersModal';
 import { ExportOrdersDropdown } from '@/components/orders/ExportOrdersDropdown';
 import { useOrders, useOrdersByStatus } from '@/hooks/use-orders';
-import type { Order as OrderType } from '@/services/orders';
+import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 import { toast } from 'sonner';
 import { Order } from '@/components/orders/OrdersTableRow';
 
@@ -81,7 +80,7 @@ const OrdersList: React.FC = () => {
 
   // Transform database order format to UI component order format
   const transformedOrders = useMemo(() => {
-    return allOrders ? allOrders.map(transformOrderData) : [];
+    return allOrders ? mapOrdersToTableFormat(allOrders) : [];
   }, [allOrders]);
   
   // Search function for orders
@@ -140,19 +139,19 @@ const OrdersList: React.FC = () => {
     
     switch (activeTab) {
       case 'new':
-        return newOrders ? newOrders.map(transformOrderData) : [];
+        return newOrders ? mapOrdersToTableFormat(newOrders) : [];
       case 'pending':
-        return pendingOrders ? pendingOrders.map(transformOrderData) : [];
+        return pendingOrders ? mapOrdersToTableFormat(pendingOrders) : [];
       case 'inProgress':
-        return inProgressOrders ? inProgressOrders.map(transformOrderData) : [];
+        return inProgressOrders ? mapOrdersToTableFormat(inProgressOrders) : [];
       case 'successful':
-        return successfulOrders ? successfulOrders.map(transformOrderData) : [];
+        return successfulOrders ? mapOrdersToTableFormat(successfulOrders) : [];
       case 'unsuccessful':
-        return unsuccessfulOrders ? unsuccessfulOrders.map(transformOrderData) : [];
+        return unsuccessfulOrders ? mapOrdersToTableFormat(unsuccessfulOrders) : [];
       case 'returned':
-        return returnedOrders ? returnedOrders.map(transformOrderData) : [];
+        return returnedOrders ? mapOrdersToTableFormat(returnedOrders) : [];
       case 'paid':
-        return paidOrders ? paidOrders.map(transformOrderData) : [];
+        return paidOrders ? mapOrdersToTableFormat(paidOrders) : [];
       case 'awaitingAction':
         // Filter orders with status 'Awaiting Action'
         return transformedOrders.filter(order => order.status === 'Awaiting Action');
