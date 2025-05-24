@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import SignIn from "./pages/SignIn";
+import ClientSignIn from "./pages/ClientSignIn";
+import ClientSignUp from "./pages/ClientSignUp";
+import AdminSignIn from "./pages/AdminSignIn";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import OrdersList from "./pages/OrdersList";
@@ -49,8 +51,11 @@ const App = () => (
         }} />
         <BrowserRouter>
           <Routes>
-            {/* Public Routes */}
+            {/* Public Auth Routes */}
             <Route path="/auth" element={<SignIn />} />
+            <Route path="/auth/signin" element={<ClientSignIn />} />
+            <Route path="/auth/signup" element={<ClientSignUp />} />
+            <Route path="/auth/admin" element={<AdminSignIn />} />
             
             {/* Client Dashboard Routes (Protected) */}
             <Route path="/" element={

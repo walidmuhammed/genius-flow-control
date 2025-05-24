@@ -1,73 +1,39 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, LogIn } from 'lucide-react';
+import { Users, Shield, ArrowRight, Building2, Truck } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/hooks/useAuth';
 
 const SignIn = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'client' | 'admin'>('client');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+  const { user, profile, loading } = useAuth();
 
   useEffect(() => {
     document.title = "Sign In - Topspeed";
     
-    // Check if user is already authenticated
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        // For now, default to client dashboard - you can implement role detection here
+    // Redirect if already authenticated
+    if (!loading && user && profile) {
+      if (profile.user_type === 'admin') {
+        navigate('/dashboard/admin');
+      } else {
         navigate('/');
       }
-    };
-    
-    checkUser();
-  }, [navigate]);
-
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) {
-        throw signInError;
-      }
-
-      if (data.user) {
-        // Store role preference in localStorage for now
-        // In production, you'd get this from user profile/database
-        localStorage.setItem('userRole', role);
-        
-        // Navigate based on selected role
-        if (role === 'admin') {
-          navigate('/dashboard/admin');
-        } else {
-          navigate('/');
-        }
-      }
-    } catch (err: any) {
-      setError(err.message || 'Sign in failed. Please check your credentials.');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [navigate, user, profile, loading]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin text-[#DB271E] mx-auto mb-4 rounded-full border-2 border-current border-t-transparent" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
@@ -75,144 +41,134 @@ const SignIn = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-md"
+        className="w-full max-w-4xl"
       >
         {/* Logo/Branding */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-12">
           <motion.div
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="inline-flex items-center justify-center w-16 h-16 bg-[#DB271E] rounded-2xl mb-4"
+            className="inline-flex items-center justify-center w-20 h-20 bg-[#DB271E] rounded-3xl mb-6"
           >
-            <LogIn className="h-8 w-8 text-white" />
+            <Truck className="h-10 w-10 text-white" />
           </motion.div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Topspeed</h1>
-          <p className="text-gray-600">Sign in to your dashboard</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to Topspeed</h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Lebanon's premier delivery management platform. Choose your access type to continue.
+          </p>
         </div>
 
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-xl font-semibold text-center">Sign In</CardTitle>
-            <CardDescription className="text-center">
-              Choose your role and enter your credentials
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSignIn} className="space-y-4">
-              {/* Role Selector */}
-              <div className="space-y-2">
-                <Label htmlFor="role" className="text-sm font-medium">
-                  Sign in as
-                </Label>
-                <Select value={role} onValueChange={(value) => setRole(value as 'client' | 'admin')}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="client" className="cursor-pointer">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span>Client (Business Owner)</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="admin" className="cursor-pointer">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-[#DB271E] rounded-full"></div>
-                        <span>Admin (Delivery Staff)</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+          {/* Client Access */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
+            <Card className="h-full shadow-xl border-0 bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 group cursor-pointer">
+              <CardHeader className="text-center pb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl mb-4 mx-auto group-hover:bg-blue-200 transition-colors">
+                  <Building2 className="h-8 w-8 text-blue-600" />
+                </div>
+                <CardTitle className="text-2xl font-semibold text-gray-900">
+                  Business Owner
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Manage your deliveries, track orders, and grow your business
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-2">
+                <div className="space-y-3 text-sm text-gray-600">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    <span>Create and manage delivery orders</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    <span>Track real-time order status</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    <span>Manage customer information</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    <span>View analytics and reports</span>
+                  </div>
+                </div>
+                
+                <div className="pt-4 space-y-3">
+                  <Link to="/auth/signin">
+                    <Button className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 group">
+                      Sign In
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </Link>
+                  <Link to="/auth/signup">
+                    <Button variant="outline" className="w-full h-11 border-blue-200 text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-all duration-200">
+                      Create Account
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-11"
-                />
-              </div>
-
-              {/* Password */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium">
-                  Password
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="h-11"
-                />
-              </div>
-
-              {/* Remember Me */}
-              <div className="flex items-center space-x-2">
-                <input
-                  id="remember"
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-[#DB271E] bg-gray-100 border-gray-300 rounded focus:ring-[#DB271E] focus:ring-2"
-                />
-                <Label htmlFor="remember" className="text-sm text-gray-600">
-                  Remember me
-                </Label>
-              </div>
-
-              {/* Error Message */}
-              {error && (
-                <Alert className="border-red-200 bg-red-50">
-                  <AlertDescription className="text-red-700 text-sm">
-                    {error}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Sign In Button */}
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-11 bg-[#DB271E] hover:bg-[#c0211a] text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  <>
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Sign In
-                  </>
-                )}
-              </Button>
-            </form>
-
-            {/* Footer */}
-            <div className="mt-6 text-center">
-              <button className="text-sm text-gray-600 hover:text-[#DB271E] transition-colors duration-200">
-                Forgot your password?
-              </button>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Admin Access */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+          >
+            <Card className="h-full shadow-xl border-0 bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 group cursor-pointer">
+              <CardHeader className="text-center pb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-2xl mb-4 mx-auto group-hover:bg-red-200 transition-colors">
+                  <Shield className="h-8 w-8 text-[#DB271E]" />
+                </div>
+                <CardTitle className="text-2xl font-semibold text-gray-900">
+                  Delivery Admin
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Manage operations, couriers, and system oversight
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-2">
+                <div className="space-y-3 text-sm text-gray-600">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-[#DB271E] rounded-full" />
+                    <span>Oversee all delivery operations</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-[#DB271E] rounded-full" />
+                    <span>Manage courier assignments</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-[#DB271E] rounded-full" />
+                    <span>Handle customer support</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-[#DB271E] rounded-full" />
+                    <span>System administration</span>
+                  </div>
+                </div>
+                
+                <div className="pt-4">
+                  <Link to="/auth/admin">
+                    <Button className="w-full h-11 bg-[#DB271E] hover:bg-[#c0211a] text-white font-medium rounded-lg transition-all duration-200 group">
+                      Admin Access
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
 
         {/* Additional Info */}
-        <div className="mt-6 text-center text-xs text-gray-500">
-          <p>© 2024 Topspeed. All rights reserved.</p>
+        <div className="mt-12 text-center text-sm text-gray-500">
+          <p>© 2024 Topspeed. Lebanon's trusted delivery partner.</p>
         </div>
       </motion.div>
     </div>

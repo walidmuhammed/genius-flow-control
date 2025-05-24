@@ -3,20 +3,32 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
+interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string | null;
+  phone: string | null;
+  business_name: string | null;
+  business_type: string | null;
+  user_type: 'client' | 'admin';
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  profile: UserProfile | null;
   loading: boolean;
-  role: 'client' | 'admin' | null;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
+  profile: null,
   loading: true,
-  role: null,
   signOut: async () => {},
+  refreshProfile: async () => {},
 });
 
 export const useAuth = () => {
@@ -34,23 +46,38 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [role, setRole] = useState<'client' | 'admin' | null>(null);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase.rpc('get_user_profile', { user_id: userId });
+      if (error) throw error;
+      if (data && data.length > 0) {
+        setProfile(data[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await fetchUserProfile(user.id);
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Get role from localStorage for now
-          const storedRole = localStorage.getItem('userRole') as 'client' | 'admin' | null;
-          setRole(storedRole || 'client');
+          await fetchUserProfile(session.user.id);
         } else {
-          setRole(null);
-          localStorage.removeItem('userRole');
+          setProfile(null);
         }
         
         setLoading(false);
@@ -58,13 +85,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        const storedRole = localStorage.getItem('userRole') as 'client' | 'admin' | null;
-        setRole(storedRole || 'client');
+        await fetchUserProfile(session.user.id);
       }
       
       setLoading(false);
@@ -75,15 +101,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    localStorage.removeItem('userRole');
+    setProfile(null);
   };
 
   const value = {
     user,
     session,
+    profile,
     loading,
-    role,
     signOut,
+    refreshProfile,
   };
 
   return (

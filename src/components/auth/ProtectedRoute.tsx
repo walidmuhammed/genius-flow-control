@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
-  const { user, loading, role } = useAuth();
+  const { user, profile, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -24,13 +24,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+  if (!user || !profile) {
+    return <Navigate to="/auth/signin" state={{ from: location }} replace />;
   }
 
-  if (requiredRole && role !== requiredRole) {
+  if (requiredRole && profile.user_type !== requiredRole) {
     // Redirect to appropriate dashboard based on user's role
-    const redirectPath = role === 'admin' ? '/dashboard/admin' : '/';
+    const redirectPath = profile.user_type === 'admin' ? '/dashboard/admin' : '/';
     return <Navigate to={redirectPath} replace />;
   }
 

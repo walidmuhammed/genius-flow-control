@@ -268,6 +268,39 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          business_name: string | null
+          business_type: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_type: string
+        }
+        Insert: {
+          business_name?: string | null
+          business_type?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+          user_type?: string
+        }
+        Update: {
+          business_name?: string | null
+          business_type?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_type?: string
+        }
+        Relationships: []
+      }
       ticket_messages: {
         Row: {
           content: string
@@ -354,6 +387,18 @@ export type Database = {
         Returns: {
           courier_name: string
           orders_count: number
+        }[]
+      }
+      get_user_profile: {
+        Args: { user_id: string }
+        Returns: {
+          id: string
+          email: string
+          full_name: string
+          phone: string
+          business_name: string
+          business_type: string
+          user_type: string
         }[]
       }
     }
