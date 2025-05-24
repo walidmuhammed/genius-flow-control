@@ -23,9 +23,14 @@ const AdminSignIn = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const { data: profileData } = await supabase.rpc('get_user_profile', { user_id: session.user.id });
-        if (profileData && profileData.length > 0 && profileData[0].user_type === 'admin') {
-          navigate('/dashboard/admin');
+        // Check if user has admin profile
+        try {
+          const { data: profileData } = await supabase.rpc('get_user_profile', { user_id: session.user.id });
+          if (profileData && profileData.length > 0 && profileData[0].user_type === 'admin') {
+            navigate('/dashboard/admin');
+          }
+        } catch (error) {
+          console.error('Error checking admin profile:', error);
         }
       }
     };
@@ -39,16 +44,22 @@ const AdminSignIn = () => {
     setError('');
 
     try {
+      console.log('Admin attempting sign in with:', email);
+      
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (signInError) {
+        console.error('Admin sign in error:', signInError);
         throw signInError;
       }
 
       if (data.user) {
+        console.log('Admin sign in successful, checking profile...');
+        
+        // Get user profile to verify admin role
         const { data: profileData } = await supabase.rpc('get_user_profile', { user_id: data.user.id });
         
         if (!profileData || profileData.length === 0 || profileData[0].user_type !== 'admin') {
@@ -57,9 +68,11 @@ const AdminSignIn = () => {
           return;
         }
 
+        console.log('Admin access granted');
         navigate('/dashboard/admin');
       }
     } catch (err: any) {
+      console.error('Admin sign in failed:', err);
       if (err.message.includes('Invalid login credentials')) {
         setError('Invalid admin credentials. Please check your email and password.');
       } else {
@@ -75,16 +88,16 @@ const AdminSignIn = () => {
       <div className="w-full max-w-md">
         {/* Logo/Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-[#DB271E] rounded-xl mb-4">
-            <Shield className="h-6 w-6 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#DB271E] rounded-2xl mb-4">
+            <Shield className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">Admin Access</h1>
           <p className="text-gray-300">Delivery Management System</p>
         </div>
 
         <Card className="shadow-2xl border-0 bg-white">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-lg font-semibold text-center text-gray-900">
+          <CardHeader className="space-y-1 pb-6">
+            <CardTitle className="text-xl font-semibold text-center text-gray-900">
               Admin Sign In
             </CardTitle>
             <CardDescription className="text-center">
@@ -105,7 +118,8 @@ const AdminSignIn = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="h-10"
+                  className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -121,7 +135,8 @@ const AdminSignIn = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-10"
+                  className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -136,7 +151,7 @@ const AdminSignIn = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-10 bg-[#DB271E] hover:bg-[#c0211a] text-white font-medium transition-all duration-200"
+                className="w-full h-11 bg-[#DB271E] hover:bg-[#c0211a] text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
               >
                 {loading ? (
                   <>

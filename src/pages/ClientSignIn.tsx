@@ -14,10 +14,6 @@ const ClientSignIn = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [adminUsername, setAdminUsername] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
-  const [adminLoading, setAdminLoading] = useState(false);
-  const [adminError, setAdminError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,53 +23,43 @@ const ClientSignIn = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const { data: profileData } = await supabase.rpc('get_user_profile', { user_id: session.user.id });
-        if (profileData && profileData.length > 0) {
-          if (profileData[0].user_type === 'admin') {
-            navigate('/dashboard/admin');
-          } else {
-            navigate('/');
-          }
-        }
+        navigate('/');
       }
     };
     
     checkUser();
   }, [navigate]);
 
-  const isEmail = (input: string) => {
-    return input.includes('@');
-  };
-
-  const handleClientSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
+      console.log('Attempting sign in with:', emailOrPhone);
+      
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: emailOrPhone,
         password: password,
       });
 
       if (signInError) {
+        console.error('Sign in error:', signInError);
         throw signInError;
       }
 
-      if (data.user) {
-        const { data: profileData } = await supabase.rpc('get_user_profile', { user_id: data.user.id });
-        
-        if (profileData && profileData.length > 0 && profileData[0].user_type === 'admin') {
-          setError('Please use the admin section below to access your account.');
-          await supabase.auth.signOut();
-          return;
-        }
+      console.log('Sign in successful:', data.user?.id);
 
-        navigate('/');
+      if (data.user) {
+        // Wait a moment for the auth state to update
+        setTimeout(() => {
+          navigate('/');
+        }, 100);
       }
     } catch (err: any) {
+      console.error('Sign in failed:', err);
       if (err.message.includes('Invalid login credentials')) {
-        setError('Invalid email or password. Please check your credentials and try again.');
+        setError('Invalid email or password. Please check your credentials.');
       } else {
         setError(err.message || 'Sign in failed. Please try again.');
       }
@@ -82,59 +68,42 @@ const ClientSignIn = () => {
     }
   };
 
-  const handleAdminSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAdminLoading(true);
-    setAdminError('');
-
-    // Hardcoded admin credentials for now
-    if (adminUsername === 'admin' && adminPassword === 'admin') {
-      // Simulate a brief loading state for UX
-      setTimeout(() => {
-        setAdminLoading(false);
-        navigate('/dashboard/admin');
-      }, 500);
-    } else {
-      setAdminError('Invalid admin credentials');
-      setAdminLoading(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
         {/* Logo/Branding */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-[#DB271E] rounded-xl mb-4">
-            <LogIn className="h-6 w-6 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#DB271E] rounded-2xl mb-4">
+            <LogIn className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
           <p className="text-gray-600">Sign in to your business account</p>
         </div>
 
         {/* Client Sign In */}
-        <Card className="shadow-lg border border-gray-200">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-lg font-semibold text-center">Client Sign In</CardTitle>
-            <CardDescription className="text-center text-sm">
+        <Card className="shadow-xl border-0 bg-white">
+          <CardHeader className="space-y-1 pb-6">
+            <CardTitle className="text-xl font-semibold text-center">Sign In</CardTitle>
+            <CardDescription className="text-center">
               Access your delivery dashboard
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleClientSignIn} className="space-y-4">
+            <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="emailOrPhone" className="text-sm font-medium flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  Email or Phone
+                  Email
                 </Label>
                 <Input
                   id="emailOrPhone"
-                  type="text"
-                  placeholder="Enter your email or phone"
+                  type="email"
+                  placeholder="Enter your email"
                   value={emailOrPhone}
                   onChange={(e) => setEmailOrPhone(e.target.value)}
                   required
-                  className="h-10"
+                  className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -150,7 +119,8 @@ const ClientSignIn = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-10"
+                  className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -165,7 +135,7 @@ const ClientSignIn = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-10 bg-[#DB271E] hover:bg-[#c0211a] text-white font-medium transition-all duration-200"
+                className="w-full h-11 bg-[#DB271E] hover:bg-[#c0211a] text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
               >
                 {loading ? (
                   <>
@@ -173,91 +143,28 @@ const ClientSignIn = () => {
                     Signing in...
                   </>
                 ) : (
-                  'Sign In'
+                  <>
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Sign In
+                  </>
                 )}
               </Button>
             </form>
 
-            <div className="mt-4 text-center">
+            <div className="mt-6 space-y-3 text-center">
               <div className="text-sm text-gray-600">
                 Don't have an account?{' '}
                 <Link to="/auth/signup" className="text-[#DB271E] hover:underline font-medium">
                   Sign up here
                 </Link>
               </div>
+              <div className="text-sm text-gray-500">
+                Are you a delivery admin?{' '}
+                <Link to="/auth/admin" className="text-[#DB271E] hover:underline font-medium">
+                  Admin Sign In
+                </Link>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Admin Access Section */}
-        <Card className="shadow-lg border border-gray-300 bg-gray-50">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-lg font-semibold text-center flex items-center justify-center gap-2">
-              <Shield className="h-5 w-5" />
-              Admin Access
-            </CardTitle>
-            <CardDescription className="text-center text-sm">
-              For delivery management staff only
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAdminSignIn} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="adminUsername" className="text-sm font-medium">
-                  Username
-                </Label>
-                <Input
-                  id="adminUsername"
-                  type="text"
-                  placeholder="Enter admin username"
-                  value={adminUsername}
-                  onChange={(e) => setAdminUsername(e.target.value)}
-                  required
-                  className="h-10"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="adminPassword" className="text-sm font-medium">
-                  Password
-                </Label>
-                <Input
-                  id="adminPassword"
-                  type="password"
-                  placeholder="Enter admin password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  required
-                  className="h-10"
-                />
-              </div>
-
-              {adminError && (
-                <Alert className="border-red-200 bg-red-50">
-                  <AlertDescription className="text-red-700 text-sm">
-                    {adminError}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <Button
-                type="submit"
-                disabled={adminLoading}
-                className="w-full h-10 bg-gray-700 hover:bg-gray-800 text-white font-medium transition-all duration-200"
-              >
-                {adminLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Accessing...
-                  </>
-                ) : (
-                  <>
-                    <Shield className="mr-2 h-4 w-4" />
-                    Admin Access
-                  </>
-                )}
-              </Button>
-            </form>
           </CardContent>
         </Card>
 
