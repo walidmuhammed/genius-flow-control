@@ -54,7 +54,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { data, error } = await supabase.rpc('get_user_profile', { user_id: userId });
       if (error) throw error;
       if (data && data.length > 0) {
-        setProfile(data[0]);
+        // Type assertion to ensure user_type is correctly typed
+        const profileData = data[0] as UserProfile;
+        setProfile(profileData);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
