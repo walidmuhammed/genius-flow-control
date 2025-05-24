@@ -7,15 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, LogIn, Mail } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Loader2, LogIn, Mail, Lock, Shield } from 'lucide-react';
 
 const ClientSignIn = () => {
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
+  const [adminUsername, setAdminUsername] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [adminError, setAdminError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,7 +27,14 @@ const ClientSignIn = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        navigate('/');
+        const { data: profileData } = await supabase.rpc('get_user_profile', { user_id: session.user.id });
+        if (profileData && profileData.length > 0) {
+          if (profileData[0].user_type === 'admin') {
+            navigate('/dashboard/admin');
+          } else {
+            navigate('/');
+          }
+        }
       }
     };
     
@@ -36,29 +45,26 @@ const ClientSignIn = () => {
     return input.includes('@');
   };
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleClientSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      // For now, we'll sign in with email. Phone authentication can be added later
-      const signInData = isEmail(emailOrPhone) 
-        ? { email: emailOrPhone, password }
-        : { email: emailOrPhone, password }; // Assume it's email for now
-
-      const { data, error: signInError } = await supabase.auth.signInWithPassword(signInData);
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: emailOrPhone,
+        password: password,
+      });
 
       if (signInError) {
         throw signInError;
       }
 
       if (data.user) {
-        // Get user profile to check role
         const { data: profileData } = await supabase.rpc('get_user_profile', { user_id: data.user.id });
         
         if (profileData && profileData.length > 0 && profileData[0].user_type === 'admin') {
-          setError('Please use the admin sign-in page to access your account.');
+          setError('Please use the admin section below to access your account.');
           await supabase.auth.signOut();
           return;
         }
@@ -66,48 +72,60 @@ const ClientSignIn = () => {
         navigate('/');
       }
     } catch (err: any) {
-      setError(err.message || 'Sign in failed. Please check your credentials.');
+      if (err.message.includes('Invalid login credentials')) {
+        setError('Invalid email or password. Please check your credentials and try again.');
+      } else {
+        setError(err.message || 'Sign in failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleAdminSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminLoading(true);
+    setAdminError('');
+
+    // Hardcoded admin credentials for now
+    if (adminUsername === 'admin' && adminPassword === 'admin') {
+      // Simulate a brief loading state for UX
+      setTimeout(() => {
+        setAdminLoading(false);
+        navigate('/dashboard/admin');
+      }, 500);
+    } else {
+      setAdminError('Invalid admin credentials');
+      setAdminLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-md"
-      >
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-8">
         {/* Logo/Branding */}
-        <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="inline-flex items-center justify-center w-16 h-16 bg-[#DB271E] rounded-2xl mb-4"
-          >
-            <LogIn className="h-8 w-8 text-white" />
-          </motion.div>
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-[#DB271E] rounded-xl mb-4">
+            <LogIn className="h-6 w-6 text-white" />
+          </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
           <p className="text-gray-600">Sign in to your business account</p>
         </div>
 
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-xl font-semibold text-center">Client Sign In</CardTitle>
-            <CardDescription className="text-center">
+        {/* Client Sign In */}
+        <Card className="shadow-lg border border-gray-200">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-lg font-semibold text-center">Client Sign In</CardTitle>
+            <CardDescription className="text-center text-sm">
               Access your delivery dashboard
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSignIn} className="space-y-4">
-              {/* Email or Phone */}
+            <form onSubmit={handleClientSignIn} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="emailOrPhone" className="text-sm font-medium flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  Email or Phone Number
+                  Email or Phone
                 </Label>
                 <Input
                   id="emailOrPhone"
@@ -116,13 +134,13 @@ const ClientSignIn = () => {
                   value={emailOrPhone}
                   onChange={(e) => setEmailOrPhone(e.target.value)}
                   required
-                  className="h-11"
+                  className="h-10"
                 />
               </div>
 
-              {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium">
+                <Label htmlFor="password" className="text-sm font-medium flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
                   Password
                 </Label>
                 <Input
@@ -132,25 +150,10 @@ const ClientSignIn = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-11"
+                  className="h-10"
                 />
               </div>
 
-              {/* Remember Me */}
-              <div className="flex items-center space-x-2">
-                <input
-                  id="remember"
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-[#DB271E] bg-gray-100 border-gray-300 rounded focus:ring-[#DB271E] focus:ring-2"
-                />
-                <Label htmlFor="remember" className="text-sm text-gray-600">
-                  Remember me
-                </Label>
-              </div>
-
-              {/* Error Message */}
               {error && (
                 <Alert className="border-red-200 bg-red-50">
                   <AlertDescription className="text-red-700 text-sm">
@@ -159,11 +162,10 @@ const ClientSignIn = () => {
                 </Alert>
               )}
 
-              {/* Sign In Button */}
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-11 bg-[#DB271E] hover:bg-[#c0211a] text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+                className="w-full h-10 bg-[#DB271E] hover:bg-[#c0211a] text-white font-medium transition-all duration-200"
               >
                 {loading ? (
                   <>
@@ -171,40 +173,99 @@ const ClientSignIn = () => {
                     Signing in...
                   </>
                 ) : (
-                  <>
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Sign In
-                  </>
+                  'Sign In'
                 )}
               </Button>
             </form>
 
-            {/* Footer */}
-            <div className="mt-6 space-y-3 text-center">
-              <button className="text-sm text-gray-600 hover:text-[#DB271E] transition-colors duration-200">
-                Forgot your password?
-              </button>
+            <div className="mt-4 text-center">
               <div className="text-sm text-gray-600">
                 Don't have an account?{' '}
                 <Link to="/auth/signup" className="text-[#DB271E] hover:underline font-medium">
                   Sign up here
                 </Link>
               </div>
-              <div className="text-sm text-gray-500">
-                Are you a delivery admin?{' '}
-                <Link to="/auth/admin" className="text-[#DB271E] hover:underline font-medium">
-                  Admin Sign In
-                </Link>
-              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Additional Info */}
-        <div className="mt-6 text-center text-xs text-gray-500">
+        {/* Admin Access Section */}
+        <Card className="shadow-lg border border-gray-300 bg-gray-50">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-lg font-semibold text-center flex items-center justify-center gap-2">
+              <Shield className="h-5 w-5" />
+              Admin Access
+            </CardTitle>
+            <CardDescription className="text-center text-sm">
+              For delivery management staff only
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAdminSignIn} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="adminUsername" className="text-sm font-medium">
+                  Username
+                </Label>
+                <Input
+                  id="adminUsername"
+                  type="text"
+                  placeholder="Enter admin username"
+                  value={adminUsername}
+                  onChange={(e) => setAdminUsername(e.target.value)}
+                  required
+                  className="h-10"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="adminPassword" className="text-sm font-medium">
+                  Password
+                </Label>
+                <Input
+                  id="adminPassword"
+                  type="password"
+                  placeholder="Enter admin password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  required
+                  className="h-10"
+                />
+              </div>
+
+              {adminError && (
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertDescription className="text-red-700 text-sm">
+                    {adminError}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <Button
+                type="submit"
+                disabled={adminLoading}
+                className="w-full h-10 bg-gray-700 hover:bg-gray-800 text-white font-medium transition-all duration-200"
+              >
+                {adminLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Accessing...
+                  </>
+                ) : (
+                  <>
+                    <Shield className="mr-2 h-4 w-4" />
+                    Admin Access
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <div className="text-center text-xs text-gray-500">
           <p>© 2024 Topspeed. All rights reserved.</p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
