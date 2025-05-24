@@ -158,8 +158,7 @@ const AdminSignIn = () => {
                     {error}
                   </AlertDescription>
                 </Alert>
-                )}
-              </div>
+              )}
 
               {/* Sign In Button */}
               <Button
