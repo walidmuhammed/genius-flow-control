@@ -4,6 +4,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import SignIn from "./pages/SignIn";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import OrdersList from "./pages/OrdersList";
@@ -29,46 +32,115 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner position="top-right" closeButton toastOptions={{
-        classNames: {
-          toast: "group border-border/10 shadow-lg",
-          title: "font-medium text-foreground",
-          description: "text-muted-foreground",
-          actionButton: "bg-topspeed-600 text-white",
-          cancelButton: "text-muted-foreground",
-          error: "bg-white border-l-4 border-l-topspeed-600",
-          success: "bg-white border-l-4 border-l-green-600",
-          warning: "bg-white border-l-4 border-l-amber-600",
-          info: "bg-white border-l-4 border-l-blue-600",
-        }
-      }} />
-      <BrowserRouter>
-        <Routes>
-          {/* Client Dashboard Routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/orders" element={<OrdersList />} />
-          <Route path="/orders/new" element={<CreateOrder />} />
-          <Route path="/pickups" element={<Pickups />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/wallet" element={<Wallet />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/support" element={<Support />} />
-          
-          {/* Admin Dashboard Routes */}
-          <Route path="/dashboard/admin" element={<AdminDashboard />} />
-          <Route path="/dashboard/admin/orders" element={<AdminOrders />} />
-          <Route path="/dashboard/admin/couriers" element={<AdminCouriers />} />
-          <Route path="/dashboard/admin/dispatch" element={<AdminDispatch />} />
-          <Route path="/dashboard/admin/tickets" element={<AdminTickets />} />
-          <Route path="/dashboard/admin/activity" element={<AdminActivity />} />
-          <Route path="/dashboard/admin/settings" element={<AdminSettings />} />
-          
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <Toaster />
+        <Sonner position="top-right" closeButton toastOptions={{
+          classNames: {
+            toast: "group border-border/10 shadow-lg",
+            title: "font-medium text-foreground",
+            description: "text-muted-foreground",
+            actionButton: "bg-topspeed-600 text-white",
+            cancelButton: "text-muted-foreground",
+            error: "bg-white border-l-4 border-l-topspeed-600",
+            success: "bg-white border-l-4 border-l-green-600",
+            warning: "bg-white border-l-4 border-l-amber-600",
+            info: "bg-white border-l-4 border-l-blue-600",
+          }
+        }} />
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/auth" element={<SignIn />} />
+            
+            {/* Client Dashboard Routes (Protected) */}
+            <Route path="/" element={
+              <ProtectedRoute requiredRole="client">
+                <Index />
+              </ProtectedRoute>
+            } />
+            <Route path="/orders" element={
+              <ProtectedRoute requiredRole="client">
+                <OrdersList />
+              </ProtectedRoute>
+            } />
+            <Route path="/orders/new" element={
+              <ProtectedRoute requiredRole="client">
+                <CreateOrder />
+              </ProtectedRoute>
+            } />
+            <Route path="/pickups" element={
+              <ProtectedRoute requiredRole="client">
+                <Pickups />
+              </ProtectedRoute>
+            } />
+            <Route path="/customers" element={
+              <ProtectedRoute requiredRole="client">
+                <Customers />
+              </ProtectedRoute>
+            } />
+            <Route path="/wallet" element={
+              <ProtectedRoute requiredRole="client">
+                <Wallet />
+              </ProtectedRoute>
+            } />
+            <Route path="/analytics" element={
+              <ProtectedRoute requiredRole="client">
+                <Analytics />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute requiredRole="client">
+                <Settings />
+              </ProtectedRoute>
+            } />
+            <Route path="/support" element={
+              <ProtectedRoute requiredRole="client">
+                <Support />
+              </ProtectedRoute>
+            } />
+            
+            {/* Admin Dashboard Routes (Protected) */}
+            <Route path="/dashboard/admin" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/admin/orders" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminOrders />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/admin/couriers" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminCouriers />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/admin/dispatch" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminDispatch />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/admin/tickets" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminTickets />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/admin/activity" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminActivity />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/admin/settings" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminSettings />
+              </ProtectedRoute>
+            } />
+            
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
