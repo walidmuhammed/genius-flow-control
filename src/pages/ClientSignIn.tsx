@@ -8,35 +8,37 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, LogIn, Mail, Lock, Shield } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const ClientSignIn = () => {
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isAdminMode, setIsAdminMode] = useState(false);
   const navigate = useNavigate();
+  const { user, profile, loading: authLoading } = useAuth();
 
   useEffect(() => {
     document.title = "Sign In - Topspeed";
     
-    // Check if user is already authenticated
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
+    // Redirect if already authenticated
+    if (!authLoading && user && profile) {
+      if (profile.user_type === 'admin') {
+        navigate('/dashboard/admin');
+      } else {
         navigate('/');
       }
-    };
-    
-    checkUser();
-  }, [navigate]);
+    }
+  }, [navigate, user, profile, authLoading]);
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleClientSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      console.log('Attempting sign in with:', emailOrPhone);
+      console.log('Client attempting sign in with:', emailOrPhone);
       
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: emailOrPhone,
@@ -44,20 +46,20 @@ const ClientSignIn = () => {
       });
 
       if (signInError) {
-        console.error('Sign in error:', signInError);
+        console.error('Client sign in error:', signInError);
         throw signInError;
       }
 
-      console.log('Sign in successful:', data.user?.id);
+      console.log('Client sign in successful:', data.user?.id);
 
       if (data.user) {
-        // Wait a moment for the auth state to update
+        // Small delay to ensure auth state updates
         setTimeout(() => {
           navigate('/');
         }, 100);
       }
     } catch (err: any) {
-      console.error('Sign in failed:', err);
+      console.error('Client sign in failed:', err);
       if (err.message.includes('Invalid login credentials')) {
         setError('Invalid email or password. Please check your credentials.');
       } else {
@@ -68,37 +70,102 @@ const ClientSignIn = () => {
     }
   };
 
+  const handleAdminSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      // Temporary hardcoded admin credentials
+      if (emailOrPhone === 'admin' && password === 'admin') {
+        // Create a temporary admin session (this is temporary)
+        console.log('Admin access granted with hardcoded credentials');
+        navigate('/dashboard/admin');
+      } else {
+        setError('Invalid admin credentials. Use admin/admin for now.');
+      }
+    } catch (err: any) {
+      console.error('Admin sign in failed:', err);
+      setError('Admin sign in failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[#DB271E] mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
         {/* Logo/Branding */}
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-[#DB271E] rounded-2xl mb-4">
-            <LogIn className="h-8 w-8 text-white" />
+            {isAdminMode ? <Shield className="h-8 w-8 text-white" /> : <LogIn className="h-8 w-8 text-white" />}
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to your business account</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            {isAdminMode ? 'Admin Access' : 'Welcome Back'}
+          </h1>
+          <p className="text-gray-600">
+            {isAdminMode ? 'Admin dashboard access' : 'Sign in to your business account'}
+          </p>
         </div>
 
-        {/* Client Sign In */}
+        {/* Mode Toggle */}
+        <div className="flex justify-center">
+          <div className="flex bg-gray-200 rounded-lg p-1">
+            <button
+              onClick={() => setIsAdminMode(false)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                !isAdminMode
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Client
+            </button>
+            <button
+              onClick={() => setIsAdminMode(true)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                isAdminMode
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Admin
+            </button>
+          </div>
+        </div>
+
+        {/* Sign In Form */}
         <Card className="shadow-xl border-0 bg-white">
           <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-xl font-semibold text-center">Sign In</CardTitle>
+            <CardTitle className="text-xl font-semibold text-center">
+              {isAdminMode ? 'Admin Sign In' : 'Client Sign In'}
+            </CardTitle>
             <CardDescription className="text-center">
-              Access your delivery dashboard
+              {isAdminMode ? 'Access the admin dashboard' : 'Access your delivery dashboard'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSignIn} className="space-y-4">
+            <form onSubmit={isAdminMode ? handleAdminSignIn : handleClientSignIn} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="emailOrPhone" className="text-sm font-medium flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  Email
+                  {isAdminMode ? 'Username' : 'Email'}
                 </Label>
                 <Input
                   id="emailOrPhone"
-                  type="email"
-                  placeholder="Enter your email"
+                  type={isAdminMode ? "text" : "email"}
+                  placeholder={isAdminMode ? "Enter admin username" : "Enter your email"}
                   value={emailOrPhone}
                   onChange={(e) => setEmailOrPhone(e.target.value)}
                   required
@@ -144,27 +211,33 @@ const ClientSignIn = () => {
                   </>
                 ) : (
                   <>
-                    <LogIn className="mr-2 h-4 w-4" />
+                    {isAdminMode ? <Shield className="mr-2 h-4 w-4" /> : <LogIn className="mr-2 h-4 w-4" />}
                     Sign In
                   </>
                 )}
               </Button>
             </form>
 
-            <div className="mt-6 space-y-3 text-center">
-              <div className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/auth/signup" className="text-[#DB271E] hover:underline font-medium">
-                  Sign up here
-                </Link>
+            {!isAdminMode && (
+              <div className="mt-6 space-y-3 text-center">
+                <div className="text-sm text-gray-600">
+                  Don't have an account?{' '}
+                  <Link to="/auth/signup" className="text-[#DB271E] hover:underline font-medium">
+                    Sign up here
+                  </Link>
+                </div>
               </div>
-              <div className="text-sm text-gray-500">
-                Are you a delivery admin?{' '}
-                <Link to="/auth/admin" className="text-[#DB271E] hover:underline font-medium">
-                  Admin Sign In
-                </Link>
+            )}
+
+            {isAdminMode && (
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-xs text-yellow-800">
+                  <strong>Temporary Admin Access:</strong><br />
+                  Username: admin<br />
+                  Password: admin
+                </p>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 

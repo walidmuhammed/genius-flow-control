@@ -12,6 +12,8 @@ import ClientSignUp from "./pages/ClientSignUp";
 import AdminSignIn from "./pages/AdminSignIn";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+
+// Client Dashboard Pages
 import OrdersList from "./pages/OrdersList";
 import CreateOrder from "./pages/CreateOrder";
 import Analytics from "./pages/Analytics";

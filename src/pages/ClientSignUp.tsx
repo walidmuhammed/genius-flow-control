@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, UserPlus, User, Mail, Phone, Building2, Lock } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useAuth } from '@/hooks/useAuth';
 
 const ClientSignUp = () => {
   const [formData, setFormData] = useState({
@@ -24,20 +24,16 @@ const ClientSignUp = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { user, profile, loading: authLoading } = useAuth();
 
   useEffect(() => {
     document.title = "Sign Up - Topspeed";
     
-    // Check if user is already authenticated
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        navigate('/');
-      }
-    };
-    
-    checkUser();
-  }, [navigate]);
+    // Redirect if already authenticated
+    if (!authLoading && user && profile) {
+      navigate('/');
+    }
+  }, [navigate, user, profile, authLoading]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -86,6 +82,8 @@ const ClientSignUp = () => {
     setLoading(true);
 
     try {
+      console.log('Attempting sign up with:', formData.email);
+
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -101,43 +99,50 @@ const ClientSignUp = () => {
       });
 
       if (signUpError) {
+        console.error('Sign up error:', signUpError);
         throw signUpError;
       }
 
+      console.log('Sign up successful:', data.user?.id);
+
       if (data.user) {
-        // Successfully signed up
-        navigate('/');
+        // Redirect to dashboard after successful signup
+        setTimeout(() => {
+          navigate('/');
+        }, 100);
       }
     } catch (err: any) {
+      console.error('Sign up failed:', err);
       setError(err.message || 'Sign up failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[#DB271E] mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-lg"
-      >
+      <div className="w-full max-w-lg">
         {/* Logo/Branding */}
         <div className="text-center mb-8">
-          <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="inline-flex items-center justify-center w-16 h-16 bg-[#DB271E] rounded-2xl mb-4"
-          >
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#DB271E] rounded-2xl mb-4">
             <UserPlus className="h-8 w-8 text-white" />
-          </motion.div>
+          </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Join Topspeed</h1>
           <p className="text-gray-600">Create your business account and start delivering</p>
         </div>
 
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+        <Card className="shadow-xl border-0 bg-white">
           <CardHeader className="space-y-1 pb-6">
             <CardTitle className="text-xl font-semibold text-center">Create Account</CardTitle>
             <CardDescription className="text-center">
@@ -160,6 +165,7 @@ const ClientSignUp = () => {
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
                   required
                   className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -177,6 +183,7 @@ const ClientSignUp = () => {
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   required
                   className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -194,6 +201,7 @@ const ClientSignUp = () => {
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   required
                   className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -211,6 +219,7 @@ const ClientSignUp = () => {
                   onChange={(e) => handleInputChange('businessName', e.target.value)}
                   required
                   className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -219,7 +228,11 @@ const ClientSignUp = () => {
                 <Label htmlFor="businessType" className="text-sm font-medium">
                   Business Type
                 </Label>
-                <Select value={formData.businessType} onValueChange={(value) => handleInputChange('businessType', value)}>
+                <Select 
+                  value={formData.businessType} 
+                  onValueChange={(value) => handleInputChange('businessType', value)}
+                  disabled={loading}
+                >
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder="Select your business type" />
                   </SelectTrigger>
@@ -249,6 +262,7 @@ const ClientSignUp = () => {
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   required
                   className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -266,6 +280,7 @@ const ClientSignUp = () => {
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   required
                   className="h-11"
+                  disabled={loading}
                 />
               </div>
 
@@ -299,17 +314,11 @@ const ClientSignUp = () => {
             </form>
 
             {/* Footer */}
-            <div className="mt-6 space-y-3 text-center">
+            <div className="mt-6 text-center">
               <div className="text-sm text-gray-600">
                 Already have an account?{' '}
                 <Link to="/auth/signin" className="text-[#DB271E] hover:underline font-medium">
                   Sign in here
-                </Link>
-              </div>
-              <div className="text-sm text-gray-500">
-                Are you a delivery admin?{' '}
-                <Link to="/auth/admin" className="text-[#DB271E] hover:underline font-medium">
-                  Admin Access
                 </Link>
               </div>
             </div>
@@ -320,7 +329,7 @@ const ClientSignUp = () => {
         <div className="mt-6 text-center text-xs text-gray-500">
           <p>© 2024 Topspeed. All rights reserved.</p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
