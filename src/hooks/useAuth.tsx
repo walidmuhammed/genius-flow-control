@@ -18,7 +18,6 @@ interface AuthContextType {
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
-  error: string | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -28,7 +27,6 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   profile: null,
   loading: true,
-  error: null,
   signOut: async () => {},
   refreshProfile: async () => {},
 });
@@ -50,7 +48,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const createDefaultProfile = (user: User): UserProfile => {
     return {
@@ -66,42 +63,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log('Fetching profile for user:', userId);
-      
       const { data, error } = await supabase.rpc('get_user_profile', { user_id: userId });
       
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        // Create default profile if fetch fails
+      if (error || !data || data.length === 0) {
+        // Use user metadata as fallback
         if (user) {
           const defaultProfile = createDefaultProfile(user);
           setProfile(defaultProfile);
-          setError(null);
         }
         return;
       }
       
-      if (data && data.length > 0) {
-        const profileData = data[0] as UserProfile;
-        console.log('Profile data received:', profileData);
-        setProfile(profileData);
-        setError(null);
-      } else {
-        console.log('No profile found, creating default profile');
-        if (user) {
-          const defaultProfile = createDefaultProfile(user);
-          setProfile(defaultProfile);
-          setError(null);
-        }
-      }
+      const profileData = data[0] as UserProfile;
+      setProfile(profileData);
     } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
-      // Always create a fallback profile to prevent infinite loading
+      console.error('Error fetching profile:', error);
+      // Use user metadata as fallback
       if (user) {
         const defaultProfile = createDefaultProfile(user);
         setProfile(defaultProfile);
       }
-      setError(null); // Don't show errors to user for profile issues
     }
   };
 
@@ -112,68 +93,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    let mounted = true;
-    let timeoutId: NodeJS.Timeout;
-
-    const handleAuthStateChange = async (event: string, session: Session | null) => {
-      console.log('Auth state changed:', event, session?.user?.id);
-      
-      if (!mounted) return;
-
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
-      if (session?.user && mounted) {
-        // Use setTimeout to prevent blocking the auth state change
-        timeoutId = setTimeout(() => {
-          if (mounted) {
-            fetchUserProfile(session.user.id);
-          }
-        }, 0);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
       } else {
         setProfile(null);
-        setError(null);
       }
       
-      if (mounted) {
-        setLoading(false);
-      }
-    };
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted) {
-        handleAuthStateChange('INITIAL_SESSION', session);
-      }
+      setLoading(false);
     });
 
-    // Failsafe timeout to prevent infinite loading
-    const failsafeTimeout = setTimeout(() => {
-      if (mounted && loading) {
-        console.log('Failsafe: Setting loading to false');
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await fetchUserProfile(session.user.id);
+        } else {
+          setProfile(null);
+        }
+        
         setLoading(false);
       }
-    }, 5000);
+    );
 
-    return () => {
-      mounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
-      clearTimeout(failsafeTimeout);
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      setProfile(null);
-      setError(null);
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    await supabase.auth.signOut();
+    setProfile(null);
   };
 
   const value = {
@@ -181,7 +136,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     session,
     profile,
     loading,
-    error,
     signOut,
     refreshProfile,
   };

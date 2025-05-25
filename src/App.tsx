@@ -7,9 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import SignIn from "./pages/SignIn";
-import ClientSignIn from "./pages/ClientSignIn";
 import ClientSignUp from "./pages/ClientSignUp";
-import AdminSignIn from "./pages/AdminSignIn";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -56,9 +54,7 @@ const App = () => (
           <Routes>
             {/* Public Auth Routes */}
             <Route path="/auth" element={<SignIn />} />
-            <Route path="/auth/signin" element={<ClientSignIn />} />
             <Route path="/auth/signup" element={<ClientSignUp />} />
-            <Route path="/auth/admin" element={<AdminSignIn />} />
             
             {/* Client Dashboard Routes (Protected) */}
             <Route path="/" element={
@@ -108,37 +104,37 @@ const App = () => (
             } />
             
             {/* Admin Dashboard Routes (Protected) */}
-            <Route path="/dashboard/admin" element={
+            <Route path="/admin" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminDashboard />
               </ProtectedRoute>
             } />
-            <Route path="/dashboard/admin/orders" element={
+            <Route path="/admin/orders" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminOrders />
               </ProtectedRoute>
             } />
-            <Route path="/dashboard/admin/couriers" element={
+            <Route path="/admin/couriers" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminCouriers />
               </ProtectedRoute>
             } />
-            <Route path="/dashboard/admin/dispatch" element={
+            <Route path="/admin/dispatch" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminDispatch />
               </ProtectedRoute>
             } />
-            <Route path="/dashboard/admin/tickets" element={
+            <Route path="/admin/tickets" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminTickets />
               </ProtectedRoute>
             } />
-            <Route path="/dashboard/admin/activity" element={
+            <Route path="/admin/activity" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminActivity />
               </ProtectedRoute>
             } />
-            <Route path="/dashboard/admin/settings" element={
+            <Route path="/admin/settings" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminSettings />
               </ProtectedRoute>

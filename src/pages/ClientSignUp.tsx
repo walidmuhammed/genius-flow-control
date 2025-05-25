@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, UserPlus, User, Mail, Phone, Building2, Lock } from 'lucide-react';
+import { Loader2, UserPlus, User, Mail, Phone, Building2, Lock, Truck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const ClientSignUp = () => {
@@ -37,6 +37,7 @@ const ClientSignUp = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    setError(''); // Clear error when user starts typing
   };
 
   const validateForm = () => {
@@ -82,8 +83,6 @@ const ClientSignUp = () => {
     setLoading(true);
 
     try {
-      console.log('Attempting sign up with:', formData.email);
-
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -98,21 +97,13 @@ const ClientSignUp = () => {
         }
       });
 
-      if (signUpError) {
-        console.error('Sign up error:', signUpError);
-        throw signUpError;
-      }
-
-      console.log('Sign up successful:', data.user?.id);
+      if (signUpError) throw signUpError;
 
       if (data.user) {
-        // Redirect to dashboard after successful signup
-        setTimeout(() => {
-          navigate('/');
-        }, 100);
+        // Navigate to dashboard after successful signup
+        setTimeout(() => navigate('/'), 100);
       }
     } catch (err: any) {
-      console.error('Sign up failed:', err);
       setError(err.message || 'Sign up failed. Please try again.');
     } finally {
       setLoading(false);
@@ -136,7 +127,7 @@ const ClientSignUp = () => {
         {/* Logo/Branding */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-[#DB271E] rounded-2xl mb-4">
-            <UserPlus className="h-8 w-8 text-white" />
+            <Truck className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Join Topspeed</h1>
           <p className="text-gray-600">Create your business account and start delivering</p>
@@ -317,7 +308,7 @@ const ClientSignUp = () => {
             <div className="mt-6 text-center">
               <div className="text-sm text-gray-600">
                 Already have an account?{' '}
-                <Link to="/auth/signin" className="text-[#DB271E] hover:underline font-medium">
+                <Link to="/auth" className="text-[#DB271E] hover:underline font-medium">
                   Sign in here
                 </Link>
               </div>
