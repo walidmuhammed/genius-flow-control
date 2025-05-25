@@ -23,8 +23,10 @@ import Wallet from "./pages/Wallet";
 // Admin Dashboard Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminOrders from "./pages/admin/AdminOrders";
+import AdminClients from "./pages/admin/AdminClients";
 import AdminCouriers from "./pages/admin/AdminCouriers";
 import AdminDispatch from "./pages/admin/AdminDispatch";
+import AdminPricing from "./pages/admin/AdminPricing";
 import AdminTickets from "./pages/admin/AdminTickets";
 import AdminActivity from "./pages/admin/AdminActivity";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -112,6 +114,11 @@ const App = () => (
                 <AdminOrders />
               </ProtectedRoute>
             } />
+            <Route path="/admin/clients" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminClients />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/couriers" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminCouriers />
@@ -120,6 +127,11 @@ const App = () => (
             <Route path="/admin/dispatch" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminDispatch />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/pricing" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminPricing />
               </ProtectedRoute>
             } />
             <Route path="/admin/tickets" element={

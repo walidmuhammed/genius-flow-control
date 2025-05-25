@@ -13,15 +13,18 @@ import {
   LogOut,
   Activity,
   Navigation,
-  ShieldCheck
+  ShieldCheck,
+  DollarSign
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/hooks/useAuth';
 
 const AdminSidebar = () => {
   const [darkMode, setDarkMode] = useState(false);
   const location = useLocation();
+  const { signOut } = useAuth();
   
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -30,6 +33,10 @@ const AdminSidebar = () => {
     } else {
       document.documentElement.classList.remove('dark');
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
   };
 
   const menuItems = [
@@ -42,37 +49,49 @@ const AdminSidebar = () => {
     {
       title: "Orders",
       icon: Package,
-      path: "/dashboard/admin/orders",
+      path: "/admin/orders",
       description: "Manage all client orders"
+    },
+    {
+      title: "Clients",
+      icon: Users,
+      path: "/admin/clients",
+      description: "Manage client accounts"
     },
     {
       title: "Couriers",
       icon: Truck,
-      path: "/dashboard/admin/couriers",
+      path: "/admin/couriers",
       description: "Manage delivery agents"
     },
     {
       title: "Dispatch Panel",
       icon: Navigation,
-      path: "/dashboard/admin/dispatch",
+      path: "/admin/dispatch",
       description: "Assign & track deliveries"
+    },
+    {
+      title: "Pricing",
+      icon: DollarSign,
+      path: "/admin/pricing",
+      description: "Configure pricing rules"
     },
     {
       title: "Support Tickets",
       icon: Phone,
-      path: "/dashboard/admin/tickets",
+      path: "/admin/tickets",
       description: "Client support requests"
     },
     {
       title: "Activity Log",
       icon: Activity,
-      path: "/dashboard/admin/activity",
+      path: "/admin/activity",
       description: "System activity tracking"
     },
     {
       title: "System Settings",
       icon: Settings,
-      path: "/dashboard/admin/settings",
+      path: "/admin/settings",
       description: "Configure system settings"
     }
   ];
@@ -180,6 +199,7 @@ const AdminSidebar = () => {
         <motion.button 
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          onClick={handleSignOut}
           className={cn(
             "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200", 
             "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"

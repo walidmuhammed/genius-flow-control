@@ -11,7 +11,7 @@ import { useScreenSize } from '@/hooks/useScreenSize';
 const AdminTopBar = () => {
   const { toggleSidebar } = useLayoutStore();
   const { isMobile } = useScreenSize();
-  const { user, profile, signOut } = useAuth();
+  const { user, signOut } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
@@ -56,13 +56,13 @@ const AdminTopBar = () => {
         <div className="flex items-center gap-3 pl-3 border-l border-gray-200 dark:border-gray-700">
           <div className="text-right hidden sm:block">
             <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              {profile?.full_name || user?.email?.split('@')[0] || 'Admin User'}
+              {user?.full_name || user?.email?.split('@')[0] || 'Admin User'}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">System Administrator</div>
           </div>
           <div className="h-8 w-8 bg-[#DC291E] rounded-full flex items-center justify-center">
             <span className="text-white text-sm font-medium">
-              {profile?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'A'}
+              {user?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'A'}
             </span>
           </div>
           <Button 

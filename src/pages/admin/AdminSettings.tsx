@@ -1,14 +1,22 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Settings, MapPin, DollarSign, Package, Users } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Settings, Save, Globe, DollarSign, Truck, Mail, Bell } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 const AdminSettings = () => {
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [smsNotifications, setSmsNotifications] = useState(false);
+  const [autoAssignOrders, setAutoAssignOrders] = useState(true);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+
   document.title = "System Settings - Admin Dashboard";
 
   return (
@@ -24,164 +32,233 @@ const AdminSettings = () => {
               Configure system-wide settings and preferences
             </p>
           </div>
-        </div>
-
-        {/* Settings Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Delivery Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                Delivery Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="delivery-fee-usd">Default Delivery Fee (USD)</Label>
-                <Input id="delivery-fee-usd" type="number" defaultValue="5.00" />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="delivery-fee-lbp">Default Delivery Fee (LBP)</Label>
-                <Input id="delivery-fee-lbp" type="number" defaultValue="150000" />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Auto-assign orders</Label>
-                  <p className="text-sm text-gray-500">Automatically assign new orders to available couriers</p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Real-time tracking</Label>
-                  <p className="text-sm text-gray-500">Enable live tracking for deliveries</p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Zone Management */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                Zone Management
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="max-distance">Maximum delivery distance (km)</Label>
-                <Input id="max-distance" type="number" defaultValue="25" />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="express-fee">Express delivery surcharge (%)</Label>
-                <Input id="express-fee" type="number" defaultValue="50" />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Zone-based pricing</Label>
-                  <p className="text-sm text-gray-500">Enable different pricing for different zones</p>
-                </div>
-                <Switch />
-              </div>
-              
-              <Button variant="outline" className="w-full">
-                Manage Delivery Zones
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Notification Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Notifications
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Email notifications</Label>
-                  <p className="text-sm text-gray-500">Send email updates for critical events</p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>SMS notifications</Label>
-                  <p className="text-sm text-gray-500">Send SMS updates to customers</p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Push notifications</Label>
-                  <p className="text-sm text-gray-500">Send push notifications to mobile apps</p>
-                </div>
-                <Switch />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="notification-email">Admin notification email</Label>
-                <Input id="notification-email" type="email" defaultValue="admin@topspeed.com" />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* User Management */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                User Management
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Allow client registration</Label>
-                  <p className="text-sm text-gray-500">Allow new clients to register automatically</p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Require email verification</Label>
-                  <p className="text-sm text-gray-500">Require email verification for new accounts</p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="session-timeout">Session timeout (minutes)</Label>
-                <Input id="session-timeout" type="number" defaultValue="60" />
-              </div>
-              
-              <Button variant="outline" className="w-full">
-                Manage User Roles
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Save Settings */}
-        <div className="flex justify-end gap-4">
-          <Button variant="outline">Reset to Defaults</Button>
           <Button className="bg-[#DC291E] hover:bg-[#DC291E]/90">
-            Save Settings
+            <Save className="h-4 w-4 mr-2" />
+            Save All Changes
           </Button>
         </div>
+
+        {/* General Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              General Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input id="companyName" defaultValue="Topspeed Delivery" />
+                </div>
+                <div>
+                  <Label htmlFor="companyEmail">Company Email</Label>
+                  <Input id="companyEmail" type="email" defaultValue="info@topspeed.com" />
+                </div>
+                <div>
+                  <Label htmlFor="companyPhone">Company Phone</Label>
+                  <Input id="companyPhone" defaultValue="+961 1 234567" />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="companyAddress">Company Address</Label>
+                  <Textarea 
+                    id="companyAddress" 
+                    defaultValue="123 Main Street, Beirut, Lebanon"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="timezone">Timezone</Label>
+                  <Select defaultValue="Asia/Beirut">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Asia/Beirut">Beirut (GMT+2)</SelectItem>
+                      <SelectItem value="Europe/London">London (GMT+0)</SelectItem>
+                      <SelectItem value="America/New_York">New York (GMT-5)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Currency Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Currency & Pricing
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <Label htmlFor="primaryCurrency">Primary Currency</Label>
+                <Select defaultValue="USD">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">US Dollar (USD)</SelectItem>
+                    <SelectItem value="LBP">Lebanese Pound (LBP)</SelectItem>
+                    <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="exchangeRate">USD to LBP Rate</Label>
+                <Input id="exchangeRate" type="number" defaultValue="90000" />
+              </div>
+              <div>
+                <Label htmlFor="taxRate">Tax Rate (%)</Label>
+                <Input id="taxRate" type="number" step="0.01" defaultValue="11" />
+              </div>
+            </div>
+            <Separator />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="minOrderValue">Minimum Order Value (USD)</Label>
+                <Input id="minOrderValue" type="number" step="0.01" defaultValue="2.00" />
+              </div>
+              <div>
+                <Label htmlFor="maxOrderValue">Maximum Order Value (USD)</Label>
+                <Input id="maxOrderValue" type="number" step="0.01" defaultValue="1000.00" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Delivery Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Truck className="h-5 w-5" />
+              Delivery Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <Label htmlFor="defaultDeliveryTime">Default Delivery Time (hours)</Label>
+                <Input id="defaultDeliveryTime" type="number" defaultValue="24" />
+              </div>
+              <div>
+                <Label htmlFor="maxDeliveryTime">Maximum Delivery Time (hours)</Label>
+                <Input id="maxDeliveryTime" type="number" defaultValue="72" />
+              </div>
+              <div>
+                <Label htmlFor="pickupTimeSlots">Pickup Time Slots</Label>
+                <Select defaultValue="4">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2">2 slots per day</SelectItem>
+                    <SelectItem value="4">4 slots per day</SelectItem>
+                    <SelectItem value="6">6 slots per day</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Auto-assign Orders to Couriers</Label>
+                <p className="text-sm text-gray-500">Automatically assign new orders to available couriers</p>
+              </div>
+              <Switch checked={autoAssignOrders} onCheckedChange={setAutoAssignOrders} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Notification Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5" />
+              Notification Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Email Notifications</Label>
+                  <p className="text-sm text-gray-500">Send email notifications for important events</p>
+                </div>
+                <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>SMS Notifications</Label>
+                  <p className="text-sm text-gray-500">Send SMS notifications for urgent updates</p>
+                </div>
+                <Switch checked={smsNotifications} onCheckedChange={setSmsNotifications} />
+              </div>
+            </div>
+            <Separator />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="adminEmail">Admin Notification Email</Label>
+                <Input id="adminEmail" type="email" defaultValue="admin@topspeed.com" />
+              </div>
+              <div>
+                <Label htmlFor="adminPhone">Admin Notification Phone</Label>
+                <Input id="adminPhone" defaultValue="+961 70 123456" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* System Maintenance */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              System Maintenance
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Maintenance Mode</Label>
+                <p className="text-sm text-gray-500">
+                  Enable maintenance mode to prevent new orders and display a maintenance message
+                </p>
+              </div>
+              <Switch checked={maintenanceMode} onCheckedChange={setMaintenanceMode} />
+            </div>
+            {maintenanceMode && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="maintenanceMessage">Maintenance Message</Label>
+                  <Textarea 
+                    id="maintenanceMessage" 
+                    placeholder="Enter the message to display during maintenance..."
+                    rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="maintenanceStart">Maintenance Start</Label>
+                    <Input id="maintenanceStart" type="datetime-local" />
+                  </div>
+                  <div>
+                    <Label htmlFor="maintenanceEnd">Maintenance End</Label>
+                    <Input id="maintenanceEnd" type="datetime-local" />
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
