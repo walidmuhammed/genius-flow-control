@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import SignIn from "./pages/SignIn";
-import ClientSignUp from "./pages/ClientSignUp";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -52,12 +51,11 @@ const App = () => (
         }} />
         <BrowserRouter>
           <Routes>
-            {/* Public Auth Routes */}
+            {/* Public Auth Route */}
             <Route path="/auth" element={<SignIn />} />
-            <Route path="/auth/signup" element={<ClientSignUp />} />
             
             {/* Client Dashboard Routes (Protected) */}
-            <Route path="/" element={
+            <Route path="/dashboard/client" element={
               <ProtectedRoute requiredRole="client">
                 <Index />
               </ProtectedRoute>
@@ -104,7 +102,7 @@ const App = () => (
             } />
             
             {/* Admin Dashboard Routes (Protected) */}
-            <Route path="/admin" element={
+            <Route path="/dashboard/admin" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminDashboard />
               </ProtectedRoute>
@@ -137,6 +135,13 @@ const App = () => (
             <Route path="/admin/settings" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminSettings />
+              </ProtectedRoute>
+            } />
+            
+            {/* Root redirect */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Index />
               </ProtectedRoute>
             } />
             
