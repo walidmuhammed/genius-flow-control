@@ -53,3 +53,17 @@ export function useActivityLogs() {
     }
   });
 }
+
+export function useActivityLogsByEntityId(entityId: string | undefined, limit: number = 50) {
+  return useQuery({
+    queryKey: ['activity-logs', 'entity', entityId],
+    queryFn: async () => {
+      if (!entityId) return [];
+      
+      // For now, filter mock data by entity_id
+      // TODO: Replace with real Supabase query when activity_logs table is ready
+      return mockActivityLogs.filter(log => log.entity_id === entityId).slice(0, limit);
+    },
+    enabled: !!entityId
+  });
+}

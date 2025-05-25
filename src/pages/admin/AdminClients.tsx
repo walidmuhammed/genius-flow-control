@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, Eye, Edit, Users, MoreVertical, UserCheck, UserX } from 'lucide-react';
+import { Search, Filter, Eye, Edit, Users, MoreVertical, UserCheck, UserX, Package, DollarSign } from 'lucide-react';
 import { 
   DropdownMenu,
   DropdownMenuContent,
