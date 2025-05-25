@@ -1,16 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-export interface ActivityLog {
-  id: string;
-  entity_type: string;
-  entity_id: string;
-  action: string;
-  details: any;
-  performed_by: string;
-  created_at: string;
-}
+import { ActivityLog } from "@/services/activity";
 
 // Mock activity data for now - replace with real Supabase query later
 const mockActivityLogs: ActivityLog[] = [

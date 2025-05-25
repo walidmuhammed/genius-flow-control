@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,7 +5,7 @@ import { Order } from './OrdersTableRow';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useActivityLogsByEntityId } from '@/hooks/use-activity';
-import type { ActivityLog } from '@/services/activity';
+import { ActivityLog } from '@/services/activity';
 import { format } from 'date-fns';
 
 interface OrderDetailsDialogProps {
