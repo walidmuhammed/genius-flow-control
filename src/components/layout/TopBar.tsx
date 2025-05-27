@@ -28,17 +28,23 @@ import {
 } from "@/components/ui/hover-card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useScreenSize } from '@/hooks/useScreenSize';
+import { useAuth } from '@/hooks/useAuth';
 import useLayoutStore from '@/stores/layoutStore';
 
 const TopBar: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const { isMobile, isTablet } = useScreenSize();
   const { toggleSidebar } = useLayoutStore();
+  const { user, signOut } = useAuth();
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     document.documentElement.classList.toggle('dark');
+  };
+
+  const handleSignOut = () => {
+    signOut();
   };
 
   const notificationItems = [
@@ -202,7 +208,9 @@ const TopBar: React.FC = () => {
               >
                 <Avatar className="h-full w-full">
                   <AvatarImage src="/avatars/01.png" alt="User" />
-                  <AvatarFallback className="bg-[#26A4DB]/10 text-[#26A4DB] font-medium">TS</AvatarFallback>
+                  <AvatarFallback className="bg-[#26A4DB]/10 text-[#26A4DB] font-medium">
+                    {user?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'TS'}
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </motion.div>
@@ -214,8 +222,12 @@ const TopBar: React.FC = () => {
           >
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Admin User</p>
-                <p className="text-xs leading-none text-muted-foreground">admin@topspeed.com</p>
+                <p className="text-sm font-medium leading-none">
+                  {user?.full_name || user?.email?.split('@')[0] || 'Client User'}
+                </p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user?.email || 'client@topspeed.com'}
+                </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
@@ -223,7 +235,10 @@ const TopBar: React.FC = () => {
             <DropdownMenuItem className="rounded-lg transition-colors focus:bg-gray-100 dark:focus:bg-gray-800 my-0.5">Settings</DropdownMenuItem>
             <DropdownMenuItem className="rounded-lg transition-colors focus:bg-gray-100 dark:focus:bg-gray-800 my-0.5">Support</DropdownMenuItem>
             <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
-            <DropdownMenuItem className="rounded-lg transition-colors focus:bg-gray-100 dark:focus:bg-gray-800 my-0.5 text-[#DC291E] hover:text-[#DC291E]">
+            <DropdownMenuItem 
+              onClick={handleSignOut}
+              className="rounded-lg transition-colors focus:bg-gray-100 dark:focus:bg-gray-800 my-0.5 text-[#DC291E] hover:text-[#DC291E]"
+            >
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

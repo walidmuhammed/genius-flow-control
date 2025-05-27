@@ -2,6 +2,7 @@
 import React from 'react';
 import AdminSidebar from './AdminSidebar';
 import AdminTopBar from './AdminTopBar';
+import AdminMobileNavigation from './AdminMobileNavigation';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/sonner';
 import { motion } from 'framer-motion';
@@ -15,7 +16,7 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children, className }) => {
-  const { isMobile } = useScreenSize();
+  const { isMobile, isTablet } = useScreenSize();
   const { sidebarOpen, closeSidebar } = useLayoutStore();
 
   return (
@@ -50,6 +51,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, className }) => {
             {children}
           </motion.div>
         </main>
+        
+        {/* Mobile Bottom Navigation */}
+        {isMobile && <AdminMobileNavigation />}
       </div>
       
       <Toaster 

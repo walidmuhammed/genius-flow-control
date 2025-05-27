@@ -1,5 +1,6 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface UserProfile {
   id: string;
@@ -42,7 +43,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Check for existing user in localStorage
     const savedUser = localStorage.getItem('topspeed_user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Error parsing saved user:', error);
+        localStorage.removeItem('topspeed_user');
+      }
     }
     setLoading(false);
   }, []);
@@ -62,6 +68,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signOut = () => {
     setUser(null);
     localStorage.removeItem('topspeed_user');
+    // Force a page reload to clear any cached state
+    window.location.href = '/auth';
   };
 
   const value = {

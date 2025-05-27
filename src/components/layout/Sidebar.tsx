@@ -7,6 +7,7 @@ import SidebarMenu from './SidebarMenu';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { useScreenSize } from '@/hooks/useScreenSize';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SidebarProps {
   className?: string;
@@ -15,6 +16,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const [darkMode, setDarkMode] = useState(false);
   const { isMobile } = useScreenSize();
+  const { signOut } = useAuth();
   
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -23,6 +25,10 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     } else {
       document.documentElement.classList.remove('dark');
     }
+  };
+
+  const handleSignOut = () => {
+    signOut();
   };
 
   return (
@@ -85,6 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         <motion.button 
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          onClick={handleSignOut}
           className={cn(
             "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200", 
             "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
