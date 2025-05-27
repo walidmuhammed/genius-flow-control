@@ -60,7 +60,6 @@ const CreateOrder = () => {
   const [allowOpening, setAllowOpening] = useState<boolean>(false);
   const [existingCustomer, setExistingCustomer] = useState<CustomerWithLocation | null>(null);
   const [guidelinesModalOpen, setGuidelinesModalOpen] = useState<boolean>(false);
-  const [searchEnabled, setSearchEnabled] = useState<boolean>(false);
 
   // Delivery fees (calculated or fixed)
   const deliveryFees = {
@@ -79,13 +78,7 @@ const CreateOrder = () => {
     lbpAmount?: string;
   }>({});
 
-  // Supabase Integration
-  const {
-    data: governorates
-  } = useGovernorates();
-  const {
-    data: cities
-  } = useCitiesByGovernorate(selectedGovernorateId);
+  // Supabase Integration - phone search only triggers when number is complete
   const {
     data: foundCustomers,
     isLoading: searchingCustomers,
@@ -129,7 +122,6 @@ const CreateOrder = () => {
     setAllowOpening(false);
     setExistingCustomer(null);
     setErrors({});
-    setSearchEnabled(false);
 
     // Clear any cached form data
     clearCachedFormData();
@@ -157,14 +149,14 @@ const CreateOrder = () => {
     };
   }, [location.pathname, queryClient]); // Re-run when the path changes
 
-  // Watch for customer search results - auto-fill customer info
+  // Watch for customer search results - auto-fill customer info only when we have exact match
   useEffect(() => {
     // Skip during initial render to prevent autofill from cached query results
     if (initialRenderRef.current) {
       initialRenderRef.current = false;
       return;
     }
-    if (!searchEnabled) return;
+    
     if (foundCustomers && foundCustomers.length > 0) {
       const customer = foundCustomers[0];
       setExistingCustomer(customer);
@@ -186,17 +178,12 @@ const CreateOrder = () => {
         setIsSecondaryPhone(true);
       }
       toast.info("Customer information auto-filled");
-    } else if (phone.length > 5 && !searchingCustomers && searchEnabled) {
+    } else if (phone.replace(/\D/g, '').length >= 11 && !searchingCustomers) {
+      // Only clear existing customer if we have a complete number and no matches
       setExistingCustomer(null);
     }
-  }, [foundCustomers, searchingCustomers, searchEnabled, phone]);
+  }, [foundCustomers, searchingCustomers, phone]);
 
-  // Enable search only after user has changed the phone field
-  useEffect(() => {
-    if (phone !== '+961') {
-      setSearchEnabled(true);
-    }
-  }, [phone]);
   const validateForm = () => {
     const newErrors: {
       phone?: string;
@@ -231,9 +218,7 @@ const CreateOrder = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  const handleCloseModal = () => {
-    navigate(-1);
-  };
+
   const handleSubmit = async (createAnother: boolean = false) => {
     if (!validateForm()) {
       toast.error("Please fix the errors in the form");
@@ -269,8 +254,8 @@ const CreateOrder = () => {
         }
       }
 
-      // Then create the order with full address data
-      const orderData: Omit<Order, 'id' | 'reference_number' | 'created_at' | 'updated_at'> = {
+      // Then create the order with proper reference number handling
+      const orderData: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'> = {
         type: orderType === 'exchange' ? 'Exchange' : 'Deliver',
         customer_id: customerId,
         package_type: packageType,
@@ -283,8 +268,11 @@ const CreateOrder = () => {
         delivery_fees_usd: deliveryFees.usd,
         delivery_fees_lbp: deliveryFees.lbp,
         note: deliveryNotes || undefined,
-        status: 'New'
+        status: 'New',
+        // Only include reference_number if the user actually entered one
+        ...(orderReference.trim() && { reference_number: orderReference.trim() })
       };
+      
       await createOrder.mutateAsync(orderData);
       if (createAnother) {
         // Reset form for creating another order
@@ -300,6 +288,7 @@ const CreateOrder = () => {
       toast.error("Failed to create the order. Please try again.");
     }
   };
+
   const handleGovernorateChange = (governorateId: string, governorateName: string) => {
     setSelectedGovernorateId(governorateId);
     setSelectedGovernorateName(governorateName);
@@ -314,6 +303,7 @@ const CreateOrder = () => {
       }));
     }
   };
+
   const handleCityChange = (cityId: string, cityName: string, governorateName: string) => {
     setSelectedCityId(cityId);
     setSelectedCityName(cityName);
@@ -326,6 +316,7 @@ const CreateOrder = () => {
       }));
     }
   };
+
   const handlePhoneChange = (value: string) => {
     setPhone(value);
 
@@ -337,12 +328,13 @@ const CreateOrder = () => {
       }));
     }
   };
+
   return <MainLayout className="p-0">
       <div className="flex flex-col h-full" key={formKey}>
         {/* Header with title and action buttons */}
         <div className="border-b bg-white shadow-sm my-0 mx-[29px] py-[16px] px-[24px] rounded-xl">
           <div className="flex items-center justify-between">
-            <h1 className="font-semibold tracking-tight text-xl">Create a New  Order</h1>
+            <h1 className="font-semibold tracking-tight text-xl">Create a New Order</h1>
             <div className="flex items-center gap-3">
               <Button variant="outline" size="sm" onClick={() => handleSubmit(true)} className="whitespace-nowrap">
                 Confirm & Create Another
@@ -371,9 +363,18 @@ const CreateOrder = () => {
                       Phone number
                     </span>
                   </Label>
-                  <PhoneInput id="phone" value={phone} onChange={handlePhoneChange} defaultCountry="LB" onValidationChange={setPhoneValid} placeholder="Enter phone number" className={errors.phone ? "border-red-500" : ""} errorMessage={errors.phone} />
+                  <PhoneInput 
+                    id="phone" 
+                    value={phone} 
+                    onChange={handlePhoneChange} 
+                    defaultCountry="LB" 
+                    onValidationChange={setPhoneValid} 
+                    placeholder="Enter phone number" 
+                    className={errors.phone ? "border-red-500" : ""} 
+                    errorMessage={errors.phone} 
+                  />
                   {searchingCustomers && <p className="text-xs text-gray-500">Searching for existing customer...</p>}
-                  {existingCustomer && searchEnabled && <p className="text-xs text-green-500 flex items-center gap-1"><Check className="h-3 w-3" />Existing customer found!</p>}
+                  {existingCustomer && <p className="text-xs text-green-500 flex items-center gap-1"><Check className="h-3 w-3" />Existing customer found!</p>}
                 </div>
                 
                 {/* Secondary Phone Field */}

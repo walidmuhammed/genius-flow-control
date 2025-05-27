@@ -38,7 +38,7 @@ export function useCreateOrder() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (order: Omit<Order, 'id' | 'reference_number' | 'created_at' | 'updated_at'>) => 
+    mutationFn: (order: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>) => 
       createOrder(order),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -54,7 +54,7 @@ export function useUpdateOrder() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string, updates: Partial<Omit<Order, 'id' | 'reference_number' | 'created_at' | 'updated_at'>> }) => 
+    mutationFn: ({ id, updates }: { id: string, updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>> }) => 
       updateOrder(id, updates),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });

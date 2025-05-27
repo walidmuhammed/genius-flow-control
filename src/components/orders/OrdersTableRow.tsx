@@ -87,7 +87,11 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
         </div>
       </TableCell>
       <TableCell className="py-4">
-        <span className="font-medium text-gray-900">{order.referenceNumber}</span>
+        {order.referenceNumber ? (
+          <span className="font-medium text-gray-900">{order.referenceNumber}</span>
+        ) : (
+          <span className="text-gray-400 text-sm">-</span>
+        )}
       </TableCell>
       <TableCell className="py-4">
         <ShipmentTypeBadge type={order.type} />

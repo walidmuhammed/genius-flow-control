@@ -8,6 +8,7 @@ export type PackageType = 'parcel' | 'document' | 'bulky';
 
 export interface Order {
   id: string;
+  order_id: number; // Sequential order ID
   reference_number: string;
   type: OrderType;
   customer_id: string;
@@ -20,11 +21,11 @@ export interface Order {
   cash_collection_lbp: number;
   delivery_fees_usd: number;
   delivery_fees_lbp: number;
-  note?: string; // This field stores delivery notes
+  note?: string;
   status: OrderStatus;
   created_at: string;
   updated_at: string;
-  order_reference?: string; // Added order reference field
+  order_reference?: string;
 }
 
 export interface OrderWithCustomer extends Order {
@@ -85,7 +86,7 @@ export async function getOrders() {
         governorates:governorate_id(name)
       )
     `)
-    .order('created_at', { ascending: false });
+    .order('order_id', { ascending: false });
   
   if (error) {
     console.error('Error fetching orders:', error);
@@ -110,7 +111,7 @@ export async function getOrdersByStatus(status: OrderStatus) {
       )
     `)
     .eq('status', status)
-    .order('created_at', { ascending: false });
+    .order('order_id', { ascending: false });
   
   if (error) {
     console.error(`Error fetching orders with status ${status}:`, error);
@@ -175,7 +176,7 @@ export async function getOrderById(id: string) {
   return order;
 }
 
-export async function createOrder(order: Omit<Order, 'id' | 'reference_number' | 'created_at' | 'updated_at'>) {
+export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>) {
   const { data, error } = await supabase
     .from('orders')
     .insert([order])
@@ -190,7 +191,7 @@ export async function createOrder(order: Omit<Order, 'id' | 'reference_number' |
   return data as Order;
 }
 
-export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' | 'reference_number' | 'created_at' | 'updated_at'>>) {
+export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>>) {
   const { data, error } = await supabase
     .from('orders')
     .update(updates)
@@ -219,7 +220,7 @@ export async function getOrdersWithDateRange(startDate: string, endDate: string)
     `)
     .gte('created_at', startDate)
     .lte('created_at', endDate)
-    .order('created_at', { ascending: false });
+    .order('order_id', { ascending: false });
   
   if (error) {
     console.error('Error fetching orders with date range:', error);

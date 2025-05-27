@@ -20,8 +20,11 @@ const AdminOrders = () => {
   document.title = "Orders Management - Admin Dashboard";
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.reference_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const orderId = order.order_id?.toString().padStart(3, '0') || order.id;
+    const referenceMatch = order.reference_number ? order.reference_number.toLowerCase().includes(searchTerm.toLowerCase()) : false;
+    const matchesSearch = orderId.includes(searchTerm) ||
+                         order.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         referenceMatch;
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -91,7 +94,7 @@ const AdminOrders = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search by order number or customer name..."
+                  placeholder="Search by order ID, reference number, or customer name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -135,6 +138,7 @@ const AdminOrders = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Order ID</TableHead>
+                    <TableHead>Reference</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Type</TableHead>
@@ -148,7 +152,14 @@ const AdminOrders = () => {
                   {filteredOrders.map((order) => (
                     <TableRow key={order.id}>
                       <TableCell className="font-medium">
-                        {order.reference_number}
+                        #{order.order_id?.toString().padStart(3, '0') || order.id}
+                      </TableCell>
+                      <TableCell>
+                        {order.reference_number ? (
+                          <span className="font-medium">{order.reference_number}</span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div>
