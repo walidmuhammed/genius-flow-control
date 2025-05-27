@@ -64,7 +64,7 @@ const transformOrderData = (order: any): OrderWithCustomer => {
   
   return {
     ...order,
-    order_id: order.order_id || 0, // Ensure order_id is always present
+    order_id: (order as any).order_id || 0, // Safe access with fallback
     type: orderType as OrderType,
     package_type: packageType as PackageType,
     status: statusType as OrderStatus,
@@ -139,7 +139,7 @@ export async function getOrdersByStatus(status: OrderStatus) {
     
     return {
       ...order,
-      order_id: order.order_id || 0, // Ensure order_id is always present
+      order_id: (order as any).order_id || 0, // Safe access with fallback
       type: orderType as OrderType,
       package_type: packageType as PackageType,
       status: status, // This is already the correct type since we filtered by it
@@ -193,7 +193,7 @@ export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'refere
   // Ensure order_id is present in the returned data
   return {
     ...data,
-    order_id: data.order_id || 0
+    order_id: (data as any).order_id || 0
   } as Order;
 }
 
@@ -213,7 +213,7 @@ export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' 
   // Ensure order_id is present in the returned data
   return {
     ...data,
-    order_id: data.order_id || 0
+    order_id: (data as any).order_id || 0
   } as Order;
 }
 
