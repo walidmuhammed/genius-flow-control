@@ -154,6 +154,7 @@ export type Database = {
           id: string
           items_count: number | null
           note: string | null
+          order_id: number
           package_description: string | null
           package_type: string | null
           reference_number: string | null
@@ -174,6 +175,7 @@ export type Database = {
           id?: string
           items_count?: number | null
           note?: string | null
+          order_id?: number
           package_description?: string | null
           package_type?: string | null
           reference_number?: string | null
@@ -194,6 +196,7 @@ export type Database = {
           id?: string
           items_count?: number | null
           note?: string | null
+          order_id?: number
           package_description?: string | null
           package_type?: string | null
           reference_number?: string | null

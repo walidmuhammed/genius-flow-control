@@ -7,7 +7,7 @@ import { Order as TableOrder } from '@/components/orders/OrdersTableRow';
  */
 export function mapOrderToTableFormat(order: OrderWithCustomer): TableOrder {
   return {
-    id: order.order_id?.toString().padStart(3, '0') || order.id, // Use formatted order_id or fallback to UUID
+    id: order.order_id.toString().padStart(3, '0'), // Use sequential order_id, properly formatted
     referenceNumber: order.reference_number || '', // Don't show anything if no reference provided
     type: order.type as OrderType,
     customer: {
