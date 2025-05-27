@@ -64,6 +64,7 @@ const transformOrderData = (order: any): OrderWithCustomer => {
   
   return {
     ...order,
+    order_id: order.order_id || 0, // Ensure order_id is always present
     type: orderType as OrderType,
     package_type: packageType as PackageType,
     status: statusType as OrderStatus,
@@ -138,6 +139,7 @@ export async function getOrdersByStatus(status: OrderStatus) {
     
     return {
       ...order,
+      order_id: order.order_id || 0, // Ensure order_id is always present
       type: orderType as OrderType,
       package_type: packageType as PackageType,
       status: status, // This is already the correct type since we filtered by it
@@ -188,7 +190,11 @@ export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'refere
     throw error;
   }
   
-  return data as Order;
+  // Ensure order_id is present in the returned data
+  return {
+    ...data,
+    order_id: data.order_id || 0
+  } as Order;
 }
 
 export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>>) {
@@ -204,7 +210,11 @@ export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' 
     throw error;
   }
   
-  return data as Order;
+  // Ensure order_id is present in the returned data
+  return {
+    ...data,
+    order_id: data.order_id || 0
+  } as Order;
 }
 
 export async function getOrdersWithDateRange(startDate: string, endDate: string) {
