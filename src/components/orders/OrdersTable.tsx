@@ -1,159 +1,151 @@
 
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import OrdersTableRow, { Order } from './OrdersTableRow';
-import OrderDetailsDialog from './OrderDetailsDialog';
-import { useScreenSize } from '@/hooks/useScreenSize';
-import OrdersTableMobile from './OrdersTableMobile';
+import { Button } from '@/components/ui/button';
+import { OrdersTableRow } from './OrdersTableRow';
+import { OrderWithCustomer } from '@/services/orders';
+import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 
 interface OrdersTableProps {
-  orders: Order[];
-  selectedOrders: string[];
-  toggleSelectAll: (checked: boolean) => void;
-  toggleSelectOrder: (orderId: string) => void;
-  showActions?: boolean;
+  orders: OrderWithCustomer[];
+  onOrderSelection?: (orderIds: string[]) => void;
+  selectionMode?: boolean;
+  selectedOrderIds?: string[];
 }
 
-const OrdersTable: React.FC<OrdersTableProps> = ({ 
+export const OrdersTable: React.FC<OrdersTableProps> = ({ 
   orders, 
-  selectedOrders, 
-  toggleSelectAll, 
-  toggleSelectOrder,
-  showActions = true
+  onOrderSelection, 
+  selectionMode = false,
+  selectedOrderIds = []
 }) => {
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-  const { isMobile } = useScreenSize();
+  const [localSelectedIds, setLocalSelectedIds] = useState<string[]>(selectedOrderIds);
   
-  const handleViewOrderDetails = (order: Order) => {
-    setSelectedOrder(order);
-    setDetailsDialogOpen(true);
+  const mappedOrders = useMemo(() => mapOrdersToTableFormat(orders), [orders]);
+
+  const handleSelectAll = (checked: boolean) => {
+    const newSelection = checked ? orders.map(order => order.id) : [];
+    setLocalSelectedIds(newSelection);
   };
-  
-  if (isMobile) {
-    return (
-      <>
-        <OrdersTableMobile
-          orders={orders}
-          selectedOrders={selectedOrders}
-          toggleSelectOrder={toggleSelectOrder}
-          onViewDetails={handleViewOrderDetails}
-          showActions={showActions}
-        />
-        
-        <OrderDetailsDialog 
-          order={selectedOrder}
-          open={detailsDialogOpen}
-          onOpenChange={setDetailsDialogOpen}
-        />
-      </>
+
+  const handleSelectOrder = (orderId: string, checked: boolean) => {
+    setLocalSelectedIds(prev => 
+      checked 
+        ? [...prev, orderId]
+        : prev.filter(id => id !== orderId)
     );
-  }
-  
-  return (
-    <>
-      <div className="rounded-xl border border-border/10 shadow-sm overflow-hidden bg-white mt-4">
-        {selectedOrders.length > 0 && (
-          <div className="bg-[#DB271E]/5 py-3 px-6 flex justify-between items-center border-b border-border/10">
-            <div className="text-sm font-medium text-[#DB271E]">
-              {selectedOrders.length} orders selected
-            </div>
-            <div className="flex gap-2">
-              <button className="px-4 py-1.5 rounded-lg bg-white text-sm border border-border/20 shadow-sm flex items-center gap-2 hover:border-[#DB271E]/50 transition-colors">
-                Print Labels
-              </button>
-              <button 
-                className="px-4 py-1.5 rounded-lg bg-white text-sm border border-border/20 shadow-sm hover:text-[#DB271E] transition-colors"
-                onClick={() => toggleSelectAll(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
+  };
+
+  const handleConfirmSelection = () => {
+    onOrderSelection?.(localSelectedIds);
+  };
+
+  const isAllSelected = localSelectedIds.length === orders.length && orders.length > 0;
+  const isPartiallySelected = localSelectedIds.length > 0 && localSelectedIds.length < orders.length;
+
+  if (selectionMode) {
+    return (
+      <div className="space-y-4">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/20 hover:bg-muted/30 border-b border-border/10">
-                <TableHead className="w-12 h-11 pl-4">
-                  <Checkbox 
-                    checked={selectedOrders.length === orders.length && orders.length > 0}
-                    onCheckedChange={(checked) => toggleSelectAll(!!checked)}
-                    className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
+              <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={isAllSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = isPartiallySelected;
+                    }}
+                    onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
-                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                  <div className="flex items-center gap-1.5">
-                    Order ID
-                  </div>
-                </TableHead>
-                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                  Reference No.
-                </TableHead>
-                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Type</TableHead>
-                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Customer</TableHead>
-                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
-                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Amount</TableHead>
-                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Delivery Fees</TableHead>
-                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
-                {showActions && (
-                  <TableHead className="w-16 text-right pr-4">
-                    <span className="sr-only">Actions</span>
-                  </TableHead>
-                )}
+                <TableHead>Order</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {orders.map((order) => (
-                <OrdersTableRow 
-                  key={order.id}
-                  order={order}
-                  isSelected={selectedOrders.includes(order.id)}
-                  onToggleSelect={toggleSelectOrder}
-                  onViewDetails={handleViewOrderDetails}
-                  showActions={showActions}
-                />
+                <TableRow key={order.id} className="hover:bg-gray-50">
+                  <TableCell>
+                    <Checkbox
+                      checked={localSelectedIds.includes(order.id)}
+                      onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <p className="font-medium text-sm">{order.reference_number}</p>
+                      <p className="text-xs text-gray-500">#{order.order_id}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <p className="font-medium text-sm">{order.customer?.name}</p>
+                      <p className="text-xs text-gray-500">{order.customer?.phone}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <p className="text-sm">{order.customer?.city_name}</p>
+                      <p className="text-xs text-gray-500">{order.customer?.governorate_name}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <p className="text-sm font-medium">${order.cash_collection_usd || 0}</p>
+                      <p className="text-xs text-gray-500">{order.cash_collection_lbp || 0} LBP</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {order.status}
+                    </span>
+                  </TableCell>
+                </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
-        <div className="bg-white border-t border-border/10 px-6 py-4 flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            Showing <span className="font-medium text-foreground">{1}</span> to <span className="font-medium text-foreground">{orders.length}</span> of <span className="font-medium text-foreground">36</span> orders
-          </span>
-          
-          <div className="flex items-center gap-1">
-            <button className="p-2 border border-border/20 rounded-lg hover:bg-muted/30 transition-colors">
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            
-            <button className="h-8 w-8 bg-[#DB271E] text-white rounded-lg flex items-center justify-center text-sm font-medium shadow-sm">1</button>
-            <button className="h-8 w-8 text-muted-foreground hover:bg-muted/30 rounded-lg flex items-center justify-center text-sm transition-colors">2</button>
-            <button className="h-8 w-8 text-muted-foreground hover:bg-muted/30 rounded-lg flex items-center justify-center text-sm transition-colors">3</button>
-            
-            <button className="p-2 border border-border/20 rounded-lg hover:bg-muted/30 transition-colors">
-              <ChevronRight className="h-4 w-4" />
-            </button>
+        
+        {localSelectedIds.length > 0 && (
+          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+            <p className="text-sm font-medium">
+              {localSelectedIds.length} order{localSelectedIds.length !== 1 ? 's' : ''} selected
+            </p>
+            <Button onClick={handleConfirmSelection} className="bg-[#DB271E] hover:bg-[#c0211a] text-white">
+              Select {localSelectedIds.length} Order{localSelectedIds.length !== 1 ? 's' : ''}
+            </Button>
           </div>
-        </div>
+        )}
       </div>
-      
-      <OrderDetailsDialog 
-        order={selectedOrder}
-        open={detailsDialogOpen}
-        onOpenChange={setDetailsDialogOpen}
-      />
-    </>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Order</TableHead>
+            <TableHead>Customer</TableHead>
+            <TableHead>Location</TableHead>
+            <TableHead>Amount</TableHead>
+            <TableHead>Delivery Charge</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Last Update</TableHead>
+            <TableHead className="w-[50px]"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {mappedOrders.map((order, index) => (
+            <OrdersTableRow key={order.id} order={order} index={index} />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
-
-export default OrdersTable;

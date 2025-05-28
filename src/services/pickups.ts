@@ -16,6 +16,9 @@ export interface Pickup {
   picked_up: boolean;
   validated: boolean;
   note?: string;
+  vehicle_type?: string;
+  orders_count?: number;
+  client_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -52,7 +55,13 @@ export async function getPickupsByStatus(status: Pickup['status']) {
 export async function getPickupById(id: string) {
   const { data, error } = await supabase
     .from('pickups')
-    .select('*')
+    .select(`
+      *,
+      pickup_orders (
+        order_id,
+        orders (*)
+      )
+    `)
     .eq('id', id)
     .single();
   
@@ -64,10 +73,13 @@ export async function getPickupById(id: string) {
   return data as Pickup;
 }
 
-export async function createPickup(pickup: Omit<Pickup, 'id' | 'pickup_id' | 'created_at' | 'updated_at'>) {
+export async function createPickup(pickup: Omit<Pickup, 'id' | 'pickup_id' | 'created_at' | 'updated_at' | 'client_id'>) {
   const { data, error } = await supabase
     .from('pickups')
-    .insert([pickup])
+    .insert([{
+      ...pickup,
+      client_id: (await supabase.auth.getUser()).data.user?.id
+    }])
     .select()
     .single();
   
@@ -79,7 +91,7 @@ export async function createPickup(pickup: Omit<Pickup, 'id' | 'pickup_id' | 'cr
   return data as Pickup;
 }
 
-export async function updatePickup(id: string, updates: Partial<Omit<Pickup, 'id' | 'pickup_id' | 'created_at' | 'updated_at'>>) {
+export async function updatePickup(id: string, updates: Partial<Omit<Pickup, 'id' | 'pickup_id' | 'created_at' | 'updated_at' | 'client_id'>>) {
   const { data, error } = await supabase
     .from('pickups')
     .update(updates)
@@ -93,4 +105,39 @@ export async function updatePickup(id: string, updates: Partial<Omit<Pickup, 'id
   }
   
   return data as Pickup;
+}
+
+export async function linkOrdersToPickup(pickupId: string, orderIds: string[]) {
+  const pickupOrders = orderIds.map(orderId => ({
+    pickup_id: pickupId,
+    order_id: orderId
+  }));
+
+  const { data, error } = await supabase
+    .from('pickup_orders')
+    .insert(pickupOrders);
+
+  if (error) {
+    console.error('Error linking orders to pickup:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+export async function getPickupOrders(pickupId: string) {
+  const { data, error } = await supabase
+    .from('pickup_orders')
+    .select(`
+      *,
+      orders (*)
+    `)
+    .eq('pickup_id', pickupId);
+
+  if (error) {
+    console.error('Error fetching pickup orders:', error);
+    throw error;
+  }
+
+  return data;
 }
