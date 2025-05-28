@@ -10,6 +10,7 @@ import CustomerInfo from './CustomerInfo';
 import LocationInfo from './LocationInfo';
 import CurrencyDisplay from './CurrencyDisplay';
 import OrderRowActions from './OrderRowActions';
+import { formatDate } from '@/utils/format';
 
 export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid' | 'Awaiting Action';
 export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection' | 'Return';
@@ -62,64 +63,117 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
       onViewDetails(order);
     }
   };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'new':
+        return 'text-blue-600 bg-blue-50';
+      case 'pending pickup':
+        return 'text-orange-600 bg-orange-50';
+      case 'in progress':
+        return 'text-yellow-600 bg-yellow-50';
+      case 'heading to customer':
+        return 'text-purple-600 bg-purple-50';
+      case 'heading to you':
+        return 'text-indigo-600 bg-indigo-50';
+      case 'successful':
+        return 'text-green-600 bg-green-50';
+      case 'unsuccessful':
+        return 'text-red-600 bg-red-50';
+      case 'returned':
+        return 'text-gray-600 bg-gray-50';
+      case 'paid':
+        return 'text-emerald-600 bg-emerald-50';
+      default:
+        return 'text-gray-600 bg-gray-50';
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'deliver':
+        return 'text-blue-600 bg-blue-50';
+      case 'exchange':
+        return 'text-orange-600 bg-orange-50';
+      case 'cash collection':
+        return 'text-green-600 bg-green-50';
+      case 'return':
+        return 'text-red-600 bg-red-50';
+      default:
+        return 'text-gray-600 bg-gray-50';
+    }
+  };
   
   return (
     <TableRow 
-      className={cn(
-        "hover:bg-muted/20 border-b border-border/10 cursor-pointer transition-colors", 
-        isSelected && "bg-[#DB271E]/5"
-      )}
+      className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
       onClick={handleRowClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <TableCell className="w-12 pl-4 pr-0" onClick={e => e.stopPropagation()}>
-        <Checkbox 
-          checked={isSelected} 
-          onCheckedChange={() => onToggleSelect(order.id)} 
-          className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]" 
-        />
-      </TableCell>
-      <TableCell className="py-4">
-        <div className="flex items-center gap-1.5">
-          <span className="font-medium text-gray-900">#{order.id}</span>
+      <TableCell className="pl-6">
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-blue-600">#{order.id}</span>
           <OrderNoteTooltip note={order.note} />
         </div>
       </TableCell>
-      <TableCell className="py-4">
+      <TableCell>
         {order.referenceNumber ? (
           <span className="font-medium text-gray-900">{order.referenceNumber}</span>
         ) : (
-          <span className="text-gray-400 text-sm">-</span>
+          <span className="text-gray-400">-</span>
         )}
       </TableCell>
-      <TableCell className="py-4">
-        <ShipmentTypeBadge type={order.type} />
+      <TableCell>
+        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${getTypeColor(order.type)}`}>
+          {order.type}
+        </span>
       </TableCell>
-      <TableCell className="py-4">
-        <CustomerInfo name={order.customer.name} phone={order.customer.phone} />
+      <TableCell>
+        <div>
+          <div className="font-medium text-gray-900">{order.customer.name}</div>
+          <div className="text-sm text-gray-500">{order.customer.phone}</div>
+        </div>
       </TableCell>
-      <TableCell className="py-4">
-        <LocationInfo city={order.location.city} area={order.location.area} />
+      <TableCell>
+        <div>
+          <div>{order.location.city}</div>
+          <div className="text-sm text-gray-500">{order.location.area}</div>
+        </div>
       </TableCell>
-      <TableCell className="py-4">
-        <CurrencyDisplay 
-          valueUSD={order.amount.valueUSD} 
-          valueLBP={order.amount.valueLBP} 
-        />
+      <TableCell>
+        <div>
+          {order.amount.valueUSD > 0 && (
+            <div className="font-medium">${order.amount.valueUSD}</div>
+          )}
+          {order.amount.valueLBP > 0 && (
+            <div className="text-sm text-gray-500">{order.amount.valueLBP.toLocaleString()} LBP</div>
+          )}
+        </div>
       </TableCell>
-      <TableCell className="py-4">
-        <CurrencyDisplay 
-          valueUSD={order.deliveryCharge.valueUSD} 
-          valueLBP={order.deliveryCharge.valueLBP} 
-        />
+      <TableCell>
+        <div>
+          {order.deliveryCharge.valueUSD > 0 && (
+            <div className="font-medium">${order.deliveryCharge.valueUSD}</div>
+          )}
+          {order.deliveryCharge.valueLBP > 0 && (
+            <div className="text-sm text-gray-500">{order.deliveryCharge.valueLBP.toLocaleString()} LBP</div>
+          )}
+        </div>
       </TableCell>
-      <TableCell className="py-4">
-        <StatusBadge status={order.status} />
+      <TableCell>
+        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${getStatusColor(order.status)}`}>
+          {order.status}
+        </span>
+      </TableCell>
+      <TableCell>
+        <div className="text-sm text-gray-900">
+          {formatDate(new Date(order.lastUpdate))}
+        </div>
       </TableCell>
       
       {showActions && (
-        <TableCell className="py-4 w-24 text-right" onClick={e => e.stopPropagation()}>
+        <TableCell className="text-right" onClick={e => e.stopPropagation()}>
           <OrderRowActions 
             order={order} 
             isHovered={isHovered} 
