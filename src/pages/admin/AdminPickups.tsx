@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AdminLayout from "@/components/layout/AdminLayout";
+import AdminLayout from "@/components/admin/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
