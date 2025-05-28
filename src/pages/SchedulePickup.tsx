@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from "@/components/layout/MainLayout";
@@ -10,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Package, MapPin, Calendar as CalendarIcon, Clock, Car, Motorcycle, Van, User, FileText, Check } from "lucide-react";
+import { ArrowLeft, Package, MapPin, Calendar as CalendarIcon, Clock, Car, Bike, Truck, User, FileText, Check } from "lucide-react";
 import { OrdersTable } from "@/components/orders/OrdersTable";
 import { useOrdersByStatus } from '@/hooks/use-orders';
 import { useCreatePickup } from '@/hooks/use-pickups';
@@ -55,7 +54,7 @@ const SchedulePickup: React.FC = () => {
     { 
       value: 'small', 
       label: 'Motorcycle', 
-      icon: Motorcycle, 
+      icon: Bike, 
       description: 'Best for small packages',
       price: 'From $2'
     },
@@ -69,7 +68,7 @@ const SchedulePickup: React.FC = () => {
     { 
       value: 'large', 
       label: 'Van', 
-      icon: Van, 
+      icon: Truck, 
       description: 'For large or multiple packages',
       price: 'From $8'
     },
@@ -456,9 +455,9 @@ const SchedulePickup: React.FC = () => {
                     )}
                     
                     <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
-                      {vehicleType === 'small' && <Motorcycle className="h-5 w-5 text-[#DB271E]" />}
+                      {vehicleType === 'small' && <Bike className="h-5 w-5 text-[#DB271E]" />}
                       {vehicleType === 'medium' && <Car className="h-5 w-5 text-[#DB271E]" />}
-                      {vehicleType === 'large' && <Van className="h-5 w-5 text-[#DB271E]" />}
+                      {vehicleType === 'large' && <Truck className="h-5 w-5 text-[#DB271E]" />}
                       <span className="font-medium capitalize">{vehicleOptions.find(v => v.value === vehicleType)?.label}</span>
                     </div>
                     
