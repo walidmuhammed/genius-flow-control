@@ -1,31 +1,18 @@
 
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Moon, Sun, Package, Truck, Home, Users, Wallet, BarChart3, Settings, Phone, LogOut, Activity, Navigation, DollarSign } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Truck, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AdminSidebarMenu from './AdminSidebarMenu';
-import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
-import { useScreenSize } from '@/hooks/useScreenSize';
 
 interface AdminSidebarProps {
   className?: string;
 }
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ className }) => {
-  const [darkMode, setDarkMode] = useState(false);
   const { signOut } = useAuth();
-  const { isMobile } = useScreenSize();
-  
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    if (!darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
 
   const handleSignOut = () => {
     signOut();
@@ -34,7 +21,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ className }) => {
   return (
     <motion.aside 
       className={cn(
-        "flex flex-col w-full sm:w-[260px] sm:min-w-[260px] bg-gray-50 dark:bg-gray-900 h-full relative border-r border-gray-200 dark:border-gray-800",
+        "flex flex-col w-full sm:w-[260px] sm:min-w-[260px] bg-white h-full relative border-r border-gray-200",
         className
       )}
       layout
@@ -44,7 +31,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ className }) => {
       }}
     >
       <div className="flex h-16 items-center px-5">
-        <Link to="/dashboard/admin" className="flex items-center gap-2.5 mx-auto">
+        <Link to="/admin" className="flex items-center gap-2.5 mx-auto">
           <motion.div 
             className="flex items-center" 
             initial={{ opacity: 0 }}
@@ -54,7 +41,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ className }) => {
             <div className="bg-[#DC291E] h-9 w-9 rounded-lg flex items-center justify-center">
               <Truck className="h-5 w-5 text-white" />
             </div>
-            <span className="tracking-tight text-gray-900 dark:text-gray-100 font-bold text-xl px-2">
+            <span className="tracking-tight text-gray-900 font-bold text-xl px-2">
               Topspeed
             </span>
           </motion.div>
@@ -69,32 +56,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ className }) => {
         <motion.button 
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={toggleDarkMode} 
-          className={cn(
-            "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium", 
-            "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-gray-700 dark:text-gray-200"
-          )}
-        >
-          {darkMode ? (
-            <>
-              <Sun className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              <span>Light Mode</span>
-            </>
-          ) : (
-            <>
-              <Moon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              <span>Dark Mode</span>
-            </>
-          )}
-        </motion.button>
-        
-        <motion.button 
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
           onClick={handleSignOut}
           className={cn(
-            "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200", 
-            "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+            "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium text-gray-700", 
+            "hover:bg-gray-100 transition-all duration-200"
           )}
         >
           <LogOut className="h-4 w-4" />

@@ -1,54 +1,37 @@
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { LucideIcon } from "lucide-react";
+import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface EmptyStateProps {
-  icon: LucideIcon;
+  icon?: React.ReactNode;
   title: string;
   description?: string;
-  actionLabel?: string;
-  actionHref?: string;
-  onAction?: () => void;
+  action?: React.ReactNode;
   className?: string;
 }
 
-export function EmptyState({
-  icon: Icon,
+export const EmptyState: React.FC<EmptyStateProps> = ({
+  icon,
   title,
   description,
-  actionLabel,
-  actionHref,
-  onAction,
-  className,
-}: EmptyStateProps) {
+  action,
+  className
+}) => {
   return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center py-12 px-4 text-center",
-        className
+    <div className={cn(
+      "flex flex-col items-center justify-center py-12 px-4 text-center",
+      className
+    )}>
+      {icon && (
+        <div className="mb-4 text-gray-400">
+          {icon}
+        </div>
       )}
-    >
-      <div className="rounded-full bg-muted/30 p-6 mb-5">
-        <Icon className="h-12 w-12 text-muted-foreground/60" />
-      </div>
-      
-      <h3 className="text-lg font-medium text-foreground mb-2">{title}</h3>
-      
+      <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
       {description && (
-        <p className="text-sm text-muted-foreground max-w-sm mb-6">{description}</p>
+        <p className="text-gray-500 mb-6 max-w-md">{description}</p>
       )}
-      
-      {actionLabel && (onAction || actionHref) && (
-        <Button
-          onClick={onAction}
-          {...(actionHref ? { as: 'a', href: actionHref } : {})}
-          className="mt-2 bg-[#DB271E] hover:bg-[#c0211a] text-white"
-        >
-          {actionLabel}
-        </Button>
-      )}
+      {action && action}
     </div>
   );
-}
+};

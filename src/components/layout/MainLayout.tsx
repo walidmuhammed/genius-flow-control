@@ -20,7 +20,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
   const { sidebarOpen, closeSidebar } = useLayoutStore();
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Desktop Sidebar */}
       {!isMobile && <Sidebar />}
       
@@ -36,7 +36,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
       <div className="flex-1 flex flex-col">
         <TopBar />
         <main className={cn(
-          "p-3 sm:p-4 md:p-6 overflow-y-auto h-[calc(100vh-64px)] transition-all bg-gray-50 dark:bg-gray-900",
+          "p-3 sm:p-4 md:p-6 overflow-y-auto h-[calc(100vh-64px)] transition-all bg-gray-50",
           className
         )}>
           <motion.div 
@@ -60,7 +60,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
         position="top-right" 
         toastOptions={{
           classNames: {
-            toast: "group border-border shadow-sm bg-white dark:bg-gray-900",
+            toast: "group border-border shadow-sm bg-white",
             title: "font-medium text-foreground",
             description: "text-muted-foreground",
             actionButton: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90",
