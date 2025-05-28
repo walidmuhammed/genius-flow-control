@@ -12,7 +12,6 @@ import { useQuery } from '@tanstack/react-query';
 import { formatDate } from '@/utils/format';
 import { getOrders } from '@/services/orders';
 import { getPickups } from '@/services/pickups';
-import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Link } from 'react-router-dom';
 
@@ -340,10 +339,7 @@ const Dashboard: React.FC = () => {
                   <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Today's New Orders</h3>
                   {todayOrders.length > 0 ? (
                     <OrdersTable 
-                      orders={mapOrdersToTableFormat(todayOrders)} 
-                      selectedOrders={selectedOrders} 
-                      toggleSelectAll={toggleSelectAllOrders} 
-                      toggleSelectOrder={toggleSelectOrder} 
+                      orders={todayOrders}
                     />
                   ) : (
                     <EmptyState
@@ -402,10 +398,7 @@ const Dashboard: React.FC = () => {
                   <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">Orders Awaiting Action</h3>
                   {awaitingActionOrders.length > 0 ? (
                     <OrdersTable 
-                      orders={mapOrdersToTableFormat(awaitingActionOrders)} 
-                      selectedOrders={selectedOrders} 
-                      toggleSelectAll={toggleSelectAllOrders} 
-                      toggleSelectOrder={toggleSelectOrder} 
+                      orders={awaitingActionOrders}
                     />
                   ) : (
                     <EmptyState

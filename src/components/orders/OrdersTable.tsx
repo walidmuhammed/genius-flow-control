@@ -144,8 +144,13 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {mappedOrders.map((order, index) => (
-            <OrdersTableRow key={order.id} order={order} index={index} />
+          {mappedOrders.map((order) => (
+            <OrdersTableRow 
+              key={order.id} 
+              order={order}
+              isSelected={false}
+              onToggleSelect={() => {}}
+            />
           ))}
         </TableBody>
       </Table>

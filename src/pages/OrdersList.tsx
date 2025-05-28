@@ -19,39 +19,8 @@ import { OrdersDateFilter } from '@/components/orders/OrdersDateFilter';
 import { ImportOrdersModal } from '@/components/orders/ImportOrdersModal';
 import { ExportOrdersDropdown } from '@/components/orders/ExportOrdersDropdown';
 import { useOrders, useOrdersByStatus } from '@/hooks/use-orders';
-import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 import { toast } from 'sonner';
-import { Order } from '@/components/orders/OrdersTableRow';
 import { OrderWithCustomer } from '@/services/orders';
-
-// Transform Supabase data to match the Order interface used by the UI components
-const transformOrderData = (order: OrderWithCustomer): Order => {
-  return {
-    id: order.id,
-    referenceNumber: order.reference_number || '',
-    type: order.type as any,
-    customer: {
-      name: order.customer?.name || 'Unknown',
-      phone: order.customer?.phone || 'N/A'
-    },
-    location: {
-      city: order.customer?.city_name || 'Unknown',
-      area: order.customer?.governorate_name || 'Unknown',
-      address: order.customer?.address
-    },
-    amount: {
-      valueLBP: order.cash_collection_lbp ? Number(order.cash_collection_lbp) : 0,
-      valueUSD: order.cash_collection_usd ? Number(order.cash_collection_usd) : 0
-    },
-    deliveryCharge: {
-      valueLBP: order.delivery_fees_lbp ? Number(order.delivery_fees_lbp) : 0,
-      valueUSD: order.delivery_fees_usd ? Number(order.delivery_fees_usd) : 0
-    },
-    status: order.status as any,
-    lastUpdate: order.updated_at,
-    note: order.note
-  };
-};
 
 const OrdersList: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
@@ -79,14 +48,9 @@ const OrdersList: React.FC = () => {
       console.error("Error loading orders:", ordersError);
     }
   }, [ordersError]);
-
-  // Transform database order format to UI component order format
-  const transformedOrders = useMemo(() => {
-    return allOrders ? mapOrdersToTableFormat(allOrders) : [];
-  }, [allOrders]);
   
   // Search function for orders
-  const searchOrders = (orders: Order[], query: string) => {
+  const searchOrders = (orders: OrderWithCustomer[], query: string) => {
     if (!query.trim()) return orders;
     
     const lowercaseQuery = query.toLowerCase().trim();
@@ -94,18 +58,18 @@ const OrdersList: React.FC = () => {
     return orders.filter(order => {
       return (
         // Search by Order ID
-        order.id.toLowerCase().includes(lowercaseQuery) ||
+        order.order_id.toString().includes(lowercaseQuery) ||
         // Search by Reference Number
-        order.referenceNumber.toLowerCase().includes(lowercaseQuery) ||
+        order.reference_number?.toLowerCase().includes(lowercaseQuery) ||
         // Search by Customer Name
-        order.customer.name.toLowerCase().includes(lowercaseQuery) ||
+        order.customer?.name.toLowerCase().includes(lowercaseQuery) ||
         // Search by Phone
-        order.customer.phone.toLowerCase().includes(lowercaseQuery) ||
+        order.customer?.phone.toLowerCase().includes(lowercaseQuery) ||
         // Search by Location
-        order.location.city.toLowerCase().includes(lowercaseQuery) ||
-        order.location.area.toLowerCase().includes(lowercaseQuery) ||
+        order.customer?.city_name?.toLowerCase().includes(lowercaseQuery) ||
+        order.customer?.governorate_name?.toLowerCase().includes(lowercaseQuery) ||
         // Search by Amount (as string)
-        order.amount.valueUSD.toString().includes(lowercaseQuery) ||
+        order.cash_collection_usd?.toString().includes(lowercaseQuery) ||
         // Search by Status
         order.status.toLowerCase().includes(lowercaseQuery) ||
         // Search by Type
@@ -117,11 +81,11 @@ const OrdersList: React.FC = () => {
   };
   
   // Filter orders by date range
-  const filterByDateRange = (orders: Order[], from?: Date, to?: Date) => {
+  const filterByDateRange = (orders: OrderWithCustomer[], from?: Date, to?: Date) => {
     if (!from && !to) return orders;
     
     return orders.filter(order => {
-      const orderDate = new Date(order.lastUpdate);
+      const orderDate = new Date(order.updated_at);
       
       if (from && to) {
         return orderDate >= from && orderDate <= to;
@@ -141,24 +105,24 @@ const OrdersList: React.FC = () => {
     
     switch (activeTab) {
       case 'new':
-        return newOrders ? mapOrdersToTableFormat(newOrders) : [];
+        return newOrders || [];
       case 'pending':
-        return pendingOrders ? mapOrdersToTableFormat(pendingOrders) : [];
+        return pendingOrders || [];
       case 'inProgress':
-        return inProgressOrders ? mapOrdersToTableFormat(inProgressOrders) : [];
+        return inProgressOrders || [];
       case 'successful':
-        return successfulOrders ? mapOrdersToTableFormat(successfulOrders) : [];
+        return successfulOrders || [];
       case 'unsuccessful':
-        return unsuccessfulOrders ? mapOrdersToTableFormat(unsuccessfulOrders) : [];
+        return unsuccessfulOrders || [];
       case 'returned':
-        return returnedOrders ? mapOrdersToTableFormat(returnedOrders) : [];
+        return returnedOrders || [];
       case 'paid':
-        return paidOrders ? mapOrdersToTableFormat(paidOrders) : [];
+        return paidOrders || [];
       case 'awaitingAction':
         // Filter orders with status 'Awaiting Action'
-        return transformedOrders.filter(order => order.status === 'Awaiting Action');
+        return allOrders.filter(order => order.status === 'New' || order.status === 'Pending Pickup' || order.status === 'Unsuccessful');
       default:
-        return transformedOrders;
+        return allOrders;
     }
   };
   
@@ -491,10 +455,6 @@ const OrdersList: React.FC = () => {
           {filteredOrders.length > 0 ? (
             <OrdersTable 
               orders={filteredOrders}
-              selectedOrders={selectedOrders}
-              toggleSelectAll={toggleSelectAll}
-              toggleSelectOrder={toggleSelectOrder}
-              showActions={true}
             />
           ) : (
             <div className="mt-4">
