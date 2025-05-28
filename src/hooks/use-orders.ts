@@ -7,6 +7,7 @@ import {
   updateOrder, 
   getOrdersByStatus,
   getOrdersWithDateRange,
+  deleteOrder,
   Order 
 } from "@/services/orders";
 import { toast } from "sonner";
@@ -63,6 +64,21 @@ export function useUpdateOrder() {
     },
     onError: (error) => {
       toast.error(`Error updating order: ${error.message}`);
+    }
+  });
+}
+
+export function useDeleteOrder() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: deleteOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast.success("Order deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(`Error deleting order: ${error.message}`);
     }
   });
 }

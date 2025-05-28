@@ -91,7 +91,7 @@ export async function getPickupById(id: string) {
   const pickup: PickupWithOrders = {
     ...data,
     status: data.status as Pickup['status'],
-    vehicle_type: (data.vehicle_type || 'medium') as 'small' | 'medium' | 'large', // Ensure proper typing
+    vehicle_type: (data.vehicle_type || 'medium') as 'small' | 'medium' | 'large',
     orders: data.pickup_orders?.map((po: any) => ({
       id: po.order.id,
       order_id: po.order.order_id,
@@ -134,6 +134,18 @@ export async function updatePickup(id: string, updates: Partial<Omit<Pickup, 'id
   }
   
   return data as Pickup;
+}
+
+export async function deletePickup(id: string) {
+  const { error } = await supabase
+    .from('pickups')
+    .delete()
+    .eq('id', id);
+  
+  if (error) {
+    console.error(`Error deleting pickup with id ${id}:`, error);
+    throw error;
+  }
 }
 
 export async function addOrdersToPickup(pickupId: string, orderIds: string[]) {

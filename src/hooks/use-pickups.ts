@@ -6,6 +6,7 @@ import {
   createPickup, 
   updatePickup, 
   getPickupsByStatus,
+  deletePickup,
   Pickup 
 } from "@/services/pickups";
 import { toast } from "sonner";
@@ -62,6 +63,21 @@ export function useUpdatePickup() {
     },
     onError: (error) => {
       toast.error(`Error updating pickup: ${error.message}`);
+    }
+  });
+}
+
+export function useDeletePickup() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: deletePickup,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pickups'] });
+      toast.success("Pickup deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(`Error deleting pickup: ${error.message}`);
     }
   });
 }

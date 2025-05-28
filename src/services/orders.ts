@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerWithLocation } from "./customers";
 
@@ -64,14 +63,18 @@ const transformOrderData = (order: any): OrderWithCustomer => {
   
   return {
     ...order,
-    order_id: order.order_id, // Now properly available from database
+    order_id: order.order_id,
     type: orderType as OrderType,
     package_type: packageType as PackageType,
     status: statusType as OrderStatus,
+    // Fix reference number logic - only show if it actually exists and is not empty
+    reference_number: order.reference_number && order.reference_number.trim() ? order.reference_number : '',
     customer: {
       ...customerData,
       city_name: customerData.cities?.name,
-      governorate_name: customerData.governorates?.name
+      governorate_name: customerData.governorates?.name,
+      // Fix secondary phone autofill - only show if it exists and is not empty
+      secondary_phone: customerData.secondary_phone && customerData.secondary_phone.trim() ? customerData.secondary_phone : undefined
     }
   };
 };
@@ -94,9 +97,7 @@ export async function getOrders() {
     throw error;
   }
   
-  // Transform the data to match our interface
   const transformedData: OrderWithCustomer[] = data.map(transformOrderData);
-  
   return transformedData;
 }
 
@@ -119,38 +120,7 @@ export async function getOrdersByStatus(status: OrderStatus) {
     throw error;
   }
   
-  // Transform the data to match our interface
-  const transformedData: OrderWithCustomer[] = data.map(order => {
-    const customerData = order.customer as any;
-    
-    // Ensure type is correctly cast to one of the allowed types
-    let orderType = order.type;
-    if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
-      orderType = 'Deliver';
-    }
-    
-    // Ensure package_type is correctly cast to one of the allowed types
-    let packageType = order.package_type;
-    if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
-      packageType = 'parcel';
-    }
-    
-    // Status is already filtered so it should match the OrderStatus type
-    
-    return {
-      ...order,
-      order_id: order.order_id, // Now properly available from database
-      type: orderType as OrderType,
-      package_type: packageType as PackageType,
-      status: status, // This is already the correct type since we filtered by it
-      customer: {
-        ...customerData,
-        city_name: customerData.cities?.name,
-        governorate_name: customerData.governorates?.name
-      }
-    };
-  });
-  
+  const transformedData: OrderWithCustomer[] = data.map(transformOrderData);
   return transformedData;
 }
 
@@ -174,7 +144,6 @@ export async function getOrderById(id: string) {
   }
   
   const order = transformOrderData(data);
-  
   return order;
 }
 
@@ -229,8 +198,18 @@ export async function getOrdersWithDateRange(startDate: string, endDate: string)
     throw error;
   }
   
-  // Transform the data to match our interface
   const transformedData: OrderWithCustomer[] = data.map(transformOrderData);
-  
   return transformedData;
+}
+
+export async function deleteOrder(id: string) {
+  const { error } = await supabase
+    .from('orders')
+    .delete()
+    .eq('id', id);
+  
+  if (error) {
+    console.error(`Error deleting order with id ${id}:`, error);
+    throw error;
+  }
 }

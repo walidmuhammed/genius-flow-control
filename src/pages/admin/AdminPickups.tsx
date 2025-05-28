@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,10 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableHead, TableRow, TableHeader, TableCell, TableBody } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, Download, Package, Calendar, MapPin, User } from "lucide-react";
+import { Search, Filter, Download, Package, Calendar, MapPin, Eye, Check, X } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PickupDetailsModal } from "@/components/pickups/PickupDetailsModal";
-import { usePickups, usePickupsByStatus, useUpdatePickup } from "@/hooks/use-pickups";
+import { usePickups, useUpdatePickup } from "@/hooks/use-pickups";
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -211,7 +212,7 @@ const AdminPickups: React.FC = () => {
                       <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Pickup ID</TableHead>
                       <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
                       <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Date & Time</TableHead>
-                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Client</TableHead>
+                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Store</TableHead>
                       <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
                       <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Contact</TableHead>
                       <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Vehicle</TableHead>
@@ -242,7 +243,8 @@ const AdminPickups: React.FC = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm">Client Name</span>
+                          <span className="text-sm font-medium">Client Store</span>
+                          <div className="text-xs text-gray-500">Business Account</div>
                         </TableCell>
                         <TableCell>
                           <div>
@@ -276,34 +278,42 @@ const AdminPickups: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handlePickupClick(pickup.id)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
                             {pickup.status === 'Scheduled' && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-xs"
-                                onClick={(e) => handleStatusUpdate(pickup.id, 'In Progress', e)}
-                              >
-                                Start
-                              </Button>
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  onClick={(e) => handleStatusUpdate(pickup.id, 'In Progress', e)}
+                                >
+                                  <Check className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={(e) => handleStatusUpdate(pickup.id, 'Canceled', e)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </>
                             )}
                             {pickup.status === 'In Progress' && (
                               <Button
                                 size="sm"
-                                variant="outline"
-                                className="h-7 text-xs"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
                                 onClick={(e) => handleStatusUpdate(pickup.id, 'Completed', e)}
                               >
-                                Complete
-                              </Button>
-                            )}
-                            {(pickup.status === 'Scheduled' || pickup.status === 'In Progress') && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 text-xs text-red-600 hover:text-red-700"
-                                onClick={(e) => handleStatusUpdate(pickup.id, 'Canceled', e)}
-                              >
-                                Cancel
+                                <Check className="h-4 w-4" />
                               </Button>
                             )}
                           </div>

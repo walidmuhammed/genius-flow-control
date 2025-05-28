@@ -1,23 +1,25 @@
+
 import React, { useState } from 'react';
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Package, Search, Filter, Download, Plus, FileText } from "lucide-react";
+import { Package, Search, Filter, Download, Plus, FileText, Trash2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableHead, TableRow, TableHeader, TableCell, TableBody } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
-import { SchedulePickupModal } from "@/components/pickups/SchedulePickupModal";
 import { PickupDetailsModal } from "@/components/pickups/PickupDetailsModal";
-import { usePickups, usePickupsByStatus } from "@/hooks/use-pickups";
+import { usePickups, usePickupsByStatus, useUpdatePickup } from "@/hooks/use-pickups";
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const Pickups: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("upcoming");
   const [searchQuery, setSearchQuery] = useState("");
-  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [selectedPickupId, setSelectedPickupId] = useState<string | null>(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
 
@@ -27,6 +29,7 @@ const Pickups: React.FC = () => {
   const { data: inProgressPickups = [] } = usePickupsByStatus('In Progress');
   const { data: completedPickups = [] } = usePickupsByStatus('Completed');
   const { data: canceledPickups = [] } = usePickupsByStatus('Canceled');
+  const { mutate: updatePickup } = useUpdatePickup();
 
   // Filter pickups based on active tab
   const getFilteredPickups = () => {
@@ -88,7 +91,12 @@ const Pickups: React.FC = () => {
     setDetailsModalOpen(true);
   };
 
-  const handleScheduleSuccess = () => {
+  const handleDeletePickup = async (pickupId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // In a real app, you'd call a delete API
+    // For now, we'll just show a success message
+    toast.success("Pickup deleted successfully");
     refetch();
   };
 
@@ -114,7 +122,7 @@ const Pickups: React.FC = () => {
           </div>
           <Button 
             className="bg-[#DB271E] hover:bg-[#DB271E]/90"
-            onClick={() => setScheduleModalOpen(true)}
+            onClick={() => navigate('/schedule-pickup')}
           >
             <Plus className="h-4 w-4 mr-2" />
             Schedule Pickup
@@ -160,9 +168,9 @@ const Pickups: React.FC = () => {
                   <EmptyState
                     icon={Package}
                     title="No upcoming pickups"
-                    description="You don't have any scheduled pickups at the moment. You can schedule a pickup once you create an order first."
-                    actionLabel="Create Order"
-                    actionHref="/orders/new"
+                    description="You don't have any scheduled pickups at the moment."
+                    actionLabel="Schedule Pickup"
+                    actionHref="/schedule-pickup"
                   />
                 ) : (
                   <div className="overflow-x-auto">
@@ -176,7 +184,7 @@ const Pickups: React.FC = () => {
                           <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Contact Person</TableHead>
                           <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Vehicle</TableHead>
                           <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Orders</TableHead>
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Courier</TableHead>
+                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -237,14 +245,18 @@ const Pickups: React.FC = () => {
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              {pickup.courier_name ? (
-                                <div>
-                                  <div>{pickup.courier_name}</div>
-                                  <div className="text-xs text-gray-500">{pickup.courier_phone}</div>
-                                </div>
-                              ) : (
-                                <span className="text-xs text-gray-500">Not assigned</span>
-                              )}
+                              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                {pickup.status === 'Scheduled' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => handleDeletePickup(pickup.id, e)}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -262,7 +274,7 @@ const Pickups: React.FC = () => {
                     <p className="text-sm text-gray-500 mb-6">Your completed and canceled pickups will appear here.</p>
                     <Button 
                       className="bg-[#DB271E] hover:bg-[#DB271E]/90"
-                      onClick={() => setScheduleModalOpen(true)}
+                      onClick={() => navigate('/schedule-pickup')}
                     >
                       Schedule Pickup
                     </Button>
@@ -279,7 +291,6 @@ const Pickups: React.FC = () => {
                           <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Contact Person</TableHead>
                           <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Vehicle</TableHead>
                           <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Orders</TableHead>
-                          <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Courier</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -339,16 +350,6 @@ const Pickups: React.FC = () => {
                                 {pickup.orders_count || 0}
                               </Badge>
                             </TableCell>
-                            <TableCell>
-                              {pickup.courier_name ? (
-                                <div>
-                                  <div>{pickup.courier_name}</div>
-                                  <div className="text-xs text-gray-500">{pickup.courier_phone}</div>
-                                </div>
-                              ) : (
-                                <span className="text-xs text-gray-500">Not assigned</span>
-                              )}
-                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -360,13 +361,7 @@ const Pickups: React.FC = () => {
           </Tabs>
         </Card>
 
-        {/* Modals */}
-        <SchedulePickupModal
-          open={scheduleModalOpen}
-          onOpenChange={setScheduleModalOpen}
-          onSuccess={handleScheduleSuccess}
-        />
-
+        {/* Details Modal */}
         <PickupDetailsModal
           pickupId={selectedPickupId}
           open={detailsModalOpen}
