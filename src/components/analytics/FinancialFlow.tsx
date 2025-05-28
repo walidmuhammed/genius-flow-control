@@ -30,10 +30,6 @@ export default function FinancialFlow() {
 
   const COLORS = ['#4f46e5', '#10b981', '#f97316', '#ef4444'];
   
-  const formatCurrencyValue = (value: number) => {
-    return formatCurrency(value, currency);
-  };
-  
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap gap-4">
@@ -69,10 +65,10 @@ export default function FinancialFlow() {
                 <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                 <YAxis 
                   tick={{ fontSize: 12 }} 
-                  tickFormatter={(value) => formatCurrencyValue(value)} 
+                  tickFormatter={(value) => formatCurrency(value, currency, true)} 
                 />
                 <Tooltip 
-                  formatter={(value: number) => [formatCurrencyValue(value), currency]} 
+                  formatter={(value: number) => [formatCurrency(value, currency), currency]} 
                   labelFormatter={(label) => `Date: ${label}`}
                 />
                 <Area
@@ -167,10 +163,11 @@ export default function FinancialFlow() {
           chart={
             <div className="flex flex-col items-center justify-center h-[200px]">
               <div className="text-3xl font-bold mb-2">
-                {formatCurrencyValue(
+                {formatCurrency(
                   currency === 'USD' 
                     ? (financialStats?.avgCashPerOrder.usd || 0) 
-                    : (financialStats?.avgCashPerOrder.lbp || 0)
+                    : (financialStats?.avgCashPerOrder.lbp || 0),
+                  currency
                 )}
               </div>
               
@@ -225,7 +222,18 @@ export default function FinancialFlow() {
                       background={{ fill: '#e5e7eb' }}
                       radius={[4, 4, 4, 4]}
                       barSize={20}
-                    />
+                    >
+                      {/* This is where the error was happening - we need to safely handle undefined values */}
+                      <LabelList 
+                        dataKey="value" 
+                        position="insideRight" 
+                        formatter={(value: number | null | undefined) => {
+                          // Safely handle undefined or null values
+                          if (value === undefined || value === null) return '0.0%';
+                          return `${value.toFixed(1)}%`;
+                        }} 
+                      />
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -236,3 +244,24 @@ export default function FinancialFlow() {
     </div>
   );
 }
+
+// Helper component for labels in charts
+const LabelList = (props: any) => {
+  const { x, y, width, height, value, formatter } = props;
+  // Apply the formatter safely - if formatter doesn't exist or value is undefined, handle it gracefully
+  const formattedValue = formatter && value !== undefined && value !== null 
+    ? formatter(value) 
+    : (value !== undefined && value !== null ? value : '');
+  
+  return (
+    <text 
+      x={x + width - 10} 
+      y={y + height / 2} 
+      fill="#fff" 
+      textAnchor="end" 
+      dominantBaseline="middle"
+    >
+      {formattedValue}
+    </text>
+  );
+};

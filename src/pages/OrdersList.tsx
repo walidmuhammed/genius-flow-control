@@ -23,7 +23,6 @@ import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 import { toast } from 'sonner';
 import { Order } from '@/components/orders/OrdersTableRow';
 import { OrderWithCustomer } from '@/services/orders';
-import { Package, Search, Filter, MoreHorizontal, Eye, Trash2 } from "lucide-react";
 
 // Transform Supabase data to match the Order interface used by the UI components
 const transformOrderData = (order: OrderWithCustomer): Order => {

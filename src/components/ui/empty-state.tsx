@@ -1,57 +1,54 @@
 
-import React from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from './button';
-import { useNavigate } from 'react-router-dom';
-import { LucideIcon } from 'lucide-react';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { LucideIcon } from "lucide-react";
 
 interface EmptyStateProps {
-  icon?: React.ComponentType<any> | LucideIcon;
+  icon: LucideIcon;
   title: string;
   description?: string;
-  action?: React.ReactNode;
   actionLabel?: string;
   actionHref?: string;
+  onAction?: () => void;
   className?: string;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({
+export function EmptyState({
   icon: Icon,
   title,
   description,
-  action,
   actionLabel,
   actionHref,
-  className
-}) => {
-  const navigate = useNavigate();
-
-  const handleAction = () => {
-    if (actionHref) {
-      navigate(actionHref);
-    }
-  };
-
+  onAction,
+  className,
+}: EmptyStateProps) {
   return (
-    <div className={cn(
-      "flex flex-col items-center justify-center py-12 px-4 text-center",
-      className
-    )}>
-      {Icon && (
-        <div className="mb-4 text-gray-400">
-          <Icon className="h-12 w-12" />
-        </div>
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center py-12 px-4 text-center",
+        className
       )}
-      <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
+    >
+      <div className="rounded-full bg-muted/30 p-6 mb-5">
+        <Icon className="h-12 w-12 text-muted-foreground/60" />
+      </div>
+      
+      <h3 className="text-lg font-medium text-foreground mb-2">{title}</h3>
+      
       {description && (
-        <p className="text-gray-500 mb-6 max-w-md">{description}</p>
+        <p className="text-sm text-muted-foreground max-w-sm mb-6">{description}</p>
       )}
-      {action && action}
-      {actionLabel && actionHref && (
-        <Button onClick={handleAction} className="bg-[#DB271E] hover:bg-[#DB271E]/90">
+      
+      {actionLabel && (onAction || actionHref) && (
+        <Button
+          onClick={onAction}
+          {...(actionHref ? { as: 'a', href: actionHref } : {})}
+          className="mt-2 bg-[#DB271E] hover:bg-[#c0211a] text-white"
+        >
           {actionLabel}
         </Button>
       )}
     </div>
   );
-};
+}

@@ -214,46 +214,9 @@ export type Database = {
           },
         ]
       }
-      pickup_orders: {
-        Row: {
-          created_at: string | null
-          id: string
-          order_id: string
-          pickup_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          order_id: string
-          pickup_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          order_id?: string
-          pickup_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pickup_orders_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pickup_orders_pickup_id_fkey"
-            columns: ["pickup_id"]
-            isOneToOne: false
-            referencedRelation: "pickups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       pickups: {
         Row: {
           address: string
-          client_id: string | null
           contact_person: string
           contact_phone: string
           courier_name: string | null
@@ -262,7 +225,6 @@ export type Database = {
           id: string
           location: string
           note: string | null
-          orders_count: number | null
           picked_up: boolean | null
           pickup_date: string
           pickup_id: string | null
@@ -270,11 +232,9 @@ export type Database = {
           status: string
           updated_at: string
           validated: boolean | null
-          vehicle_type: string | null
         }
         Insert: {
           address: string
-          client_id?: string | null
           contact_person: string
           contact_phone: string
           courier_name?: string | null
@@ -283,7 +243,6 @@ export type Database = {
           id?: string
           location: string
           note?: string | null
-          orders_count?: number | null
           picked_up?: boolean | null
           pickup_date: string
           pickup_id?: string | null
@@ -291,11 +250,9 @@ export type Database = {
           status: string
           updated_at?: string
           validated?: boolean | null
-          vehicle_type?: string | null
         }
         Update: {
           address?: string
-          client_id?: string | null
           contact_person?: string
           contact_phone?: string
           courier_name?: string | null
@@ -304,7 +261,6 @@ export type Database = {
           id?: string
           location?: string
           note?: string | null
-          orders_count?: number | null
           picked_up?: boolean | null
           pickup_date?: string
           pickup_id?: string | null
@@ -312,17 +268,8 @@ export type Database = {
           status?: string
           updated_at?: string
           validated?: boolean | null
-          vehicle_type?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_pickups_client_id"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {

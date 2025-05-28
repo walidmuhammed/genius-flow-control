@@ -13,19 +13,13 @@ const Index = () => {
     
     // Redirect admin users to their dashboard
     if (user?.user_type === 'admin') {
-      navigate('/admin');
+      navigate('/dashboard/admin');
     }
   }, [user, navigate]);
 
-  // If no user, show signin
-  if (!user) {
+  // Only render client dashboard for client users
+  if (user?.user_type === 'client') {
     return <Dashboard />;
-  }
-
-  // Show appropriate dashboard based on user type
-  if (user.user_type === 'admin') {
-    navigate('/admin');
-    return null;
   }
 
   return <Dashboard />;

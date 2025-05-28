@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -44,6 +43,45 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 0 79% 50%; /* Updated to match #DB271E */
   }
+
+  .dark {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 79% 50%; /* Updated to match #DB271E */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 30% 15%; /* Adjusted for harmony with new primary */
+    --secondary-foreground: 0 70% 80%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 0 30% 15%; /* Adjusted for harmony with new primary */
+    --accent-foreground: 0 70% 80%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 0 79% 50%; /* Updated to match #DB271E */
+    
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 0 79% 50%; /* Updated to match #DB271E */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 0 79% 50%; /* Updated to match #DB271E */
+  }
 }
 
 @layer base {
@@ -54,8 +92,6 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background-color: #fafafa;
-    color: #1f2937;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -71,15 +107,15 @@
 
 @layer components {
   .stat-card {
-    @apply bg-white rounded-xl p-6 shadow-md border border-gray-200 hover:border-gray-300 transition-all duration-200 relative overflow-hidden;
+    @apply bg-white/80 rounded-xl p-6 shadow-md border border-transparent hover:border-border/20 transition-all duration-200 relative overflow-hidden backdrop-blur-md;
   }
   
   .glass-card {
-    @apply bg-white/90 backdrop-blur-lg rounded-xl border border-gray-200 shadow-lg;
+    @apply bg-white/70 backdrop-blur-lg rounded-xl border border-white/10 shadow-lg;
   }
   
   .currency-select-btn {
-    @apply flex items-center gap-1 px-2.5 py-1.5 rounded-full text-sm font-medium hover:bg-gray-100 transition-colors;
+    @apply flex items-center gap-1 px-2.5 py-1.5 rounded-full text-sm font-medium hover:bg-muted transition-colors;
   }
   
   .currency-badge {
@@ -96,11 +132,11 @@
 
   /* Phone Input Styles */
   .PhoneInput {
-    @apply flex items-center border border-input rounded-xl overflow-hidden bg-white;
+    @apply flex items-center border border-input rounded-xl overflow-hidden bg-background/80 backdrop-blur-sm;
   }
 
   .PhoneInputCountry {
-    @apply flex items-center px-3 bg-gray-50;
+    @apply flex items-center px-3 bg-muted/30;
   }
 
   .PhoneInputCountryIcon {
@@ -112,7 +148,7 @@
   }
 
   .PhoneInputInput {
-    @apply flex h-10 w-full bg-white px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-topspeed-300/50 focus-visible:border-topspeed-300/50 disabled:cursor-not-allowed disabled:opacity-50 border-none md:text-sm;
+    @apply flex h-10 w-full bg-background/80 backdrop-blur-sm px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-topspeed-300/50 focus-visible:border-topspeed-300/50 disabled:cursor-not-allowed disabled:opacity-50 border-none md:text-sm;
   }
 
   /* Fix for the phone input container */
@@ -126,23 +162,23 @@
   }
   
   .status-new {
-    @apply bg-blue-50 text-blue-700;
+    @apply bg-blue-50/80 text-blue-700 backdrop-blur-sm;
   }
   
   .status-pending {
-    @apply bg-amber-50 text-amber-700;
+    @apply bg-amber-50/80 text-amber-700 backdrop-blur-sm;
   }
   
   .status-in-progress {
-    @apply bg-indigo-50 text-indigo-700;
+    @apply bg-indigo-50/80 text-indigo-700 backdrop-blur-sm;
   }
   
   .status-completed {
-    @apply bg-green-50 text-green-700;
+    @apply bg-green-50/80 text-green-700 backdrop-blur-sm;
   }
   
   .status-canceled {
-    @apply bg-red-50 text-red-700;
+    @apply bg-red-50/80 text-red-700 backdrop-blur-sm;
   }
 }
 
@@ -159,6 +195,19 @@
 
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Add gradient patterns for visual interest */
+.pattern-dots {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: calc(10 * 1px) calc(10 * 1px);
+}
+
+.pattern-grid {
+  background-image: 
+    linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
 /* Custom scrollbar */

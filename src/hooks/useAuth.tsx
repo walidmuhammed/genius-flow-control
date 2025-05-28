@@ -1,35 +1,52 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-interface User {
+interface UserProfile {
   id: string;
   email: string;
-  full_name?: string;
+  full_name: string;
   user_type: 'client' | 'admin';
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: UserProfile | null;
   loading: boolean;
   signIn: (name: string, email: string, role: 'client' | 'admin') => void;
   signOut: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: false,
+  signIn: () => {},
+  signOut: () => {},
+});
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+interface AuthProviderProps {
+  children: React.ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Check for existing user in localStorage
-    const storedUser = localStorage.getItem('topspeed_user');
-    if (storedUser) {
+    const savedUser = localStorage.getItem('topspeed_user');
+    if (savedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        setUser(JSON.parse(savedUser));
       } catch (error) {
+        console.error('Error parsing saved user:', error);
         localStorage.removeItem('topspeed_user');
       }
     }
@@ -37,34 +54,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signIn = (name: string, email: string, role: 'client' | 'admin') => {
-    const newUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      email: email || `${role}@topspeed.com`,
-      full_name: name || `${role} User`,
-      user_type: role
+    const userData: UserProfile = {
+      id: Date.now().toString(),
+      email: email || `${role}@example.com`,
+      full_name: name || `${role.charAt(0).toUpperCase() + role.slice(1)} User`,
+      user_type: role,
     };
     
-    setUser(newUser);
-    localStorage.setItem('topspeed_user', JSON.stringify(newUser));
+    setUser(userData);
+    localStorage.setItem('topspeed_user', JSON.stringify(userData));
   };
 
   const signOut = () => {
     setUser(null);
     localStorage.removeItem('topspeed_user');
-    navigate('/signin');
+    // Force a page reload to clear any cached state
+    window.location.href = '/auth';
+  };
+
+  const value = {
+    user,
+    loading,
+    signIn,
+    signOut,
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };
