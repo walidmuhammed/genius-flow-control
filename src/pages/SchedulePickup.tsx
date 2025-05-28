@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Package, MapPin, Calendar as CalendarIcon, Clock, Truck, User, FileText, Check } from "lucide-react";
+import { ArrowLeft, Package, MapPin, Calendar as CalendarIcon, Clock, Truck, User, FileText, Check, Car, Bike } from "lucide-react";
 import { OrdersTable } from "@/components/orders/OrdersTable";
 import { useOrdersByStatus } from '@/hooks/use-orders';
 import { useCreatePickup } from '@/hooks/use-pickups';
@@ -53,9 +53,9 @@ const SchedulePickup: React.FC = () => {
   ];
 
   const vehicleOptions = [
-    { value: 'small', label: 'Small', icon: '🏍️', description: 'Motorcycle' },
-    { value: 'medium', label: 'Medium', icon: '🚗', description: 'Car' },
-    { value: 'large', label: 'Large', icon: '🚐', description: 'Van' },
+    { value: 'small', label: 'Small', icon: Bike, description: 'Motorcycle' },
+    { value: 'medium', label: 'Medium', icon: Car, description: 'Car' },
+    { value: 'large', label: 'Large', icon: Truck, description: 'Van' },
   ];
 
   const handleOrderSelection = (orderIds: string[]) => {
@@ -130,7 +130,7 @@ const SchedulePickup: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
@@ -151,17 +151,17 @@ const SchedulePickup: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             {/* Step 1: Select Orders */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <Package className="h-5 w-5" />
-                  Step 1: Select Orders
+                  Select Orders
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Dialog open={showOrderSelection} onOpenChange={setShowOrderSelection}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full h-12">
                       <Package className="h-4 w-4 mr-2" />
                       Select Orders ({selectedOrders.length} selected)
                     </Button>
@@ -190,9 +190,9 @@ const SchedulePickup: React.FC = () => {
                 {selectedOrders.length > 0 && (
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Selected Orders:</Label>
-                    <div className="grid gap-2">
+                    <div className="grid gap-2 max-h-40 overflow-y-auto">
                       {selectedOrders.map(order => (
-                        <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
                           <div className="flex-1">
                             <p className="font-medium text-sm">{order.referenceNumber}</p>
                             <p className="text-xs text-gray-600">{order.customer} • {order.amount}</p>
@@ -201,7 +201,7 @@ const SchedulePickup: React.FC = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => removeOrder(order.id)}
-                            className="text-red-600 hover:text-red-800"
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50"
                           >
                             Remove
                           </Button>
@@ -213,82 +213,75 @@ const SchedulePickup: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Step 2: Pickup Address */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            {/* Step 2 & 3: Pickup Details (Combined) */}
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <MapPin className="h-5 w-5" />
-                  Step 2: Pickup Address
+                  Pickup Details
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="location">Business/Store Name *</Label>
-                  <Input
-                    id="location"
-                    placeholder="Enter your business name"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address">Full Address *</Label>
-                  <Textarea
-                    id="address"
-                    placeholder="Enter complete pickup address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    required
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Step 3: Contact Person */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Step 3: Contact Person
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="contactPerson">Contact Name *</Label>
-                    <Input
-                      id="contactPerson"
-                      placeholder="Contact person name"
-                      value={contactPerson}
-                      onChange={(e) => setContactPerson(e.target.value)}
-                      required
-                    />
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="location">Business/Store Name *</Label>
+                      <Input
+                        id="location"
+                        placeholder="Enter your business name"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="address">Full Address *</Label>
+                      <Textarea
+                        id="address"
+                        placeholder="Enter complete pickup address"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        required
+                        rows={3}
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="contactPhone">Phone Number *</Label>
-                    <Input
-                      id="contactPhone"
-                      placeholder="+961 XX XXX XXX"
-                      value={contactPhone}
-                      onChange={(e) => setContactPhone(e.target.value)}
-                      required
-                    />
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="contactPerson">Contact Name *</Label>
+                      <Input
+                        id="contactPerson"
+                        placeholder="Contact person name"
+                        value={contactPerson}
+                        onChange={(e) => setContactPerson(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contactPhone">Phone Number *</Label>
+                      <Input
+                        id="contactPhone"
+                        placeholder="+961 XX XXX XXX"
+                        value={contactPhone}
+                        onChange={(e) => setContactPhone(e.target.value)}
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Step 4: Date & Time */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <CalendarIcon className="h-5 w-5" />
-                  Step 4: Pickup Date & Time
+                  Pickup Schedule
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label>Pickup Date *</Label>
                     <Popover>
@@ -296,7 +289,7 @@ const SchedulePickup: React.FC = () => {
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full justify-start text-left font-normal",
+                            "w-full justify-start text-left font-normal h-12",
                             !pickupDate && "text-muted-foreground"
                           )}
                         >
@@ -317,18 +310,23 @@ const SchedulePickup: React.FC = () => {
                   </div>
                   <div className="space-y-2">
                     <Label>Pickup Time *</Label>
-                    <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto">
-                      {timeSlots.map(time => (
-                        <Button
-                          key={time}
-                          variant={pickupTime === time ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setPickupTime(time)}
-                          className="text-xs"
-                        >
-                          {time}
-                        </Button>
-                      ))}
+                    <div className="border rounded-lg p-4 bg-gray-50">
+                      <div className="flex gap-2 overflow-x-auto pb-2">
+                        {timeSlots.map(time => (
+                          <Button
+                            key={time}
+                            variant={pickupTime === time ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setPickupTime(time)}
+                            className={cn(
+                              "whitespace-nowrap min-w-fit",
+                              pickupTime === time && "bg-[#DB271E] hover:bg-[#c0211a] text-white"
+                            )}
+                          >
+                            {time}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -336,39 +334,47 @@ const SchedulePickup: React.FC = () => {
             </Card>
 
             {/* Step 5: Vehicle Type */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <Truck className="h-5 w-5" />
-                  Step 5: Vehicle Type
+                  Vehicle Type
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {vehicleOptions.map(option => (
-                    <Button
-                      key={option.value}
-                      variant={vehicleType === option.value ? "default" : "outline"}
-                      className="h-auto p-4 flex flex-col items-center gap-2"
-                      onClick={() => setVehicleType(option.value as any)}
-                    >
-                      <span className="text-2xl">{option.icon}</span>
-                      <div className="text-center">
-                        <p className="font-medium">{option.label}</p>
-                        <p className="text-xs text-gray-600">{option.description}</p>
-                      </div>
-                    </Button>
-                  ))}
+                  {vehicleOptions.map(option => {
+                    const IconComponent = option.icon;
+                    return (
+                      <Button
+                        key={option.value}
+                        variant={vehicleType === option.value ? "default" : "outline"}
+                        className={cn(
+                          "h-20 p-4 flex flex-col items-center gap-2 border-2 transition-all",
+                          vehicleType === option.value 
+                            ? "bg-[#DB271E] hover:bg-[#c0211a] text-white border-[#DB271E]" 
+                            : "hover:border-gray-300"
+                        )}
+                        onClick={() => setVehicleType(option.value as any)}
+                      >
+                        <IconComponent className="h-6 w-6" />
+                        <div className="text-center">
+                          <p className="font-medium text-sm">{option.label}</p>
+                          <p className="text-xs opacity-70">{option.description}</p>
+                        </div>
+                      </Button>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
 
             {/* Step 6: Notes */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <FileText className="h-5 w-5" />
-                  Step 6: Additional Notes (Optional)
+                  Additional Notes (Optional)
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -376,7 +382,7 @@ const SchedulePickup: React.FC = () => {
                   placeholder="Any special instructions for the pickup..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="min-h-[100px]"
+                  className="min-h-[80px]"
                 />
               </CardContent>
             </Card>
@@ -384,38 +390,38 @@ const SchedulePickup: React.FC = () => {
 
           {/* Summary Card */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-6">
-              <CardHeader>
-                <CardTitle>Pickup Summary</CardTitle>
+            <Card className="sticky top-6 border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Pickup Summary</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center gap-2">
+              <CardContent className="space-y-6">
+                <div className="space-y-4 text-sm">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     <Package className="h-4 w-4 text-gray-500" />
-                    <span>{selectedOrders.length} orders selected</span>
+                    <span className="font-medium">{selectedOrders.length} orders selected</span>
                   </div>
                   
                   {pickupDate && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <CalendarIcon className="h-4 w-4 text-gray-500" />
                       <span>{format(pickupDate, "MMM dd, yyyy")}</span>
                     </div>
                   )}
                   
                   {pickupTime && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <Clock className="h-4 w-4 text-gray-500" />
                       <span>{pickupTime}</span>
                     </div>
                   )}
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     <Truck className="h-4 w-4 text-gray-500" />
                     <span className="capitalize">{vehicleType} vehicle</span>
                   </div>
                   
                   {location && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <MapPin className="h-4 w-4 text-gray-500" />
                       <span className="truncate">{location}</span>
                     </div>
@@ -425,7 +431,7 @@ const SchedulePickup: React.FC = () => {
                 <Button
                   onClick={handleSubmit}
                   disabled={!canSubmit || isSubmitting}
-                  className="w-full bg-[#DB271E] hover:bg-[#c0211a] text-white"
+                  className="w-full bg-[#DB271E] hover:bg-[#c0211a] text-white h-12"
                   size="lg"
                 >
                   <Check className="h-4 w-4 mr-2" />

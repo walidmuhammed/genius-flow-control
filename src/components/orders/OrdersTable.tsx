@@ -47,71 +47,75 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   if (selectionMode) {
     return (
       <div className="space-y-4">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">
-                  <Checkbox
-                    checked={isAllSelected}
-                    ref={(el) => {
-                      if (el) {
-                        const input = el.querySelector('input') as HTMLInputElement;
-                        if (input) input.indeterminate = isPartiallySelected;
-                      }
-                    }}
-                    onCheckedChange={handleSelectAll}
-                  />
-                </TableHead>
-                <TableHead>Order</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id} className="hover:bg-gray-50">
-                  <TableCell>
+        <div className="rounded-xl border border-border/10 shadow-sm overflow-hidden bg-white">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30 hover:bg-muted/40 border-b border-border/10">
+                  <TableHead className="w-12 h-11 pl-4">
                     <Checkbox
-                      checked={localSelectedIds.includes(order.id)}
-                      onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+                      checked={isAllSelected}
+                      ref={(el) => {
+                        if (el) {
+                          const input = el.querySelector('input') as HTMLInputElement;
+                          if (input) input.indeterminate = isPartiallySelected;
+                        }
+                      }}
+                      onCheckedChange={handleSelectAll}
+                      className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
                     />
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium text-sm">{order.reference_number}</p>
-                      <p className="text-xs text-gray-500">#{order.order_id}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium text-sm">{order.customer?.name}</p>
-                      <p className="text-xs text-gray-500">{order.customer?.phone}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="text-sm">{order.customer?.city_name}</p>
-                      <p className="text-xs text-gray-500">{order.customer?.governorate_name}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="text-sm font-medium">${order.cash_collection_usd || 0}</p>
-                      <p className="text-xs text-gray-500">{order.cash_collection_lbp || 0} LBP</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {order.status}
-                    </span>
-                  </TableCell>
+                  </TableHead>
+                  <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Order</TableHead>
+                  <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Customer</TableHead>
+                  <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
+                  <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Amount</TableHead>
+                  <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {orders.map((order) => (
+                  <TableRow key={order.id} className="border-b border-border/5 hover:bg-muted/30 transition-colors">
+                    <TableCell className="pl-4">
+                      <Checkbox
+                        checked={localSelectedIds.includes(order.id)}
+                        onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+                        className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-sm">{order.reference_number}</p>
+                        <p className="text-xs text-gray-500">#{order.order_id}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-sm">{order.customer?.name}</p>
+                        <p className="text-xs text-gray-500">{order.customer?.phone}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="text-sm">{order.customer?.city_name}</p>
+                        <p className="text-xs text-gray-500">{order.customer?.governorate_name}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="text-sm font-medium">${order.cash_collection_usd || 0}</p>
+                        <p className="text-xs text-gray-500">{order.cash_collection_lbp || 0} LBP</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {order.status}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
         
         {localSelectedIds.length > 0 && (
@@ -129,31 +133,38 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Order</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Location</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Delivery Charge</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Last Update</TableHead>
-            <TableHead className="w-[50px]"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {mappedOrders.map((order) => (
-            <OrdersTableRow 
-              key={order.id} 
-              order={order}
-              isSelected={false}
-              onToggleSelect={() => {}}
-            />
-          ))}
-        </TableBody>
-      </Table>
+    <div className="rounded-xl border border-border/10 shadow-sm overflow-hidden bg-white mt-4">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/30 hover:bg-muted/40 border-b border-border/10">
+              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Order</TableHead>
+              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Customer</TableHead>
+              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
+              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Amount</TableHead>
+              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Delivery Charge</TableHead>
+              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
+              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Last Update</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {mappedOrders.map((order) => (
+              <OrdersTableRow 
+                key={order.id} 
+                order={order}
+                isSelected={false}
+                onToggleSelect={() => {}}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="bg-white border-t border-border/10 px-6 py-4 flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">
+          Showing <span className="font-medium text-foreground">{1}</span> to <span className="font-medium text-foreground">{mappedOrders.length}</span> of <span className="font-medium text-foreground">{mappedOrders.length}</span> orders
+        </span>
+      </div>
     </div>
   );
 };
