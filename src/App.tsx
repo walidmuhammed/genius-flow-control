@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +22,7 @@ import Wallet from "./pages/Wallet";
 // Admin Dashboard Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminOrders from "./pages/admin/AdminOrders";
+import AdminPickups from "./pages/admin/AdminPickups";
 import AdminClients from "./pages/admin/AdminClients";
 import AdminCouriers from "./pages/admin/AdminCouriers";
 import AdminDispatch from "./pages/admin/AdminDispatch";
@@ -112,6 +112,11 @@ const App = () => (
             <Route path="/admin/orders" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminOrders />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/pickups" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminPickups />
               </ProtectedRoute>
             } />
             <Route path="/admin/clients" element={

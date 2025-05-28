@@ -62,7 +62,7 @@ const Dashboard: React.FC = () => {
   const todayPickups = allPickups.filter(pickup => {
     const pickupDate = new Date(pickup.pickup_date);
     const todayDate = new Date();
-    return pickupDate.setHours(0, 0, 0, 0) === todayDate.setHours(0, 0, 0, 0);
+    return pickupDate.toDateString() === todayDate.toDateString();
   });
 
   // Toggle select all orders
