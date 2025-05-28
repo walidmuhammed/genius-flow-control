@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { FileBarChart, PackageSearch, CheckCheck, AlertCircle, Download, Upload } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
-import OrdersTable from '@/components/orders/OrdersTable';
+import { OrdersTable } from '@/components/orders/OrdersTable';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import { Button } from '@/components/ui/button';

@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { OrdersTableRow } from './OrdersTableRow';
+import OrdersTableRow from './OrdersTableRow';
 import { OrderWithCustomer } from '@/services/orders';
 import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 
@@ -55,7 +55,10 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                   <Checkbox
                     checked={isAllSelected}
                     ref={(el) => {
-                      if (el) el.indeterminate = isPartiallySelected;
+                      if (el) {
+                        const input = el.querySelector('input') as HTMLInputElement;
+                        if (input) input.indeterminate = isPartiallySelected;
+                      }
                     }}
                     onCheckedChange={handleSelectAll}
                   />
@@ -149,3 +152,6 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
     </div>
   );
 };
+
+// Add default export for backward compatibility
+export default OrdersTable;

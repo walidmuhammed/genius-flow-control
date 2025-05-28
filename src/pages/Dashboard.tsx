@@ -6,7 +6,7 @@ import { Package, Clock, AlertCircle, DollarSign, ShoppingCart, Calendar, Inbox 
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import OrdersTable from '@/components/orders/OrdersTable';
+import { OrdersTable } from '@/components/orders/OrdersTable';
 import PickupsTable from '@/components/pickups/PickupsTable';
 import { useQuery } from '@tanstack/react-query';
 import { formatDate } from '@/utils/format';
