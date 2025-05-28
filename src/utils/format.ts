@@ -24,3 +24,11 @@ export const formatDateTime = (date: Date): string => {
     minute: '2-digit'
   });
 };
+
+export const formatNumber = (num: number): string => {
+  return new Intl.NumberFormat('en-US').format(num);
+};
+
+export const formatPercent = (num: number): string => {
+  return `${num.toFixed(1)}%`;
+};
