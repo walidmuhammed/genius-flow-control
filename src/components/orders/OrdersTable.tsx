@@ -47,12 +47,12 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   if (selectionMode) {
     return (
       <div className="space-y-4">
-        <div className="rounded-xl border border-border/10 shadow-sm overflow-hidden bg-white">
+        <div className="border rounded-lg overflow-hidden bg-white">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/30 hover:bg-muted/40 border-b border-border/10">
-                  <TableHead className="w-12 h-11 pl-4">
+                <TableRow>
+                  <TableHead className="w-12">
                     <Checkbox
                       checked={isAllSelected}
                       ref={(el) => {
@@ -62,48 +62,46 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                         }
                       }}
                       onCheckedChange={handleSelectAll}
-                      className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
                     />
                   </TableHead>
-                  <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Order</TableHead>
-                  <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Customer</TableHead>
-                  <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
-                  <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Amount</TableHead>
-                  <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
+                  <TableHead>Order</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {orders.map((order) => (
-                  <TableRow key={order.id} className="border-b border-border/5 hover:bg-muted/30 transition-colors">
-                    <TableCell className="pl-4">
+                  <TableRow key={order.id}>
+                    <TableCell>
                       <Checkbox
                         checked={localSelectedIds.includes(order.id)}
                         onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
-                        className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
                       />
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium text-sm">{order.reference_number}</p>
-                        <p className="text-xs text-gray-500">#{order.order_id}</p>
+                        <p className="font-medium">{order.reference_number}</p>
+                        <p className="text-sm text-gray-500">#{order.order_id}</p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium text-sm">{order.customer?.name}</p>
-                        <p className="text-xs text-gray-500">{order.customer?.phone}</p>
+                        <p className="font-medium">{order.customer?.name}</p>
+                        <p className="text-sm text-gray-500">{order.customer?.phone}</p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="text-sm">{order.customer?.city_name}</p>
-                        <p className="text-xs text-gray-500">{order.customer?.governorate_name}</p>
+                        <p>{order.customer?.city_name}</p>
+                        <p className="text-sm text-gray-500">{order.customer?.governorate_name}</p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="text-sm font-medium">${order.cash_collection_usd || 0}</p>
-                        <p className="text-xs text-gray-500">{order.cash_collection_lbp || 0} LBP</p>
+                        <p className="font-medium">${order.cash_collection_usd || 0}</p>
+                        <p className="text-sm text-gray-500">{order.cash_collection_lbp || 0} LBP</p>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -123,7 +121,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
             <p className="text-sm font-medium">
               {localSelectedIds.length} order{localSelectedIds.length !== 1 ? 's' : ''} selected
             </p>
-            <Button onClick={handleConfirmSelection} className="bg-[#DB271E] hover:bg-[#c0211a] text-white">
+            <Button onClick={handleConfirmSelection}>
               Select {localSelectedIds.length} Order{localSelectedIds.length !== 1 ? 's' : ''}
             </Button>
           </div>
@@ -133,18 +131,18 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   }
 
   return (
-    <div className="rounded-xl border border-border/10 shadow-sm overflow-hidden bg-white mt-4">
+    <div className="border rounded-lg overflow-hidden bg-white">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/30 hover:bg-muted/40 border-b border-border/10">
-              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Order</TableHead>
-              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Customer</TableHead>
-              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
-              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Amount</TableHead>
-              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Delivery Charge</TableHead>
-              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
-              <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Last Update</TableHead>
+            <TableRow>
+              <TableHead>Order</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Delivery Charge</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Last Update</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -160,14 +158,13 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
           </TableBody>
         </Table>
       </div>
-      <div className="bg-white border-t border-border/10 px-6 py-4 flex items-center justify-between">
+      <div className="border-t px-6 py-4 flex items-center justify-between">
         <span className="text-sm text-muted-foreground">
-          Showing <span className="font-medium text-foreground">{1}</span> to <span className="font-medium text-foreground">{mappedOrders.length}</span> of <span className="font-medium text-foreground">{mappedOrders.length}</span> orders
+          Showing <span className="font-medium">{1}</span> to <span className="font-medium">{mappedOrders.length}</span> of <span className="font-medium">{mappedOrders.length}</span> orders
         </span>
       </div>
     </div>
   );
 };
 
-// Add default export for backward compatibility
 export default OrdersTable;
