@@ -87,9 +87,10 @@ export async function getPickupById(id: string) {
     throw error;
   }
   
-  // Transform the data to include orders array
+  // Transform the data to include orders array and ensure proper typing
   const pickup: PickupWithOrders = {
     ...data,
+    status: data.status as Pickup['status'], // Ensure proper typing
     orders: data.pickup_orders?.map((po: any) => ({
       id: po.order.id,
       order_id: po.order.order_id,

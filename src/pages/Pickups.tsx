@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -257,14 +256,17 @@ const Pickups: React.FC = () => {
               
               <TabsContent value="history" className="mt-0">
                 {filteredPickups.length === 0 ? (
-                  <EmptyState
-                    icon={Package}
-                    title="No pickup history"
-                    description="Your completed and canceled pickups will appear here."
-                    actionLabel="Schedule Pickup"
-                    actionHref="#"
-                    onActionClick={() => setScheduleModalOpen(true)}
-                  />
+                  <div className="text-center py-16">
+                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">No pickup history</p>
+                    <p className="text-sm text-gray-500 mb-6">Your completed and canceled pickups will appear here.</p>
+                    <Button 
+                      className="bg-[#DB271E] hover:bg-[#DB271E]/90"
+                      onClick={() => setScheduleModalOpen(true)}
+                    >
+                      Schedule Pickup
+                    </Button>
+                  </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <Table>

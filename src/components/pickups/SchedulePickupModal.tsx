@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Package, Car, Motorcycle, Van, MapPin, Clock, User, FileText } from 'lucide-react';
+import { CalendarIcon, Package, Car, Bike, Truck, MapPin, Clock, User, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
@@ -29,9 +28,9 @@ const timeSlots = [
 ];
 
 const vehicleTypes = [
-  { id: 'small', label: 'Small', icon: Motorcycle, description: 'Motorcycle' },
+  { id: 'small', label: 'Small', icon: Bike, description: 'Motorcycle' },
   { id: 'medium', label: 'Medium', icon: Car, description: 'Car' },
-  { id: 'large', label: 'Large', icon: Van, description: 'Van' }
+  { id: 'large', label: 'Large', icon: Truck, description: 'Van' }
 ];
 
 export function SchedulePickupModal({ open, onOpenChange, onSuccess }: SchedulePickupModalProps) {
@@ -83,7 +82,7 @@ export function SchedulePickupModal({ open, onOpenChange, onSuccess }: ScheduleP
       // Create the pickup
       const pickup = await createPickup({
         status: 'Scheduled',
-        location: 'Client Location', // This could be extracted from address
+        location: 'Client Location',
         address: pickupData.address,
         contact_person: pickupData.contactPerson,
         contact_phone: pickupData.contactPhone,
@@ -94,7 +93,7 @@ export function SchedulePickupModal({ open, onOpenChange, onSuccess }: ScheduleP
         requested: true,
         picked_up: false,
         validated: false,
-        client_id: undefined // This should be set from auth context
+        client_id: undefined
       });
 
       // Add orders to pickup
