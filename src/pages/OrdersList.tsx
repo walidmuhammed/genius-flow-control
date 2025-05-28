@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { FileBarChart, PackageSearch, CheckCheck, AlertCircle, Download, Upload } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -466,7 +467,7 @@ const OrdersList: React.FC = () => {
               onClick={() => setActiveTab('paid')}
             >
               Paid
-            </Button>
+            </button>
           </div>
         )}
       </div>
