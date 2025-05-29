@@ -168,7 +168,7 @@ export async function createInvoice(orderIds: string[], merchantName: string = '
   const net_payout_usd = totals.total_amount_usd - totals.total_delivery_usd;
   const net_payout_lbp = totals.total_amount_lbp - totals.total_delivery_lbp;
 
-  // Create the invoice
+  // Create the invoice - the trigger will automatically generate invoice_id
   const { data: invoice, error: invoiceError } = await supabase
     .from('invoices')
     .insert({
@@ -179,7 +179,7 @@ export async function createInvoice(orderIds: string[], merchantName: string = '
       total_delivery_lbp: totals.total_delivery_lbp,
       net_payout_usd,
       net_payout_lbp
-    })
+    } as any)
     .select()
     .single();
 
