@@ -10,6 +10,7 @@ import CustomerInfo from './CustomerInfo';
 import LocationInfo from './LocationInfo';
 import CurrencyDisplay from './CurrencyDisplay';
 import OrderRowActions from './OrderRowActions';
+import OrderDetailsDialog from './OrderDetailsDialog';
 import { formatDate } from '@/utils/format';
 
 export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid' | 'Awaiting Action';
@@ -57,11 +58,14 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   showActions = true
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   
   const handleRowClick = () => {
-    if (onViewDetails) {
-      onViewDetails(order);
-    }
+    setShowDetailsDialog(true);
+  };
+
+  const handleViewDetails = () => {
+    setShowDetailsDialog(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -105,83 +109,91 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   };
   
   return (
-    <TableRow 
-      className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-      onClick={handleRowClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <TableCell className="pl-6">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-blue-600">#{order.id}</span>
-          <OrderNoteTooltip note={order.note} />
-        </div>
-      </TableCell>
-      <TableCell>
-        {order.referenceNumber ? (
-          <span className="font-medium text-gray-900">{order.referenceNumber}</span>
-        ) : (
-          <span className="text-gray-400">-</span>
-        )}
-      </TableCell>
-      <TableCell>
-        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${getTypeColor(order.type)}`}>
-          {order.type}
-        </span>
-      </TableCell>
-      <TableCell>
-        <div>
-          <div className="font-medium text-gray-900">{order.customer.name}</div>
-          <div className="text-sm text-gray-500">{order.customer.phone}</div>
-        </div>
-      </TableCell>
-      <TableCell>
-        <div>
-          <div>{order.location.city}</div>
-          <div className="text-sm text-gray-500">{order.location.area}</div>
-        </div>
-      </TableCell>
-      <TableCell>
-        <div>
-          {order.amount.valueUSD > 0 && (
-            <div className="font-medium">${order.amount.valueUSD}</div>
-          )}
-          {order.amount.valueLBP > 0 && (
-            <div className="text-sm text-gray-500">{order.amount.valueLBP.toLocaleString()} LBP</div>
-          )}
-        </div>
-      </TableCell>
-      <TableCell>
-        <div>
-          {order.deliveryCharge.valueUSD > 0 && (
-            <div className="font-medium">${order.deliveryCharge.valueUSD}</div>
-          )}
-          {order.deliveryCharge.valueLBP > 0 && (
-            <div className="text-sm text-gray-500">{order.deliveryCharge.valueLBP.toLocaleString()} LBP</div>
-          )}
-        </div>
-      </TableCell>
-      <TableCell>
-        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${getStatusColor(order.status)}`}>
-          {order.status}
-        </span>
-      </TableCell>
-      <TableCell>
-        <div className="text-sm text-gray-900">
-          {formatDate(new Date(order.lastUpdate))}
-        </div>
-      </TableCell>
-      
-      {showActions && (
-        <TableCell className="text-right" onClick={e => e.stopPropagation()}>
-          <OrderRowActions 
-            order={order} 
-            isHovered={isHovered} 
-            onViewDetails={onViewDetails} 
-          />
+    <>
+      <TableRow 
+        className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+        onClick={handleRowClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <TableCell className="pl-6">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-blue-600">#{order.id}</span>
+            <OrderNoteTooltip note={order.note} />
+          </div>
         </TableCell>
-      )}
-    </TableRow>
+        <TableCell>
+          {order.referenceNumber ? (
+            <span className="font-medium text-gray-900">{order.referenceNumber}</span>
+          ) : (
+            <span className="text-gray-400">-</span>
+          )}
+        </TableCell>
+        <TableCell>
+          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${getTypeColor(order.type)}`}>
+            {order.type}
+          </span>
+        </TableCell>
+        <TableCell>
+          <div>
+            <div className="font-medium text-gray-900">{order.customer.name}</div>
+            <div className="text-sm text-gray-500">{order.customer.phone}</div>
+          </div>
+        </TableCell>
+        <TableCell>
+          <div>
+            <div>{order.location.city}</div>
+            <div className="text-sm text-gray-500">{order.location.area}</div>
+          </div>
+        </TableCell>
+        <TableCell>
+          <div>
+            {order.amount.valueUSD > 0 && (
+              <div className="font-medium">${order.amount.valueUSD}</div>
+            )}
+            {order.amount.valueLBP > 0 && (
+              <div className="text-sm text-gray-500">{order.amount.valueLBP.toLocaleString()} LBP</div>
+            )}
+          </div>
+        </TableCell>
+        <TableCell>
+          <div>
+            {order.deliveryCharge.valueUSD > 0 && (
+              <div className="font-medium">${order.deliveryCharge.valueUSD}</div>
+            )}
+            {order.deliveryCharge.valueLBP > 0 && (
+              <div className="text-sm text-gray-500">{order.deliveryCharge.valueLBP.toLocaleString()} LBP</div>
+            )}
+          </div>
+        </TableCell>
+        <TableCell>
+          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${getStatusColor(order.status)}`}>
+            {order.status}
+          </span>
+        </TableCell>
+        <TableCell>
+          <div className="text-sm text-gray-900">
+            {formatDate(new Date(order.lastUpdate))}
+          </div>
+        </TableCell>
+        
+        {showActions && (
+          <TableCell className="text-right" onClick={e => e.stopPropagation()}>
+            <OrderRowActions 
+              order={order} 
+              isHovered={isHovered} 
+              onViewDetails={handleViewDetails} 
+            />
+          </TableCell>
+        )}
+      </TableRow>
+
+      <OrderDetailsDialog
+        order={order}
+        open={showDetailsDialog}
+        onOpenChange={setShowDetailsDialog}
+      />
+    </>
   );
 };
 

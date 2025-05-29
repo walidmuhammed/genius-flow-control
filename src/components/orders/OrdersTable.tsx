@@ -40,6 +40,13 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
     );
   };
 
+  const handleRowClick = (orderId: string) => {
+    if (selectionMode) {
+      const isSelected = localSelectedIds.includes(orderId);
+      handleSelectOrder(orderId, !isSelected);
+    }
+  };
+
   const handleConfirmSelection = () => {
     onOrderSelection?.(localSelectedIds);
   };
@@ -117,8 +124,12 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
             </TableHeader>
             <TableBody>
               {orders.map((order) => (
-                <TableRow key={order.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                  <TableCell className="pl-6">
+                <TableRow 
+                  key={order.id} 
+                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                  onClick={() => handleRowClick(order.id)}
+                >
+                  <TableCell className="pl-6" onClick={e => e.stopPropagation()}>
                     <Checkbox
                       checked={localSelectedIds.includes(order.id)}
                       onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
+import { Slider } from "@/components/ui/slider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ArrowLeft, Package, MapPin, Calendar as CalendarIcon, Clock, Truck, User, FileText, Check, Car, Bike } from "lucide-react";
@@ -32,7 +33,7 @@ const SchedulePickup: React.FC = () => {
   const [selectedOrders, setSelectedOrders] = useState<SelectedOrder[]>([]);
   const [showOrderSelection, setShowOrderSelection] = useState(false);
   const [pickupDate, setPickupDate] = useState<Date>();
-  const [pickupTime, setPickupTime] = useState<string>('');
+  const [timeRange, setTimeRange] = useState<number[]>([9, 17]); // 9 AM to 5 PM default
   const [vehicleType, setVehicleType] = useState<'small' | 'medium' | 'large'>('small');
   const [contactPerson, setContactPerson] = useState('');
   const [contactPhone, setContactPhone] = useState('');
@@ -41,22 +42,21 @@ const SchedulePickup: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch orders with "New" status
   const { data: newOrders, isLoading } = useOrdersByStatus('New');
   const createPickup = useCreatePickup();
   const updateOrder = useUpdateOrder();
-
-  const timeSlots = [
-    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
-    '15:00', '15:30', '16:00'
-  ];
 
   const vehicleOptions = [
     { value: 'small', label: 'Small', icon: Bike, description: 'Motorcycle' },
     { value: 'medium', label: 'Medium', icon: Car, description: 'Car' },
     { value: 'large', label: 'Large', icon: Truck, description: 'Van' },
   ];
+
+  const formatTime = (hour: number) => {
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+    return `${displayHour}:00 ${period}`;
+  };
 
   const handleOrderSelection = (orderIds: string[]) => {
     if (!newOrders) return;
@@ -79,17 +79,15 @@ const SchedulePickup: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    if (!pickupDate || !pickupTime || !contactPerson || !contactPhone || !location || !address || selectedOrders.length === 0) {
+    if (!pickupDate || !contactPerson || !contactPhone || !location || !address || selectedOrders.length === 0) {
       toast.error('Please fill in all required fields and select at least one order');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      // Create the pickup with proper datetime
       const pickupDateTime = new Date(pickupDate);
-      const [hours, minutes] = pickupTime.split(':').map(Number);
-      pickupDateTime.setHours(hours, minutes, 0, 0);
+      pickupDateTime.setHours(timeRange[0], 0, 0, 0);
 
       const pickup = await createPickup.mutateAsync({
         status: 'Scheduled',
@@ -106,7 +104,6 @@ const SchedulePickup: React.FC = () => {
         orders_count: selectedOrders.length
       });
 
-      // Update all selected orders to "Pending Pickup" status
       await Promise.all(
         selectedOrders.map(order =>
           updateOrder.mutateAsync({
@@ -126,7 +123,7 @@ const SchedulePickup: React.FC = () => {
     }
   };
 
-  const canSubmit = pickupDate && pickupTime && contactPerson && contactPhone && location && address && selectedOrders.length > 0;
+  const canSubmit = pickupDate && contactPerson && contactPhone && location && address && selectedOrders.length > 0;
 
   return (
     <MainLayout>
@@ -192,7 +189,7 @@ const SchedulePickup: React.FC = () => {
                     <Label className="text-sm font-medium">Selected Orders:</Label>
                     <div className="grid gap-2 max-h-40 overflow-y-auto">
                       {selectedOrders.map(order => (
-                        <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                        <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => removeOrder(order.id)}>
                           <div className="flex-1">
                             <p className="font-medium text-sm">{order.referenceNumber}</p>
                             <p className="text-xs text-gray-600">{order.customer} • {order.amount}</p>
@@ -200,7 +197,10 @@ const SchedulePickup: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => removeOrder(order.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeOrder(order.id);
+                            }}
                             className="text-red-600 hover:text-red-800 hover:bg-red-50"
                           >
                             Remove
@@ -213,66 +213,7 @@ const SchedulePickup: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Step 2 & 3: Pickup Details (Combined) */}
-            <Card className="border shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <MapPin className="h-5 w-5" />
-                  Pickup Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="location">Business/Store Name *</Label>
-                      <Input
-                        id="location"
-                        placeholder="Enter your business name"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="address">Full Address *</Label>
-                      <Textarea
-                        id="address"
-                        placeholder="Enter complete pickup address"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        required
-                        rows={3}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="contactPerson">Contact Name *</Label>
-                      <Input
-                        id="contactPerson"
-                        placeholder="Contact person name"
-                        value={contactPerson}
-                        onChange={(e) => setContactPerson(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="contactPhone">Phone Number *</Label>
-                      <Input
-                        id="contactPhone"
-                        placeholder="+961 XX XXX XXX"
-                        value={contactPhone}
-                        onChange={(e) => setContactPhone(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Step 4: Date & Time */}
+            {/* Step 2: Date & Time */}
             <Card className="border shadow-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -281,59 +222,59 @@ const SchedulePickup: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label>Pickup Date *</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal h-12",
-                            !pickupDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {pickupDate ? format(pickupDate, "PPP") : "Select date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={pickupDate}
-                          onSelect={setPickupDate}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Pickup Time *</Label>
-                    <div className="border rounded-lg p-4 bg-gray-50">
-                      <div className="flex gap-2 overflow-x-auto pb-2">
-                        {timeSlots.map(time => (
-                          <Button
-                            key={time}
-                            variant={pickupTime === time ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setPickupTime(time)}
-                            className={cn(
-                              "whitespace-nowrap min-w-fit",
-                              pickupTime === time && "bg-[#DB271E] hover:bg-[#c0211a] text-white"
-                            )}
-                          >
-                            {time}
-                          </Button>
-                        ))}
-                      </div>
+                <div className="space-y-2">
+                  <Label>Pickup Date *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal h-12",
+                          !pickupDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {pickupDate ? format(pickupDate, "PPP") : "Select date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={pickupDate}
+                        onSelect={setPickupDate}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div className="space-y-4">
+                  <Label>Pickup Time Window *</Label>
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                    <div className="flex items-center justify-between text-sm font-medium">
+                      <span>{formatTime(timeRange[0])}</span>
+                      <span>to</span>
+                      <span>{formatTime(timeRange[1])}</span>
+                    </div>
+                    <Slider
+                      value={timeRange}
+                      onValueChange={setTimeRange}
+                      min={6}
+                      max={22}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>6:00 AM</span>
+                      <span>10:00 PM</span>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Step 5: Vehicle Type */}
+            {/* Step 3: Vehicle Type */}
             <Card className="border shadow-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -369,7 +310,7 @@ const SchedulePickup: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Step 6: Notes */}
+            {/* Step 4: Notes */}
             <Card className="border shadow-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
@@ -388,8 +329,62 @@ const SchedulePickup: React.FC = () => {
             </Card>
           </div>
 
-          {/* Summary Card */}
-          <div className="lg:col-span-1">
+          {/* Right Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Pickup Details */}
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <MapPin className="h-5 w-5" />
+                  Pickup Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="location">Business/Store Name *</Label>
+                  <Input
+                    id="location"
+                    placeholder="Enter your business name"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Full Address *</Label>
+                  <Textarea
+                    id="address"
+                    placeholder="Enter complete pickup address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    required
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contactPerson">Contact Name *</Label>
+                  <Input
+                    id="contactPerson"
+                    placeholder="Contact person name"
+                    value={contactPerson}
+                    onChange={(e) => setContactPerson(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contactPhone">Phone Number *</Label>
+                  <Input
+                    id="contactPhone"
+                    placeholder="+961 XX XXX XXX"
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    required
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Summary Card */}
             <Card className="sticky top-6 border shadow-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg">Pickup Summary</CardTitle>
@@ -408,12 +403,10 @@ const SchedulePickup: React.FC = () => {
                     </div>
                   )}
                   
-                  {pickupTime && (
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <Clock className="h-4 w-4 text-gray-500" />
-                      <span>{pickupTime}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    <span>{formatTime(timeRange[0])} - {formatTime(timeRange[1])}</span>
+                  </div>
                   
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     <Truck className="h-4 w-4 text-gray-500" />
