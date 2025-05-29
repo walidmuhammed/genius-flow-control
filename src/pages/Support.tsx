@@ -10,7 +10,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTickets, useTicket, useTicketMessages, useCreateTicket, useAddTicketMessage, useUpdateTicketStatus } from '@/hooks/use-tickets';
+import { useOrders } from '@/hooks/use-orders';
+import { usePickups } from '@/hooks/use-pickups';
+import { useInvoices } from '@/hooks/use-invoices';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import type { TicketCategory } from '@/services/tickets';
@@ -21,11 +25,20 @@ const Support: React.FC = () => {
   const [newMessage, setNewMessage] = useState<string>('');
   const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
   const [newTicketCategory, setNewTicketCategory] = useState<string>('orders');
-  const [newTicketTitle, setNewTicketTitle] = useState<string>('');
-  const [newTicketContent, setNewTicketContent] = useState<string>('');
+  const [selectedOrderId, setSelectedOrderId] = useState<string>('');
+  const [selectedPickupId, setSelectedPickupId] = useState<string>('');
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string>('');
+  const [selectedIssue, setSelectedIssue] = useState<string>('');
+  const [showOtherField, setShowOtherField] = useState<boolean>(false);
+  const [customMessage, setCustomMessage] = useState<string>('');
   
   // Fetch tickets
   const { data: tickets = [], isLoading: isLoadingTickets } = useTickets();
+  
+  // Fetch data for dropdowns
+  const { data: orders = [] } = useOrders();
+  const { data: pickups = [] } = usePickups();
+  const { data: invoices = [] } = useInvoices();
   
   // Fetch selected ticket
   const { data: selectedTicket } = useTicket(selectedTicketId || undefined);
@@ -45,6 +58,31 @@ const Support: React.FC = () => {
     ticket.id.includes(searchQuery)
   );
 
+  // Issue options for different categories
+  const orderIssues = [
+    'Delayed delivery',
+    'Missing item',
+    'Damaged order',
+    'Wrong delivery address',
+    'Order not delivered'
+  ];
+
+  const pickupIssues = [
+    'Delayed pickup',
+    'Pickup not completed',
+    'Wrong pickup address',
+    'Items not collected',
+    'Courier issues'
+  ];
+
+  const walletIssues = [
+    'Payment not received',
+    'Invoice discrepancy',
+    'Missing transaction',
+    'Incorrect amounts',
+    'Payment delays'
+  ];
+
   const handleTicketClick = (ticketId: string) => {
     setSelectedTicketId(ticketId);
   };
@@ -53,7 +91,7 @@ const Support: React.FC = () => {
     if (newMessage.trim() && selectedTicketId) {
       await addTicketMessageMutation.mutateAsync({
         ticket_id: selectedTicketId,
-        sender: 'Customer Service', // This should be the actual user name in a real system
+        sender: 'Customer Service',
         content: newMessage
       });
       setNewMessage('');
@@ -61,29 +99,99 @@ const Support: React.FC = () => {
   };
 
   const handleCreateNewTicket = async () => {
-    if (!newTicketTitle.trim()) {
-      toast.error('Please enter a ticket title');
-      return;
-    }
+    let ticketTitle = '';
+    let ticketContent = '';
     
-    if (!newTicketContent.trim()) {
-      toast.error('Please enter ticket details');
-      return;
+    // Generate title and content based on category and selections
+    switch (newTicketCategory) {
+      case 'orders':
+        if (selectedIssue === 'other' || showOtherField) {
+          if (!customMessage.trim()) {
+            toast.error('Please describe your issue');
+            return;
+          }
+          ticketTitle = 'Order Issue - Other';
+          ticketContent = customMessage;
+        } else {
+          if (!selectedOrderId || !selectedIssue) {
+            toast.error('Please select an order and issue type');
+            return;
+          }
+          const selectedOrder = orders.find(o => o.id === selectedOrderId);
+          ticketTitle = `Order Issue - ${selectedIssue}`;
+          ticketContent = `Issue with order ${selectedOrder?.reference_number}: ${selectedIssue}`;
+        }
+        break;
+        
+      case 'pickups':
+        if (selectedIssue === 'other' || showOtherField) {
+          if (!customMessage.trim()) {
+            toast.error('Please describe your issue');
+            return;
+          }
+          ticketTitle = 'Pickup Issue - Other';
+          ticketContent = customMessage;
+        } else {
+          if (!selectedPickupId || !selectedIssue) {
+            toast.error('Please select a pickup and issue type');
+            return;
+          }
+          const selectedPickup = pickups.find(p => p.id === selectedPickupId);
+          ticketTitle = `Pickup Issue - ${selectedIssue}`;
+          ticketContent = `Issue with pickup ${selectedPickup?.pickup_id}: ${selectedIssue}`;
+        }
+        break;
+        
+      case 'payment':
+        if (selectedIssue === 'other' || showOtherField) {
+          if (!customMessage.trim()) {
+            toast.error('Please describe your issue');
+            return;
+          }
+          ticketTitle = 'Payment Issue - Other';
+          ticketContent = customMessage;
+        } else {
+          if (!selectedInvoiceId || !selectedIssue) {
+            toast.error('Please select an invoice and issue type');
+            return;
+          }
+          const selectedInvoice = invoices.find(i => i.id === selectedInvoiceId);
+          ticketTitle = `Payment Issue - ${selectedIssue}`;
+          ticketContent = `Issue with invoice ${selectedInvoice?.invoice_id}: ${selectedIssue}`;
+        }
+        break;
+        
+      case 'others':
+        if (!customMessage.trim()) {
+          toast.error('Please describe your issue');
+          return;
+        }
+        ticketTitle = 'General Issue';
+        ticketContent = customMessage;
+        break;
     }
     
     const newTicket = await createTicketMutation.mutateAsync({
       category: getCategoryTitle(newTicketCategory),
-      title: newTicketTitle,
-      content: newTicketContent
+      title: ticketTitle,
+      content: ticketContent
     });
     
     if (newTicket) {
       setIsNewTicketModalOpen(false);
-      setNewTicketCategory('orders');
-      setNewTicketTitle('');
-      setNewTicketContent('');
+      resetForm();
       setSelectedTicketId(newTicket.id);
     }
+  };
+  
+  const resetForm = () => {
+    setNewTicketCategory('orders');
+    setSelectedOrderId('');
+    setSelectedPickupId('');
+    setSelectedInvoiceId('');
+    setSelectedIssue('');
+    setShowOtherField(false);
+    setCustomMessage('');
   };
   
   const handleCloseTicket = async () => {
@@ -114,7 +222,6 @@ const Support: React.FC = () => {
       case 'orders': return 'Order Issue';
       case 'pickups': return 'Pickup Issue';
       case 'return': return 'Return Issue';
-      case 'packaging': return 'Packaging Issue';
       case 'payment': return 'Payment Issue';
       case 'technical': return 'Technical Issue';
       case 'delay': return 'Delay Delivery';
@@ -127,6 +234,201 @@ const Support: React.FC = () => {
       return format(new Date(dateString), 'dd MMM yyyy, hh:mm a');
     } catch (error) {
       return dateString;
+    }
+  };
+
+  const renderCategorySpecificFields = () => {
+    switch (newTicketCategory) {
+      case 'orders':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="order">Select Order</Label>
+              <Select value={selectedOrderId} onValueChange={setSelectedOrderId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose an order..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {orders.map((order) => (
+                    <SelectItem key={order.id} value={order.id}>
+                      {order.reference_number} - {order.customer?.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="issue">Issue Type</Label>
+              <Select value={selectedIssue} onValueChange={setSelectedIssue}>
+                <SelectTrigger>
+                  <SelectValue placeholder="What's the issue?" />
+                </SelectTrigger>
+                <SelectContent>
+                  {orderIssues.map((issue) => (
+                    <SelectItem key={issue} value={issue}>
+                      {issue}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setShowOtherField(!showOtherField)}
+              className="w-full"
+            >
+              Other
+            </Button>
+            
+            {showOtherField && (
+              <div className="space-y-2">
+                <Label htmlFor="custom-message">Describe your issue</Label>
+                <Textarea 
+                  id="custom-message"
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  placeholder="Please describe your issue in detail..."
+                  rows={3}
+                />
+              </div>
+            )}
+          </div>
+        );
+        
+      case 'pickups':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="pickup">Select Pickup</Label>
+              <Select value={selectedPickupId} onValueChange={setSelectedPickupId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a pickup..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {pickups.map((pickup) => (
+                    <SelectItem key={pickup.id} value={pickup.id}>
+                      {pickup.pickup_id} - {pickup.location}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="issue">Issue Type</Label>
+              <Select value={selectedIssue} onValueChange={setSelectedIssue}>
+                <SelectTrigger>
+                  <SelectValue placeholder="What's the issue?" />
+                </SelectTrigger>
+                <SelectContent>
+                  {pickupIssues.map((issue) => (
+                    <SelectItem key={issue} value={issue}>
+                      {issue}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setShowOtherField(!showOtherField)}
+              className="w-full"
+            >
+              Other
+            </Button>
+            
+            {showOtherField && (
+              <div className="space-y-2">
+                <Label htmlFor="custom-message">Describe your issue</Label>
+                <Textarea 
+                  id="custom-message"
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  placeholder="Please describe your issue in detail..."
+                  rows={3}
+                />
+              </div>
+            )}
+          </div>
+        );
+        
+      case 'payment':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="invoice">Select Invoice</Label>
+              <Select value={selectedInvoiceId} onValueChange={setSelectedInvoiceId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose an invoice..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {invoices.map((invoice) => (
+                    <SelectItem key={invoice.id} value={invoice.id}>
+                      {invoice.invoice_id} - ${invoice.net_payout_usd}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="issue">Issue Type</Label>
+              <Select value={selectedIssue} onValueChange={setSelectedIssue}>
+                <SelectTrigger>
+                  <SelectValue placeholder="What's the issue?" />
+                </SelectTrigger>
+                <SelectContent>
+                  {walletIssues.map((issue) => (
+                    <SelectItem key={issue} value={issue}>
+                      {issue}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setShowOtherField(!showOtherField)}
+              className="w-full"
+            >
+              Other
+            </Button>
+            
+            {showOtherField && (
+              <div className="space-y-2">
+                <Label htmlFor="custom-message">Describe your issue</Label>
+                <Textarea 
+                  id="custom-message"
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  placeholder="Please describe your issue in detail..."
+                  rows={3}
+                />
+              </div>
+            )}
+          </div>
+        );
+        
+      case 'others':
+        return (
+          <div className="space-y-2">
+            <Label htmlFor="custom-message">Describe your issue</Label>
+            <Textarea 
+              id="custom-message"
+              value={customMessage}
+              onChange={(e) => setCustomMessage(e.target.value)}
+              placeholder="Please describe your issue in detail..."
+              rows={4}
+            />
+          </div>
+        );
+        
+      default:
+        return null;
     }
   };
 
@@ -315,7 +617,10 @@ const Support: React.FC = () => {
         {/* New Ticket Dialog */}
         <Dialog 
           open={isNewTicketModalOpen}
-          onOpenChange={setIsNewTicketModalOpen}
+          onOpenChange={(open) => {
+            setIsNewTicketModalOpen(open);
+            if (!open) resetForm();
+          }}
         >
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
@@ -325,32 +630,17 @@ const Support: React.FC = () => {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Ticket Title</Label>
-                <Input 
-                  id="title" 
-                  value={newTicketTitle}
-                  onChange={(e) => setNewTicketTitle(e.target.value)}
-                  placeholder="Brief description of your issue"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="content">Details</Label>
-                <Textarea 
-                  id="content" 
-                  value={newTicketContent}
-                  onChange={(e) => setNewTicketContent(e.target.value)}
-                  placeholder="Provide details about your issue"
-                  rows={4}
-                />
-              </div>
-            </div>
-
             <RadioGroup 
               value={newTicketCategory}
-              onValueChange={setNewTicketCategory}
+              onValueChange={(value) => {
+                setNewTicketCategory(value);
+                setSelectedOrderId('');
+                setSelectedPickupId('');
+                setSelectedInvoiceId('');
+                setSelectedIssue('');
+                setShowOtherField(false);
+                setCustomMessage('');
+              }}
             >
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors">
@@ -379,28 +669,6 @@ const Support: React.FC = () => {
                 </div>
                 
                 <div className="flex items-center space-x-2 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors">
-                  <RadioGroupItem value="return" id="return" />
-                  <div className="flex-1">
-                    <Label htmlFor="return" className="flex items-center">
-                      <ArrowLeft className="h-5 w-5 text-primary mr-2" />
-                      <span className="font-medium">Return</span>
-                    </Label>
-                    <p className="text-sm text-muted-foreground ml-7">Delay pickup, Fake update...etc</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors">
-                  <RadioGroupItem value="packaging" id="packaging" />
-                  <div className="flex-1">
-                    <Label htmlFor="packaging" className="flex items-center">
-                      <Package2 className="h-5 w-5 text-primary mr-2" />
-                      <span className="font-medium">Materials and Packing</span>
-                    </Label>
-                    <p className="text-sm text-muted-foreground ml-7">Issues you are facing with our packaging materials</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors">
                   <RadioGroupItem value="payment" id="payment" />
                   <div className="flex-1">
                     <Label htmlFor="payment" className="flex items-center">
@@ -424,14 +692,16 @@ const Support: React.FC = () => {
               </div>
             </RadioGroup>
             
+            <div className="py-4">
+              {renderCategorySpecificFields()}
+            </div>
+            
             <DialogFooter>
               <Button 
                 variant="outline" 
                 onClick={() => {
                   setIsNewTicketModalOpen(false);
-                  setNewTicketTitle('');
-                  setNewTicketContent('');
-                  setNewTicketCategory('orders');
+                  resetForm();
                 }}
               >
                 Cancel
@@ -439,7 +709,7 @@ const Support: React.FC = () => {
               <Button 
                 onClick={handleCreateNewTicket}
                 className="bg-primary hover:bg-primary/90"
-                disabled={createTicketMutation.isPending || !newTicketTitle.trim() || !newTicketContent.trim()}
+                disabled={createTicketMutation.isPending}
               >
                 {createTicketMutation.isPending ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...</>
