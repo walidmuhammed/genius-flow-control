@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Package, Truck, Home, Clock, Users, Wallet, BarChart3, Settings, Phone } from 'lucide-react';
+import { Package, Truck, Home, Clock, Users, Wallet, BarChart3, Settings, Ticket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -13,7 +13,6 @@ interface MenuItem {
   label: string;
   icon: React.ReactNode;
   path: string;
-  badge?: number | string;
 }
 
 const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed }) => {
@@ -28,14 +27,12 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed }) => {
     {
       label: 'Orders',
       icon: <Package className="h-4 w-4" />,
-      path: '/orders',
-      badge: 12
+      path: '/orders'
     }, 
     {
       label: 'Pickups',
       icon: <Clock className="h-4 w-4" />,
-      path: '/pickups',
-      badge: 5
+      path: '/pickups'
     }, 
     {
       label: 'Customers',
@@ -51,18 +48,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed }) => {
       label: 'Analytics',
       icon: <BarChart3 className="h-4 w-4" />,
       path: '/analytics'
-    }
-  ];
-  
-  const secondaryMenuItems: MenuItem[] = [
-    {
-      label: 'Settings',
-      icon: <Settings className="h-4 w-4" />,
-      path: '/settings'
-    }, 
+    },
     {
       label: 'Support',
-      icon: <Phone className="h-4 w-4" />,
+      icon: <Ticket className="h-4 w-4" />,
       path: '/support'
     }
   ];
@@ -77,23 +66,6 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed }) => {
         </div>
         
         {mainMenuItems.map(item => (
-          <MenuItem 
-            key={item.path} 
-            collapsed={collapsed} 
-            item={item} 
-            isActive={location.pathname === item.path} 
-          />
-        ))}
-      </div>
-      
-      <div className="space-y-1">
-        <div className="mb-2">
-          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 px-4">
-            System
-          </h3>
-        </div>
-        
-        {secondaryMenuItems.map(item => (
           <MenuItem 
             key={item.path} 
             collapsed={collapsed} 
@@ -145,17 +117,6 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, collapsed }) => {
         )}>
           {item.label}
         </span>
-        
-        {item.badge && (
-          <span className={cn(
-            "ml-auto flex h-5 min-w-5 items-center justify-center rounded-full text-[10px] font-medium px-1.5",
-            isActive 
-              ? "bg-[#DC291E]/10 text-[#DC291E]" 
-              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-          )}>
-            {item.badge}
-          </span>
-        )}
       </motion.div>
     </Link>
   );

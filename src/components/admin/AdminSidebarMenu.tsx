@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Package, Users, Home, Activity, Navigation, DollarSign, Settings, Phone, Truck } from 'lucide-react';
+import { Package, Users, Home, Activity, Navigation, DollarSign, Settings, Ticket, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -13,7 +13,6 @@ interface MenuItem {
   label: string;
   icon: React.ReactNode;
   path: string;
-  badge?: number | string;
 }
 
 const AdminSidebarMenu: React.FC<AdminSidebarMenuProps> = ({ collapsed }) => {
@@ -28,8 +27,7 @@ const AdminSidebarMenu: React.FC<AdminSidebarMenuProps> = ({ collapsed }) => {
     {
       label: 'Orders',
       icon: <Package className="h-4 w-4" />,
-      path: '/admin/orders',
-      badge: 8
+      path: '/admin/orders'
     }, 
     {
       label: 'Clients',
@@ -55,18 +53,10 @@ const AdminSidebarMenu: React.FC<AdminSidebarMenuProps> = ({ collapsed }) => {
       label: 'Activity',
       icon: <Activity className="h-4 w-4" />,
       path: '/admin/activity'
-    }
-  ];
-  
-  const secondaryMenuItems: MenuItem[] = [
-    {
-      label: 'Settings',
-      icon: <Settings className="h-4 w-4" />,
-      path: '/admin/settings'
-    }, 
+    },
     {
       label: 'Support',
-      icon: <Phone className="h-4 w-4" />,
+      icon: <Ticket className="h-4 w-4" />,
       path: '/admin/tickets'
     }
   ];
@@ -81,23 +71,6 @@ const AdminSidebarMenu: React.FC<AdminSidebarMenuProps> = ({ collapsed }) => {
         </div>
         
         {mainMenuItems.map(item => (
-          <AdminMenuItem 
-            key={item.path} 
-            collapsed={collapsed} 
-            item={item} 
-            isActive={location.pathname === item.path} 
-          />
-        ))}
-      </div>
-      
-      <div className="space-y-1">
-        <div className="mb-2">
-          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 px-4">
-            System
-          </h3>
-        </div>
-        
-        {secondaryMenuItems.map(item => (
           <AdminMenuItem 
             key={item.path} 
             collapsed={collapsed} 
@@ -149,17 +122,6 @@ const AdminMenuItem: React.FC<AdminMenuItemProps> = ({ item, isActive, collapsed
         )}>
           {item.label}
         </span>
-        
-        {item.badge && (
-          <span className={cn(
-            "ml-auto flex h-5 min-w-5 items-center justify-center rounded-full text-[10px] font-medium px-1.5",
-            isActive 
-              ? "bg-[#DC291E]/10 text-[#DC291E]" 
-              : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-          )}>
-            {item.badge}
-          </span>
-        )}
       </motion.div>
     </Link>
   );

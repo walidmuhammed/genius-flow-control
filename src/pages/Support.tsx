@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Search, Filter, Clock, Package, ArrowLeft, Package2, Wallet, FileText, Send, Loader2 } from 'lucide-react';
+import { Search, Filter, Clock, Package, ArrowLeft, Package2, Wallet, FileText, Send, Loader2, Ticket } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +23,8 @@ const Support: React.FC = () => {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState<string>('');
   const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
-  const [newTicketCategory, setNewTicketCategory] = useState<string>('orders');
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [newTicketCategory, setNewTicketCategory] = useState<string>('');
   const [selectedOrderId, setSelectedOrderId] = useState<string>('');
   const [selectedPickupId, setSelectedPickupId] = useState<string>('');
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string>('');
@@ -98,6 +98,11 @@ const Support: React.FC = () => {
     }
   };
 
+  const handleCategorySelect = (category: string) => {
+    setNewTicketCategory(category);
+    setCurrentStep(2);
+  };
+
   const handleCreateNewTicket = async () => {
     let ticketTitle = '';
     let ticketContent = '';
@@ -105,7 +110,7 @@ const Support: React.FC = () => {
     // Generate title and content based on category and selections
     switch (newTicketCategory) {
       case 'orders':
-        if (selectedIssue === 'other' || showOtherField) {
+        if (showOtherField) {
           if (!customMessage.trim()) {
             toast.error('Please describe your issue');
             return;
@@ -124,7 +129,7 @@ const Support: React.FC = () => {
         break;
         
       case 'pickups':
-        if (selectedIssue === 'other' || showOtherField) {
+        if (showOtherField) {
           if (!customMessage.trim()) {
             toast.error('Please describe your issue');
             return;
@@ -143,7 +148,7 @@ const Support: React.FC = () => {
         break;
         
       case 'payment':
-        if (selectedIssue === 'other' || showOtherField) {
+        if (showOtherField) {
           if (!customMessage.trim()) {
             toast.error('Please describe your issue');
             return;
@@ -185,7 +190,8 @@ const Support: React.FC = () => {
   };
   
   const resetForm = () => {
-    setNewTicketCategory('orders');
+    setCurrentStep(1);
+    setNewTicketCategory('');
     setSelectedOrderId('');
     setSelectedPickupId('');
     setSelectedInvoiceId('');
@@ -237,193 +243,310 @@ const Support: React.FC = () => {
     }
   };
 
-  const renderCategorySpecificFields = () => {
+  const goBackToStep1 = () => {
+    setCurrentStep(1);
+    setNewTicketCategory('');
+    setSelectedOrderId('');
+    setSelectedPickupId('');
+    setSelectedInvoiceId('');
+    setSelectedIssue('');
+    setShowOtherField(false);
+    setCustomMessage('');
+  };
+
+  const renderStep1 = () => (
+    <div className="space-y-4">
+      <DialogDescription>
+        Tell us which category fits your issue
+      </DialogDescription>
+      
+      <div className="space-y-3">
+        <div 
+          className="flex items-center space-x-3 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors"
+          onClick={() => handleCategorySelect('orders')}
+        >
+          <Package className="h-5 w-5 text-primary flex-shrink-0" />
+          <div className="flex-1">
+            <div className="font-medium">Orders</div>
+            <div className="text-sm text-muted-foreground">(Forward or Return)</div>
+            <p className="text-sm text-muted-foreground mt-1">Delayed delivery, Damaged order, Missing item...etc</p>
+          </div>
+        </div>
+        
+        <div 
+          className="flex items-center space-x-3 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors"
+          onClick={() => handleCategorySelect('pickups')}
+        >
+          <Clock className="h-5 w-5 text-primary flex-shrink-0" />
+          <div className="flex-1">
+            <div className="font-medium">Pickups</div>
+            <p className="text-sm text-muted-foreground mt-1">Delay pickup, Fake update...etc</p>
+          </div>
+        </div>
+        
+        <div 
+          className="flex items-center space-x-3 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors"
+          onClick={() => handleCategorySelect('payment')}
+        >
+          <Wallet className="h-5 w-5 text-primary flex-shrink-0" />
+          <div className="flex-1">
+            <div className="font-medium">Payment and Wallet</div>
+            <p className="text-sm text-muted-foreground mt-1">Issues you face with your payments or financial issues</p>
+          </div>
+        </div>
+        
+        <div 
+          className="flex items-center space-x-3 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors"
+          onClick={() => handleCategorySelect('others')}
+        >
+          <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+          <div className="flex-1">
+            <div className="font-medium">Others</div>
+            <p className="text-sm text-muted-foreground mt-1">Any other issues you are facing</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep2 = () => {
     switch (newTicketCategory) {
       case 'orders':
         return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="order">Select Order</Label>
-              <Select value={selectedOrderId} onValueChange={setSelectedOrderId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose an order..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {orders.map((order) => (
-                    <SelectItem key={order.id} value={order.id}>
-                      {order.reference_number} - {order.customer?.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="issue">Issue Type</Label>
-              <Select value={selectedIssue} onValueChange={setSelectedIssue}>
-                <SelectTrigger>
-                  <SelectValue placeholder="What's the issue?" />
-                </SelectTrigger>
-                <SelectContent>
-                  {orderIssues.map((issue) => (
-                    <SelectItem key={issue} value={issue}>
-                      {issue}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <Button 
-              variant="outline" 
-              onClick={() => setShowOtherField(!showOtherField)}
-              className="w-full"
-            >
-              Other
-            </Button>
-            
-            {showOtherField && (
-              <div className="space-y-2">
-                <Label htmlFor="custom-message">Describe your issue</Label>
-                <Textarea 
-                  id="custom-message"
-                  value={customMessage}
-                  onChange={(e) => setCustomMessage(e.target.value)}
-                  placeholder="Please describe your issue in detail..."
-                  rows={3}
-                />
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Button variant="ghost" size="sm" onClick={goBackToStep1}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h3 className="font-medium">Order Issue</h3>
+                <p className="text-sm text-muted-foreground">Select your order and describe the issue</p>
               </div>
-            )}
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="order">Select Order</Label>
+                <Select value={selectedOrderId} onValueChange={setSelectedOrderId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose an order..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {orders.map((order) => (
+                      <SelectItem key={order.id} value={order.id}>
+                        {order.reference_number} - {order.customer?.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="issue">Issue Type</Label>
+                <Select value={selectedIssue} onValueChange={setSelectedIssue}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="What's the issue?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {orderIssues.map((issue) => (
+                      <SelectItem key={issue} value={issue}>
+                        {issue}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => setShowOtherField(!showOtherField)}
+                className="w-full"
+                type="button"
+              >
+                Other
+              </Button>
+              
+              {showOtherField && (
+                <div className="space-y-2">
+                  <Label htmlFor="custom-message">Describe your issue</Label>
+                  <Textarea 
+                    id="custom-message"
+                    value={customMessage}
+                    onChange={(e) => setCustomMessage(e.target.value)}
+                    placeholder="Please describe your issue in detail..."
+                    rows={3}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         );
         
       case 'pickups':
         return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="pickup">Select Pickup</Label>
-              <Select value={selectedPickupId} onValueChange={setSelectedPickupId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a pickup..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {pickups.map((pickup) => (
-                    <SelectItem key={pickup.id} value={pickup.id}>
-                      {pickup.pickup_id} - {pickup.location}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="issue">Issue Type</Label>
-              <Select value={selectedIssue} onValueChange={setSelectedIssue}>
-                <SelectTrigger>
-                  <SelectValue placeholder="What's the issue?" />
-                </SelectTrigger>
-                <SelectContent>
-                  {pickupIssues.map((issue) => (
-                    <SelectItem key={issue} value={issue}>
-                      {issue}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <Button 
-              variant="outline" 
-              onClick={() => setShowOtherField(!showOtherField)}
-              className="w-full"
-            >
-              Other
-            </Button>
-            
-            {showOtherField && (
-              <div className="space-y-2">
-                <Label htmlFor="custom-message">Describe your issue</Label>
-                <Textarea 
-                  id="custom-message"
-                  value={customMessage}
-                  onChange={(e) => setCustomMessage(e.target.value)}
-                  placeholder="Please describe your issue in detail..."
-                  rows={3}
-                />
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Button variant="ghost" size="sm" onClick={goBackToStep1}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h3 className="font-medium">Pickup Issue</h3>
+                <p className="text-sm text-muted-foreground">Select your pickup and describe the issue</p>
               </div>
-            )}
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="pickup">Select Pickup</Label>
+                <Select value={selectedPickupId} onValueChange={setSelectedPickupId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a pickup..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pickups.map((pickup) => (
+                      <SelectItem key={pickup.id} value={pickup.id}>
+                        {pickup.pickup_id} - {pickup.location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="issue">Issue Type</Label>
+                <Select value={selectedIssue} onValueChange={setSelectedIssue}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="What's the issue?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pickupIssues.map((issue) => (
+                      <SelectItem key={issue} value={issue}>
+                        {issue}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => setShowOtherField(!showOtherField)}
+                className="w-full"
+                type="button"
+              >
+                Other
+              </Button>
+              
+              {showOtherField && (
+                <div className="space-y-2">
+                  <Label htmlFor="custom-message">Describe your issue</Label>
+                  <Textarea 
+                    id="custom-message"
+                    value={customMessage}
+                    onChange={(e) => setCustomMessage(e.target.value)}
+                    placeholder="Please describe your issue in detail..."
+                    rows={3}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         );
         
       case 'payment':
         return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="invoice">Select Invoice</Label>
-              <Select value={selectedInvoiceId} onValueChange={setSelectedInvoiceId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose an invoice..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {invoices.map((invoice) => (
-                    <SelectItem key={invoice.id} value={invoice.id}>
-                      {invoice.invoice_id} - ${invoice.net_payout_usd}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="issue">Issue Type</Label>
-              <Select value={selectedIssue} onValueChange={setSelectedIssue}>
-                <SelectTrigger>
-                  <SelectValue placeholder="What's the issue?" />
-                </SelectTrigger>
-                <SelectContent>
-                  {walletIssues.map((issue) => (
-                    <SelectItem key={issue} value={issue}>
-                      {issue}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <Button 
-              variant="outline" 
-              onClick={() => setShowOtherField(!showOtherField)}
-              className="w-full"
-            >
-              Other
-            </Button>
-            
-            {showOtherField && (
-              <div className="space-y-2">
-                <Label htmlFor="custom-message">Describe your issue</Label>
-                <Textarea 
-                  id="custom-message"
-                  value={customMessage}
-                  onChange={(e) => setCustomMessage(e.target.value)}
-                  placeholder="Please describe your issue in detail..."
-                  rows={3}
-                />
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Button variant="ghost" size="sm" onClick={goBackToStep1}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h3 className="font-medium">Payment Issue</h3>
+                <p className="text-sm text-muted-foreground">Select your invoice and describe the issue</p>
               </div>
-            )}
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="invoice">Select Invoice</Label>
+                <Select value={selectedInvoiceId} onValueChange={setSelectedInvoiceId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose an invoice..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {invoices.map((invoice) => (
+                      <SelectItem key={invoice.id} value={invoice.id}>
+                        {invoice.invoice_id} - ${invoice.net_payout_usd}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="issue">Issue Type</Label>
+                <Select value={selectedIssue} onValueChange={setSelectedIssue}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="What's the issue?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {walletIssues.map((issue) => (
+                      <SelectItem key={issue} value={issue}>
+                        {issue}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => setShowOtherField(!showOtherField)}
+                className="w-full"
+                type="button"
+              >
+                Other
+              </Button>
+              
+              {showOtherField && (
+                <div className="space-y-2">
+                  <Label htmlFor="custom-message">Describe your issue</Label>
+                  <Textarea 
+                    id="custom-message"
+                    value={customMessage}
+                    onChange={(e) => setCustomMessage(e.target.value)}
+                    placeholder="Please describe your issue in detail..."
+                    rows={3}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         );
         
       case 'others':
         return (
-          <div className="space-y-2">
-            <Label htmlFor="custom-message">Describe your issue</Label>
-            <Textarea 
-              id="custom-message"
-              value={customMessage}
-              onChange={(e) => setCustomMessage(e.target.value)}
-              placeholder="Please describe your issue in detail..."
-              rows={4}
-            />
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Button variant="ghost" size="sm" onClick={goBackToStep1}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h3 className="font-medium">General Issue</h3>
+                <p className="text-sm text-muted-foreground">Describe your issue</p>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="custom-message">Describe your issue</Label>
+              <Textarea 
+                id="custom-message"
+                value={customMessage}
+                onChange={(e) => setCustomMessage(e.target.value)}
+                placeholder="Please describe your issue in detail..."
+                rows={4}
+              />
+            </div>
           </div>
         );
         
@@ -625,76 +748,9 @@ const Support: React.FC = () => {
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Create New Ticket</DialogTitle>
-              <DialogDescription>
-                Tell us which category fits your issue
-              </DialogDescription>
             </DialogHeader>
             
-            <RadioGroup 
-              value={newTicketCategory}
-              onValueChange={(value) => {
-                setNewTicketCategory(value);
-                setSelectedOrderId('');
-                setSelectedPickupId('');
-                setSelectedInvoiceId('');
-                setSelectedIssue('');
-                setShowOtherField(false);
-                setCustomMessage('');
-              }}
-            >
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors">
-                  <RadioGroupItem value="orders" id="orders" />
-                  <div className="flex-1">
-                    <Label htmlFor="orders" className="flex items-center">
-                      <Package className="h-5 w-5 text-primary mr-2" />
-                      <div>
-                        <span className="font-medium">Orders</span>
-                        <span className="text-muted-foreground ml-2">(Forward or Return)</span>
-                      </div>
-                    </Label>
-                    <p className="text-sm text-muted-foreground ml-7">Delayed delivery, Damaged order, Missing item...etc</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors">
-                  <RadioGroupItem value="pickups" id="pickups" />
-                  <div className="flex-1">
-                    <Label htmlFor="pickups" className="flex items-center">
-                      <Clock className="h-5 w-5 text-primary mr-2" />
-                      <span className="font-medium">Pickups</span>
-                    </Label>
-                    <p className="text-sm text-muted-foreground ml-7">Delay pickup, Fake update...etc</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors">
-                  <RadioGroupItem value="payment" id="payment" />
-                  <div className="flex-1">
-                    <Label htmlFor="payment" className="flex items-center">
-                      <Wallet className="h-5 w-5 text-primary mr-2" />
-                      <span className="font-medium">Payment and Wallet</span>
-                    </Label>
-                    <p className="text-sm text-muted-foreground ml-7">Issues you face with your payments or financial issues</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors">
-                  <RadioGroupItem value="others" id="others" />
-                  <div className="flex-1">
-                    <Label htmlFor="others" className="flex items-center">
-                      <FileText className="h-5 w-5 text-primary mr-2" />
-                      <span className="font-medium">Others</span>
-                    </Label>
-                    <p className="text-sm text-muted-foreground ml-7">Any other issues you are facing</p>
-                  </div>
-                </div>
-              </div>
-            </RadioGroup>
-            
-            <div className="py-4">
-              {renderCategorySpecificFields()}
-            </div>
+            {currentStep === 1 ? renderStep1() : renderStep2()}
             
             <DialogFooter>
               <Button 
@@ -706,17 +762,19 @@ const Support: React.FC = () => {
               >
                 Cancel
               </Button>
-              <Button 
-                onClick={handleCreateNewTicket}
-                className="bg-primary hover:bg-primary/90"
-                disabled={createTicketMutation.isPending}
-              >
-                {createTicketMutation.isPending ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...</>
-                ) : (
-                  'Create Ticket'
-                )}
-              </Button>
+              {currentStep === 2 && (
+                <Button 
+                  onClick={handleCreateNewTicket}
+                  className="bg-primary hover:bg-primary/90"
+                  disabled={createTicketMutation.isPending}
+                >
+                  {createTicketMutation.isPending ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...</>
+                  ) : (
+                    'Create Ticket'
+                  )}
+                </Button>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>

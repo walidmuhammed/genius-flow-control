@@ -17,6 +17,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ className }) => {
   const [darkMode, setDarkMode] = useState(false);
   const { signOut } = useAuth();
   const { isMobile } = useScreenSize();
+  const location = useLocation();
   
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -65,7 +66,24 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ className }) => {
         <AdminSidebarMenu collapsed={false} />
       </div>
       
-      <div className="p-5 flex flex-col gap-3">
+      <div className="p-5 flex flex-col gap-3 border-t border-gray-200 dark:border-gray-800">
+        <Link to="/admin/settings">
+          <motion.div 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className={cn(
+              "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium", 
+              "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200",
+              location.pathname === '/admin/settings'
+                ? "bg-gray-200 dark:bg-gray-800 text-[#DC291E] dark:text-[#DC291E]"
+                : "text-gray-700 dark:text-gray-200"
+            )}
+          >
+            <Settings className="h-4 w-4" />
+            <span>Settings</span>
+          </motion.div>
+        </Link>
+        
         <motion.button 
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
