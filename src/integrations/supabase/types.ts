@@ -140,6 +140,87 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_orders: {
+        Row: {
+          created_at: string
+          id: string
+          invoice_id: string | null
+          order_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          order_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_orders_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_orders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          invoice_id: string
+          merchant_name: string
+          net_payout_lbp: number
+          net_payout_usd: number
+          total_amount_lbp: number
+          total_amount_usd: number
+          total_delivery_lbp: number
+          total_delivery_usd: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id: string
+          merchant_name: string
+          net_payout_lbp?: number
+          net_payout_usd?: number
+          total_amount_lbp?: number
+          total_amount_usd?: number
+          total_delivery_lbp?: number
+          total_delivery_usd?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id?: string
+          merchant_name?: string
+          net_payout_lbp?: number
+          net_payout_usd?: number
+          total_amount_lbp?: number
+          total_amount_usd?: number
+          total_delivery_lbp?: number
+          total_delivery_usd?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           allow_opening: boolean | null
@@ -430,6 +511,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_invoice_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_pickup_id: {
         Args: Record<PropertyKey, never>
         Returns: string
