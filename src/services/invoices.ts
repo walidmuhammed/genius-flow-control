@@ -125,17 +125,83 @@ export async function getInvoiceWithOrders(invoiceId: string): Promise<InvoiceWi
   } as InvoiceWithOrders;
 }
 
-export async function createInvoice(orderIds: string[]) {
-  // This function would be used by admins to create invoices from paid orders
-  // Implementation would calculate totals from the provided order IDs
-  const { data, error } = await supabase.rpc('create_invoice_from_orders', {
-    order_ids: orderIds
-  });
+export async function createInvoice(orderIds: string[], merchantName: string = 'WIXX') {
+  console.log('Creating invoice for orders:', orderIds);
   
-  if (error) {
-    console.error('Error creating invoice:', error);
-    throw error;
+  // First, fetch the orders to calculate totals
+  const { data: orders, error: ordersError } = await supabase
+    .from('orders')
+    .select(`
+      id,
+      cash_collection_usd,
+      cash_collection_lbp,
+      delivery_fees_usd,
+      delivery_fees_lbp
+    `)
+    .in('id', orderIds);
+  
+  if (ordersError) {
+    console.error('Error fetching orders for invoice:', ordersError);
+    throw ordersError;
   }
   
-  return data;
+  if (!orders || orders.length === 0) {
+    throw new Error('No orders found for the provided IDs');
+  }
+
+  // Calculate totals
+  const totals = orders.reduce((acc, order) => {
+    return {
+      total_amount_usd: acc.total_amount_usd + (order.cash_collection_usd || 0),
+      total_amount_lbp: acc.total_amount_lbp + (order.cash_collection_lbp || 0),
+      total_delivery_usd: acc.total_delivery_usd + (order.delivery_fees_usd || 0),
+      total_delivery_lbp: acc.total_delivery_lbp + (order.delivery_fees_lbp || 0)
+    };
+  }, {
+    total_amount_usd: 0,
+    total_amount_lbp: 0,
+    total_delivery_usd: 0,
+    total_delivery_lbp: 0
+  });
+
+  // Calculate net payout (total collection minus delivery fees)
+  const net_payout_usd = totals.total_amount_usd - totals.total_delivery_usd;
+  const net_payout_lbp = totals.total_amount_lbp - totals.total_delivery_lbp;
+
+  // Create the invoice
+  const { data: invoice, error: invoiceError } = await supabase
+    .from('invoices')
+    .insert({
+      merchant_name: merchantName,
+      total_amount_usd: totals.total_amount_usd,
+      total_amount_lbp: totals.total_amount_lbp,
+      total_delivery_usd: totals.total_delivery_usd,
+      total_delivery_lbp: totals.total_delivery_lbp,
+      net_payout_usd,
+      net_payout_lbp
+    })
+    .select()
+    .single();
+
+  if (invoiceError) {
+    console.error('Error creating invoice:', invoiceError);
+    throw invoiceError;
+  }
+
+  // Link orders to the invoice
+  const invoiceOrdersData = orderIds.map(orderId => ({
+    invoice_id: invoice.id,
+    order_id: orderId
+  }));
+
+  const { error: linkError } = await supabase
+    .from('invoice_orders')
+    .insert(invoiceOrdersData);
+
+  if (linkError) {
+    console.error('Error linking orders to invoice:', linkError);
+    throw linkError;
+  }
+
+  return invoice;
 }
