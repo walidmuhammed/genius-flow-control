@@ -59,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <SidebarMenu collapsed={false} />
       </div>
       
-      <div className="p-5 flex flex-col gap-3 border-t border-gray-200 dark:border-gray-800 my-[122px]">
+      <div className="p-5 flex flex-col gap-3 border-t border-gray-200 dark:border-gray-800 my-0">
         <Link to="/settings">
           <motion.div whileHover={{
           scale: 1.02
