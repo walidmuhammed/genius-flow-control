@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,6 +15,7 @@ import { getPickups } from '@/services/pickups';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import OrdersTableMobile from '@/components/orders/OrdersTableMobile';
+import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 
 const Dashboard: React.FC = () => {
   const today = new Date();
@@ -84,6 +86,10 @@ const Dashboard: React.FC = () => {
   const toggleSelectPickup = (pickupId: string) => {
     setSelectedPickups(prev => prev.includes(pickupId) ? prev.filter(id => id !== pickupId) : [...prev, pickupId]);
   };
+
+  // Transform orders to table format for mobile component
+  const todayOrdersForTable = mapOrdersToTableFormat(todayOrders);
+  const awaitingActionOrdersForTable = mapOrdersToTableFormat(awaitingActionOrders);
   
   return (
     <MainLayout>
@@ -314,7 +320,7 @@ const Dashboard: React.FC = () => {
                   {todayOrders.length > 0 ? (
                     isMobile ? (
                       <OrdersTableMobile 
-                        orders={todayOrders}
+                        orders={todayOrdersForTable}
                         selectedOrders={selectedOrders}
                         toggleSelectOrder={toggleSelectOrder}
                         onViewDetails={() => {}}
@@ -383,7 +389,7 @@ const Dashboard: React.FC = () => {
                   {awaitingActionOrders.length > 0 ? (
                     isMobile ? (
                       <OrdersTableMobile 
-                        orders={awaitingActionOrders}
+                        orders={awaitingActionOrdersForTable}
                         selectedOrders={selectedOrders}
                         toggleSelectOrder={toggleSelectOrder}
                         onViewDetails={() => {}}
