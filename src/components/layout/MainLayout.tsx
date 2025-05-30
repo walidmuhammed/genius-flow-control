@@ -33,11 +33,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
         </Sheet>
       )}
       
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <TopBar />
         <main className={cn(
           "flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-all",
-          isMobile ? "p-3 pb-20" : isTablet ? "p-4 pb-6" : "p-6",
+          isMobile ? "p-3 pb-24" : isTablet ? "p-4 pb-6" : "p-6",
           className
         )}>
           <motion.div 

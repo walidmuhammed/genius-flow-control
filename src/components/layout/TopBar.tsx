@@ -16,20 +16,20 @@ const TopBar: React.FC = () => {
   return (
     <motion.header 
       className={cn(
-        "bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 md:px-6 h-16 flex items-center justify-between sticky top-0 z-40 backdrop-blur-sm",
-        isMobile && "px-3"
+        "bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 h-16 flex items-center justify-between sticky top-0 z-40",
+        isMobile ? "px-3" : "px-4 md:px-6"
       )}
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         {(isMobile || isTablet) && (
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={toggleSidebar}
-            className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0"
           >
             <Menu className="h-5 w-5" />
           </Button>
@@ -44,9 +44,17 @@ const TopBar: React.FC = () => {
             />
           </div>
         )}
+
+        {isMobile && (
+          <div className="flex-1 text-center">
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+              Topspeed
+            </h1>
+          </div>
+        )}
       </div>
       
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         {isMobile && (
           <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
             <Search className="h-5 w-5" />

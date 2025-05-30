@@ -17,21 +17,21 @@ import { motion } from 'framer-motion';
 
 interface OrdersTableMobileProps {
   orders: Order[];
-  selectedOrders: string[];
-  toggleSelectOrder: (orderId: string) => void;
-  onViewDetails: (order: Order) => void;
+  selectedOrders?: string[];
+  toggleSelectOrder?: (orderId: string) => void;
+  onViewDetails?: (order: Order) => void;
   showActions?: boolean;
 }
 
 const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
   orders,
-  selectedOrders,
-  toggleSelectOrder,
-  onViewDetails,
+  selectedOrders = [],
+  toggleSelectOrder = () => {},
+  onViewDetails = () => {},
   showActions = true
 }) => {
   const getStatusBadge = (status: string) => {
-    const baseClasses = "py-1.5 px-3 text-xs font-medium rounded-full";
+    const baseClasses = "py-1 px-2 text-xs font-medium rounded-full";
     
     switch (status.toLowerCase()) {
       case 'new':
@@ -64,21 +64,23 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
             "bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 transition-all duration-200",
             selectedOrders.includes(order.id) 
               ? "border-[#DC291E]/30 bg-[#DC291E]/5" 
-              : "hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600"
+              : "hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600",
+            "active:scale-[0.98]"
           )}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: index * 0.05 }}
+          whileTap={{ scale: 0.98 }}
         >
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3 flex-1">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               <Checkbox 
                 checked={selectedOrders.includes(order.id)}
                 onCheckedChange={() => toggleSelectOrder(order.id)}
-                className="data-[state=checked]:bg-[#DC291E] data-[state=checked]:border-[#DC291E] rounded-md"
+                className="data-[state=checked]:bg-[#DC291E] data-[state=checked]:border-[#DC291E] rounded-md shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{order.id}</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate">{order.id}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{order.referenceNumber}</p>
               </div>
             </div>
@@ -86,31 +88,31 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
           </div>
           
           <div className="space-y-3 mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center shrink-0">
                 <Phone className="h-4 w-4 text-gray-600 dark:text-gray-300" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{order.customer.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{order.customer.phone}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{order.customer.phone}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center shrink-0">
                 <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-300" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-900 dark:text-gray-100 truncate">{order.location.city}, {order.location.area}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{order.type}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{order.type}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center shrink-0">
                 <DollarSign className="h-4 w-4 text-gray-600 dark:text-gray-300" />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">${order.amount.valueUSD}</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Collection Amount</p>
               </div>
@@ -151,7 +153,7 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-white dark:bg-gray-800 rounded-xl border-gray-200 dark:border-gray-700 shadow-xl">
+                <DropdownMenuContent align="end" className="bg-white dark:bg-gray-800 rounded-xl border-gray-200 dark:border-gray-700 shadow-xl z-50">
                   <DropdownMenuItem className="rounded-lg">View Order Details</DropdownMenuItem>
                   <DropdownMenuItem className="rounded-lg">Edit Order</DropdownMenuItem>
                   <DropdownMenuItem className="rounded-lg">Print Shipping Label</DropdownMenuItem>
@@ -164,39 +166,41 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
         </motion.div>
       ))}
       
-      <motion.div 
-        className="bg-white dark:bg-gray-800 rounded-2xl p-4 flex items-center justify-between shadow-sm border border-gray-100 dark:border-gray-700"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-      >
-        <span className="text-sm text-gray-600 dark:text-gray-300">
-          {orders.length} of 36 orders
-        </span>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 w-9 p-0 rounded-xl border-gray-200 dark:border-gray-700"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 w-9 p-0 rounded-xl bg-[#DC291E] text-white border-[#DC291E] hover:bg-[#DC291E]/90"
-          >
-            1
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 w-9 p-0 rounded-xl border-gray-200 dark:border-gray-700"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </motion.div>
+      {orders.length > 0 && (
+        <motion.div 
+          className="bg-white dark:bg-gray-800 rounded-2xl p-4 flex items-center justify-between shadow-sm border border-gray-100 dark:border-gray-700"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <span className="text-sm text-gray-600 dark:text-gray-300">
+            {orders.length} orders
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 w-9 p-0 rounded-xl border-gray-200 dark:border-gray-700"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 w-9 p-0 rounded-xl bg-[#DC291E] text-white border-[#DC291E] hover:bg-[#DC291E]/90"
+            >
+              1
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 w-9 p-0 rounded-xl border-gray-200 dark:border-gray-700"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };
