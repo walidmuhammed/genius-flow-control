@@ -1,6 +1,5 @@
-
 import React, { useState, useMemo, useCallback } from 'react';
-import { FileBarChart, PackageSearch, CheckCheck, AlertCircle, Download, Upload } from 'lucide-react';
+import { FileBarChart, PackageSearch, CheckCheck, AlertCircle, Download, Upload, Filter } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -21,6 +20,8 @@ import { ExportOrdersDropdown } from '@/components/orders/ExportOrdersDropdown';
 import { useOrders, useOrdersByStatus } from '@/hooks/use-orders';
 import { toast } from 'sonner';
 import { OrderWithCustomer } from '@/services/orders';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 const OrdersList: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
@@ -217,251 +218,218 @@ const OrdersList: React.FC = () => {
   const renderMobileTabsMenu = () => (
     <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
-          <span>{activeTab === 'all' ? 'All Orders' : 
-                 activeTab === 'new' ? 'New' :
-                 activeTab === 'pending' ? 'Pending Pickup' :
-                 activeTab === 'inProgress' ? 'In Progress' :
-                 activeTab === 'successful' ? 'Successful' :
-                 activeTab === 'unsuccessful' ? 'Unsuccessful' :
-                 activeTab === 'returned' ? 'Returned' :
-                 activeTab === 'awaitingAction' ? 'Awaiting Action' :
-                 activeTab === 'paid' ? 'Paid' : 'Filter'}</span>
+        <Button variant="outline" size="sm" className="flex items-center gap-2 rounded-xl border-gray-200 dark:border-gray-700">
+          <Filter className="h-4 w-4" />
+          <span className="truncate">
+            {activeTab === 'all' ? 'All Orders' : 
+             activeTab === 'new' ? 'New' :
+             activeTab === 'pending' ? 'Pending' :
+             activeTab === 'inProgress' ? 'In Progress' :
+             activeTab === 'successful' ? 'Successful' :
+             activeTab === 'unsuccessful' ? 'Unsuccessful' :
+             activeTab === 'returned' ? 'Returned' :
+             activeTab === 'awaitingAction' ? 'Awaiting' :
+             activeTab === 'paid' ? 'Paid' : 'Filter'}
+          </span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-[85vh] rounded-t-xl">
-        <SheetHeader>
-          <SheetTitle>Filter Orders</SheetTitle>
+      <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl border-0 bg-white dark:bg-gray-900">
+        <SheetHeader className="pb-6">
+          <SheetTitle className="text-lg font-semibold">Filter Orders</SheetTitle>
         </SheetHeader>
-        <ScrollArea className="h-full py-4">
+        <ScrollArea className="h-full pb-20">
           <div className="space-y-2">
-            <Button 
-              variant={activeTab === 'all' ? "default" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => {
-                setActiveTab('all');
-                setFilterSheetOpen(false);
-              }}
-            >
-              All Orders
-            </Button>
-            <Button 
-              variant={activeTab === 'new' ? "default" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => {
-                setActiveTab('new');
-                setFilterSheetOpen(false);
-              }}
-            >
-              New
-            </Button>
-            <Button 
-              variant={activeTab === 'pending' ? "default" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => {
-                setActiveTab('pending');
-                setFilterSheetOpen(false);
-              }}
-            >
-              Pending Pickup
-            </Button>
-            <Button 
-              variant={activeTab === 'inProgress' ? "default" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => {
-                setActiveTab('inProgress');
-                setFilterSheetOpen(false);
-              }}
-            >
-              In Progress
-            </Button>
-            <Button 
-              variant={activeTab === 'successful' ? "default" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => {
-                setActiveTab('successful');
-                setFilterSheetOpen(false);
-              }}
-            >
-              Successful
-            </Button>
-            <Button 
-              variant={activeTab === 'unsuccessful' ? "default" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => {
-                setActiveTab('unsuccessful');
-                setFilterSheetOpen(false);
-              }}
-            >
-              Unsuccessful
-            </Button>
-            <Button 
-              variant={activeTab === 'returned' ? "default" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => {
-                setActiveTab('returned');
-                setFilterSheetOpen(false);
-              }}
-            >
-              Returned
-            </Button>
-            <Button 
-              variant={activeTab === 'awaitingAction' ? "default" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => {
-                setActiveTab('awaitingAction');
-                setFilterSheetOpen(false);
-              }}
-            >
-              Awaiting Action
-            </Button>
-            <Button 
-              variant={activeTab === 'paid' ? "default" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => {
-                setActiveTab('paid');
-                setFilterSheetOpen(false);
-              }}
-            >
-              Paid
-            </Button>
+            {[
+              { key: 'all', label: 'All Orders' },
+              { key: 'new', label: 'New' },
+              { key: 'pending', label: 'Pending Pickup' },
+              { key: 'inProgress', label: 'In Progress' },
+              { key: 'successful', label: 'Successful' },
+              { key: 'unsuccessful', label: 'Unsuccessful' },
+              { key: 'returned', label: 'Returned' },
+              { key: 'awaitingAction', label: 'Awaiting Action' },
+              { key: 'paid', label: 'Paid' }
+            ].map((tab) => (
+              <Button 
+                key={tab.key}
+                variant={activeTab === tab.key ? "default" : "ghost"}
+                className={cn(
+                  "w-full justify-start rounded-xl h-12 text-left",
+                  activeTab === tab.key && "bg-[#DC291E] hover:bg-[#DC291E]/90"
+                )}
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  setFilterSheetOpen(false);
+                }}
+              >
+                {tab.label}
+              </Button>
+            ))}
           </div>
         </ScrollArea>
       </SheetContent>
     </Sheet>
   );
+
+  const tabItems = [
+    { key: 'all', label: 'All Orders' },
+    { key: 'new', label: 'New' },
+    { key: 'pending', label: 'Pending Pickup' },
+    { key: 'inProgress', label: 'In Progress' },
+    { key: 'successful', label: 'Successful' },
+    { key: 'unsuccessful', label: 'Unsuccessful' },
+    { key: 'returned', label: 'Returned' },
+    { key: 'awaitingAction', label: 'Awaiting Action' },
+    { key: 'paid', label: 'Paid' }
+  ];
   
   return (
     <MainLayout>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Orders</h1>
-        <div className="flex gap-2 w-full sm:w-auto">
+      <div className={cn(
+        "flex justify-between items-start gap-4",
+        isMobile ? "flex-col" : "flex-row items-center"
+      )}>
+        <div className={cn(isMobile && "w-full")}>
+          <h1 className={cn(
+            "font-semibold tracking-tight text-gray-900 dark:text-gray-100",
+            isMobile ? "text-xl" : "text-2xl"
+          )}>
+            Orders
+          </h1>
+          {!isMobile && (
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Manage and track all your orders
+            </p>
+          )}
+        </div>
+        <div className={cn(
+          "flex gap-2",
+          isMobile ? "w-full" : "w-auto"
+        )}>
           <Button 
             variant="outline" 
             size="sm" 
-            className="flex-1 sm:flex-none items-center gap-1.5 border-border/20 shadow-sm transition-all hover:border-border/40"
+            className={cn(
+              "items-center gap-1.5 border-gray-200 dark:border-gray-700 rounded-xl shadow-sm transition-all hover:border-gray-300 dark:hover:border-gray-600",
+              isMobile ? "flex-1" : "flex-none"
+            )}
             onClick={() => setImportModalOpen(true)}
           >
-            <Upload className="h-4 w-4 text-gray-600" />
+            <Upload className="h-4 w-4 text-gray-600 dark:text-gray-300" />
             <span>Import</span>
           </Button>
           <ExportOrdersDropdown 
             selectedOrdersCount={selectedOrders.length}
             totalFilteredCount={filteredOrders.length}
-            className="flex-1 sm:flex-none"
+            className={cn(isMobile ? "flex-1" : "flex-none")}
           />
         </div>
       </div>
       
-      {/* Unified full-width search and filter bar - mobile and desktop */}
-      <div className="mt-4 space-y-4">
-        {/* Full width search and date filter */}
-        <div className="flex flex-col md:flex-row gap-3">
+      {/* Search and Filter Section */}
+      <div className="space-y-4">
+        <div className={cn(
+          "flex gap-3",
+          isMobile ? "flex-col" : "flex-row"
+        )}>
           <OrdersDateFilter 
             onDateChange={handleDateChange} 
-            className="w-full md:w-auto order-1 md:order-1"
+            className={cn(
+              isMobile ? "w-full order-2" : "w-auto order-1"
+            )}
           />
           <OrdersSearch 
             onSearch={handleSearch}
-            className="flex-1 order-2 md:order-2"
+            className={cn(
+              isMobile ? "w-full order-1" : "flex-1 order-2"
+            )}
           />
         </div>
         
-        {/* Mobile status filter */}
+        {/* Mobile Filter Button */}
         {isMobile && (
           <div className="flex gap-2">
             {renderMobileTabsMenu()}
           </div>
         )}
         
-        {/* Desktop tabs */}
+        {/* Desktop/Tablet Tabs */}
         {!isMobile && (
-          <div className="flex gap-4 border-b border-border/10 overflow-x-auto">
-            <button 
-              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'all' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => setActiveTab('all')}
-            >
-              All Orders
-            </button>
-            <button 
-              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'new' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => setActiveTab('new')}
-            >
-              New
-            </button>
-            <button 
-              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'pending' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => setActiveTab('pending')}
-            >
-              Pending Pickup
-            </button>
-            <button 
-              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'inProgress' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => setActiveTab('inProgress')}
-            >
-              In Progress
-            </button>
-            <button 
-              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'successful' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => setActiveTab('successful')}
-            >
-              Successful
-            </button>
-            <button 
-              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'unsuccessful' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => setActiveTab('unsuccessful')}
-            >
-              Unsuccessful
-            </button>
-            <button 
-              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'returned' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => setActiveTab('returned')}
-            >
-              Returned
-            </button>
-            <button 
-              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'awaitingAction' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => setActiveTab('awaitingAction')}
-            >
-              Awaiting Action
-            </button>
-            <button 
-              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'paid' ? 'text-[#DB271E] border-b-2 border-[#DB271E]' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => setActiveTab('paid')}
-            >
-              Paid
-            </button>
+          <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+            {tabItems.map((tab) => (
+              <motion.button 
+                key={tab.key}
+                className={cn(
+                  "px-4 py-3 text-sm font-medium transition-all whitespace-nowrap rounded-t-lg relative",
+                  activeTab === tab.key 
+                    ? 'text-[#DC291E] bg-[#DC291E]/5' 
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+                )}
+                onClick={() => setActiveTab(tab.key)}
+                whileHover={{ y: -1 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {tab.label}
+                {activeTab === tab.key && (
+                  <motion.div
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#DC291E]"
+                    layoutId="activeTab"
+                    transition={{ type: "spring", duration: 0.4 }}
+                  />
+                )}
+              </motion.button>
+            ))}
           </div>
         )}
       </div>
       
-      {/* Loading state */}
+      {/* Loading State */}
       {isLoadingAllOrders && (
-        <div className="mt-8 flex justify-center">
-          <p className="text-muted-foreground">Loading orders...</p>
-        </div>
+        <motion.div 
+          className="flex justify-center py-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-[#DC291E] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading orders...</p>
+          </div>
+        </motion.div>
       )}
 
-      {/* Error state */}
+      {/* Error State */}
       {ordersError && (
-        <div className="mt-8 flex justify-center">
-          <p className="text-red-500">Failed to load orders. Please try again later.</p>
-        </div>
+        <motion.div 
+          className="flex justify-center py-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <div className="text-center">
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+            </div>
+            <p className="text-red-600 dark:text-red-400">Failed to load orders. Please try again later.</p>
+          </div>
+        </motion.div>
       )}
       
-      {/* Render orders table or empty state */}
+      {/* Orders Content */}
       {!isLoadingAllOrders && !ordersError && (
-        <>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
           {filteredOrders.length > 0 ? (
             <OrdersTable 
               orders={filteredOrders}
             />
           ) : (
-            <div className="mt-4">
+            <div className="mt-8">
               {renderEmptyState()}
             </div>
           )}
-        </>
+        </motion.div>
       )}
       
       {/* Import Modal */}
@@ -469,9 +437,6 @@ const OrdersList: React.FC = () => {
         open={importModalOpen}
         onOpenChange={setImportModalOpen}
       />
-      
-      {/* Add padding at the bottom for mobile to account for the navigation bar */}
-      {isMobile && <div className="h-16" />}
     </MainLayout>
   );
 };

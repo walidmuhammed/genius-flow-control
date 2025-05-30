@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Package, Clock, Users, Wallet } from 'lucide-react';
+import { Home, Package, Clock, Users, Wallet, BarChart3, Ticket } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -18,32 +18,30 @@ const MobileNavigation: React.FC = () => {
       icon: <Package className="h-5 w-5" />,
       label: 'Orders',
       path: '/orders',
-      badge: 12
     },
     {
       icon: <Clock className="h-5 w-5" />,
       label: 'Pickups',
       path: '/pickups',
-      badge: 5
     },
     {
-      icon: <Users className="h-5 w-5" />,
-      label: 'Customers',
-      path: '/customers'
+      icon: <BarChart3 className="h-5 w-5" />,
+      label: 'Analytics',
+      path: '/analytics'
     },
     {
-      icon: <Wallet className="h-5 w-5" />,
-      label: 'Wallet',
-      path: '/wallet'
+      icon: <Ticket className="h-5 w-5" />,
+      label: 'Support',
+      path: '/support'
     }
   ];
 
   return (
     <motion.div 
-      className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 px-2 py-1 z-50"
-      initial={{ y: 100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.3 }}
+      className="fixed bottom-4 left-4 right-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 rounded-2xl px-2 py-2 z-50 shadow-2xl"
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.4, ease: [0.4, 0.0, 0.2, 1] }}
     >
       <nav className="flex justify-around items-center">
         {navItems.map((item) => {
@@ -53,32 +51,22 @@ const MobileNavigation: React.FC = () => {
             <Link
               key={item.path}
               to={item.path}
-              className="flex flex-col items-center justify-center py-2 px-3 relative"
+              className="flex flex-col items-center justify-center py-2 px-3 relative min-w-0 flex-1"
             >
-              <div 
+              <motion.div 
                 className={cn(
-                  "flex flex-col items-center justify-center",
-                  isActive ? "text-[#DC291E]" : "text-gray-500 dark:text-gray-400"
+                  "flex flex-col items-center justify-center rounded-xl px-3 py-2 transition-all duration-200",
+                  isActive 
+                    ? "bg-[#DC291E]/10 text-[#DC291E]" 
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 )}
+                whileTap={{ scale: 0.95 }}
               >
                 <div className="relative">
                   {item.icon}
-                  {item.badge && (
-                    <span className="absolute -top-2 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#DC291E] text-[10px] font-medium text-white px-1">
-                      {item.badge}
-                    </span>
-                  )}
                 </div>
-                <span className="text-xs mt-0.5 font-medium">{item.label}</span>
-              </div>
-              
-              {isActive && (
-                <motion.div
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#DC291E]"
-                  layoutId="mobile-nav-indicator"
-                  transition={{ type: "spring", duration: 0.5 }}
-                />
-              )}
+                <span className="text-xs mt-1 font-medium truncate max-w-full">{item.label}</span>
+              </motion.div>
             </Link>
           );
         })}
