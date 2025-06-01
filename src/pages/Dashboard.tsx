@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -237,31 +236,31 @@ const Dashboard: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Tabbed Data Section - Mobile Optimized */}
+        {/* Tabbed Data Section - Fixed and Responsive */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
           className="mt-6"
         >
-          <Tabs defaultValue="new-orders" className="space-y-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-1 shadow-sm border border-gray-200/50 dark:border-gray-700/30">
+          <Tabs defaultValue="new-orders" className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-sm border border-gray-200/50 dark:border-gray-700/30">
               <TabsList className={cn(
-                "w-full grid bg-transparent gap-1 p-1",
-                isMobile ? "grid-cols-3 h-12" : "grid-cols-3 h-16"
+                "w-full grid bg-transparent gap-2 p-1",
+                isMobile ? "grid-cols-3 h-16" : "grid-cols-3 h-20"
               )}>
                 <TabsTrigger 
                   value="new-orders" 
                   className={cn(
-                    "rounded-lg transition-all duration-300 font-medium flex items-center justify-center gap-1 data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-gray-100 dark:hover:bg-gray-700/40",
-                    isMobile ? "text-xs py-2 px-2" : "text-base py-3 px-4"
+                    "rounded-xl transition-all duration-300 font-semibold flex flex-col items-center justify-center gap-2 data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-700 dark:text-gray-300",
+                    isMobile ? "text-xs py-3 px-3" : "text-sm py-4 px-6"
                   )}
                 >
-                  <ShoppingCart className={cn("h-3 w-3", !isMobile && "h-5 w-5")} />
+                  <ShoppingCart className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
                   <div className="flex flex-col items-center">
-                    <span className={isMobile ? "text-xs" : ""}>New Orders</span>
+                    <span>New Orders</span>
                     {todayOrders.length > 0 && (
-                      <span className="bg-white/20 text-white text-xs py-0.5 px-1.5 rounded-full mt-0.5">
+                      <span className="bg-white/20 text-white text-xs py-0.5 px-2 rounded-full mt-1 font-medium">
                         {todayOrders.length}
                       </span>
                     )}
@@ -270,15 +269,15 @@ const Dashboard: React.FC = () => {
                 <TabsTrigger 
                   value="pickups" 
                   className={cn(
-                    "rounded-lg transition-all duration-300 font-medium flex items-center justify-center gap-1 data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-gray-100 dark:hover:bg-gray-700/40",
-                    isMobile ? "text-xs py-2 px-2" : "text-base py-3 px-4"
+                    "rounded-xl transition-all duration-300 font-semibold flex flex-col items-center justify-center gap-2 data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-700 dark:text-gray-300",
+                    isMobile ? "text-xs py-3 px-3" : "text-sm py-4 px-6"
                   )}
                 >
-                  <Calendar className={cn("h-3 w-3", !isMobile && "h-5 w-5")} />
+                  <Calendar className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
                   <div className="flex flex-col items-center">
-                    <span className={isMobile ? "text-xs" : ""}>Pickups</span>
+                    <span>Pickups</span>
                     {todayPickups.length > 0 && (
-                      <span className="bg-white/20 text-white text-xs py-0.5 px-1.5 rounded-full mt-0.5">
+                      <span className="bg-white/20 text-white text-xs py-0.5 px-2 rounded-full mt-1 font-medium">
                         {todayPickups.length}
                       </span>
                     )}
@@ -287,15 +286,15 @@ const Dashboard: React.FC = () => {
                 <TabsTrigger 
                   value="awaiting" 
                   className={cn(
-                    "rounded-lg transition-all duration-300 font-medium flex items-center justify-center gap-1 data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-gray-100 dark:hover:bg-gray-700/40",
-                    isMobile ? "text-xs py-2 px-2" : "text-base py-3 px-4"
+                    "rounded-xl transition-all duration-300 font-semibold flex flex-col items-center justify-center gap-2 data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-700 dark:text-gray-300",
+                    isMobile ? "text-xs py-3 px-3" : "text-sm py-4 px-6"
                   )}
                 >
-                  <Inbox className={cn("h-3 w-3", !isMobile && "h-5 w-5")} />
+                  <Inbox className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
                   <div className="flex flex-col items-center">
-                    <span className={isMobile ? "text-xs" : ""}>Awaiting</span>
+                    <span>Awaiting</span>
                     {awaitingActionOrders.length > 0 && (
-                      <span className="bg-white/20 text-white text-xs py-0.5 px-1.5 rounded-full mt-0.5">
+                      <span className="bg-white/20 text-white text-xs py-0.5 px-2 rounded-full mt-1 font-medium">
                         {awaitingActionOrders.length}
                       </span>
                     )}
@@ -307,16 +306,16 @@ const Dashboard: React.FC = () => {
             <AnimatePresence mode="wait">
               <TabsContent 
                 value="new-orders" 
-                className="animate-in fade-in-50 mt-4 transition-all duration-300"
+                className="animate-in fade-in-50 mt-6 transition-all duration-300"
               >
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200/30 dark:border-gray-700/30 p-4"
+                  className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/30 dark:border-gray-700/30 p-6"
                 >
-                  <h3 className={cn("font-semibold mb-4 text-gray-800 dark:text-gray-100", isMobile ? "text-base" : "text-lg")}>Today's New Orders</h3>
+                  <h3 className={cn("font-semibold mb-6 text-gray-800 dark:text-gray-100", isMobile ? "text-lg" : "text-xl")}>Today's New Orders</h3>
                   {todayOrders.length > 0 ? (
                     isMobile ? (
                       <OrdersTableMobile 
@@ -345,16 +344,16 @@ const Dashboard: React.FC = () => {
               
               <TabsContent 
                 value="pickups" 
-                className="animate-in fade-in-50 mt-4 transition-all duration-300"
+                className="animate-in fade-in-50 mt-6 transition-all duration-300"
               >
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200/30 dark:border-gray-700/30 p-4"
+                  className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/30 dark:border-gray-700/30 p-6"
                 >
-                  <h3 className={cn("font-semibold mb-4 text-gray-800 dark:text-gray-100", isMobile ? "text-base" : "text-lg")}>Today's Scheduled Pickups</h3>
+                  <h3 className={cn("font-semibold mb-6 text-gray-800 dark:text-gray-100", isMobile ? "text-lg" : "text-xl")}>Today's Scheduled Pickups</h3>
                   {todayPickups.length > 0 ? (
                     <PickupsTable 
                       pickups={todayPickups} 
@@ -376,16 +375,16 @@ const Dashboard: React.FC = () => {
               
               <TabsContent 
                 value="awaiting" 
-                className="animate-in fade-in-50 mt-4 transition-all duration-300"
+                className="animate-in fade-in-50 mt-6 transition-all duration-300"
               >
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200/30 dark:border-gray-700/30 p-4"
+                  className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/30 dark:border-gray-700/30 p-6"
                 >
-                  <h3 className={cn("font-semibold mb-4 text-gray-800 dark:text-gray-100", isMobile ? "text-base" : "text-lg")}>Orders Awaiting Action</h3>
+                  <h3 className={cn("font-semibold mb-6 text-gray-800 dark:text-gray-100", isMobile ? "text-lg" : "text-xl")}>Orders Awaiting Action</h3>
                   {awaitingActionOrders.length > 0 ? (
                     isMobile ? (
                       <OrdersTableMobile 

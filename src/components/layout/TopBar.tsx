@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import useLayoutStore from '@/stores/layoutStore';
 import { cn } from '@/lib/utils';
+import CreateButton from '@/components/ui/create-button';
 
 const TopBar: React.FC = () => {
   const { isMobile, isTablet } = useScreenSize();
@@ -55,6 +56,9 @@ const TopBar: React.FC = () => {
       </div>
       
       <div className="flex items-center gap-2 shrink-0">
+        {/* Create Button - only show on desktop */}
+        {!isMobile && <CreateButton />}
+        
         {isMobile && (
           <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
             <Search className="h-5 w-5" />
@@ -72,6 +76,9 @@ const TopBar: React.FC = () => {
           <User className="h-5 w-5" />
         </Button>
       </div>
+      
+      {/* Mobile Create Button */}
+      {isMobile && <CreateButton />}
     </motion.header>
   );
 };

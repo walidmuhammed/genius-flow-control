@@ -22,6 +22,8 @@ import { toast } from 'sonner';
 import { OrderWithCustomer } from '@/services/orders';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import OrdersTableMobile from '@/components/orders/OrdersTableMobile';
+import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 
 const OrdersList: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
@@ -218,7 +220,7 @@ const OrdersList: React.FC = () => {
   const renderMobileTabsMenu = () => (
     <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-2 rounded-xl border-gray-200 dark:border-gray-700">
+        <Button variant="outline" size="sm" className="flex items-center gap-2 rounded-xl border-gray-200 dark:border-gray-700 flex-1">
           <Filter className="h-4 w-4" />
           <span className="truncate">
             {activeTab === 'all' ? 'All Orders' : 
@@ -282,161 +284,172 @@ const OrdersList: React.FC = () => {
     { key: 'awaitingAction', label: 'Awaiting Action' },
     { key: 'paid', label: 'Paid' }
   ];
+
+  // Transform orders for mobile display
+  const filteredOrdersForMobile = useMemo(() => mapOrdersToTableFormat(filteredOrders), [filteredOrders]);
   
   return (
     <MainLayout>
-      <div className={cn(
-        "flex justify-between items-start gap-4",
-        isMobile ? "flex-col" : "flex-row items-center"
-      )}>
-        <div className={cn(isMobile && "w-full")}>
-          <h1 className={cn(
-            "font-semibold tracking-tight text-gray-900 dark:text-gray-100",
-            isMobile ? "text-xl" : "text-2xl"
+      <div className="space-y-6">
+        {/* Header Section */}
+        <div className={cn(
+          "flex justify-between items-start gap-4",
+          isMobile ? "flex-col" : "flex-row items-center"
+        )}>
+          <div className={cn(isMobile && "w-full")}>
+            <h1 className={cn(
+              "font-semibold tracking-tight text-gray-900 dark:text-gray-100",
+              isMobile ? "text-xl" : "text-2xl"
+            )}>
+              Orders
+            </h1>
+            {!isMobile && (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Manage and track all your orders
+              </p>
+            )}
+          </div>
+          <div className={cn(
+            "flex gap-2",
+            isMobile ? "w-full" : "w-auto"
           )}>
-            Orders
-          </h1>
-          {!isMobile && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Manage and track all your orders
-            </p>
-          )}
-        </div>
-        <div className={cn(
-          "flex gap-2",
-          isMobile ? "w-full" : "w-auto"
-        )}>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className={cn(
-              "items-center gap-1.5 border-gray-200 dark:border-gray-700 rounded-xl shadow-sm transition-all hover:border-gray-300 dark:hover:border-gray-600",
-              isMobile ? "flex-1" : "flex-none"
-            )}
-            onClick={() => setImportModalOpen(true)}
-          >
-            <Upload className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-            <span>Import</span>
-          </Button>
-          <ExportOrdersDropdown 
-            selectedOrdersCount={selectedOrders.length}
-            totalFilteredCount={filteredOrders.length}
-            className={cn(isMobile ? "flex-1" : "flex-none")}
-          />
-        </div>
-      </div>
-      
-      {/* Search and Filter Section */}
-      <div className="space-y-4">
-        <div className={cn(
-          "flex gap-3",
-          isMobile ? "flex-col" : "flex-row"
-        )}>
-          <OrdersDateFilter 
-            onDateChange={handleDateChange} 
-            className={cn(
-              isMobile ? "w-full order-2" : "w-auto order-1"
-            )}
-          />
-          <OrdersSearch 
-            onSearch={handleSearch}
-            className={cn(
-              isMobile ? "w-full order-1" : "flex-1 order-2"
-            )}
-          />
-        </div>
-        
-        {/* Mobile Filter Button */}
-        {isMobile && (
-          <div className="flex gap-2">
-            {renderMobileTabsMenu()}
-          </div>
-        )}
-        
-        {/* Desktop/Tablet Tabs */}
-        {!isMobile && (
-          <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
-            {tabItems.map((tab) => (
-              <motion.button 
-                key={tab.key}
-                className={cn(
-                  "px-4 py-3 text-sm font-medium transition-all whitespace-nowrap rounded-t-lg relative",
-                  activeTab === tab.key 
-                    ? 'text-[#DC291E] bg-[#DC291E]/5' 
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
-                )}
-                onClick={() => setActiveTab(tab.key)}
-                whileHover={{ y: -1 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {tab.label}
-                {activeTab === tab.key && (
-                  <motion.div
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#DC291E]"
-                    layoutId="activeTab"
-                    transition={{ type: "spring", duration: 0.4 }}
-                  />
-                )}
-              </motion.button>
-            ))}
-          </div>
-        )}
-      </div>
-      
-      {/* Loading State */}
-      {isLoadingAllOrders && (
-        <motion.div 
-          className="flex justify-center py-12"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <div className="text-center">
-            <div className="w-8 h-8 border-2 border-[#DC291E] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading orders...</p>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Error State */}
-      {ordersError && (
-        <motion.div 
-          className="flex justify-center py-12"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <div className="text-center">
-            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
-            </div>
-            <p className="text-red-600 dark:text-red-400">Failed to load orders. Please try again later.</p>
-          </div>
-        </motion.div>
-      )}
-      
-      {/* Orders Content */}
-      {!isLoadingAllOrders && !ordersError && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          {filteredOrders.length > 0 ? (
-            <OrdersTable 
-              orders={filteredOrders}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={cn(
+                "items-center gap-1.5 border-gray-200 dark:border-gray-700 rounded-xl shadow-sm transition-all hover:border-gray-300 dark:hover:border-gray-600",
+                isMobile ? "flex-1" : "flex-none"
+              )}
+              onClick={() => setImportModalOpen(true)}
+            >
+              <Upload className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              <span>Import</span>
+            </Button>
+            <ExportOrdersDropdown 
+              selectedOrdersCount={selectedOrders.length}
+              totalFilteredCount={filteredOrders.length}
+              className={cn(isMobile ? "flex-1" : "flex-none")}
             />
-          ) : (
-            <div className="mt-8">
-              {renderEmptyState()}
+          </div>
+        </div>
+        
+        {/* Search and Filter Section */}
+        <div className="space-y-4">
+          <div className={cn(
+            "flex gap-3",
+            isMobile ? "flex-col" : "flex-row"
+          )}>
+            <OrdersDateFilter 
+              onDateChange={handleDateChange} 
+              className={cn(
+                isMobile ? "w-full order-2" : "w-auto order-1"
+              )}
+            />
+            <OrdersSearch 
+              onSearch={handleSearch}
+              className={cn(
+                isMobile ? "w-full order-1" : "flex-1 order-2"
+              )}
+            />
+          </div>
+          
+          {/* Mobile Filter Button */}
+          {isMobile && (
+            <div className="flex gap-2">
+              {renderMobileTabsMenu()}
             </div>
           )}
-        </motion.div>
-      )}
-      
-      {/* Import Modal */}
-      <ImportOrdersModal 
-        open={importModalOpen}
-        onOpenChange={setImportModalOpen}
-      />
+          
+          {/* Desktop/Tablet Tabs */}
+          {!isMobile && (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-sm border border-gray-200/50 dark:border-gray-700/30">
+              <div className="flex gap-1 overflow-x-auto">
+                {tabItems.map((tab) => (
+                  <motion.button 
+                    key={tab.key}
+                    className={cn(
+                      "px-4 py-3 text-sm font-medium transition-all whitespace-nowrap rounded-xl relative min-w-0 flex-shrink-0",
+                      activeTab === tab.key 
+                        ? 'text-white bg-[#DC291E] shadow-md' 
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                    )}
+                    onClick={() => setActiveTab(tab.key)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {tab.label}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Loading State */}
+        {isLoadingAllOrders && (
+          <motion.div 
+            className="flex justify-center py-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <div className="text-center">
+              <div className="w-8 h-8 border-2 border-[#DC291E] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Loading orders...</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Error State */}
+        {ordersError && (
+          <motion.div 
+            className="flex justify-center py-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <div className="text-center">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              <p className="text-red-600 dark:text-red-400">Failed to load orders. Please try again later.</p>
+            </div>
+          </motion.div>
+        )}
+        
+        {/* Orders Content */}
+        {!isLoadingAllOrders && !ordersError && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            {filteredOrders.length > 0 ? (
+              isMobile ? (
+                <OrdersTableMobile 
+                  orders={filteredOrdersForMobile}
+                  selectedOrders={selectedOrders}
+                  toggleSelectOrder={toggleSelectOrder}
+                  onViewDetails={() => {}}
+                  showActions={true}
+                />
+              ) : (
+                <OrdersTable 
+                  orders={filteredOrders}
+                />
+              )
+            ) : (
+              <div className="mt-8">
+                {renderEmptyState()}
+              </div>
+            )}
+          </motion.div>
+        )}
+        
+        {/* Import Modal */}
+        <ImportOrdersModal 
+          open={importModalOpen}
+          onOpenChange={setImportModalOpen}
+        />
+      </div>
     </MainLayout>
   );
 };
