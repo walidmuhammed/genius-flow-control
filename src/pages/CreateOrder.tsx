@@ -28,7 +28,6 @@ import OrderTypeSelector from '@/components/dashboard/OrderTypeSelector';
 
 // Create a unique form key for forcing re-render
 const getUniqueFormKey = () => `order-form-${Date.now()}`;
-
 const CreateOrder = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -157,7 +156,6 @@ const CreateOrder = () => {
       initialRenderRef.current = false;
       return;
     }
-    
     if (foundCustomers && foundCustomers.length > 0) {
       const customer = foundCustomers[0];
       setExistingCustomer(customer);
@@ -184,7 +182,6 @@ const CreateOrder = () => {
       setExistingCustomer(null);
     }
   }, [foundCustomers, searchingCustomers, phone]);
-
   const validateForm = () => {
     const newErrors: {
       phone?: string;
@@ -219,7 +216,6 @@ const CreateOrder = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleSubmit = async (createAnother: boolean = false) => {
     if (!validateForm()) {
       toast.error("Please fix the errors in the form");
@@ -271,9 +267,10 @@ const CreateOrder = () => {
         note: deliveryNotes || undefined,
         status: 'New',
         // Only include reference_number if the user actually entered one
-        ...(orderReference.trim() && { reference_number: orderReference.trim() })
+        ...(orderReference.trim() && {
+          reference_number: orderReference.trim()
+        })
       };
-      
       await createOrder.mutateAsync(orderData);
       if (createAnother) {
         // Reset form for creating another order
@@ -289,7 +286,6 @@ const CreateOrder = () => {
       toast.error("Failed to create the order. Please try again.");
     }
   };
-
   const handleGovernorateChange = (governorateId: string, governorateName: string) => {
     setSelectedGovernorateId(governorateId);
     setSelectedGovernorateName(governorateName);
@@ -304,7 +300,6 @@ const CreateOrder = () => {
       }));
     }
   };
-
   const handleCityChange = (cityId: string, cityName: string, governorateName: string) => {
     setSelectedCityId(cityId);
     setSelectedCityName(cityName);
@@ -317,7 +312,6 @@ const CreateOrder = () => {
       }));
     }
   };
-
   const handlePhoneChange = (value: string) => {
     setPhone(value);
 
@@ -329,13 +323,11 @@ const CreateOrder = () => {
       }));
     }
   };
-
-  return (
-    <MainLayout className="bg-gray-50/30">
+  return <MainLayout className="bg-gray-50/30">
       <div className="min-h-screen" key={formKey}>
         {/* Premium Header */}
-        <div className="bg-white border-b border-gray-200/60 sticky top-0 z-50">
-          <div className="max-w-5xl mx-auto px-6">
+        <div className="bg-white border-b border-gray-200/60 sticky top-0 z-50 px-0 py-0 my-0 rounded-2xl mx-[44px]">
+          <div className="max-w-5xl mx-auto px-[80px]">
             <div className="py-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
@@ -345,17 +337,10 @@ const CreateOrder = () => {
                 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => handleSubmit(true)}
-                    className="px-6 py-2.5 text-sm font-medium border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
-                  >
+                  <Button variant="outline" onClick={() => handleSubmit(true)} className="px-6 py-2.5 text-sm font-medium border-gray-300 hover:bg-gray-50 order-2 sm:order-1">
                     Create & Add Another
                   </Button>
-                  <Button 
-                    onClick={() => handleSubmit(false)}
-                    className="px-8 py-2.5 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a] order-1 sm:order-2"
-                  >
+                  <Button onClick={() => handleSubmit(false)} className="px-8 py-2.5 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a] order-1 sm:order-2">
                     Create Order
                   </Button>
                 </div>
@@ -372,28 +357,10 @@ const CreateOrder = () => {
             <div className="bg-white rounded-xl border border-gray-200/60 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Type</h3>
               <div className="grid grid-cols-2 gap-4 max-w-md">
-                <Button 
-                  variant={orderType === 'shipment' ? "default" : "outline"} 
-                  onClick={() => setOrderType('shipment')}
-                  className={cn(
-                    "h-12 font-medium",
-                    orderType === 'shipment' 
-                      ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
-                      : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                  )}
-                >
+                <Button variant={orderType === 'shipment' ? "default" : "outline"} onClick={() => setOrderType('shipment')} className={cn("h-12 font-medium", orderType === 'shipment' ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" : "border-gray-300 hover:bg-gray-50 text-gray-700")}>
                   Shipment
                 </Button>
-                <Button 
-                  variant={orderType === 'exchange' ? "default" : "outline"} 
-                  onClick={() => setOrderType('exchange')}
-                  className={cn(
-                    "h-12 font-medium",
-                    orderType === 'exchange' 
-                      ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
-                      : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                  )}
-                >
+                <Button variant={orderType === 'exchange' ? "default" : "outline"} onClick={() => setOrderType('exchange')} className={cn("h-12 font-medium", orderType === 'exchange' ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" : "border-gray-300 hover:bg-gray-50 text-gray-700")}>
                   Exchange
                 </Button>
               </div>
@@ -414,28 +381,15 @@ const CreateOrder = () => {
                   <Label htmlFor="phone" className={cn("text-sm font-medium", errors.phone ? "text-red-600" : "text-gray-700")}>
                     Phone Number
                   </Label>
-                  <PhoneInput 
-                    id="phone" 
-                    value={phone} 
-                    onChange={handlePhoneChange} 
-                    defaultCountry="LB" 
-                    onValidationChange={setPhoneValid} 
-                    placeholder="Enter phone number" 
-                    className={cn("mt-2", errors.phone ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]")} 
-                    errorMessage={errors.phone} 
-                  />
-                  {searchingCustomers && (
-                    <p className="text-xs text-blue-600 flex items-center gap-1 mt-2">
+                  <PhoneInput id="phone" value={phone} onChange={handlePhoneChange} defaultCountry="LB" onValidationChange={setPhoneValid} placeholder="Enter phone number" className={cn("mt-2", errors.phone ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]")} errorMessage={errors.phone} />
+                  {searchingCustomers && <p className="text-xs text-blue-600 flex items-center gap-1 mt-2">
                       <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                       Searching for existing customer...
-                    </p>
-                  )}
-                  {existingCustomer && (
-                    <p className="text-xs text-green-600 flex items-center gap-1 mt-2">
+                    </p>}
+                  {existingCustomer && <p className="text-xs text-green-600 flex items-center gap-1 mt-2">
                       <Check className="h-3 w-3" />
                       Existing customer found!
-                    </p>
-                  )}
+                    </p>}
                 </div>
                 
                 {/* Customer Name */}
@@ -443,78 +397,54 @@ const CreateOrder = () => {
                   <Label htmlFor="name" className={cn("text-sm font-medium", errors.name ? "text-red-600" : "text-gray-700")}>
                     Full Name
                   </Label>
-                  <Input 
-                    id="name" 
-                    placeholder="Enter customer full name" 
-                    value={name} 
-                    onChange={e => {
-                      setName(e.target.value);
-                      if (errors.name) {
-                        setErrors(prev => ({ ...prev, name: undefined }));
-                      }
-                    }} 
-                    className={cn(
-                      "h-11 mt-2",
-                      errors.name ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]"
-                    )} 
-                  />
+                  <Input id="name" placeholder="Enter customer full name" value={name} onChange={e => {
+                  setName(e.target.value);
+                  if (errors.name) {
+                    setErrors(prev => ({
+                      ...prev,
+                      name: undefined
+                    }));
+                  }
+                }} className={cn("h-11 mt-2", errors.name ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]")} />
                   {errors.name && <p className="text-xs text-red-600 mt-2">{errors.name}</p>}
                 </div>
               </div>
 
               {/* Secondary Phone */}
               <div className="mt-6">
-                {!isSecondaryPhone && (
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setIsSecondaryPhone(true)}
-                    className="text-sm text-gray-600 border-gray-300 hover:bg-gray-50"
-                  >
+                {!isSecondaryPhone && <Button type="button" variant="outline" size="sm" onClick={() => setIsSecondaryPhone(true)} className="text-sm text-gray-600 border-gray-300 hover:bg-gray-50">
                     <Plus className="h-4 w-4 mr-1.5" />
                     Add secondary phone
-                  </Button>
-                )}
+                  </Button>}
 
-                {isSecondaryPhone && (
-                  <div>
+                {isSecondaryPhone && <div>
                     <div className="flex justify-between items-center mb-2">
                       <Label htmlFor="secondary-phone" className={cn("text-sm font-medium", errors.secondaryPhone ? "text-red-600" : "text-gray-700")}>
                         Secondary Phone
                       </Label>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => {
-                          setIsSecondaryPhone(false);
-                          setSecondaryPhone('');
-                          if (errors.secondaryPhone) {
-                            setErrors(prev => ({ ...prev, secondaryPhone: undefined }));
-                          }
-                        }}
-                        className="text-xs text-gray-500 hover:text-gray-700 h-auto p-1"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => {
+                    setIsSecondaryPhone(false);
+                    setSecondaryPhone('');
+                    if (errors.secondaryPhone) {
+                      setErrors(prev => ({
+                        ...prev,
+                        secondaryPhone: undefined
+                      }));
+                    }
+                  }} className="text-xs text-gray-500 hover:text-gray-700 h-auto p-1">
                         Remove
                       </Button>
                     </div>
-                    <PhoneInput 
-                      id="secondary-phone" 
-                      value={secondaryPhone} 
-                      onChange={value => {
-                        setSecondaryPhone(value);
-                        if (errors.secondaryPhone) {
-                          setErrors(prev => ({ ...prev, secondaryPhone: undefined }));
-                        }
-                      }} 
-                      defaultCountry="LB" 
-                      onValidationChange={setSecondaryPhoneValid} 
-                      placeholder="Enter secondary phone" 
-                      className={cn("mt-1", errors.secondaryPhone ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]")} 
-                      errorMessage={errors.secondaryPhone} 
-                    />
-                  </div>
-                )}
+                    <PhoneInput id="secondary-phone" value={secondaryPhone} onChange={value => {
+                  setSecondaryPhone(value);
+                  if (errors.secondaryPhone) {
+                    setErrors(prev => ({
+                      ...prev,
+                      secondaryPhone: undefined
+                    }));
+                  }
+                }} defaultCountry="LB" onValidationChange={setSecondaryPhoneValid} placeholder="Enter secondary phone" className={cn("mt-1", errors.secondaryPhone ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]")} errorMessage={errors.secondaryPhone} />
+                  </div>}
               </div>
             </div>
           </div>
@@ -534,14 +464,10 @@ const CreateOrder = () => {
                     Area (Governorate & City)
                   </Label>
                   <div className="mt-2">
-                    <AreaSelector 
-                      selectedArea={selectedCityName} 
-                      selectedGovernorate={selectedGovernorateName} 
-                      onAreaSelected={(governorateName, cityName, governorateId, cityId) => {
-                        if (governorateId) handleGovernorateChange(governorateId, governorateName);
-                        if (cityId) handleCityChange(cityId, cityName, governorateName);
-                      }} 
-                    />
+                    <AreaSelector selectedArea={selectedCityName} selectedGovernorate={selectedGovernorateName} onAreaSelected={(governorateName, cityName, governorateId, cityId) => {
+                    if (governorateId) handleGovernorateChange(governorateId, governorateName);
+                    if (cityId) handleCityChange(cityId, cityName, governorateName);
+                  }} />
                   </div>
                   {errors.area && <p className="text-xs text-red-600 mt-2">{errors.area}</p>}
                 </div>
@@ -551,37 +477,26 @@ const CreateOrder = () => {
                   <Label htmlFor="address" className={cn("text-sm font-medium", errors.address ? "text-red-600" : "text-gray-700")}>
                     Address Details
                   </Label>
-                  <Input 
-                    id="address" 
-                    placeholder="Building, street, landmark..." 
-                    value={address} 
-                    onChange={e => {
-                      setAddress(e.target.value);
-                      if (errors.address) {
-                        setErrors(prev => ({ ...prev, address: undefined }));
-                      }
-                    }} 
-                    className={cn(
-                      "h-11 mt-2",
-                      errors.address ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]"
-                    )} 
-                  />
+                  <Input id="address" placeholder="Building, street, landmark..." value={address} onChange={e => {
+                  setAddress(e.target.value);
+                  if (errors.address) {
+                    setErrors(prev => ({
+                      ...prev,
+                      address: undefined
+                    }));
+                  }
+                }} className={cn("h-11 mt-2", errors.address ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]")} />
                   {errors.address && <p className="text-xs text-red-600 mt-2">{errors.address}</p>}
                 </div>
               </div>
               
               {/* Work Address Checkbox */}
               <div className="flex items-center space-x-3 mt-6">
-                <Checkbox 
-                  id="work-address" 
-                  checked={isWorkAddress} 
-                  onCheckedChange={checked => {
-                    if (typeof checked === 'boolean') {
-                      setIsWorkAddress(checked);
-                    }
-                  }} 
-                  className="border-gray-300"
-                />
+                <Checkbox id="work-address" checked={isWorkAddress} onCheckedChange={checked => {
+                if (typeof checked === 'boolean') {
+                  setIsWorkAddress(checked);
+                }
+              }} className="border-gray-300" />
                 <div className="flex items-center gap-1.5">
                   <Label htmlFor="work-address" className="text-sm font-medium text-gray-700 cursor-pointer">
                     This is a work/business address
@@ -604,37 +519,28 @@ const CreateOrder = () => {
           {/* Cash Collection Section */}
           <div className="mb-8">
             <div className="bg-white rounded-xl border border-gray-200/60 overflow-hidden">
-              <ImprovedCashCollectionFields 
-                enabled={cashCollection} 
-                onEnabledChange={setCashCollection} 
-                usdAmount={usdAmount} 
-                lbpAmount={lbpAmount} 
-                onUsdAmountChange={value => {
-                  setUsdAmount(value);
-                  if (errors.usdAmount || errors.lbpAmount) {
-                    setErrors(prev => ({
-                      ...prev,
-                      usdAmount: undefined,
-                      lbpAmount: undefined
-                    }));
-                  }
-                }} 
-                onLbpAmountChange={value => {
-                  setLbpAmount(value);
-                  if (errors.usdAmount || errors.lbpAmount) {
-                    setErrors(prev => ({
-                      ...prev,
-                      usdAmount: undefined,
-                      lbpAmount: undefined
-                    }));
-                  }
-                }} 
-                deliveryFees={deliveryFees} 
-                errors={{
-                  usdAmount: errors.usdAmount,
-                  lbpAmount: errors.lbpAmount
-                }} 
-              />
+              <ImprovedCashCollectionFields enabled={cashCollection} onEnabledChange={setCashCollection} usdAmount={usdAmount} lbpAmount={lbpAmount} onUsdAmountChange={value => {
+              setUsdAmount(value);
+              if (errors.usdAmount || errors.lbpAmount) {
+                setErrors(prev => ({
+                  ...prev,
+                  usdAmount: undefined,
+                  lbpAmount: undefined
+                }));
+              }
+            }} onLbpAmountChange={value => {
+              setLbpAmount(value);
+              if (errors.usdAmount || errors.lbpAmount) {
+                setErrors(prev => ({
+                  ...prev,
+                  usdAmount: undefined,
+                  lbpAmount: undefined
+                }));
+              }
+            }} deliveryFees={deliveryFees} errors={{
+              usdAmount: errors.usdAmount,
+              lbpAmount: errors.lbpAmount
+            }} />
             </div>
           </div>
 
@@ -646,11 +552,7 @@ const CreateOrder = () => {
                   <Package className="h-5 w-5 text-gray-600" />
                   <h3 className="text-lg font-semibold text-gray-900">Package Information</h3>
                 </div>
-                <Button 
-                  variant="link" 
-                  onClick={() => setGuidelinesModalOpen(true)}
-                  className="text-sm text-blue-600 hover:text-blue-700 p-0 h-auto font-medium"
-                >
+                <Button variant="link" onClick={() => setGuidelinesModalOpen(true)} className="text-sm text-blue-600 hover:text-blue-700 p-0 h-auto font-medium">
                   <AlertTriangle className="h-4 w-4 mr-1.5" />
                   View Guidelines
                 </Button>
@@ -661,42 +563,15 @@ const CreateOrder = () => {
                 <div>
                   <Label className="text-sm font-medium text-gray-700 mb-3 block">Package Type</Label>
                   <div className="grid grid-cols-3 gap-3">
-                    <Button 
-                      variant={packageType === "parcel" ? "default" : "outline"} 
-                      onClick={() => setPackageType("parcel")}
-                      className={cn(
-                        "h-16 flex-col gap-1 text-xs font-medium",
-                        packageType === "parcel" 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
-                    >
+                    <Button variant={packageType === "parcel" ? "default" : "outline"} onClick={() => setPackageType("parcel")} className={cn("h-16 flex-col gap-1 text-xs font-medium", packageType === "parcel" ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" : "border-gray-300 hover:bg-gray-50 text-gray-700")}>
                       <Package className="h-4 w-4" />
                       Parcel
                     </Button>
-                    <Button 
-                      variant={packageType === "document" ? "default" : "outline"} 
-                      onClick={() => setPackageType("document")}
-                      className={cn(
-                        "h-16 flex-col gap-1 text-xs font-medium",
-                        packageType === "document" 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
-                    >
+                    <Button variant={packageType === "document" ? "default" : "outline"} onClick={() => setPackageType("document")} className={cn("h-16 flex-col gap-1 text-xs font-medium", packageType === "document" ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" : "border-gray-300 hover:bg-gray-50 text-gray-700")}>
                       <FileText className="h-4 w-4" />
                       Document
                     </Button>
-                    <Button 
-                      variant={packageType === "bulky" ? "default" : "outline"} 
-                      onClick={() => setPackageType("bulky")}
-                      className={cn(
-                        "h-16 flex-col gap-1 text-xs font-medium",
-                        packageType === "bulky" 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
-                    >
+                    <Button variant={packageType === "bulky" ? "default" : "outline"} onClick={() => setPackageType("bulky")} className={cn("h-16 flex-col gap-1 text-xs font-medium", packageType === "bulky" ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" : "border-gray-300 hover:bg-gray-50 text-gray-700")}>
                       <Package className="h-4 w-4" />
                       Bulky
                     </Button>
@@ -708,14 +583,7 @@ const CreateOrder = () => {
                   <Label htmlFor="items-count" className="text-sm font-medium text-gray-700">
                     Number of Items
                   </Label>
-                  <Input 
-                    id="items-count" 
-                    type="number" 
-                    min={1} 
-                    value={itemsCount} 
-                    onChange={e => setItemsCount(parseInt(e.target.value) || 1)} 
-                    className="h-11 mt-2 border-gray-300 focus:border-[#DC291E]"
-                  />
+                  <Input id="items-count" type="number" min={1} value={itemsCount} onChange={e => setItemsCount(parseInt(e.target.value) || 1)} className="h-11 mt-2 border-gray-300 focus:border-[#DC291E]" />
                 </div>
               </div>
 
@@ -725,13 +593,7 @@ const CreateOrder = () => {
                   Package Description
                   <span className="text-xs text-gray-500 font-normal ml-2">(Optional)</span>
                 </Label>
-                <Input 
-                  id="description" 
-                  placeholder="e.g., Electronics - Phone case - Black - Medium" 
-                  value={description} 
-                  onChange={e => setDescription(e.target.value)} 
-                  className="h-11 mt-2 border-gray-300 focus:border-[#DC291E]"
-                />
+                <Input id="description" placeholder="e.g., Electronics - Phone case - Black - Medium" value={description} onChange={e => setDescription(e.target.value)} className="h-11 mt-2 border-gray-300 focus:border-[#DC291E]" />
                 <p className="text-xs text-gray-500 mt-2">
                   Brief description helps with handling and delivery
                 </p>
@@ -739,16 +601,11 @@ const CreateOrder = () => {
               
               {/* Allow Opening Checkbox */}
               <div className="flex items-center space-x-3 mt-6 pt-4 border-t border-gray-100">
-                <Checkbox 
-                  id="allow-opening" 
-                  checked={allowOpening} 
-                  onCheckedChange={checked => {
-                    if (typeof checked === 'boolean') {
-                      setAllowOpening(checked);
-                    }
-                  }} 
-                  className="border-gray-300"
-                />
+                <Checkbox id="allow-opening" checked={allowOpening} onCheckedChange={checked => {
+                if (typeof checked === 'boolean') {
+                  setAllowOpening(checked);
+                }
+              }} className="border-gray-300" />
                 <div className="flex items-center gap-1.5">
                   <Label htmlFor="allow-opening" className="text-sm font-medium text-gray-700 cursor-pointer">
                     Allow package inspection
@@ -779,13 +636,7 @@ const CreateOrder = () => {
                     Order Reference
                     <span className="text-xs text-gray-500 font-normal ml-2">(Optional)</span>
                   </Label>
-                  <Input 
-                    id="order-reference" 
-                    placeholder="Your tracking reference" 
-                    value={orderReference} 
-                    onChange={e => setOrderReference(e.target.value)} 
-                    className="h-11 mt-2 border-gray-300 focus:border-[#DC291E]"
-                  />
+                  <Input id="order-reference" placeholder="Your tracking reference" value={orderReference} onChange={e => setOrderReference(e.target.value)} className="h-11 mt-2 border-gray-300 focus:border-[#DC291E]" />
                 </div>
                 
                 <div>
@@ -794,14 +645,7 @@ const CreateOrder = () => {
                     Delivery Notes
                     <span className="text-xs text-gray-500 font-normal">(Optional)</span>
                   </Label>
-                  <Textarea 
-                    id="delivery-notes" 
-                    placeholder="Special delivery instructions..." 
-                    rows={3} 
-                    value={deliveryNotes} 
-                    onChange={e => setDeliveryNotes(e.target.value)} 
-                    className="mt-2 resize-none border-gray-300 focus:border-[#DC291E]"
-                  />
+                  <Textarea id="delivery-notes" placeholder="Special delivery instructions..." rows={3} value={deliveryNotes} onChange={e => setDeliveryNotes(e.target.value)} className="mt-2 resize-none border-gray-300 focus:border-[#DC291E]" />
                 </div>
               </div>
             </div>
@@ -809,17 +653,10 @@ const CreateOrder = () => {
 
           {/* Bottom Action Buttons */}
           <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200">
-            <Button 
-              variant="outline" 
-              onClick={() => handleSubmit(true)}
-              className="px-6 py-3 text-sm font-medium border-gray-300 hover:bg-gray-50 order-2 sm:order-1"
-            >
+            <Button variant="outline" onClick={() => handleSubmit(true)} className="px-6 py-3 text-sm font-medium border-gray-300 hover:bg-gray-50 order-2 sm:order-1">
               Create & Add Another
             </Button>
-            <Button 
-              onClick={() => handleSubmit(false)}
-              className="px-8 py-3 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a] order-1 sm:order-2"
-            >
+            <Button onClick={() => handleSubmit(false)} className="px-8 py-3 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a] order-1 sm:order-2">
               Create Order
             </Button>
           </div>
@@ -828,8 +665,6 @@ const CreateOrder = () => {
       
       {/* Package Guidelines Modal */}
       <PackageGuidelinesModal open={guidelinesModalOpen} onOpenChange={setGuidelinesModalOpen} />
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default CreateOrder;
