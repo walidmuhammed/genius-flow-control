@@ -237,77 +237,98 @@ const Dashboard: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Tabbed Data Section - Perfectly Aligned and Responsive */}
+        {/* NEW SLEEK TAB NAVIGATION - Edge to Edge with Clean Animation */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
+          className="-mx-6 sm:-mx-6 md:-mx-6 px-0"
         >
           <Tabs defaultValue="new-orders" className="w-full">
-            {/* Tab Navigation - Perfectly Centered and Aligned */}
-            <div className="w-full flex justify-center mb-6">
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-1.5 shadow-sm border border-gray-200/50 dark:border-gray-700/30 inline-flex">
-                <TabsList className="grid w-full grid-cols-3 bg-transparent gap-1 p-0 h-auto">
-                  <TabsTrigger 
-                    value="new-orders" 
-                    className={cn(
-                      "flex flex-col items-center justify-center gap-2 rounded-xl transition-all duration-300 font-semibold data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-700 dark:text-gray-300 border-0",
-                      isMobile ? "text-xs py-3 px-4 min-w-[100px]" : "text-sm py-4 px-6 min-w-[140px]"
-                    )}
-                  >
-                    <ShoppingCart className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
-                    <div className="flex flex-col items-center">
-                      <span className="whitespace-nowrap">New Orders</span>
-                      {todayOrders.length > 0 && (
-                        <span className="bg-current text-white text-xs py-0.5 px-2 rounded-full mt-1 font-medium opacity-80">
-                          {todayOrders.length}
-                        </span>
-                      )}
-                    </div>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="pickups" 
-                    className={cn(
-                      "flex flex-col items-center justify-center gap-2 rounded-xl transition-all duration-300 font-semibold data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-700 dark:text-gray-300 border-0",
-                      isMobile ? "text-xs py-3 px-4 min-w-[100px]" : "text-sm py-4 px-6 min-w-[140px]"
-                    )}
-                  >
-                    <Calendar className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
-                    <div className="flex flex-col items-center">
-                      <span className="whitespace-nowrap">Pickups</span>
-                      {todayPickups.length > 0 && (
-                        <span className="bg-current text-white text-xs py-0.5 px-2 rounded-full mt-1 font-medium opacity-80">
-                          {todayPickups.length}
-                        </span>
-                      )}
-                    </div>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="awaiting" 
-                    className={cn(
-                      "flex flex-col items-center justify-center gap-2 rounded-xl transition-all duration-300 font-semibold data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-700 dark:text-gray-300 border-0",
-                      isMobile ? "text-xs py-3 px-4 min-w-[100px]" : "text-sm py-4 px-6 min-w-[140px]"
-                    )}
-                  >
-                    <Inbox className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
-                    <div className="flex flex-col items-center">
-                      <span className="whitespace-nowrap">Awaiting</span>
-                      {awaitingActionOrders.length > 0 && (
-                        <span className="bg-current text-white text-xs py-0.5 px-2 rounded-full mt-1 font-medium opacity-80">
-                          {awaitingActionOrders.length}
-                        </span>
-                      )}
-                    </div>
-                  </TabsTrigger>
-                </TabsList>
-              </div>
+            {/* Redesigned Sleek Tab Navigation */}
+            <div className="relative border-b border-gray-200 dark:border-gray-800">
+              <TabsList className="flex w-full h-12 bg-transparent justify-start overflow-x-auto scrollbar-hide p-0">
+                <TabsTrigger 
+                  value="new-orders"
+                  className={cn(
+                    "flex items-center justify-center gap-2 px-6 h-full rounded-none border-0 relative",
+                    "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
+                    "data-[state=active]:text-[#DB271E] data-[state=active]:font-medium",
+                    "transition-all duration-200 bg-transparent",
+                    "focus:outline-none focus:ring-0 focus-visible:ring-0",
+                    isMobile ? "min-w-[33.333%] text-sm" : "min-w-[160px] text-base"
+                  )}
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  <span>New Orders</span>
+                  {todayOrders.length > 0 && (
+                    <span className="ml-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs py-0.5 px-2 rounded-full">
+                      {todayOrders.length}
+                    </span>
+                  )}
+                  <motion.div 
+                    className="absolute bottom-0 left-0 w-full h-0.5 bg-[#DB271E]" 
+                    initial={false}
+                    animate={{ 
+                      opacity: 1,
+                      scale: 1,
+                    }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0,
+                    }}
+                    transition={{ duration: 0.2 }}
+                    layoutId="activeTabIndicator"
+                  />
+                </TabsTrigger>
+
+                <TabsTrigger 
+                  value="pickups"
+                  className={cn(
+                    "flex items-center justify-center gap-2 px-6 h-full rounded-none border-0 relative",
+                    "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
+                    "data-[state=active]:text-[#DB271E] data-[state=active]:font-medium",
+                    "transition-all duration-200 bg-transparent",
+                    "focus:outline-none focus:ring-0 focus-visible:ring-0",
+                    isMobile ? "min-w-[33.333%] text-sm" : "min-w-[160px] text-base"
+                  )}
+                >
+                  <Calendar className="h-4 w-4" />
+                  <span>Scheduled Pickups</span>
+                  {todayPickups.length > 0 && (
+                    <span className="ml-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs py-0.5 px-2 rounded-full">
+                      {todayPickups.length}
+                    </span>
+                  )}
+                </TabsTrigger>
+
+                <TabsTrigger 
+                  value="awaiting"
+                  className={cn(
+                    "flex items-center justify-center gap-2 px-6 h-full rounded-none border-0 relative",
+                    "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
+                    "data-[state=active]:text-[#DB271E] data-[state=active]:font-medium",
+                    "transition-all duration-200 bg-transparent",
+                    "focus:outline-none focus:ring-0 focus-visible:ring-0",
+                    isMobile ? "min-w-[33.333%] text-sm" : "min-w-[160px] text-base"
+                  )}
+                >
+                  <Inbox className="h-4 w-4" />
+                  <span>Awaiting Action</span>
+                  {awaitingActionOrders.length > 0 && (
+                    <span className="ml-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs py-0.5 px-2 rounded-full">
+                      {awaitingActionOrders.length}
+                    </span>
+                  )}
+                </TabsTrigger>
+              </TabsList>
             </div>
             
             {/* Tab Content */}
             <AnimatePresence mode="wait">
               <TabsContent 
                 value="new-orders" 
-                className="mt-0 focus-visible:outline-none focus-visible:ring-0"
+                className="mt-6 focus-visible:outline-none focus-visible:ring-0"
               >
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
@@ -345,7 +366,7 @@ const Dashboard: React.FC = () => {
               
               <TabsContent 
                 value="pickups" 
-                className="mt-0 focus-visible:outline-none focus-visible:ring-0"
+                className="mt-6 focus-visible:outline-none focus-visible:ring-0"
               >
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
@@ -376,7 +397,7 @@ const Dashboard: React.FC = () => {
               
               <TabsContent 
                 value="awaiting" 
-                className="mt-0 focus-visible:outline-none focus-visible:ring-0"
+                className="mt-6 focus-visible:outline-none focus-visible:ring-0"
               >
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}

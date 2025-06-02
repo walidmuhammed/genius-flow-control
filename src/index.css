@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -179,6 +180,16 @@
   
   .status-canceled {
     @apply bg-red-50/80 text-red-700 backdrop-blur-sm;
+  }
+  
+  /* Hide scrollbar for tab navigation */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 
