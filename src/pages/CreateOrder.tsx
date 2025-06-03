@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Info, Check, Plus, MapPin, Search, Phone, Package, FileText, ScrollText, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -86,20 +87,17 @@ const CreateOrder = () => {
     refetch: refetchCustomers
   } = useSearchCustomersByPhone(phone);
 
-  // Mutations
   const createCustomer = useCreateCustomer();
   const createOrder = useCreateOrder();
 
   // Clear any cached form data from localStorage
   const clearCachedFormData = () => {
-    // Clear any form-related items from localStorage
     const formKeys = ['order-form-data', 'order-form-customer', 'order-form-phone', 'order-form-address', 'order-form-governorate', 'order-form-city'];
     formKeys.forEach(key => {
       localStorage.removeItem(key);
     });
   };
 
-  // Reset form function
   const resetForm = () => {
     setOrderType('shipment');
     setPhone('+961');
@@ -124,40 +122,31 @@ const CreateOrder = () => {
     setExistingCustomer(null);
     setErrors({});
 
-    // Clear any cached form data
     clearCachedFormData();
 
-    // Clear React Query cache for customer search
     queryClient.removeQueries({
       queryKey: ['customers', 'search']
     });
 
-    // Force re-render the form with a new key
     setFormKey(getUniqueFormKey());
   };
 
-  // Reset form on component mount, navigation and path changes
   useEffect(() => {
-    // Reset the form when the component mounts
     resetForm();
 
-    // Clean up function to ensure form is reset when component unmounts
     return () => {
       clearCachedFormData();
       queryClient.removeQueries({
         queryKey: ['customers', 'search']
       });
     };
-  }, [location.pathname, queryClient]); // Re-run when the path changes
+  }, [location.pathname, queryClient]);
 
-  // Watch for customer search results - auto-fill customer info only when we have exact match
   useEffect(() => {
-    // Skip during initial render to prevent autofill from cached query results
     if (initialRenderRef.current) {
       initialRenderRef.current = false;
       return;
     }
-    
     if (foundCustomers && foundCustomers.length > 0) {
       const customer = foundCustomers[0];
       setExistingCustomer(customer);
@@ -180,7 +169,6 @@ const CreateOrder = () => {
       }
       toast.info("Customer information auto-filled");
     } else if (phone.replace(/\D/g, '').length >= 11 && !searchingCustomers) {
-      // Only clear existing customer if we have a complete number and no matches
       setExistingCustomer(null);
     }
   }, [foundCustomers, searchingCustomers, phone]);
@@ -226,10 +214,8 @@ const CreateOrder = () => {
       return;
     }
     try {
-      // First ensure we have a customer
       let customerId = existingCustomer?.id;
 
-      // Prepare full address data (city, governorate and details)
       const fullAddressData = {
         address,
         city_id: selectedCityId || null,
@@ -237,7 +223,6 @@ const CreateOrder = () => {
         is_work_address: isWorkAddress
       };
       if (!customerId) {
-        // Create a new customer
         const customerData = {
           name,
           phone,
@@ -247,15 +232,12 @@ const CreateOrder = () => {
         const newCustomer = await createCustomer.mutateAsync(customerData);
         customerId = newCustomer.id;
       } else if (existingCustomer) {
-        // If address data changed for existing customer, update their profile
         const hasAddressChanged = existingCustomer.address !== address || existingCustomer.city_id !== selectedCityId || existingCustomer.governorate_id !== selectedGovernorateId || existingCustomer.is_work_address !== isWorkAddress;
         if (hasAddressChanged) {
-          // In a real app, we would update the customer's address info here
           console.log("Address data changed, customer profile would be updated");
         }
       }
 
-      // Then create the order with proper reference number handling
       const orderData: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'> = {
         type: orderType === 'exchange' ? 'Exchange' : 'Deliver',
         customer_id: customerId,
@@ -270,17 +252,15 @@ const CreateOrder = () => {
         delivery_fees_lbp: deliveryFees.lbp,
         note: deliveryNotes || undefined,
         status: 'New',
-        // Only include reference_number if the user actually entered one
-        ...(orderReference.trim() && { reference_number: orderReference.trim() })
+        ...(orderReference.trim() && {
+          reference_number: orderReference.trim()
+        })
       };
-      
       await createOrder.mutateAsync(orderData);
       if (createAnother) {
-        // Reset form for creating another order
         resetForm();
         toast.success("Order created successfully. Create another one.");
       } else {
-        // Navigate back to orders list
         toast.success("Order created successfully.");
         navigate('/orders');
       }
@@ -296,7 +276,6 @@ const CreateOrder = () => {
     setSelectedCityId('');
     setSelectedCityName('');
 
-    // Clear area error if it exists
     if (errors.area) {
       setErrors(prev => ({
         ...prev,
@@ -309,7 +288,6 @@ const CreateOrder = () => {
     setSelectedCityId(cityId);
     setSelectedCityName(cityName);
 
-    // Clear area error if it exists
     if (errors.area) {
       setErrors(prev => ({
         ...prev,
@@ -321,7 +299,6 @@ const CreateOrder = () => {
   const handlePhoneChange = (value: string) => {
     setPhone(value);
 
-    // Clear phone error if it exists
     if (errors.phone) {
       setErrors(prev => ({
         ...prev,
@@ -331,463 +308,476 @@ const CreateOrder = () => {
   };
 
   return (
-    <MainLayout className="bg-gray-50/30">
+    <MainLayout className="bg-gray-50/50">
       <div className="min-h-screen" key={formKey}>
-        {/* Optimized Page Container */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          
-          {/* Clean Header Row - Integrated into page flow */}
-          <div className="mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Modern Header */}
+        <div className="bg-white/95 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-40">
+          <div className="max-w-6xl mx-auto px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-                  Create New Order
-                </h1>
-                <p className="mt-1 text-sm text-gray-600">
-                  Fill in the details to create a new delivery order
-                </p>
+                <h1 className="text-xl font-semibold text-gray-900">Create New Order</h1>
+                <p className="text-sm text-gray-500 mt-0.5">Complete the form to create a delivery order</p>
               </div>
-              
-              {/* Action Buttons - Right aligned */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button 
-                  variant="outline" 
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant="outline"
                   onClick={() => handleSubmit(true)}
-                  className="px-5 py-2 text-sm font-medium border-gray-300 hover:bg-gray-50"
+                  className="h-9 px-4 text-sm font-medium border-gray-200 hover:bg-gray-50 transition-colors"
                 >
                   Create & Add Another
                 </Button>
-                <Button 
+                <Button
                   onClick={() => handleSubmit(false)}
-                  className="px-6 py-2 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a]"
+                  className="h-9 px-6 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a] transition-colors"
                 >
                   Create Order
                 </Button>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Compressed Two-Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Main Content */}
+        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            {/* Left Column - Customer & Address */}
-            <div className="space-y-5">
+            {/* Left Column - Main Form */}
+            <div className="lg:col-span-2 space-y-6">
               
+              {/* Order Type */}
+              <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+                <h3 className="text-base font-semibold text-gray-900 mb-4">Order Type</h3>
+                <div className="flex space-x-3">
+                  <Button
+                    variant={orderType === 'shipment' ? "default" : "outline"}
+                    onClick={() => setOrderType('shipment')}
+                    className={cn(
+                      "flex-1 h-10 font-medium transition-all",
+                      orderType === 'shipment'
+                        ? "bg-[#DC291E] hover:bg-[#c0211a] text-white"
+                        : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                    )}
+                  >
+                    Shipment
+                  </Button>
+                  <Button
+                    variant={orderType === 'exchange' ? "default" : "outline"}
+                    onClick={() => setOrderType('exchange')}
+                    className={cn(
+                      "flex-1 h-10 font-medium transition-all",
+                      orderType === 'exchange'
+                        ? "bg-[#DC291E] hover:bg-[#c0211a] text-white"
+                        : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                    )}
+                  >
+                    Exchange
+                  </Button>
+                </div>
+              </div>
+
               {/* Customer Information */}
-              <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium text-gray-900 flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-600" />
-                    Customer Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+              <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+                <div className="flex items-center space-x-2 mb-5">
+                  <Phone className="h-4 w-4 text-gray-500" />
+                  <h3 className="text-base font-semibold text-gray-900">Customer Information</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
                   {/* Phone Number */}
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="phone" className={cn("text-sm font-medium", errors.phone ? "text-red-600" : "text-gray-700")}>
                       Phone Number
                     </Label>
-                    <PhoneInput 
-                      id="phone" 
-                      value={phone} 
-                      onChange={handlePhoneChange} 
-                      defaultCountry="LB" 
-                      onValidationChange={setPhoneValid} 
-                      placeholder="Enter phone number" 
-                      className={cn("mt-1 h-9", errors.phone ? "border-red-300" : "border-gray-300")} 
-                      errorMessage={errors.phone} 
+                    <PhoneInput
+                      id="phone"
+                      value={phone}
+                      onChange={handlePhoneChange}
+                      defaultCountry="LB"
+                      onValidationChange={setPhoneValid}
+                      placeholder="Enter phone number"
+                      className={cn("h-10", errors.phone ? "border-red-300 focus:border-red-500" : "border-gray-200 focus:border-[#DC291E]")}
+                      errorMessage={errors.phone}
                     />
                     {searchingCustomers && (
-                      <p className="text-xs text-blue-600 flex items-center gap-1 mt-1">
+                      <p className="text-xs text-blue-600 flex items-center gap-1">
                         <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                         Searching for existing customer...
                       </p>
                     )}
                     {existingCustomer && (
-                      <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                      <p className="text-xs text-green-600 flex items-center gap-1">
                         <Check className="h-3 w-3" />
                         Existing customer found!
                       </p>
                     )}
                   </div>
                   
-                  {/* Secondary Phone */}
-                  {!isSecondaryPhone && (
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setIsSecondaryPhone(true)}
-                      className="text-xs h-8"
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      Add secondary phone
-                    </Button>
-                  )}
-
-                  {isSecondaryPhone && (
-                    <div>
-                      <div className="flex justify-between items-center">
-                        <Label htmlFor="secondary-phone" className={cn("text-sm font-medium", errors.secondaryPhone ? "text-red-600" : "text-gray-700")}>
-                          Secondary Phone
-                        </Label>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => {
-                            setIsSecondaryPhone(false);
-                            setSecondaryPhone('');
-                            if (errors.secondaryPhone) {
-                              setErrors(prev => ({ ...prev, secondaryPhone: undefined }));
-                            }
-                          }}
-                          className="text-xs text-gray-500 h-auto p-1"
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                      <PhoneInput 
-                        id="secondary-phone" 
-                        value={secondaryPhone} 
-                        onChange={value => {
-                          setSecondaryPhone(value);
-                          if (errors.secondaryPhone) {
-                            setErrors(prev => ({ ...prev, secondaryPhone: undefined }));
-                          }
-                        }} 
-                        defaultCountry="LB" 
-                        onValidationChange={setSecondaryPhoneValid} 
-                        placeholder="Enter secondary phone" 
-                        className={cn("mt-1 h-9", errors.secondaryPhone ? "border-red-300" : "border-gray-300")} 
-                        errorMessage={errors.secondaryPhone} 
-                      />
-                    </div>
-                  )}
-                  
                   {/* Customer Name */}
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="name" className={cn("text-sm font-medium", errors.name ? "text-red-600" : "text-gray-700")}>
                       Full Name
                     </Label>
-                    <Input 
-                      id="name" 
-                      placeholder="Enter customer full name" 
-                      value={name} 
+                    <Input
+                      id="name"
+                      placeholder="Enter customer full name"
+                      value={name}
                       onChange={e => {
                         setName(e.target.value);
                         if (errors.name) {
                           setErrors(prev => ({ ...prev, name: undefined }));
                         }
-                      }} 
-                      className={cn("mt-1 h-9", errors.name ? "border-red-300" : "border-gray-300")} 
+                      }}
+                      className={cn("h-10", errors.name ? "border-red-300 focus:border-red-500" : "border-gray-200 focus:border-[#DC291E]")}
                     />
-                    {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
+                    {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+
+                {/* Secondary Phone */}
+                {!isSecondaryPhone ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsSecondaryPhone(true)}
+                    className="text-sm text-gray-600 border-gray-200 hover:bg-gray-50"
+                  >
+                    <Plus className="h-3 w-3 mr-1.5" />
+                    Add secondary phone
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="secondary-phone" className={cn("text-sm font-medium", errors.secondaryPhone ? "text-red-600" : "text-gray-700")}>
+                        Secondary Phone
+                      </Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setIsSecondaryPhone(false);
+                          setSecondaryPhone('');
+                          if (errors.secondaryPhone) {
+                            setErrors(prev => ({ ...prev, secondaryPhone: undefined }));
+                          }
+                        }}
+                        className="text-xs text-gray-500 hover:text-gray-700 h-auto p-1"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                    <PhoneInput
+                      id="secondary-phone"
+                      value={secondaryPhone}
+                      onChange={value => {
+                        setSecondaryPhone(value);
+                        if (errors.secondaryPhone) {
+                          setErrors(prev => ({ ...prev, secondaryPhone: undefined }));
+                        }
+                      }}
+                      defaultCountry="LB"
+                      onValidationChange={setSecondaryPhoneValid}
+                      placeholder="Enter secondary phone"
+                      className={cn("h-10", errors.secondaryPhone ? "border-red-300 focus:border-red-500" : "border-gray-200 focus:border-[#DC291E]")}
+                      errorMessage={errors.secondaryPhone}
+                    />
+                  </div>
+                )}
+              </div>
 
               {/* Address Information */}
-              <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium text-gray-900 flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-600" />
-                    Address Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+              <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+                <div className="flex items-center space-x-2 mb-5">
+                  <MapPin className="h-4 w-4 text-gray-500" />
+                  <h3 className="text-base font-semibold text-gray-900">Address Information</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {/* Area Selection */}
-                  <div>
+                  <div className="space-y-2">
                     <Label className={cn("text-sm font-medium", errors.area ? "text-red-600" : "text-gray-700")}>
                       Area (Governorate & City)
                     </Label>
-                    <div className="mt-1">
-                      <AreaSelector 
-                        selectedArea={selectedCityName} 
-                        selectedGovernorate={selectedGovernorateName} 
-                        onAreaSelected={(governorateName, cityName, governorateId, cityId) => {
-                          if (governorateId) handleGovernorateChange(governorateId, governorateName);
-                          if (cityId) handleCityChange(cityId, cityName, governorateName);
-                        }} 
-                      />
-                    </div>
-                    {errors.area && <p className="text-xs text-red-600 mt-1">{errors.area}</p>}
+                    <AreaSelector
+                      selectedArea={selectedCityName}
+                      selectedGovernorate={selectedGovernorateName}
+                      onAreaSelected={(governorateName, cityName, governorateId, cityId) => {
+                        if (governorateId) handleGovernorateChange(governorateId, governorateName);
+                        if (cityId) handleCityChange(cityId, cityName, governorateName);
+                      }}
+                    />
+                    {errors.area && <p className="text-xs text-red-600">{errors.area}</p>}
                   </div>
                   
                   {/* Address Details */}
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="address" className={cn("text-sm font-medium", errors.address ? "text-red-600" : "text-gray-700")}>
                       Address Details
                     </Label>
-                    <Input 
-                      id="address" 
-                      placeholder="Building, street, landmark..." 
-                      value={address} 
+                    <Input
+                      id="address"
+                      placeholder="Building, street, landmark..."
+                      value={address}
                       onChange={e => {
                         setAddress(e.target.value);
                         if (errors.address) {
                           setErrors(prev => ({ ...prev, address: undefined }));
                         }
-                      }} 
-                      className={cn("mt-1 h-9", errors.address ? "border-red-300" : "border-gray-300")} 
+                      }}
+                      className={cn("h-10", errors.address ? "border-red-300 focus:border-red-500" : "border-gray-200 focus:border-[#DC291E]")}
                     />
-                    {errors.address && <p className="text-xs text-red-600 mt-1">{errors.address}</p>}
+                    {errors.address && <p className="text-xs text-red-600">{errors.address}</p>}
                   </div>
-                  
-                  {/* Work Address Checkbox */}
-                  <div className="flex items-center space-x-3 pt-2">
-                    <Checkbox 
-                      id="work-address" 
-                      checked={isWorkAddress} 
-                      onCheckedChange={checked => {
-                        if (typeof checked === 'boolean') {
-                          setIsWorkAddress(checked);
-                        }
-                      }} 
-                    />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="work-address" className="text-sm font-medium text-gray-700 cursor-pointer">
-                        This is a work/business address
-                      </Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-gray-400 cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Mark if delivery is to a business location</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Package Information */}
-              <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-medium text-gray-900 flex items-center gap-2">
-                      <Package className="h-4 w-4 text-gray-600" />
-                      Package Information
-                    </CardTitle>
-                    <Button 
-                      variant="link" 
-                      onClick={() => setGuidelinesModalOpen(true)}
-                      className="text-xs text-blue-600 p-0 h-auto"
-                    >
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Guidelines
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                      Package Description
-                      <span className="text-xs text-gray-500 font-normal ml-2">(Optional)</span>
-                    </Label>
-                    <Input 
-                      id="description" 
-                      placeholder="e.g., Electronics - Phone case - Black - Medium" 
-                      value={description} 
-                      onChange={e => setDescription(e.target.value)} 
-                      className="mt-1 h-9"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="items-count" className="text-sm font-medium text-gray-700">
-                      Number of Items
-                    </Label>
-                    <Input 
-                      id="items-count" 
-                      type="number" 
-                      min={1} 
-                      value={itemsCount} 
-                      onChange={e => setItemsCount(parseInt(e.target.value) || 1)} 
-                      className="mt-1 h-9"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Right Column - Order Details */}
-            <div className="space-y-5">
-              
-              {/* Order Type & Cash Collection - Side by Side */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                </div>
                 
-                {/* Order Type */}
-                <Card className="border border-gray-200 shadow-sm">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-medium text-gray-900">
-                      Order Type
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button 
-                        variant={orderType === 'shipment' ? "default" : "outline"} 
-                        onClick={() => setOrderType('shipment')}
-                        className={cn("h-10 text-sm", orderType === 'shipment' ? "bg-[#DC291E] hover:bg-[#c0211a]" : "")}
-                      >
-                        Shipment
-                      </Button>
-                      <Button 
-                        variant={orderType === 'exchange' ? "default" : "outline"} 
-                        onClick={() => setOrderType('exchange')}
-                        className={cn("h-10 text-sm", orderType === 'exchange' ? "bg-[#DC291E] hover:bg-[#c0211a]" : "")}
-                      >
-                        Exchange
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Package Type */}
-                <Card className="border border-gray-200 shadow-sm">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-medium text-gray-900">
-                      Package Type
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-1">
-                      <Button 
-                        variant={packageType === "parcel" ? "default" : "outline"} 
-                        onClick={() => setPackageType("parcel")}
-                        className={cn("h-12 flex-col gap-1 text-xs", packageType === "parcel" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "")}
-                      >
-                        <Package className="h-3 w-3" />
-                        Parcel
-                      </Button>
-                      <Button 
-                        variant={packageType === "document" ? "default" : "outline"} 
-                        onClick={() => setPackageType("document")}
-                        className={cn("h-12 flex-col gap-1 text-xs", packageType === "document" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "")}
-                      >
-                        <FileText className="h-3 w-3" />
-                        Document
-                      </Button>
-                      <Button 
-                        variant={packageType === "bulky" ? "default" : "outline"} 
-                        onClick={() => setPackageType("bulky")}
-                        className={cn("h-12 flex-col gap-1 text-xs", packageType === "bulky" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "")}
-                      >
-                        <Package className="h-3 w-3" />
-                        Bulky
-                      </Button>
-                    </div>
-                    
-                    {/* Allow Opening Checkbox */}
-                    <div className="flex items-center space-x-3 pt-3 mt-3 border-t border-gray-100">
-                      <Checkbox 
-                        id="allow-opening" 
-                        checked={allowOpening} 
-                        onCheckedChange={checked => {
-                          if (typeof checked === 'boolean') {
-                            setAllowOpening(checked);
-                          }
-                        }} 
-                      />
-                      <div className="flex items-center gap-1.5">
-                        <Label htmlFor="allow-opening" className="text-sm font-medium text-gray-700 cursor-pointer">
-                          Allow package inspection
-                        </Label>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Info className="h-4 w-4 text-gray-400 cursor-help" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Allow customers to inspect contents before accepting</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* Work Address Checkbox */}
+                <div className="flex items-center space-x-3">
+                  <Checkbox
+                    id="work-address"
+                    checked={isWorkAddress}
+                    onCheckedChange={checked => {
+                      if (typeof checked === 'boolean') {
+                        setIsWorkAddress(checked);
+                      }
+                    }}
+                    className="border-gray-300"
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <Label htmlFor="work-address" className="text-sm font-medium text-gray-700 cursor-pointer">
+                      This is a work/business address
+                    </Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Mark if delivery is to a business location</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
               </div>
 
-              {/* Cash Collection */}
-              <Card className="border border-gray-200 shadow-sm">
-                <CardContent className="p-0">
-                  <ImprovedCashCollectionFields 
-                    enabled={cashCollection} 
-                    onEnabledChange={setCashCollection} 
-                    usdAmount={usdAmount} 
-                    lbpAmount={lbpAmount} 
-                    onUsdAmountChange={value => {
-                      setUsdAmount(value);
-                      if (errors.usdAmount || errors.lbpAmount) {
-                        setErrors(prev => ({
-                          ...prev,
-                          usdAmount: undefined,
-                          lbpAmount: undefined
-                        }));
-                      }
-                    }} 
-                    onLbpAmountChange={value => {
-                      setLbpAmount(value);
-                      if (errors.usdAmount || errors.lbpAmount) {
-                        setErrors(prev => ({
-                          ...prev,
-                          usdAmount: undefined,
-                          lbpAmount: undefined
-                        }));
-                      }
-                    }} 
-                    deliveryFees={deliveryFees} 
-                    errors={{
-                      usdAmount: errors.usdAmount,
-                      lbpAmount: errors.lbpAmount
-                    }} 
-                  />
-                </CardContent>
-              </Card>
-              
               {/* Additional Information */}
-              <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-base font-medium text-gray-900">
-                    Additional Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
+              <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+                <h3 className="text-base font-semibold text-gray-900 mb-5">Additional Information</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
                     <Label htmlFor="order-reference" className="text-sm font-medium text-gray-700">
                       Order Reference
                       <span className="text-xs text-gray-500 font-normal ml-2">(Optional)</span>
                     </Label>
-                    <Input 
-                      id="order-reference" 
-                      placeholder="Your tracking reference" 
-                      value={orderReference} 
-                      onChange={e => setOrderReference(e.target.value)} 
-                      className="mt-1 h-9"
+                    <Input
+                      id="order-reference"
+                      placeholder="Your tracking reference"
+                      value={orderReference}
+                      onChange={e => setOrderReference(e.target.value)}
+                      className="h-10 border-gray-200 focus:border-[#DC291E]"
                     />
                   </div>
                   
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="delivery-notes" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <ScrollText className="h-4 w-4 text-gray-600" />
+                      <ScrollText className="h-4 w-4 text-gray-500" />
                       Delivery Notes
                       <span className="text-xs text-gray-500 font-normal">(Optional)</span>
                     </Label>
-                    <Textarea 
-                      id="delivery-notes" 
-                      placeholder="Special delivery instructions..." 
-                      rows={3} 
-                      value={deliveryNotes} 
-                      onChange={e => setDeliveryNotes(e.target.value)} 
-                      className="mt-1 resize-none"
+                    <Textarea
+                      id="delivery-notes"
+                      placeholder="Special delivery instructions..."
+                      rows={2}
+                      value={deliveryNotes}
+                      onChange={e => setDeliveryNotes(e.target.value)}
+                      className="resize-none border-gray-200 focus:border-[#DC291E]"
                     />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Secondary Form Elements */}
+            <div className="space-y-6">
+              
+              {/* Cash Collection */}
+              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
+                <ImprovedCashCollectionFields
+                  enabled={cashCollection}
+                  onEnabledChange={setCashCollection}
+                  usdAmount={usdAmount}
+                  lbpAmount={lbpAmount}
+                  onUsdAmountChange={value => {
+                    setUsdAmount(value);
+                    if (errors.usdAmount || errors.lbpAmount) {
+                      setErrors(prev => ({
+                        ...prev,
+                        usdAmount: undefined,
+                        lbpAmount: undefined
+                      }));
+                    }
+                  }}
+                  onLbpAmountChange={value => {
+                    setLbpAmount(value);
+                    if (errors.usdAmount || errors.lbpAmount) {
+                      setErrors(prev => ({
+                        ...prev,
+                        usdAmount: undefined,
+                        lbpAmount: undefined
+                      }));
+                    }
+                  }}
+                  deliveryFees={deliveryFees}
+                  errors={{
+                    usdAmount: errors.usdAmount,
+                    lbpAmount: errors.lbpAmount
+                  }}
+                />
+              </div>
+
+              {/* Package Information */}
+              <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center space-x-2">
+                    <Package className="h-4 w-4 text-gray-500" />
+                    <h3 className="text-base font-semibold text-gray-900">Package Information</h3>
+                  </div>
+                  <Button
+                    variant="link"
+                    onClick={() => setGuidelinesModalOpen(true)}
+                    className="text-sm text-blue-600 hover:text-blue-700 p-0 h-auto font-medium"
+                  >
+                    <AlertTriangle className="h-4 w-4 mr-1.5" />
+                    Guidelines
+                  </Button>
+                </div>
+                
+                {/* Package Type */}
+                <div className="space-y-3 mb-4">
+                  <Label className="text-sm font-medium text-gray-700">Package Type</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant={packageType === "parcel" ? "default" : "outline"}
+                      onClick={() => setPackageType("parcel")}
+                      className={cn(
+                        "h-14 flex-col gap-1 text-xs font-medium transition-all",
+                        packageType === "parcel"
+                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white"
+                          : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                      )}
+                    >
+                      <Package className="h-4 w-4" />
+                      Parcel
+                    </Button>
+                    <Button
+                      variant={packageType === "document" ? "default" : "outline"}
+                      onClick={() => setPackageType("document")}
+                      className={cn(
+                        "h-14 flex-col gap-1 text-xs font-medium transition-all",
+                        packageType === "document"
+                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white"
+                          : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                      )}
+                    >
+                      <FileText className="h-4 w-4" />
+                      Document
+                    </Button>
+                    <Button
+                      variant={packageType === "bulky" ? "default" : "outline"}
+                      onClick={() => setPackageType("bulky")}
+                      className={cn(
+                        "h-14 flex-col gap-1 text-xs font-medium transition-all",
+                        packageType === "bulky"
+                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white"
+                          : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                      )}
+                    >
+                      <Package className="h-4 w-4" />
+                      Bulky
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Items Count */}
+                <div className="space-y-2 mb-4">
+                  <Label htmlFor="items-count" className="text-sm font-medium text-gray-700">
+                    Number of Items
+                  </Label>
+                  <Input
+                    id="items-count"
+                    type="number"
+                    min={1}
+                    value={itemsCount}
+                    onChange={e => setItemsCount(parseInt(e.target.value) || 1)}
+                    className="h-10 border-gray-200 focus:border-[#DC291E]"
+                  />
+                </div>
+
+                {/* Package Description */}
+                <div className="space-y-2 mb-4">
+                  <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+                    Package Description
+                    <span className="text-xs text-gray-500 font-normal ml-2">(Optional)</span>
+                  </Label>
+                  <Input
+                    id="description"
+                    placeholder="e.g., Electronics - Phone case"
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    className="h-10 border-gray-200 focus:border-[#DC291E]"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Brief description helps with handling
+                  </p>
+                </div>
+                
+                {/* Allow Opening Checkbox */}
+                <div className="flex items-center space-x-3 pt-4 border-t border-gray-100">
+                  <Checkbox
+                    id="allow-opening"
+                    checked={allowOpening}
+                    onCheckedChange={checked => {
+                      if (typeof checked === 'boolean') {
+                        setAllowOpening(checked);
+                      }
+                    }}
+                    className="border-gray-300"
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <Label htmlFor="allow-opening" className="text-sm font-medium text-gray-700 cursor-pointer">
+                      Allow package inspection
+                    </Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Allow customers to inspect contents before accepting</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Action Buttons for Mobile */}
+              <div className="flex flex-col space-y-3 lg:hidden">
+                <Button
+                  onClick={() => handleSubmit(false)}
+                  className="h-11 font-medium bg-[#DC291E] hover:bg-[#c0211a] transition-colors"
+                >
+                  Create Order
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleSubmit(true)}
+                  className="h-11 font-medium border-gray-200 hover:bg-gray-50 transition-colors"
+                >
+                  Create & Add Another
+                </Button>
+              </div>
             </div>
           </div>
         </div>
