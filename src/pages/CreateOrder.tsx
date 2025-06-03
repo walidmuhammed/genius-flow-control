@@ -333,59 +333,57 @@ const CreateOrder = () => {
   return (
     <MainLayout className="bg-gray-50/30">
       <div className="min-h-screen" key={formKey}>
-        {/* Clean Header - No sticky, properly integrated */}
-        <div className="bg-white border-b border-gray-200/60 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="py-6 sm:py-8">
-              <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
-                    Create New Order
-                  </h1>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Fill in the details to create a new delivery order
-                  </p>
-                </div>
-                
-                {/* Action Buttons - Responsive Stack */}
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => handleSubmit(true)}
-                    className="w-full sm:w-auto px-6 py-2.5 text-sm font-medium border-gray-300 hover:bg-gray-50 transition-colors"
-                  >
-                    Create & Add Another
-                  </Button>
-                  <Button 
-                    onClick={() => handleSubmit(false)}
-                    className="w-full sm:w-auto px-8 py-2.5 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a] transition-colors"
-                  >
-                    Create Order
-                  </Button>
-                </div>
+        {/* Optimized Page Container */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          
+          {/* Clean Header Row - Integrated into page flow */}
+          <div className="mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+                  Create New Order
+                </h1>
+                <p className="mt-1 text-sm text-gray-600">
+                  Fill in the details to create a new delivery order
+                </p>
+              </div>
+              
+              {/* Action Buttons - Right aligned */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleSubmit(true)}
+                  className="px-5 py-2 text-sm font-medium border-gray-300 hover:bg-gray-50"
+                >
+                  Create & Add Another
+                </Button>
+                <Button 
+                  onClick={() => handleSubmit(false)}
+                  className="px-6 py-2 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a]"
+                >
+                  Create Order
+                </Button>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Main Content Area */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Compressed Two-Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            {/* Left Column - Main Form (Mobile: Full Width, Desktop: 2/3) */}
-            <div className="lg:col-span-2 space-y-6">
+            {/* Left Column - Customer & Address */}
+            <div className="space-y-5">
               
-              {/* Customer Information Card */}
-              <Card className="border border-gray-200/60 shadow-sm bg-white">
-                <CardHeader className="border-b border-gray-100 bg-gray-50/30">
-                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                    <Phone className="h-5 w-5 text-gray-600" />
+              {/* Customer Information */}
+              <Card className="border border-gray-200 shadow-sm">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-base font-medium text-gray-900 flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-gray-600" />
                     Customer Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 space-y-5">
+                <CardContent className="space-y-4">
                   {/* Phone Number */}
-                  <div className="space-y-2">
+                  <div>
                     <Label htmlFor="phone" className={cn("text-sm font-medium", errors.phone ? "text-red-600" : "text-gray-700")}>
                       Phone Number
                     </Label>
@@ -396,17 +394,17 @@ const CreateOrder = () => {
                       defaultCountry="LB" 
                       onValidationChange={setPhoneValid} 
                       placeholder="Enter phone number" 
-                      className={errors.phone ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]"} 
+                      className={cn("mt-1 h-9", errors.phone ? "border-red-300" : "border-gray-300")} 
                       errorMessage={errors.phone} 
                     />
                     {searchingCustomers && (
-                      <p className="text-xs text-blue-600 flex items-center gap-1">
+                      <p className="text-xs text-blue-600 flex items-center gap-1 mt-1">
                         <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                         Searching for existing customer...
                       </p>
                     )}
                     {existingCustomer && (
-                      <p className="text-xs text-green-600 flex items-center gap-1">
+                      <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
                         <Check className="h-3 w-3" />
                         Existing customer found!
                       </p>
@@ -420,15 +418,15 @@ const CreateOrder = () => {
                       variant="outline" 
                       size="sm"
                       onClick={() => setIsSecondaryPhone(true)}
-                      className="text-sm text-gray-600 border-gray-300 hover:bg-gray-50"
+                      className="text-xs h-8"
                     >
-                      <Plus className="h-4 w-4 mr-1.5" />
+                      <Plus className="h-3 w-3 mr-1" />
                       Add secondary phone
                     </Button>
                   )}
 
                   {isSecondaryPhone && (
-                    <div className="space-y-2">
+                    <div>
                       <div className="flex justify-between items-center">
                         <Label htmlFor="secondary-phone" className={cn("text-sm font-medium", errors.secondaryPhone ? "text-red-600" : "text-gray-700")}>
                           Secondary Phone
@@ -443,7 +441,7 @@ const CreateOrder = () => {
                               setErrors(prev => ({ ...prev, secondaryPhone: undefined }));
                             }
                           }}
-                          className="text-xs text-gray-500 hover:text-gray-700 h-auto p-1"
+                          className="text-xs text-gray-500 h-auto p-1"
                         >
                           Remove
                         </Button>
@@ -460,14 +458,14 @@ const CreateOrder = () => {
                         defaultCountry="LB" 
                         onValidationChange={setSecondaryPhoneValid} 
                         placeholder="Enter secondary phone" 
-                        className={errors.secondaryPhone ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]"} 
+                        className={cn("mt-1 h-9", errors.secondaryPhone ? "border-red-300" : "border-gray-300")} 
                         errorMessage={errors.secondaryPhone} 
                       />
                     </div>
                   )}
                   
                   {/* Customer Name */}
-                  <div className="space-y-2">
+                  <div>
                     <Label htmlFor="name" className={cn("text-sm font-medium", errors.name ? "text-red-600" : "text-gray-700")}>
                       Full Name
                     </Label>
@@ -481,32 +479,42 @@ const CreateOrder = () => {
                           setErrors(prev => ({ ...prev, name: undefined }));
                         }
                       }} 
-                      className={cn(
-                        "h-11 transition-colors",
-                        errors.name ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]"
-                      )} 
+                      className={cn("mt-1 h-9", errors.name ? "border-red-300" : "border-gray-300")} 
                     />
-                    {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
+                    {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
                   </div>
-                  
+                </CardContent>
+              </Card>
+
+              {/* Address Information */}
+              <Card className="border border-gray-200 shadow-sm">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-base font-medium text-gray-900 flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-gray-600" />
+                    Address Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   {/* Area Selection */}
-                  <div className="space-y-2">
+                  <div>
                     <Label className={cn("text-sm font-medium", errors.area ? "text-red-600" : "text-gray-700")}>
                       Area (Governorate & City)
                     </Label>
-                    <AreaSelector 
-                      selectedArea={selectedCityName} 
-                      selectedGovernorate={selectedGovernorateName} 
-                      onAreaSelected={(governorateName, cityName, governorateId, cityId) => {
-                        if (governorateId) handleGovernorateChange(governorateId, governorateName);
-                        if (cityId) handleCityChange(cityId, cityName, governorateName);
-                      }} 
-                    />
-                    {errors.area && <p className="text-xs text-red-600">{errors.area}</p>}
+                    <div className="mt-1">
+                      <AreaSelector 
+                        selectedArea={selectedCityName} 
+                        selectedGovernorate={selectedGovernorateName} 
+                        onAreaSelected={(governorateName, cityName, governorateId, cityId) => {
+                          if (governorateId) handleGovernorateChange(governorateId, governorateName);
+                          if (cityId) handleCityChange(cityId, cityName, governorateName);
+                        }} 
+                      />
+                    </div>
+                    {errors.area && <p className="text-xs text-red-600 mt-1">{errors.area}</p>}
                   </div>
                   
                   {/* Address Details */}
-                  <div className="space-y-2">
+                  <div>
                     <Label htmlFor="address" className={cn("text-sm font-medium", errors.address ? "text-red-600" : "text-gray-700")}>
                       Address Details
                     </Label>
@@ -520,12 +528,9 @@ const CreateOrder = () => {
                           setErrors(prev => ({ ...prev, address: undefined }));
                         }
                       }} 
-                      className={cn(
-                        "h-11 transition-colors",
-                        errors.address ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]"
-                      )} 
+                      className={cn("mt-1 h-9", errors.address ? "border-red-300" : "border-gray-300")} 
                     />
-                    {errors.address && <p className="text-xs text-red-600">{errors.address}</p>}
+                    {errors.address && <p className="text-xs text-red-600 mt-1">{errors.address}</p>}
                   </div>
                   
                   {/* Work Address Checkbox */}
@@ -538,7 +543,6 @@ const CreateOrder = () => {
                           setIsWorkAddress(checked);
                         }
                       }} 
-                      className="border-gray-300"
                     />
                     <div className="flex items-center gap-1.5">
                       <Label htmlFor="work-address" className="text-sm font-medium text-gray-700 cursor-pointer">
@@ -559,26 +563,26 @@ const CreateOrder = () => {
                 </CardContent>
               </Card>
 
-              {/* Package Information Card */}
-              <Card className="border border-gray-200/60 shadow-sm bg-white">
-                <CardHeader className="border-b border-gray-100 bg-gray-50/30">
+              {/* Package Information */}
+              <Card className="border border-gray-200 shadow-sm">
+                <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                      <Package className="h-5 w-5 text-gray-600" />
+                    <CardTitle className="text-base font-medium text-gray-900 flex items-center gap-2">
+                      <Package className="h-4 w-4 text-gray-600" />
                       Package Information
                     </CardTitle>
                     <Button 
                       variant="link" 
                       onClick={() => setGuidelinesModalOpen(true)}
-                      className="text-sm text-blue-600 hover:text-blue-700 p-0 h-auto font-medium"
+                      className="text-xs text-blue-600 p-0 h-auto"
                     >
-                      <AlertTriangle className="h-4 w-4 mr-1.5" />
-                      View Guidelines
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Guidelines
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="p-6 space-y-5">
-                  <div className="space-y-2">
+                <CardContent className="space-y-4">
+                  <div>
                     <Label htmlFor="description" className="text-sm font-medium text-gray-700">
                       Package Description
                       <span className="text-xs text-gray-500 font-normal ml-2">(Optional)</span>
@@ -588,14 +592,11 @@ const CreateOrder = () => {
                       placeholder="e.g., Electronics - Phone case - Black - Medium" 
                       value={description} 
                       onChange={e => setDescription(e.target.value)} 
-                      className="h-11 border-gray-300 focus:border-[#DC291E] transition-colors"
+                      className="mt-1 h-9"
                     />
-                    <p className="text-xs text-gray-500">
-                      Brief description helps with handling and delivery
-                    </p>
                   </div>
                   
-                  <div className="space-y-2">
+                  <div>
                     <Label htmlFor="items-count" className="text-sm font-medium text-gray-700">
                       Number of Items
                     </Label>
@@ -605,55 +606,114 @@ const CreateOrder = () => {
                       min={1} 
                       value={itemsCount} 
                       onChange={e => setItemsCount(parseInt(e.target.value) || 1)} 
-                      className="h-11 border-gray-300 focus:border-[#DC291E] transition-colors"
+                      className="mt-1 h-9"
                     />
                   </div>
                 </CardContent>
               </Card>
             </div>
             
-            {/* Right Column - Sidebar (Mobile: Full Width, Desktop: 1/3) */}
-            <div className="space-y-6">
+            {/* Right Column - Order Details */}
+            <div className="space-y-5">
               
-              {/* Order Type Card */}
-              <Card className="border border-gray-200/60 shadow-sm bg-white">
-                <CardHeader className="border-b border-gray-100 bg-gray-50/30 pb-4">
-                  <CardTitle className="text-lg font-semibold text-gray-900">
-                    Order Type
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button 
-                      variant={orderType === 'shipment' ? "default" : "outline"} 
-                      onClick={() => setOrderType('shipment')}
-                      className={cn(
-                        "h-12 font-medium transition-all",
-                        orderType === 'shipment' 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white shadow-sm" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
-                    >
-                      Shipment
-                    </Button>
-                    <Button 
-                      variant={orderType === 'exchange' ? "default" : "outline"} 
-                      onClick={() => setOrderType('exchange')}
-                      className={cn(
-                        "h-12 font-medium transition-all",
-                        orderType === 'exchange' 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white shadow-sm" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
-                    >
-                      Exchange
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Cash Collection Card */}
-              <Card className="border border-gray-200/60 shadow-sm bg-white">
+              {/* Order Type & Cash Collection - Side by Side */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                {/* Order Type */}
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-medium text-gray-900">
+                      Order Type
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button 
+                        variant={orderType === 'shipment' ? "default" : "outline"} 
+                        onClick={() => setOrderType('shipment')}
+                        className={cn("h-10 text-sm", orderType === 'shipment' ? "bg-[#DC291E] hover:bg-[#c0211a]" : "")}
+                      >
+                        Shipment
+                      </Button>
+                      <Button 
+                        variant={orderType === 'exchange' ? "default" : "outline"} 
+                        onClick={() => setOrderType('exchange')}
+                        className={cn("h-10 text-sm", orderType === 'exchange' ? "bg-[#DC291E] hover:bg-[#c0211a]" : "")}
+                      >
+                        Exchange
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Package Type */}
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-medium text-gray-900">
+                      Package Type
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-1">
+                      <Button 
+                        variant={packageType === "parcel" ? "default" : "outline"} 
+                        onClick={() => setPackageType("parcel")}
+                        className={cn("h-12 flex-col gap-1 text-xs", packageType === "parcel" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "")}
+                      >
+                        <Package className="h-3 w-3" />
+                        Parcel
+                      </Button>
+                      <Button 
+                        variant={packageType === "document" ? "default" : "outline"} 
+                        onClick={() => setPackageType("document")}
+                        className={cn("h-12 flex-col gap-1 text-xs", packageType === "document" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "")}
+                      >
+                        <FileText className="h-3 w-3" />
+                        Document
+                      </Button>
+                      <Button 
+                        variant={packageType === "bulky" ? "default" : "outline"} 
+                        onClick={() => setPackageType("bulky")}
+                        className={cn("h-12 flex-col gap-1 text-xs", packageType === "bulky" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "")}
+                      >
+                        <Package className="h-3 w-3" />
+                        Bulky
+                      </Button>
+                    </div>
+                    
+                    {/* Allow Opening Checkbox */}
+                    <div className="flex items-center space-x-3 pt-3 mt-3 border-t border-gray-100">
+                      <Checkbox 
+                        id="allow-opening" 
+                        checked={allowOpening} 
+                        onCheckedChange={checked => {
+                          if (typeof checked === 'boolean') {
+                            setAllowOpening(checked);
+                          }
+                        }} 
+                      />
+                      <div className="flex items-center gap-1.5">
+                        <Label htmlFor="allow-opening" className="text-sm font-medium text-gray-700 cursor-pointer">
+                          Allow package inspection
+                        </Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-4 w-4 text-gray-400 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Allow customers to inspect contents before accepting</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Cash Collection */}
+              <Card className="border border-gray-200 shadow-sm">
                 <CardContent className="p-0">
                   <ImprovedCashCollectionFields 
                     enabled={cashCollection} 
@@ -688,97 +748,16 @@ const CreateOrder = () => {
                   />
                 </CardContent>
               </Card>
-
-              {/* Package Type Card */}
-              <Card className="border border-gray-200/60 shadow-sm bg-white">
-                <CardHeader className="border-b border-gray-100 bg-gray-50/30 pb-4">
-                  <CardTitle className="text-lg font-semibold text-gray-900">
-                    Package Type
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-5">
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button 
-                      variant={packageType === "parcel" ? "default" : "outline"} 
-                      onClick={() => setPackageType("parcel")}
-                      className={cn(
-                        "h-16 flex-col gap-1.5 text-xs font-medium transition-all",
-                        packageType === "parcel" 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
-                    >
-                      <Package className="h-4 w-4" />
-                      Parcel
-                    </Button>
-                    <Button 
-                      variant={packageType === "document" ? "default" : "outline"} 
-                      onClick={() => setPackageType("document")}
-                      className={cn(
-                        "h-16 flex-col gap-1.5 text-xs font-medium transition-all",
-                        packageType === "document" 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
-                    >
-                      <FileText className="h-4 w-4" />
-                      Document
-                    </Button>
-                    <Button 
-                      variant={packageType === "bulky" ? "default" : "outline"} 
-                      onClick={() => setPackageType("bulky")}
-                      className={cn(
-                        "h-16 flex-col gap-1.5 text-xs font-medium transition-all",
-                        packageType === "bulky" 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
-                    >
-                      <Package className="h-4 w-4" />
-                      Bulky
-                    </Button>
-                  </div>
-                  
-                  {/* Allow Opening Checkbox */}
-                  <div className="flex items-center space-x-3 pt-3 border-t border-gray-100">
-                    <Checkbox 
-                      id="allow-opening" 
-                      checked={allowOpening} 
-                      onCheckedChange={checked => {
-                        if (typeof checked === 'boolean') {
-                          setAllowOpening(checked);
-                        }
-                      }} 
-                      className="border-gray-300"
-                    />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="allow-opening" className="text-sm font-medium text-gray-700 cursor-pointer">
-                        Allow package inspection
-                      </Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-gray-400 cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Allow customers to inspect contents before accepting</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
               
-              {/* Additional Information Card */}
-              <Card className="border border-gray-200/60 shadow-sm bg-white">
-                <CardHeader className="border-b border-gray-100 bg-gray-50/30 pb-4">
-                  <CardTitle className="text-lg font-semibold text-gray-900">
+              {/* Additional Information */}
+              <Card className="border border-gray-200 shadow-sm">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-base font-medium text-gray-900">
                     Additional Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 space-y-5">
-                  <div className="space-y-2">
+                <CardContent className="space-y-4">
+                  <div>
                     <Label htmlFor="order-reference" className="text-sm font-medium text-gray-700">
                       Order Reference
                       <span className="text-xs text-gray-500 font-normal ml-2">(Optional)</span>
@@ -788,11 +767,11 @@ const CreateOrder = () => {
                       placeholder="Your tracking reference" 
                       value={orderReference} 
                       onChange={e => setOrderReference(e.target.value)} 
-                      className="h-11 border-gray-300 focus:border-[#DC291E] transition-colors"
+                      className="mt-1 h-9"
                     />
                   </div>
                   
-                  <div className="space-y-2">
+                  <div>
                     <Label htmlFor="delivery-notes" className="text-sm font-medium text-gray-700 flex items-center gap-2">
                       <ScrollText className="h-4 w-4 text-gray-600" />
                       Delivery Notes
@@ -801,10 +780,10 @@ const CreateOrder = () => {
                     <Textarea 
                       id="delivery-notes" 
                       placeholder="Special delivery instructions..." 
-                      rows={4} 
+                      rows={3} 
                       value={deliveryNotes} 
                       onChange={e => setDeliveryNotes(e.target.value)} 
-                      className="resize-none border-gray-300 focus:border-[#DC291E] transition-colors"
+                      className="mt-1 resize-none"
                     />
                   </div>
                 </CardContent>
