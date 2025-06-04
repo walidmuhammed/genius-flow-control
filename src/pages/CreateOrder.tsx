@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Info, Check, Plus, MapPin, Search, Phone, Package, FileText, ScrollText, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -12,7 +13,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { AreaSelector } from '@/components/orders/AreaSelector';
-import { ImprovedCashCollectionFields } from '@/components/orders/ImprovedCashCollectionFields';
 import { PackageGuidelinesModal } from '@/components/orders/PackageGuidelinesModal';
 import { useGovernorates } from '@/hooks/use-governorates';
 import { useCity, useCitiesByGovernorate } from '@/hooks/use-cities';
@@ -86,20 +86,16 @@ const CreateOrder = () => {
     refetch: refetchCustomers
   } = useSearchCustomersByPhone(phone);
 
-  // Mutations
   const createCustomer = useCreateCustomer();
   const createOrder = useCreateOrder();
 
-  // Clear any cached form data from localStorage
   const clearCachedFormData = () => {
-    // Clear any form-related items from localStorage
     const formKeys = ['order-form-data', 'order-form-customer', 'order-form-phone', 'order-form-address', 'order-form-governorate', 'order-form-city'];
     formKeys.forEach(key => {
       localStorage.removeItem(key);
     });
   };
 
-  // Reset form function
   const resetForm = () => {
     setOrderType('shipment');
     setPhone('+961');
@@ -124,35 +120,27 @@ const CreateOrder = () => {
     setExistingCustomer(null);
     setErrors({});
 
-    // Clear any cached form data
     clearCachedFormData();
 
-    // Clear React Query cache for customer search
     queryClient.removeQueries({
       queryKey: ['customers', 'search']
     });
 
-    // Force re-render the form with a new key
     setFormKey(getUniqueFormKey());
   };
 
-  // Reset form on component mount, navigation and path changes
   useEffect(() => {
-    // Reset the form when the component mounts
     resetForm();
 
-    // Clean up function to ensure form is reset when component unmounts
     return () => {
       clearCachedFormData();
       queryClient.removeQueries({
         queryKey: ['customers', 'search']
       });
     };
-  }, [location.pathname, queryClient]); // Re-run when the path changes
+  }, [location.pathname, queryClient]);
 
-  // Watch for customer search results - auto-fill customer info only when we have exact match
   useEffect(() => {
-    // Skip during initial render to prevent autofill from cached query results
     if (initialRenderRef.current) {
       initialRenderRef.current = false;
       return;
@@ -180,7 +168,6 @@ const CreateOrder = () => {
       }
       toast.info("Customer information auto-filled");
     } else if (phone.replace(/\D/g, '').length >= 11 && !searchingCustomers) {
-      // Only clear existing customer if we have a complete number and no matches
       setExistingCustomer(null);
     }
   }, [foundCustomers, searchingCustomers, phone]);
@@ -226,10 +213,8 @@ const CreateOrder = () => {
       return;
     }
     try {
-      // First ensure we have a customer
       let customerId = existingCustomer?.id;
 
-      // Prepare full address data (city, governorate and details)
       const fullAddressData = {
         address,
         city_id: selectedCityId || null,
@@ -237,7 +222,6 @@ const CreateOrder = () => {
         is_work_address: isWorkAddress
       };
       if (!customerId) {
-        // Create a new customer
         const customerData = {
           name,
           phone,
@@ -247,15 +231,12 @@ const CreateOrder = () => {
         const newCustomer = await createCustomer.mutateAsync(customerData);
         customerId = newCustomer.id;
       } else if (existingCustomer) {
-        // If address data changed for existing customer, update their profile
         const hasAddressChanged = existingCustomer.address !== address || existingCustomer.city_id !== selectedCityId || existingCustomer.governorate_id !== selectedGovernorateId || existingCustomer.is_work_address !== isWorkAddress;
         if (hasAddressChanged) {
-          // In a real app, we would update the customer's address info here
           console.log("Address data changed, customer profile would be updated");
         }
       }
 
-      // Then create the order with proper reference number handling
       const orderData: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'> = {
         type: orderType === 'exchange' ? 'Exchange' : 'Deliver',
         customer_id: customerId,
@@ -270,17 +251,14 @@ const CreateOrder = () => {
         delivery_fees_lbp: deliveryFees.lbp,
         note: deliveryNotes || undefined,
         status: 'New',
-        // Only include reference_number if the user actually entered one
         ...(orderReference.trim() && { reference_number: orderReference.trim() })
       };
       
       await createOrder.mutateAsync(orderData);
       if (createAnother) {
-        // Reset form for creating another order
         resetForm();
         toast.success("Order created successfully. Create another one.");
       } else {
-        // Navigate back to orders list
         toast.success("Order created successfully.");
         navigate('/orders');
       }
@@ -296,7 +274,6 @@ const CreateOrder = () => {
     setSelectedCityId('');
     setSelectedCityName('');
 
-    // Clear area error if it exists
     if (errors.area) {
       setErrors(prev => ({
         ...prev,
@@ -309,7 +286,6 @@ const CreateOrder = () => {
     setSelectedCityId(cityId);
     setSelectedCityName(cityName);
 
-    // Clear area error if it exists
     if (errors.area) {
       setErrors(prev => ({
         ...prev,
@@ -321,7 +297,6 @@ const CreateOrder = () => {
   const handlePhoneChange = (value: string) => {
     setPhone(value);
 
-    // Clear phone error if it exists
     if (errors.phone) {
       setErrors(prev => ({
         ...prev,
@@ -332,11 +307,11 @@ const CreateOrder = () => {
 
   return (
     <MainLayout className="bg-gray-50/30">
-      <div className="min-h-screen" key={formKey}>
-        {/* Compact Page Container */}
-        <div className="max-w-6xl mx-auto px-6 py-6">
+      <div className="min-h-screen w-full" key={formKey}>
+        {/* Full width page container */}
+        <div className="w-full px-4 py-4">
           
-          {/* Integrated Header with Actions */}
+          {/* Integrated Header */}
           <div className="flex items-center justify-between mb-6 bg-white rounded-lg border border-gray-200 px-6 py-4 shadow-sm">
             <div>
               <h1 className="text-xl font-semibold text-gray-900">Create New Order</h1>
@@ -359,13 +334,13 @@ const CreateOrder = () => {
             </div>
           </div>
 
-          {/* Compressed Main Form Grid */}
+          {/* Main Form Grid - Full Width */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* Left Column - Customer & Address (2/3 width) */}
             <div className="lg:col-span-2 space-y-6">
               
-              {/* Customer Information - Compressed */}
+              {/* Customer Information */}
               <Card className="border border-gray-200 shadow-sm">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -388,8 +363,8 @@ const CreateOrder = () => {
                         onValidationChange={setPhoneValid} 
                         placeholder="Enter phone number" 
                         className={cn("h-9", errors.phone ? "border-red-300" : "border-gray-300")} 
-                        errorMessage={errors.phone} 
                       />
+                      {errors.phone && <p className="text-xs text-red-600">{errors.phone}</p>}
                       {searchingCustomers && (
                         <p className="text-xs text-blue-600 flex items-center gap-1">
                           <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -472,14 +447,14 @@ const CreateOrder = () => {
                         onValidationChange={setSecondaryPhoneValid} 
                         placeholder="Enter secondary phone" 
                         className={cn("h-9", errors.secondaryPhone ? "border-red-300" : "border-gray-300")} 
-                        errorMessage={errors.secondaryPhone} 
                       />
+                      {errors.secondaryPhone && <p className="text-xs text-red-600">{errors.secondaryPhone}</p>}
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              {/* Address Information - Compressed */}
+              {/* Address Information */}
               <Card className="border border-gray-200 shadow-sm">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -543,7 +518,7 @@ const CreateOrder = () => {
                 </CardContent>
               </Card>
 
-              {/* Package Information - Compressed */}
+              {/* Package Information */}
               <Card className="border border-gray-200 shadow-sm">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
@@ -624,41 +599,104 @@ const CreateOrder = () => {
                 </CardContent>
               </Card>
               
-              {/* Cash Collection - Compressed */}
+              {/* Cash Collection */}
               <Card className="border border-gray-200 shadow-sm">
-                <CardContent className="p-0">
-                  <ImprovedCashCollectionFields 
-                    enabled={cashCollection} 
-                    onEnabledChange={setCashCollection} 
-                    usdAmount={usdAmount} 
-                    lbpAmount={lbpAmount} 
-                    onUsdAmountChange={value => {
-                      setUsdAmount(value);
-                      if (errors.usdAmount || errors.lbpAmount) {
-                        setErrors(prev => ({
-                          ...prev,
-                          usdAmount: undefined,
-                          lbpAmount: undefined
-                        }));
-                      }
-                    }} 
-                    onLbpAmountChange={value => {
-                      setLbpAmount(value);
-                      if (errors.usdAmount || errors.lbpAmount) {
-                        setErrors(prev => ({
-                          ...prev,
-                          usdAmount: undefined,
-                          lbpAmount: undefined
-                        }));
-                      }
-                    }} 
-                    deliveryFees={deliveryFees} 
-                    errors={{
-                      usdAmount: errors.usdAmount,
-                      lbpAmount: errors.lbpAmount
-                    }} 
-                  />
-                </CardContent>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base font-semibold text-gray-900">Cash Collection</CardTitle>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="cash-collection" 
+                        checked={cashCollection} 
+                        onCheckedChange={checked => {
+                          if (typeof checked === 'boolean') {
+                            setCashCollection(checked);
+                          }
+                        }} 
+                        className="border-gray-300"
+                      />
+                    </div>
+                  </div>
+                </CardHeader>
+                {cashCollection && (
+                  <CardContent className="space-y-4">
+                    {/* USD and LBP Side by Side */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="usd-amount" className={cn("text-sm font-medium", errors.usdAmount ? "text-red-600" : "text-gray-700")}>
+                          USD Amount
+                        </Label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">$</div>
+                          <Input 
+                            id="usd-amount" 
+                            type="text" 
+                            value={usdAmount} 
+                            onChange={e => {
+                              const value = e.target.value.replace(/[^0-9.]/g, '');
+                              const decimalParts = value.split('.');
+                              if (decimalParts.length > 1) {
+                                const wholeNumber = decimalParts[0];
+                                const decimal = decimalParts.slice(1).join('').slice(0, 2);
+                                setUsdAmount(`${wholeNumber}.${decimal}`);
+                              } else {
+                                setUsdAmount(value);
+                              }
+                              if (errors.usdAmount || errors.lbpAmount) {
+                                setErrors(prev => ({
+                                  ...prev,
+                                  usdAmount: undefined,
+                                  lbpAmount: undefined
+                                }));
+                              }
+                            }}
+                            className={cn("h-9 pl-8", errors.usdAmount ? "border-red-300" : "border-gray-300")} 
+                            placeholder="0.00"
+                          />
+                        </div>
+                        {errors.usdAmount && <p className="text-xs text-red-600">{errors.usdAmount}</p>}
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="lbp-amount" className={cn("text-sm font-medium", errors.lbpAmount ? "text-red-600" : "text-gray-700")}>
+                          LBP Amount
+                        </Label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 text-xs">LBP</div>
+                          <Input 
+                            id="lbp-amount" 
+                            type="text" 
+                            value={lbpAmount ? parseInt(lbpAmount).toLocaleString('en-US') : ''} 
+                            onChange={e => {
+                              const rawValue = e.target.value.replace(/\D/g, '');
+                              setLbpAmount(rawValue);
+                              if (errors.usdAmount || errors.lbpAmount) {
+                                setErrors(prev => ({
+                                  ...prev,
+                                  usdAmount: undefined,
+                                  lbpAmount: undefined
+                                }));
+                              }
+                            }}
+                            className={cn("h-9 pl-10", errors.lbpAmount ? "border-red-300" : "border-gray-300")} 
+                            placeholder="0"
+                          />
+                        </div>
+                        {errors.lbpAmount && <p className="text-xs text-red-600">{errors.lbpAmount}</p>}
+                      </div>
+                    </div>
+                    
+                    {/* Delivery Fees */}
+                    <div className="flex items-center justify-between mt-4 p-3 rounded-md bg-gray-50 border border-gray-100">
+                      <span className="text-sm font-medium">Delivery Fee:</span>
+                      <div className="text-sm">
+                        <span className="font-medium">${deliveryFees.usd}</span> 
+                        <span className="mx-1 text-gray-500">|</span> 
+                        <span className="font-medium">{deliveryFees.lbp.toLocaleString()} LBP</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                )}
               </Card>
 
               {/* Package Type */}
