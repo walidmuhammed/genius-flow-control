@@ -333,57 +333,52 @@ const CreateOrder = () => {
   return (
     <MainLayout className="bg-gray-50/30">
       <div className="min-h-screen" key={formKey}>
-        {/* Clean Header - No sticky, properly integrated */}
-        <div className="bg-white border-b border-gray-200/60 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="py-6 sm:py-8">
-              <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
-                    Create New Order
-                  </h1>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Fill in the details to create a new delivery order
-                  </p>
-                </div>
-                
-                {/* Action Buttons - Responsive Stack */}
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => handleSubmit(true)}
-                    className="w-full sm:w-auto px-6 py-2.5 text-sm font-medium border-gray-300 hover:bg-gray-50 transition-colors"
-                  >
-                    Create & Add Another
-                  </Button>
-                  <Button 
-                    onClick={() => handleSubmit(false)}
-                    className="w-full sm:w-auto px-8 py-2.5 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a] transition-colors"
-                  >
-                    Create Order
-                  </Button>
-                </div>
-              </div>
+        {/* Main Content Container */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Page Header with Integrated Action Buttons */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+                Create New Order
+              </h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Fill in the details to create a new delivery order
+              </p>
+            </div>
+            
+            {/* Integrated Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => handleSubmit(true)}
+                className="px-6 py-2.5 text-sm font-medium border-gray-300 hover:bg-gray-50 transition-colors"
+              >
+                Create & Add Another
+              </Button>
+              <Button 
+                onClick={() => handleSubmit(false)}
+                className="px-8 py-2.5 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a] transition-colors"
+              >
+                Create Order
+              </Button>
             </div>
           </div>
-        </div>
 
-        {/* Main Content Area */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Grid Layout Container */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            {/* Left Column - Main Form (Mobile: Full Width, Desktop: 2/3) */}
-            <div className="lg:col-span-2 space-y-6">
+            {/* Left Column */}
+            <div className="space-y-6">
               
-              {/* Customer Information Card */}
-              <Card className="border border-gray-200/60 shadow-sm bg-white">
-                <CardHeader className="border-b border-gray-100 bg-gray-50/30">
+              {/* Customer Information */}
+              <Card className="border border-gray-200 shadow-sm bg-white">
+                <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                     <Phone className="h-5 w-5 text-gray-600" />
                     Customer Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 space-y-5">
+                <CardContent className="space-y-4">
                   {/* Phone Number */}
                   <div className="space-y-2">
                     <Label htmlFor="phone" className={cn("text-sm font-medium", errors.phone ? "text-red-600" : "text-gray-700")}>
@@ -482,13 +477,24 @@ const CreateOrder = () => {
                         }
                       }} 
                       className={cn(
-                        "h-11 transition-colors",
+                        "h-10 transition-colors",
                         errors.name ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]"
                       )} 
                     />
                     {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
                   </div>
-                  
+                </CardContent>
+              </Card>
+
+              {/* Address Information */}
+              <Card className="border border-gray-200 shadow-sm bg-white">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-gray-600" />
+                    Address Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   {/* Area Selection */}
                   <div className="space-y-2">
                     <Label className={cn("text-sm font-medium", errors.area ? "text-red-600" : "text-gray-700")}>
@@ -521,7 +527,7 @@ const CreateOrder = () => {
                         }
                       }} 
                       className={cn(
-                        "h-11 transition-colors",
+                        "h-10 transition-colors",
                         errors.address ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]"
                       )} 
                     />
@@ -559,9 +565,9 @@ const CreateOrder = () => {
                 </CardContent>
               </Card>
 
-              {/* Package Information Card */}
-              <Card className="border border-gray-200/60 shadow-sm bg-white">
-                <CardHeader className="border-b border-gray-100 bg-gray-50/30">
+              {/* Package Information */}
+              <Card className="border border-gray-200 shadow-sm bg-white">
+                <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                       <Package className="h-5 w-5 text-gray-600" />
@@ -577,7 +583,7 @@ const CreateOrder = () => {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="p-6 space-y-5">
+                <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="description" className="text-sm font-medium text-gray-700">
                       Package Description
@@ -588,7 +594,7 @@ const CreateOrder = () => {
                       placeholder="e.g., Electronics - Phone case - Black - Medium" 
                       value={description} 
                       onChange={e => setDescription(e.target.value)} 
-                      className="h-11 border-gray-300 focus:border-[#DC291E] transition-colors"
+                      className="h-10 border-gray-300 focus:border-[#DC291E] transition-colors"
                     />
                     <p className="text-xs text-gray-500">
                       Brief description helps with handling and delivery
@@ -605,30 +611,30 @@ const CreateOrder = () => {
                       min={1} 
                       value={itemsCount} 
                       onChange={e => setItemsCount(parseInt(e.target.value) || 1)} 
-                      className="h-11 border-gray-300 focus:border-[#DC291E] transition-colors"
+                      className="h-10 border-gray-300 focus:border-[#DC291E] transition-colors"
                     />
                   </div>
                 </CardContent>
               </Card>
             </div>
             
-            {/* Right Column - Sidebar (Mobile: Full Width, Desktop: 1/3) */}
+            {/* Right Column */}
             <div className="space-y-6">
               
-              {/* Order Type Card */}
-              <Card className="border border-gray-200/60 shadow-sm bg-white">
-                <CardHeader className="border-b border-gray-100 bg-gray-50/30 pb-4">
+              {/* Order Type */}
+              <Card className="border border-gray-200 shadow-sm bg-white">
+                <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold text-gray-900">
                     Order Type
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6">
+                <CardContent>
                   <div className="grid grid-cols-2 gap-3">
                     <Button 
                       variant={orderType === 'shipment' ? "default" : "outline"} 
                       onClick={() => setOrderType('shipment')}
                       className={cn(
-                        "h-12 font-medium transition-all",
+                        "h-11 font-medium transition-all",
                         orderType === 'shipment' 
                           ? "bg-[#DC291E] hover:bg-[#c0211a] text-white shadow-sm" 
                           : "border-gray-300 hover:bg-gray-50 text-gray-700"
@@ -640,7 +646,7 @@ const CreateOrder = () => {
                       variant={orderType === 'exchange' ? "default" : "outline"} 
                       onClick={() => setOrderType('exchange')}
                       className={cn(
-                        "h-12 font-medium transition-all",
+                        "h-11 font-medium transition-all",
                         orderType === 'exchange' 
                           ? "bg-[#DC291E] hover:bg-[#c0211a] text-white shadow-sm" 
                           : "border-gray-300 hover:bg-gray-50 text-gray-700"
@@ -652,8 +658,8 @@ const CreateOrder = () => {
                 </CardContent>
               </Card>
               
-              {/* Cash Collection Card */}
-              <Card className="border border-gray-200/60 shadow-sm bg-white">
+              {/* Cash Collection */}
+              <Card className="border border-gray-200 shadow-sm bg-white">
                 <CardContent className="p-0">
                   <ImprovedCashCollectionFields 
                     enabled={cashCollection} 
@@ -689,20 +695,20 @@ const CreateOrder = () => {
                 </CardContent>
               </Card>
 
-              {/* Package Type Card */}
-              <Card className="border border-gray-200/60 shadow-sm bg-white">
-                <CardHeader className="border-b border-gray-100 bg-gray-50/30 pb-4">
+              {/* Package Type */}
+              <Card className="border border-gray-200 shadow-sm bg-white">
+                <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold text-gray-900">
                     Package Type
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 space-y-5">
+                <CardContent className="space-y-4">
                   <div className="grid grid-cols-3 gap-2">
                     <Button 
                       variant={packageType === "parcel" ? "default" : "outline"} 
                       onClick={() => setPackageType("parcel")}
                       className={cn(
-                        "h-16 flex-col gap-1.5 text-xs font-medium transition-all",
+                        "h-14 flex-col gap-1.5 text-xs font-medium transition-all",
                         packageType === "parcel" 
                           ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
                           : "border-gray-300 hover:bg-gray-50 text-gray-700"
@@ -715,7 +721,7 @@ const CreateOrder = () => {
                       variant={packageType === "document" ? "default" : "outline"} 
                       onClick={() => setPackageType("document")}
                       className={cn(
-                        "h-16 flex-col gap-1.5 text-xs font-medium transition-all",
+                        "h-14 flex-col gap-1.5 text-xs font-medium transition-all",
                         packageType === "document" 
                           ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
                           : "border-gray-300 hover:bg-gray-50 text-gray-700"
@@ -728,7 +734,7 @@ const CreateOrder = () => {
                       variant={packageType === "bulky" ? "default" : "outline"} 
                       onClick={() => setPackageType("bulky")}
                       className={cn(
-                        "h-16 flex-col gap-1.5 text-xs font-medium transition-all",
+                        "h-14 flex-col gap-1.5 text-xs font-medium transition-all",
                         packageType === "bulky" 
                           ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
                           : "border-gray-300 hover:bg-gray-50 text-gray-700"
@@ -770,14 +776,14 @@ const CreateOrder = () => {
                 </CardContent>
               </Card>
               
-              {/* Additional Information Card */}
-              <Card className="border border-gray-200/60 shadow-sm bg-white">
-                <CardHeader className="border-b border-gray-100 bg-gray-50/30 pb-4">
+              {/* Additional Information */}
+              <Card className="border border-gray-200 shadow-sm bg-white">
+                <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold text-gray-900">
                     Additional Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6 space-y-5">
+                <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="order-reference" className="text-sm font-medium text-gray-700">
                       Order Reference
@@ -788,7 +794,7 @@ const CreateOrder = () => {
                       placeholder="Your tracking reference" 
                       value={orderReference} 
                       onChange={e => setOrderReference(e.target.value)} 
-                      className="h-11 border-gray-300 focus:border-[#DC291E] transition-colors"
+                      className="h-10 border-gray-300 focus:border-[#DC291E] transition-colors"
                     />
                   </div>
                   
@@ -801,7 +807,7 @@ const CreateOrder = () => {
                     <Textarea 
                       id="delivery-notes" 
                       placeholder="Special delivery instructions..." 
-                      rows={4} 
+                      rows={3} 
                       value={deliveryNotes} 
                       onChange={e => setDeliveryNotes(e.target.value)} 
                       className="resize-none border-gray-300 focus:border-[#DC291E] transition-colors"
@@ -811,6 +817,28 @@ const CreateOrder = () => {
               </Card>
             </div>
           </div>
+
+          {/* Mobile Action Buttons - Sticky Bottom */}
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-10">
+            <div className="flex flex-col gap-3 max-w-md mx-auto">
+              <Button 
+                onClick={() => handleSubmit(false)}
+                className="w-full py-3 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a] transition-colors"
+              >
+                Create Order
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => handleSubmit(true)}
+                className="w-full py-3 text-sm font-medium border-gray-300 hover:bg-gray-50 transition-colors"
+              >
+                Create & Add Another
+              </Button>
+            </div>
+          </div>
+
+          {/* Mobile Bottom Padding */}
+          <div className="lg:hidden h-32"></div>
         </div>
       </div>
       
