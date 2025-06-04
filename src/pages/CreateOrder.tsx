@@ -333,79 +333,95 @@ const CreateOrder = () => {
   return (
     <MainLayout className="bg-gray-50/30">
       <div className="min-h-screen" key={formKey}>
-        {/* Main Content Container */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Page Header with Integrated Action Buttons */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4">
+        {/* Compact Page Container */}
+        <div className="max-w-6xl mx-auto px-6 py-6">
+          
+          {/* Integrated Header with Actions */}
+          <div className="flex items-center justify-between mb-6 bg-white rounded-lg border border-gray-200 px-6 py-4 shadow-sm">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-                Create New Order
-              </h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Fill in the details to create a new delivery order
-              </p>
+              <h1 className="text-xl font-semibold text-gray-900">Create New Order</h1>
+              <p className="text-sm text-gray-500 mt-0.5">Fill in the details to create a new delivery order</p>
             </div>
-            
-            {/* Integrated Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex gap-3">
               <Button 
                 variant="outline" 
                 onClick={() => handleSubmit(true)}
-                className="px-6 py-2.5 text-sm font-medium border-gray-300 hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-sm"
               >
                 Create & Add Another
               </Button>
               <Button 
                 onClick={() => handleSubmit(false)}
-                className="px-8 py-2.5 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a] transition-colors"
+                className="px-6 py-2 text-sm bg-[#DC291E] hover:bg-[#c0211a]"
               >
                 Create Order
               </Button>
             </div>
           </div>
 
-          {/* Grid Layout Container */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Compressed Main Form Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* Left Column */}
-            <div className="space-y-6">
+            {/* Left Column - Customer & Address (2/3 width) */}
+            <div className="lg:col-span-2 space-y-6">
               
-              {/* Customer Information */}
-              <Card className="border border-gray-200 shadow-sm bg-white">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                    <Phone className="h-5 w-5 text-gray-600" />
+              {/* Customer Information - Compressed */}
+              <Card className="border border-gray-200 shadow-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-gray-600" />
                     Customer Information
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Phone Number */}
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className={cn("text-sm font-medium", errors.phone ? "text-red-600" : "text-gray-700")}>
-                      Phone Number
-                    </Label>
-                    <PhoneInput 
-                      id="phone" 
-                      value={phone} 
-                      onChange={handlePhoneChange} 
-                      defaultCountry="LB" 
-                      onValidationChange={setPhoneValid} 
-                      placeholder="Enter phone number" 
-                      className={errors.phone ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]"} 
-                      errorMessage={errors.phone} 
-                    />
-                    {searchingCustomers && (
-                      <p className="text-xs text-blue-600 flex items-center gap-1">
-                        <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                        Searching for existing customer...
-                      </p>
-                    )}
-                    {existingCustomer && (
-                      <p className="text-xs text-green-600 flex items-center gap-1">
-                        <Check className="h-3 w-3" />
-                        Existing customer found!
-                      </p>
-                    )}
+                  {/* Phone and Name Side by Side */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className={cn("text-sm font-medium", errors.phone ? "text-red-600" : "text-gray-700")}>
+                        Phone Number
+                      </Label>
+                      <PhoneInput 
+                        id="phone" 
+                        value={phone} 
+                        onChange={handlePhoneChange} 
+                        defaultCountry="LB" 
+                        onValidationChange={setPhoneValid} 
+                        placeholder="Enter phone number" 
+                        className={cn("h-9", errors.phone ? "border-red-300" : "border-gray-300")} 
+                        errorMessage={errors.phone} 
+                      />
+                      {searchingCustomers && (
+                        <p className="text-xs text-blue-600 flex items-center gap-1">
+                          <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                          Searching...
+                        </p>
+                      )}
+                      {existingCustomer && (
+                        <p className="text-xs text-green-600 flex items-center gap-1">
+                          <Check className="h-3 w-3" />
+                          Customer found!
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className={cn("text-sm font-medium", errors.name ? "text-red-600" : "text-gray-700")}>
+                        Full Name
+                      </Label>
+                      <Input 
+                        id="name" 
+                        placeholder="Enter customer full name" 
+                        value={name} 
+                        onChange={e => {
+                          setName(e.target.value);
+                          if (errors.name) {
+                            setErrors(prev => ({ ...prev, name: undefined }));
+                          }
+                        }} 
+                        className={cn("h-9", errors.name ? "border-red-300" : "border-gray-300")} 
+                      />
+                      {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
+                    </div>
                   </div>
                   
                   {/* Secondary Phone */}
@@ -415,9 +431,9 @@ const CreateOrder = () => {
                       variant="outline" 
                       size="sm"
                       onClick={() => setIsSecondaryPhone(true)}
-                      className="text-sm text-gray-600 border-gray-300 hover:bg-gray-50"
+                      className="text-xs h-8"
                     >
-                      <Plus className="h-4 w-4 mr-1.5" />
+                      <Plus className="h-3 w-3 mr-1" />
                       Add secondary phone
                     </Button>
                   )}
@@ -438,7 +454,7 @@ const CreateOrder = () => {
                               setErrors(prev => ({ ...prev, secondaryPhone: undefined }));
                             }
                           }}
-                          className="text-xs text-gray-500 hover:text-gray-700 h-auto p-1"
+                          className="text-xs h-6 px-2"
                         >
                           Remove
                         </Button>
@@ -455,42 +471,19 @@ const CreateOrder = () => {
                         defaultCountry="LB" 
                         onValidationChange={setSecondaryPhoneValid} 
                         placeholder="Enter secondary phone" 
-                        className={errors.secondaryPhone ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]"} 
+                        className={cn("h-9", errors.secondaryPhone ? "border-red-300" : "border-gray-300")} 
                         errorMessage={errors.secondaryPhone} 
                       />
                     </div>
                   )}
-                  
-                  {/* Customer Name */}
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className={cn("text-sm font-medium", errors.name ? "text-red-600" : "text-gray-700")}>
-                      Full Name
-                    </Label>
-                    <Input 
-                      id="name" 
-                      placeholder="Enter customer full name" 
-                      value={name} 
-                      onChange={e => {
-                        setName(e.target.value);
-                        if (errors.name) {
-                          setErrors(prev => ({ ...prev, name: undefined }));
-                        }
-                      }} 
-                      className={cn(
-                        "h-10 transition-colors",
-                        errors.name ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]"
-                      )} 
-                    />
-                    {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
-                  </div>
                 </CardContent>
               </Card>
 
-              {/* Address Information */}
-              <Card className="border border-gray-200 shadow-sm bg-white">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-gray-600" />
+              {/* Address Information - Compressed */}
+              <Card className="border border-gray-200 shadow-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-gray-600" />
                     Address Information
                   </CardTitle>
                 </CardHeader>
@@ -526,16 +519,13 @@ const CreateOrder = () => {
                           setErrors(prev => ({ ...prev, address: undefined }));
                         }
                       }} 
-                      className={cn(
-                        "h-10 transition-colors",
-                        errors.address ? "border-red-300 focus:border-red-500" : "border-gray-300 focus:border-[#DC291E]"
-                      )} 
+                      className={cn("h-9", errors.address ? "border-red-300" : "border-gray-300")} 
                     />
                     {errors.address && <p className="text-xs text-red-600">{errors.address}</p>}
                   </div>
                   
                   {/* Work Address Checkbox */}
-                  <div className="flex items-center space-x-3 pt-2">
+                  <div className="flex items-center space-x-3">
                     <Checkbox 
                       id="work-address" 
                       checked={isWorkAddress} 
@@ -546,111 +536,87 @@ const CreateOrder = () => {
                       }} 
                       className="border-gray-300"
                     />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="work-address" className="text-sm font-medium text-gray-700 cursor-pointer">
-                        This is a work/business address
-                      </Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-gray-400 cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Mark if delivery is to a business location</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
+                    <Label htmlFor="work-address" className="text-sm text-gray-700 cursor-pointer">
+                      This is a work/business address
+                    </Label>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Package Information */}
-              <Card className="border border-gray-200 shadow-sm bg-white">
-                <CardHeader className="pb-4">
+              {/* Package Information - Compressed */}
+              <Card className="border border-gray-200 shadow-sm">
+                <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                      <Package className="h-5 w-5 text-gray-600" />
+                    <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                      <Package className="h-4 w-4 text-gray-600" />
                       Package Information
                     </CardTitle>
                     <Button 
                       variant="link" 
                       onClick={() => setGuidelinesModalOpen(true)}
-                      className="text-sm text-blue-600 hover:text-blue-700 p-0 h-auto font-medium"
+                      className="text-xs text-blue-600 p-0 h-auto"
                     >
-                      <AlertTriangle className="h-4 w-4 mr-1.5" />
-                      View Guidelines
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Guidelines
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                      Package Description
-                      <span className="text-xs text-gray-500 font-normal ml-2">(Optional)</span>
-                    </Label>
-                    <Input 
-                      id="description" 
-                      placeholder="e.g., Electronics - Phone case - Black - Medium" 
-                      value={description} 
-                      onChange={e => setDescription(e.target.value)} 
-                      className="h-10 border-gray-300 focus:border-[#DC291E] transition-colors"
-                    />
-                    <p className="text-xs text-gray-500">
-                      Brief description helps with handling and delivery
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="items-count" className="text-sm font-medium text-gray-700">
-                      Number of Items
-                    </Label>
-                    <Input 
-                      id="items-count" 
-                      type="number" 
-                      min={1} 
-                      value={itemsCount} 
-                      onChange={e => setItemsCount(parseInt(e.target.value) || 1)} 
-                      className="h-10 border-gray-300 focus:border-[#DC291E] transition-colors"
-                    />
+                  {/* Description and Items Count Side by Side */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+                        Package Description
+                        <span className="text-xs text-gray-500 ml-1">(Optional)</span>
+                      </Label>
+                      <Input 
+                        id="description" 
+                        placeholder="Electronics, clothes, etc." 
+                        value={description} 
+                        onChange={e => setDescription(e.target.value)} 
+                        className="h-9 border-gray-300"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="items-count" className="text-sm font-medium text-gray-700">
+                        Number of Items
+                      </Label>
+                      <Input 
+                        id="items-count" 
+                        type="number" 
+                        min={1} 
+                        value={itemsCount} 
+                        onChange={e => setItemsCount(parseInt(e.target.value) || 1)} 
+                        className="h-9 border-gray-300"
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
             
-            {/* Right Column */}
+            {/* Right Column - Order Details (1/3 width) */}
             <div className="space-y-6">
               
               {/* Order Type */}
-              <Card className="border border-gray-200 shadow-sm bg-white">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg font-semibold text-gray-900">
-                    Order Type
-                  </CardTitle>
+              <Card className="border border-gray-200 shadow-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold text-gray-900">Order Type</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     <Button 
                       variant={orderType === 'shipment' ? "default" : "outline"} 
                       onClick={() => setOrderType('shipment')}
-                      className={cn(
-                        "h-11 font-medium transition-all",
-                        orderType === 'shipment' 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white shadow-sm" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
+                      className={cn("h-9 text-sm", orderType === 'shipment' ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
                     >
                       Shipment
                     </Button>
                     <Button 
                       variant={orderType === 'exchange' ? "default" : "outline"} 
                       onClick={() => setOrderType('exchange')}
-                      className={cn(
-                        "h-11 font-medium transition-all",
-                        orderType === 'exchange' 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white shadow-sm" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
+                      className={cn("h-9 text-sm", orderType === 'exchange' ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
                     >
                       Exchange
                     </Button>
@@ -658,8 +624,8 @@ const CreateOrder = () => {
                 </CardContent>
               </Card>
               
-              {/* Cash Collection */}
-              <Card className="border border-gray-200 shadow-sm bg-white">
+              {/* Cash Collection - Compressed */}
+              <Card className="border border-gray-200 shadow-sm">
                 <CardContent className="p-0">
                   <ImprovedCashCollectionFields 
                     enabled={cashCollection} 
@@ -696,57 +662,40 @@ const CreateOrder = () => {
               </Card>
 
               {/* Package Type */}
-              <Card className="border border-gray-200 shadow-sm bg-white">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg font-semibold text-gray-900">
-                    Package Type
-                  </CardTitle>
+              <Card className="border border-gray-200 shadow-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold text-gray-900">Package Type</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3">
                   <div className="grid grid-cols-3 gap-2">
                     <Button 
                       variant={packageType === "parcel" ? "default" : "outline"} 
                       onClick={() => setPackageType("parcel")}
-                      className={cn(
-                        "h-14 flex-col gap-1.5 text-xs font-medium transition-all",
-                        packageType === "parcel" 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
+                      className={cn("h-12 flex-col gap-1 text-xs", packageType === "parcel" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
                     >
-                      <Package className="h-4 w-4" />
+                      <Package className="h-3 w-3" />
                       Parcel
                     </Button>
                     <Button 
                       variant={packageType === "document" ? "default" : "outline"} 
                       onClick={() => setPackageType("document")}
-                      className={cn(
-                        "h-14 flex-col gap-1.5 text-xs font-medium transition-all",
-                        packageType === "document" 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
+                      className={cn("h-12 flex-col gap-1 text-xs", packageType === "document" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
                     >
-                      <FileText className="h-4 w-4" />
+                      <FileText className="h-3 w-3" />
                       Document
                     </Button>
                     <Button 
                       variant={packageType === "bulky" ? "default" : "outline"} 
                       onClick={() => setPackageType("bulky")}
-                      className={cn(
-                        "h-14 flex-col gap-1.5 text-xs font-medium transition-all",
-                        packageType === "bulky" 
-                          ? "bg-[#DC291E] hover:bg-[#c0211a] text-white" 
-                          : "border-gray-300 hover:bg-gray-50 text-gray-700"
-                      )}
+                      className={cn("h-12 flex-col gap-1 text-xs", packageType === "bulky" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
                     >
-                      <Package className="h-4 w-4" />
+                      <Package className="h-3 w-3" />
                       Bulky
                     </Button>
                   </div>
                   
                   {/* Allow Opening Checkbox */}
-                  <div className="flex items-center space-x-3 pt-3 border-t border-gray-100">
+                  <div className="flex items-center space-x-2 pt-2 border-t border-gray-100">
                     <Checkbox 
                       id="allow-opening" 
                       checked={allowOpening} 
@@ -757,52 +706,35 @@ const CreateOrder = () => {
                       }} 
                       className="border-gray-300"
                     />
-                    <div className="flex items-center gap-1.5">
-                      <Label htmlFor="allow-opening" className="text-sm font-medium text-gray-700 cursor-pointer">
-                        Allow package inspection
-                      </Label>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-gray-400 cursor-help" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Allow customers to inspect contents before accepting</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
+                    <Label htmlFor="allow-opening" className="text-sm text-gray-700 cursor-pointer">
+                      Allow package inspection
+                    </Label>
                   </div>
                 </CardContent>
               </Card>
               
               {/* Additional Information */}
-              <Card className="border border-gray-200 shadow-sm bg-white">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg font-semibold text-gray-900">
-                    Additional Information
-                  </CardTitle>
+              <Card className="border border-gray-200 shadow-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-semibold text-gray-900">Additional Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="order-reference" className="text-sm font-medium text-gray-700">
-                      Order Reference
-                      <span className="text-xs text-gray-500 font-normal ml-2">(Optional)</span>
+                      Order Reference <span className="text-xs text-gray-500">(Optional)</span>
                     </Label>
                     <Input 
                       id="order-reference" 
                       placeholder="Your tracking reference" 
                       value={orderReference} 
                       onChange={e => setOrderReference(e.target.value)} 
-                      className="h-10 border-gray-300 focus:border-[#DC291E] transition-colors"
+                      className="h-9 border-gray-300"
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="delivery-notes" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <ScrollText className="h-4 w-4 text-gray-600" />
-                      Delivery Notes
-                      <span className="text-xs text-gray-500 font-normal">(Optional)</span>
+                    <Label htmlFor="delivery-notes" className="text-sm font-medium text-gray-700">
+                      Delivery Notes <span className="text-xs text-gray-500">(Optional)</span>
                     </Label>
                     <Textarea 
                       id="delivery-notes" 
@@ -810,7 +742,7 @@ const CreateOrder = () => {
                       rows={3} 
                       value={deliveryNotes} 
                       onChange={e => setDeliveryNotes(e.target.value)} 
-                      className="resize-none border-gray-300 focus:border-[#DC291E] transition-colors"
+                      className="resize-none border-gray-300 text-sm"
                     />
                   </div>
                 </CardContent>
@@ -820,17 +752,17 @@ const CreateOrder = () => {
 
           {/* Mobile Action Buttons - Sticky Bottom */}
           <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-10">
-            <div className="flex flex-col gap-3 max-w-md mx-auto">
+            <div className="flex flex-col gap-3">
               <Button 
                 onClick={() => handleSubmit(false)}
-                className="w-full py-3 text-sm font-medium bg-[#DC291E] hover:bg-[#c0211a] transition-colors"
+                className="w-full py-3 bg-[#DC291E] hover:bg-[#c0211a]"
               >
                 Create Order
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => handleSubmit(true)}
-                className="w-full py-3 text-sm font-medium border-gray-300 hover:bg-gray-50 transition-colors"
+                className="w-full py-3 border-gray-300"
               >
                 Create & Add Another
               </Button>
