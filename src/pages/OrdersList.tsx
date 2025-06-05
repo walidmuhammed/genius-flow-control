@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { AlertCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -17,6 +16,7 @@ import { EnhancedOrdersTable } from '@/components/orders/EnhancedOrdersTable';
 import { BulkActionsBar } from '@/components/orders/BulkActionsBar';
 import { OrdersUnifiedContainer } from '@/components/orders/OrdersUnifiedContainer';
 import OrderDetailsDialog from '@/components/orders/OrderDetailsDialog';
+import cn from 'classnames';
 
 const OrdersList: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
@@ -26,7 +26,7 @@ const OrdersList: React.FC = () => {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderWithCustomer | null>(null);
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
-  const { isMobile } = useScreenSize();
+  const { isMobile, isTablet } = useScreenSize();
   
   // Fetch orders from the database using our hooks
   const { data: allOrders, isLoading: isLoadingAllOrders, error: ordersError } = useOrders();
@@ -269,39 +269,29 @@ const OrdersList: React.FC = () => {
               {/* Orders Content */}
               <div className="p-4 sm:p-6">
                 {filteredOrders.length > 0 ? (
-                  isMobile ? (
-                    <div className="space-y-4">
-                      {filteredOrders.map((order, index) => (
-                        <motion.div
-                          key={order.id}
-                          className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
-                          onClick={() => handleViewOrder(order)}
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="font-semibold text-[#DB271E]">
-                              #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {order.status}
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="font-medium">{order.customer?.name}</div>
-                            <div className="text-sm text-gray-600">{order.customer?.phone}</div>
-                            <div className="text-sm text-gray-600">
-                              {order.customer?.city_name}, {order.customer?.governorate_name}
-                            </div>
-                            {order.cash_collection_usd > 0 && (
-                              <div className="font-semibold text-green-600">
-                                ${order.cash_collection_usd}
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))}
+                  isMobile || isTablet ? (
+                    <div className={cn(
+                      "w-full",
+                      isTablet ? "grid grid-cols-2 gap-4" : "space-y-4"
+                    )}>
+                      <OrdersTableMobile
+                        orders={filteredOrdersForMobile}
+                        selectedOrders={selectedOrders}
+                        toggleSelectOrder={(orderId) => {
+                          setSelectedOrders(prev => 
+                            prev.includes(orderId) 
+                              ? prev.filter(id => id !== orderId)
+                              : [...prev, orderId]
+                          );
+                        }}
+                        onViewDetails={(order) => {
+                          const originalOrder = filteredOrders.find(o => o.id === order.id);
+                          if (originalOrder) {
+                            handleViewOrder(originalOrder);
+                          }
+                        }}
+                        showActions={true}
+                      />
                     </div>
                   ) : (
                     <EnhancedOrdersTable

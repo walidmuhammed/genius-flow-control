@@ -4,7 +4,7 @@ import { Order } from './OrdersTableRow';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Eye, Printer, MoreVertical, ChevronLeft, ChevronRight, Edit, Phone, MapPin, DollarSign } from 'lucide-react';
+import { Eye, Printer, MoreVertical, Edit, Phone, MapPin, DollarSign, Calendar, Hash, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -31,7 +31,7 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
   showActions = true
 }) => {
   const getStatusBadge = (status: string) => {
-    const baseClasses = "py-1 px-2 text-xs font-medium rounded-full";
+    const baseClasses = "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border";
     
     switch (status.toLowerCase()) {
       case 'new':
@@ -49,158 +49,200 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
       case 'paid':
         return <Badge className={`${baseClasses} bg-teal-50 text-teal-700 border-teal-200`}>{status}</Badge>;
       case 'awaiting action':
-        return <Badge className={`${baseClasses} bg-amber-100 text-amber-800 border-amber-300`}>{status}</Badge>;
+        return <Badge className={`${baseClasses} bg-amber-50 text-amber-700 border-amber-200`}>{status}</Badge>;
       default:
         return <Badge className={`${baseClasses} bg-gray-50 text-gray-700 border-gray-200`}>{status}</Badge>;
     }
   };
 
+  const canEdit = (order: Order) => order.status === 'New';
+  const canDelete = (order: Order) => order.status === 'New';
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 pb-4">
       {orders.map((order, index) => (
         <motion.div 
           key={order.id} 
           className={cn(
-            "bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 transition-all duration-200",
+            "bg-white rounded-xl border border-gray-100 transition-all duration-200 overflow-hidden",
+            "active:scale-[0.98] active:shadow-sm",
             selectedOrders.includes(order.id) 
-              ? "border-[#DC291E]/30 bg-[#DC291E]/5" 
-              : "hover:shadow-md hover:border-gray-200 dark:hover:border-gray-600",
-            "active:scale-[0.98]"
+              ? "border-[#DC291E]/30 bg-[#DC291E]/5 shadow-sm" 
+              : "hover:shadow-md hover:border-gray-200"
           )}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: index * 0.05 }}
-          whileTap={{ scale: 0.98 }}
+          onClick={() => onViewDetails(order)}
         >
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <Checkbox 
-                checked={selectedOrders.includes(order.id)}
-                onCheckedChange={() => toggleSelectOrder(order.id)}
-                className="data-[state=checked]:bg-[#DC291E] data-[state=checked]:border-[#DC291E] rounded-md shrink-0"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate">{order.id}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{order.referenceNumber}</p>
+          {/* Card Header */}
+          <div className="p-4 pb-3">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div 
+                  className="shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Checkbox 
+                    checked={selectedOrders.includes(order.id)}
+                    onCheckedChange={() => toggleSelectOrder(order.id)}
+                    className="data-[state=checked]:bg-[#DC291E] data-[state=checked]:border-[#DC291E] rounded-md"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-[#DC291E] text-base">#{order.id}</span>
+                    <Badge variant="outline" className="text-xs px-2 py-0.5 bg-gray-50 text-gray-600 border-gray-200">
+                      {order.type}
+                    </Badge>
+                  </div>
+                  {order.referenceNumber && (
+                    <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                      <Hash className="h-3 w-3" />
+                      <span className="truncate">{order.referenceNumber}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            {getStatusBadge(order.status)}
-          </div>
-          
-          <div className="space-y-3 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center shrink-0">
-                <Phone className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{order.customer.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{order.customer.phone}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center shrink-0">
-                <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-900 dark:text-gray-100 truncate">{order.location.city}, {order.location.area}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{order.type}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center shrink-0">
-                <DollarSign className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">${order.amount.valueUSD}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Collection Amount</p>
+              <div className="shrink-0">
+                {getStatusBadge(order.status)}
               </div>
             </div>
           </div>
+
+          {/* Card Content */}
+          <div className="px-4 pb-4 space-y-3">
+            {/* Customer Info */}
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                <User className="h-4 w-4 text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 text-sm truncate">{order.customer.name}</p>
+                <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
+                  <Phone className="h-3 w-3" />
+                  <span>{order.customer.phone}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Location */}
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center shrink-0">
+                <MapPin className="h-4 w-4 text-green-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-900 font-medium truncate">
+                  {order.location.city}, {order.location.area}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">Delivery Location</p>
+              </div>
+            </div>
+            
+            {/* Amount & Date Row */}
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                  <DollarSign className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">${order.amount.valueUSD}</p>
+                  <p className="text-xs text-gray-500">Collection</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <Calendar className="h-3 w-3" />
+                <span>2 days ago</span>
+              </div>
+            </div>
+          </div>
           
+          {/* Actions Footer */}
           {showActions && (
-            <div className="flex justify-end gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+            <div className="flex items-center justify-between px-4 py-3 bg-gray-50/50 border-t border-gray-100">
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => onViewDetails(order)}
+                className="h-9 px-3 rounded-lg hover:bg-white/80 text-gray-600 hover:text-gray-900 text-xs font-medium"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetails(order);
+                }}
               >
-                <Eye className="h-4 w-4" />
+                <Eye className="h-4 w-4 mr-1.5" />
+                View Details
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 w-9 p-0 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 w-9 p-0 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                <Printer className="h-4 w-4" />
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+              
+              <div className="flex items-center gap-1">
+                {canEdit(order) && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-9 w-9 p-0 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="h-9 w-9 p-0 rounded-lg hover:bg-white/80"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <MoreVertical className="h-4 w-4" />
+                    <Edit className="h-4 w-4 text-gray-500" />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-white dark:bg-gray-800 rounded-xl border-gray-200 dark:border-gray-700 shadow-xl z-50">
-                  <DropdownMenuItem className="rounded-lg">View Order Details</DropdownMenuItem>
-                  <DropdownMenuItem className="rounded-lg">Edit Order</DropdownMenuItem>
-                  <DropdownMenuItem className="rounded-lg">Print Shipping Label</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600 rounded-lg">Cancel Order</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                )}
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 w-9 p-0 rounded-lg hover:bg-white/80"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Printer className="h-4 w-4 text-gray-500" />
+                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 w-9 p-0 rounded-lg hover:bg-white/80"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreVertical className="h-4 w-4 text-gray-500" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent 
+                    align="end" 
+                    className="bg-white rounded-xl border-gray-200 shadow-xl z-50 min-w-[160px]"
+                    sideOffset={4}
+                  >
+                    <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm">
+                      View Order Details
+                    </DropdownMenuItem>
+                    {canEdit(order) && (
+                      <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm">
+                        Edit Order
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm">
+                      Print Shipping Label
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm">
+                      Create Support Ticket
+                    </DropdownMenuItem>
+                    {canEdit(order) && (
+                      <>
+                        <DropdownMenuSeparator className="my-1" />
+                        <DropdownMenuItem className="text-red-600 rounded-lg py-2.5 px-3 text-sm">
+                          Cancel Order
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600 rounded-lg py-2.5 px-3 text-sm">
+                          Delete Order
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           )}
         </motion.div>
       ))}
-      
-      {orders.length > 0 && (
-        <motion.div 
-          className="bg-white dark:bg-gray-800 rounded-2xl p-4 flex items-center justify-between shadow-sm border border-gray-100 dark:border-gray-700"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <span className="text-sm text-gray-600 dark:text-gray-300">
-            {orders.length} orders
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 w-9 p-0 rounded-xl border-gray-200 dark:border-gray-700"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 w-9 p-0 rounded-xl bg-[#DC291E] text-white border-[#DC291E] hover:bg-[#DC291E]/90"
-            >
-              1
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 w-9 p-0 rounded-xl border-gray-200 dark:border-gray-700"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 };
