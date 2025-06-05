@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { AlertCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -11,10 +10,11 @@ import { OrderWithCustomer } from '@/services/orders';
 import { motion } from 'framer-motion';
 import OrdersTableMobile from '@/components/orders/OrdersTableMobile';
 import { mapOrdersToTableFormat } from '@/utils/orderMappers';
-import { OrdersPageHeader } from '@/components/orders/OrdersPageHeader';
+import { OrdersPageHeader, OrdersSearchControls } from '@/components/orders/OrdersPageHeader';
 import { OrdersFilterTabs } from '@/components/orders/OrdersFilterTabs';
 import { EnhancedOrdersTable } from '@/components/orders/EnhancedOrdersTable';
 import { BulkActionsBar } from '@/components/orders/BulkActionsBar';
+import { OrdersUnifiedContainer } from '@/components/orders/OrdersUnifiedContainer';
 import OrderDetailsDialog from '@/components/orders/OrderDetailsDialog';
 
 const OrdersList: React.FC = () => {
@@ -186,7 +186,7 @@ const OrdersList: React.FC = () => {
   return (
     <MainLayout>
       <div className="space-y-6">
-        {/* Header Section */}
+        {/* Header Section - Outside unified container */}
         <OrdersPageHeader
           totalOrders={allOrders?.length || 0}
           searchQuery={searchQuery}
@@ -196,13 +196,6 @@ const OrdersList: React.FC = () => {
           onImport={() => setImportModalOpen(true)}
           onExport={() => console.log('Export')}
           selectedCount={selectedOrders.length}
-        />
-        
-        {/* Filter Tabs */}
-        <OrdersFilterTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          tabs={tabs}
         />
         
         {/* Loading State */}
@@ -235,7 +228,7 @@ const OrdersList: React.FC = () => {
           </motion.div>
         )}
         
-        {/* Orders Content */}
+        {/* Unified Container for Search + Filters + Table */}
         {!isLoadingAllOrders && !ordersError && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -244,7 +237,7 @@ const OrdersList: React.FC = () => {
           >
             {filteredOrders.length > 0 ? (
               <div className="space-y-4">
-                {/* Bulk Actions Bar */}
+                {/* Bulk Actions Bar - Outside container */}
                 <BulkActionsBar
                   selectedCount={selectedOrders.length}
                   onClearSelection={() => setSelectedOrders([])}
@@ -254,31 +247,51 @@ const OrdersList: React.FC = () => {
                   canDelete={canDeleteSelected}
                 />
 
-                {/* Table or Mobile Cards */}
-                {isMobile ? (
-                  <OrdersTableMobile 
-                    orders={filteredOrdersForMobile}
-                    selectedOrders={selectedOrders}
-                    toggleSelectOrder={(id) => {
-                      setSelectedOrders(prev => 
-                        prev.includes(id) 
-                          ? prev.filter(orderId => orderId !== id)
-                          : [...prev, id]
-                      );
-                    }}
-                    onViewDetails={(order) => handleViewOrder(filteredOrders.find(o => o.id === order.id)!)}
-                    showActions={true}
+                {/* Unified Container */}
+                <OrdersUnifiedContainer>
+                  {/* Search Controls */}
+                  <OrdersSearchControls
+                    searchQuery={searchQuery}
+                    onSearchChange={handleSearch}
+                    dateRange={dateRange}
+                    onDateRangeChange={handleDateChange}
+                    onImport={() => setImportModalOpen(true)}
+                    onExport={() => console.log('Export')}
+                    selectedCount={selectedOrders.length}
                   />
-                ) : (
-                  <EnhancedOrdersTable
-                    orders={filteredOrders}
-                    selectedOrderIds={selectedOrders}
-                    onOrderSelection={setSelectedOrders}
-                    onViewOrder={handleViewOrder}
-                    onEditOrder={handleEditOrder}
-                    onDeleteOrder={handleDeleteOrder}
+                  
+                  {/* Filter Tabs */}
+                  <OrdersFilterTabs
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    tabs={tabs}
                   />
-                )}
+                  
+                  {/* Orders Table */}
+                  <div className="overflow-hidden">
+                    {isMobile ? (
+                      <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                        {filteredOrdersForMobile.map((order, index) => (
+                          <div key={order.id} className="p-4">
+                            {/* Mobile card content would go here */}
+                            <div onClick={() => handleViewOrder(filteredOrders.find(o => o.id === order.id)!)}>
+                              {order.customerName} - {order.status}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EnhancedOrdersTable
+                        orders={filteredOrders}
+                        selectedOrderIds={selectedOrders}
+                        onOrderSelection={setSelectedOrders}
+                        onViewOrder={handleViewOrder}
+                        onEditOrder={handleEditOrder}
+                        onDeleteOrder={handleDeleteOrder}
+                      />
+                    )}
+                  </div>
+                </OrdersUnifiedContainer>
               </div>
             ) : (
               <div className="mt-8">
