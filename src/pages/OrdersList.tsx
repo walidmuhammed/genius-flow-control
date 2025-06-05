@@ -1,22 +1,10 @@
+
 import React, { useState, useMemo, useCallback } from 'react';
-import { FileBarChart, PackageSearch, CheckCheck, AlertCircle, Download, Upload, Filter } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
-import { OrdersTable } from '@/components/orders/OrdersTable';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useScreenSize } from '@/hooks/useScreenSize';
-import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { OrdersSearch } from '@/components/orders/OrdersSearch';
-import { OrdersDateFilter } from '@/components/orders/OrdersDateFilter';
 import { ImportOrdersModal } from '@/components/orders/ImportOrdersModal';
-import { ExportOrdersDropdown } from '@/components/orders/ExportOrdersDropdown';
 import { useOrders, useOrdersByStatus } from '@/hooks/use-orders';
 import { toast } from 'sonner';
 import { OrderWithCustomer } from '@/services/orders';
@@ -24,15 +12,21 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import OrdersTableMobile from '@/components/orders/OrdersTableMobile';
 import { mapOrdersToTableFormat } from '@/utils/orderMappers';
+import { OrdersPageHeader } from '@/components/orders/OrdersPageHeader';
+import { OrdersFilterTabs } from '@/components/orders/OrdersFilterTabs';
+import { EnhancedOrdersTable } from '@/components/orders/EnhancedOrdersTable';
+import { BulkActionsBar } from '@/components/orders/BulkActionsBar';
+import OrderDetailsDialog from '@/components/orders/OrderDetailsDialog';
 
 const OrdersList: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [dateRange, setDateRange] = useState<{from?: Date, to?: Date}>({});
-  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
-  const { isMobile, isTablet } = useScreenSize();
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithCustomer | null>(null);
+  const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
+  const { isMobile } = useScreenSize();
   
   // Fetch orders from the database using our hooks
   const { data: allOrders, isLoading: isLoadingAllOrders, error: ordersError } = useOrders();
@@ -149,140 +143,42 @@ const OrdersList: React.FC = () => {
   const handleDateChange = useCallback((range: {from: Date | undefined, to: Date | undefined}) => {
     setDateRange(range);
   }, []);
-  
-  const toggleSelectOrder = (orderId: string) => {
-    setSelectedOrders(prev => 
-      prev.includes(orderId) 
-        ? prev.filter(id => id !== orderId) 
-        : [...prev, orderId]
-    );
-  };
-  
-  const toggleSelectAll = (checked: boolean) => {
-    setSelectedOrders(checked ? filteredOrders.map(order => order.id) : []);
-  };
-  
-  const renderEmptyState = () => {
-    switch(activeTab) {
-      case 'new':
-        return (
-          <EmptyState 
-            icon={FileBarChart}
-            title="No new orders today"
-            description="No new orders have been created yet. Start by creating a new order."
-            actionLabel="Create Order"
-            actionHref="/orders/new"
-          />
-        );
-      case 'pending':
-        return (
-          <EmptyState 
-            icon={PackageSearch}
-            title="No pending pickups"
-            description="No orders are pending pickup at the moment."
-            actionLabel="Schedule Pickup"
-            actionHref="/pickups"
-          />
-        );
-      case 'awaitingAction':
-        return (
-          <EmptyState 
-            icon={AlertCircle}
-            title="No orders awaiting action"
-            description="There are no orders that require your attention right now."
-            actionLabel="Create Order"
-            actionHref="/orders/new"
-          />
-        );
-      case 'successful':
-        return (
-          <EmptyState 
-            icon={CheckCheck}
-            title="No successful orders"
-            description="There are no successful orders matching your current filters."
-            actionLabel="Create Order"
-            actionHref="/orders/new"
-          />
-        );
-      default:
-        return (
-          <EmptyState 
-            icon={FileBarChart}
-            title="No orders found"
-            description="There are no orders matching your current filters."
-            actionLabel="Create Order"
-            actionHref="/orders/new"
-          />
-        );
-    }
+
+  const handleViewOrder = (order: OrderWithCustomer) => {
+    setSelectedOrder(order);
+    setOrderDetailsOpen(true);
   };
 
-  const renderMobileTabsMenu = () => (
-    <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-2 rounded-xl border-gray-200 dark:border-gray-700 flex-1">
-          <Filter className="h-4 w-4" />
-          <span className="truncate">
-            {activeTab === 'all' ? 'All Orders' : 
-             activeTab === 'new' ? 'New' :
-             activeTab === 'pending' ? 'Pending' :
-             activeTab === 'inProgress' ? 'In Progress' :
-             activeTab === 'successful' ? 'Successful' :
-             activeTab === 'unsuccessful' ? 'Unsuccessful' :
-             activeTab === 'returned' ? 'Returned' :
-             activeTab === 'awaitingAction' ? 'Awaiting' :
-             activeTab === 'paid' ? 'Paid' : 'Filter'}
-          </span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl border-0 bg-white dark:bg-gray-900">
-        <SheetHeader className="pb-6">
-          <SheetTitle className="text-lg font-semibold">Filter Orders</SheetTitle>
-        </SheetHeader>
-        <ScrollArea className="h-full pb-20">
-          <div className="space-y-2">
-            {[
-              { key: 'all', label: 'All Orders' },
-              { key: 'new', label: 'New' },
-              { key: 'pending', label: 'Pending Pickup' },
-              { key: 'inProgress', label: 'In Progress' },
-              { key: 'successful', label: 'Successful' },
-              { key: 'unsuccessful', label: 'Unsuccessful' },
-              { key: 'returned', label: 'Returned' },
-              { key: 'awaitingAction', label: 'Awaiting Action' },
-              { key: 'paid', label: 'Paid' }
-            ].map((tab) => (
-              <Button 
-                key={tab.key}
-                variant={activeTab === tab.key ? "default" : "ghost"}
-                className={cn(
-                  "w-full justify-start rounded-xl h-12 text-left",
-                  activeTab === tab.key && "bg-[#DC291E] hover:bg-[#DC291E]/90"
-                )}
-                onClick={() => {
-                  setActiveTab(tab.key);
-                  setFilterSheetOpen(false);
-                }}
-              >
-                {tab.label}
-              </Button>
-            ))}
-          </div>
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+  const handleEditOrder = (order: OrderWithCustomer) => {
+    // Navigate to edit order page
+    console.log('Edit order:', order.id);
+  };
+
+  const handleDeleteOrder = (order: OrderWithCustomer) => {
+    // Show confirmation dialog and delete
+    console.log('Delete order:', order.id);
+  };
+
+  const handleBulkActions = {
+    print: () => console.log('Bulk print:', selectedOrders),
+    export: () => console.log('Bulk export:', selectedOrders),
+    delete: () => console.log('Bulk delete:', selectedOrders),
+  };
+
+  const canDeleteSelected = selectedOrders.every(id => 
+    filteredOrders.find(order => order.id === id)?.status === 'New'
   );
 
-  const tabItems = [
-    { key: 'all', label: 'All Orders' },
-    { key: 'new', label: 'New' },
-    { key: 'pending', label: 'Pending Pickup' },
-    { key: 'inProgress', label: 'In Progress' },
-    { key: 'successful', label: 'Successful' },
-    { key: 'unsuccessful', label: 'Unsuccessful' },
-    { key: 'returned', label: 'Returned' },
-    { key: 'awaitingAction', label: 'Awaiting Action' },
-    { key: 'paid', label: 'Paid' }
+  const tabs = [
+    { key: 'all', label: 'All Orders', count: allOrders?.length },
+    { key: 'new', label: 'New', count: newOrders?.length },
+    { key: 'pending', label: 'Pending Pickup', count: pendingOrders?.length },
+    { key: 'inProgress', label: 'In Progress', count: inProgressOrders?.length },
+    { key: 'successful', label: 'Successful', count: successfulOrders?.length },
+    { key: 'unsuccessful', label: 'Unsuccessful', count: unsuccessfulOrders?.length },
+    { key: 'returned', label: 'Returned', count: returnedOrders?.length },
+    { key: 'awaitingAction', label: 'Awaiting Action', count: undefined },
+    { key: 'paid', label: 'Paid', count: paidOrders?.length }
   ];
 
   // Transform orders for mobile display
@@ -292,98 +188,23 @@ const OrdersList: React.FC = () => {
     <MainLayout>
       <div className="space-y-6">
         {/* Header Section */}
-        <div className={cn(
-          "flex justify-between items-start gap-4",
-          isMobile ? "flex-col" : "flex-row items-center"
-        )}>
-          <div className={cn(isMobile && "w-full")}>
-            <h1 className={cn(
-              "font-semibold tracking-tight text-gray-900 dark:text-gray-100",
-              isMobile ? "text-xl" : "text-2xl"
-            )}>
-              Orders
-            </h1>
-            {!isMobile && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Manage and track all your orders
-              </p>
-            )}
-          </div>
-          <div className={cn(
-            "flex gap-2",
-            isMobile ? "w-full" : "w-auto"
-          )}>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className={cn(
-                "items-center gap-1.5 border-gray-200 dark:border-gray-700 rounded-xl shadow-sm transition-all hover:border-gray-300 dark:hover:border-gray-600",
-                isMobile ? "flex-1" : "flex-none"
-              )}
-              onClick={() => setImportModalOpen(true)}
-            >
-              <Upload className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              <span>Import</span>
-            </Button>
-            <ExportOrdersDropdown 
-              selectedOrdersCount={selectedOrders.length}
-              totalFilteredCount={filteredOrders.length}
-              className={cn(isMobile ? "flex-1" : "flex-none")}
-            />
-          </div>
-        </div>
+        <OrdersPageHeader
+          totalOrders={allOrders?.length || 0}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearch}
+          dateRange={dateRange}
+          onDateRangeChange={handleDateChange}
+          onImport={() => setImportModalOpen(true)}
+          onExport={() => console.log('Export')}
+          selectedCount={selectedOrders.length}
+        />
         
-        {/* Search and Filter Section */}
-        <div className="space-y-4">
-          <div className={cn(
-            "flex gap-3",
-            isMobile ? "flex-col" : "flex-row"
-          )}>
-            <OrdersDateFilter 
-              onDateChange={handleDateChange} 
-              className={cn(
-                isMobile ? "w-full order-2" : "w-auto order-1"
-              )}
-            />
-            <OrdersSearch 
-              onSearch={handleSearch}
-              className={cn(
-                isMobile ? "w-full order-1" : "flex-1 order-2"
-              )}
-            />
-          </div>
-          
-          {/* Mobile Filter Button */}
-          {isMobile && (
-            <div className="flex gap-2">
-              {renderMobileTabsMenu()}
-            </div>
-          )}
-          
-          {/* Desktop/Tablet Tabs */}
-          {!isMobile && (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-sm border border-gray-200/50 dark:border-gray-700/30">
-              <div className="flex gap-1 overflow-x-auto">
-                {tabItems.map((tab) => (
-                  <motion.button 
-                    key={tab.key}
-                    className={cn(
-                      "px-4 py-3 text-sm font-medium transition-all whitespace-nowrap rounded-xl relative min-w-0 flex-shrink-0",
-                      activeTab === tab.key 
-                        ? 'text-white bg-[#DC291E] shadow-md' 
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                    )}
-                    onClick={() => setActiveTab(tab.key)}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {tab.label}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Filter Tabs */}
+        <OrdersFilterTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          tabs={tabs}
+        />
         
         {/* Loading State */}
         {isLoadingAllOrders && (
@@ -423,22 +244,52 @@ const OrdersList: React.FC = () => {
             transition={{ duration: 0.4 }}
           >
             {filteredOrders.length > 0 ? (
-              isMobile ? (
-                <OrdersTableMobile 
-                  orders={filteredOrdersForMobile}
-                  selectedOrders={selectedOrders}
-                  toggleSelectOrder={toggleSelectOrder}
-                  onViewDetails={() => {}}
-                  showActions={true}
+              <div className="space-y-4">
+                {/* Bulk Actions Bar */}
+                <BulkActionsBar
+                  selectedCount={selectedOrders.length}
+                  onClearSelection={() => setSelectedOrders([])}
+                  onBulkPrint={handleBulkActions.print}
+                  onBulkExport={handleBulkActions.export}
+                  onBulkDelete={handleBulkActions.delete}
+                  canDelete={canDeleteSelected}
                 />
-              ) : (
-                <OrdersTable 
-                  orders={filteredOrders}
-                />
-              )
+
+                {/* Table or Mobile Cards */}
+                {isMobile ? (
+                  <OrdersTableMobile 
+                    orders={filteredOrdersForMobile}
+                    selectedOrders={selectedOrders}
+                    toggleSelectOrder={(id) => {
+                      setSelectedOrders(prev => 
+                        prev.includes(id) 
+                          ? prev.filter(orderId => orderId !== id)
+                          : [...prev, id]
+                      );
+                    }}
+                    onViewDetails={(order) => handleViewOrder(filteredOrders.find(o => o.id === order.id)!)}
+                    showActions={true}
+                  />
+                ) : (
+                  <EnhancedOrdersTable
+                    orders={filteredOrders}
+                    selectedOrderIds={selectedOrders}
+                    onOrderSelection={setSelectedOrders}
+                    onViewOrder={handleViewOrder}
+                    onEditOrder={handleEditOrder}
+                    onDeleteOrder={handleDeleteOrder}
+                  />
+                )}
+              </div>
             ) : (
               <div className="mt-8">
-                {renderEmptyState()}
+                <EmptyState 
+                  icon={AlertCircle}
+                  title="No orders found"
+                  description="There are no orders matching your current filters."
+                  actionLabel="Create Order"
+                  actionHref="/orders/new"
+                />
               </div>
             )}
           </motion.div>
@@ -449,6 +300,15 @@ const OrdersList: React.FC = () => {
           open={importModalOpen}
           onOpenChange={setImportModalOpen}
         />
+
+        {/* Order Details Dialog */}
+        {selectedOrder && (
+          <OrderDetailsDialog
+            order={mapOrdersToTableFormat([selectedOrder])[0]}
+            open={orderDetailsOpen}
+            onOpenChange={setOrderDetailsOpen}
+          />
+        )}
       </div>
     </MainLayout>
   );
