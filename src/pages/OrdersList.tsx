@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { AlertCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -273,9 +274,8 @@ const OrdersList: React.FC = () => {
                       <div className="divide-y divide-gray-100 dark:divide-gray-700">
                         {filteredOrdersForMobile.map((order, index) => (
                           <div key={order.id} className="p-4">
-                            {/* Mobile card content would go here */}
                             <div onClick={() => handleViewOrder(filteredOrders.find(o => o.id === order.id)!)}>
-                              {order.customerName} - {order.status}
+                              {order.customer?.name} - {order.status}
                             </div>
                           </div>
                         ))}
