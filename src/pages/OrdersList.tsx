@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { AlertCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -149,10 +150,12 @@ const OrdersList: React.FC = () => {
   };
 
   const handleEditOrder = (order: OrderWithCustomer) => {
+    // Navigate to edit order page
     console.log('Edit order:', order.id);
   };
 
   const handleDeleteOrder = (order: OrderWithCustomer) => {
+    // Show confirmation dialog and delete
     console.log('Delete order:', order.id);
   };
 
@@ -182,9 +185,9 @@ const OrdersList: React.FC = () => {
   const filteredOrdersForMobile = useMemo(() => mapOrdersToTableFormat(filteredOrders), [filteredOrders]);
   
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
-        {/* Header Section */}
+    <MainLayout>
+      <div className="space-y-6">
+        {/* Header Section - Outside unified container */}
         <OrdersPageHeader
           totalOrders={allOrders?.length || 0}
           searchQuery={searchQuery}
@@ -226,14 +229,14 @@ const OrdersList: React.FC = () => {
           </motion.div>
         )}
         
-        {/* Main Content */}
+        {/* Unified Container for Search + Filters + Table */}
         {!isLoadingAllOrders && !ordersError && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            {/* Bulk Actions Bar */}
+            {/* Bulk Actions Bar - Outside container */}
             <BulkActionsBar
               selectedCount={selectedOrders.length}
               onClearSelection={() => setSelectedOrders([])}
@@ -264,38 +267,51 @@ const OrdersList: React.FC = () => {
               />
               
               {/* Orders Content */}
-              <div className="p-0">
+              <div className="p-4 sm:p-6">
                 {filteredOrders.length > 0 ? (
                   isMobile ? (
-                    <div className="p-4">
-                      <OrdersTableMobile
-                        orders={filteredOrdersForMobile}
-                        selectedOrders={selectedOrders}
-                        toggleSelectOrder={(orderId) => {
-                          setSelectedOrders(prev => 
-                            prev.includes(orderId) 
-                              ? prev.filter(id => id !== orderId)
-                              : [...prev, orderId]
-                          );
-                        }}
-                        onViewDetails={(order) => {
-                          const fullOrder = filteredOrders.find(o => o.id === order.id);
-                          if (fullOrder) handleViewOrder(fullOrder);
-                        }}
-                        showActions={true}
-                      />
+                    <div className="space-y-4">
+                      {filteredOrders.map((order, index) => (
+                        <motion.div
+                          key={order.id}
+                          className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                          onClick={() => handleViewOrder(order)}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="font-semibold text-[#DB271E]">
+                              #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {order.status}
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="font-medium">{order.customer?.name}</div>
+                            <div className="text-sm text-gray-600">{order.customer?.phone}</div>
+                            <div className="text-sm text-gray-600">
+                              {order.customer?.city_name}, {order.customer?.governorate_name}
+                            </div>
+                            {order.cash_collection_usd > 0 && (
+                              <div className="font-semibold text-green-600">
+                                ${order.cash_collection_usd}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
                     </div>
                   ) : (
-                    <div className="p-6">
-                      <EnhancedOrdersTable
-                        orders={filteredOrders}
-                        selectedOrderIds={selectedOrders}
-                        onOrderSelection={setSelectedOrders}
-                        onViewOrder={handleViewOrder}
-                        onEditOrder={handleEditOrder}
-                        onDeleteOrder={handleDeleteOrder}
-                      />
-                    </div>
+                    <EnhancedOrdersTable
+                      orders={filteredOrders}
+                      selectedOrderIds={selectedOrders}
+                      onOrderSelection={setSelectedOrders}
+                      onViewOrder={handleViewOrder}
+                      onEditOrder={handleEditOrder}
+                      onDeleteOrder={handleDeleteOrder}
+                    />
                   )
                 ) : (
                   <div className="py-12">
@@ -328,7 +344,7 @@ const OrdersList: React.FC = () => {
           />
         )}
       </div>
-    </div>
+    </MainLayout>
   );
 };
 
