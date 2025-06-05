@@ -2,7 +2,6 @@
 import React from 'react';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
-import MobileNavigation from './MobileNavigation';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/sonner';
 import { motion } from 'framer-motion';
@@ -37,7 +36,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
         <TopBar />
         <main className={cn(
           "flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-all",
-          isMobile ? "p-3 pb-24" : isTablet ? "p-4 pb-6" : "p-6",
+          isMobile ? "p-3 pb-6" : isTablet ? "p-4 pb-6" : "p-6",
           className
         )}>
           <motion.div 
@@ -55,9 +54,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
             {children}
           </motion.div>
         </main>
-        
-        {/* Mobile Bottom Navigation */}
-        {isMobile && <MobileNavigation />}
       </div>
       
       <Toaster 
