@@ -236,7 +236,7 @@ const Dashboard: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Perfect Tab Bar - Full Width, Clean, Responsive */}
+        {/* Enhanced Tab Bar - Full Width, Clean, Responsive */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -244,64 +244,85 @@ const Dashboard: React.FC = () => {
           className="w-full"
         >
           <Tabs defaultValue="new-orders" className="w-full">
-            {/* Full-Width Tab Navigation - Modern & Clean */}
+            {/* Enhanced Tab Navigation - Modern & Clean */}
             <div className="w-full mb-6">
-              <TabsList className="w-full h-12 bg-gray-50/80 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/30 rounded-xl p-1 grid grid-cols-3 gap-1">
+              <TabsList className="w-full h-14 bg-gray-50/80 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/30 rounded-xl p-1.5 grid grid-cols-3 gap-1.5">
                 <TabsTrigger 
                   value="new-orders" 
                   className={cn(
-                    "flex items-center justify-center gap-2 h-10 rounded-lg transition-all duration-300 font-medium text-sm",
-                    "data-[state=active]:bg-white data-[state=active]:text-[#DB271E] data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-gray-200/50",
-                    "hover:bg-white/50 dark:hover:bg-gray-700/30 text-gray-600 dark:text-gray-400",
+                    "flex items-center justify-center gap-2 h-11 rounded-lg transition-all duration-300 font-medium",
+                    "data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md",
+                    "data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50",
+                    "dark:data-[state=inactive]:bg-gray-700/30 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DB271E]/20",
                     isMobile ? "text-xs px-2" : "text-sm px-4"
                   )}
                 >
                   <ShoppingCart className={cn("h-4 w-4", isMobile && "h-3 w-3")} />
                   <span className={cn("font-medium", isMobile ? "text-xs" : "text-sm")}>New Orders</span>
-                  {todayOrders.length > 0 && (
-                    <span className="bg-[#DB271E] text-white text-xs py-0.5 px-1.5 rounded-full font-medium min-w-[20px] h-5 flex items-center justify-center">
-                      {todayOrders.length}
-                    </span>
-                  )}
+                  
+                  {/* Show counter only when active */}
+                  <Tabs defaultValue="new-orders">
+                    <TabsContent value="new-orders" className="m-0 p-0">
+                      {todayOrders.length > 0 && (
+                        <span className="bg-white/20 text-white text-xs py-0.5 px-1.5 rounded-full font-medium min-w-[20px] h-5 flex items-center justify-center border border-white/20">
+                          {todayOrders.length}
+                        </span>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 </TabsTrigger>
                 
                 <TabsTrigger 
                   value="pickups" 
                   className={cn(
-                    "flex items-center justify-center gap-2 h-10 rounded-lg transition-all duration-300 font-medium text-sm",
-                    "data-[state=active]:bg-white data-[state=active]:text-[#DB271E] data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-gray-200/50",
-                    "hover:bg-white/50 dark:hover:bg-gray-700/30 text-gray-600 dark:text-gray-400",
+                    "flex items-center justify-center gap-2 h-11 rounded-lg transition-all duration-300 font-medium",
+                    "data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md",
+                    "data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50",
+                    "dark:data-[state=inactive]:bg-gray-700/30 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DB271E]/20",
                     isMobile ? "text-xs px-2" : "text-sm px-4"
                   )}
                 >
                   <Calendar className={cn("h-4 w-4", isMobile && "h-3 w-3")} />
                   <span className={cn("font-medium", isMobile ? "text-xs" : "text-sm")}>Pickups</span>
-                  {todayPickups.length > 0 && (
-                    <span className="bg-[#DB271E] text-white text-xs py-0.5 px-1.5 rounded-full font-medium min-w-[20px] h-5 flex items-center justify-center">
-                      {todayPickups.length}
-                    </span>
-                  )}
+                  
+                  {/* Show counter only when active */}
+                  <Tabs defaultValue="new-orders">
+                    <TabsContent value="pickups" className="m-0 p-0">
+                      {todayPickups.length > 0 && (
+                        <span className="bg-white/20 text-white text-xs py-0.5 px-1.5 rounded-full font-medium min-w-[20px] h-5 flex items-center justify-center border border-white/20">
+                          {todayPickups.length}
+                        </span>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 </TabsTrigger>
                 
                 <TabsTrigger 
                   value="awaiting" 
                   className={cn(
-                    "flex items-center justify-center gap-2 h-10 rounded-lg transition-all duration-300 font-medium text-sm",
-                    "data-[state=active]:bg-white data-[state=active]:text-[#DB271E] data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-gray-200/50",
-                    "hover:bg-white/50 dark:hover:bg-gray-700/30 text-gray-600 dark:text-gray-400",
+                    "flex items-center justify-center gap-2 h-11 rounded-lg transition-all duration-300 font-medium",
+                    "data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md",
+                    "data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50",
+                    "dark:data-[state=inactive]:bg-gray-700/30 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DB271E]/20",
                     isMobile ? "text-xs px-2" : "text-sm px-4"
                   )}
                 >
                   <Inbox className={cn("h-4 w-4", isMobile && "h-3 w-3")} />
                   <span className={cn("font-medium", isMobile ? "text-xs" : "text-sm")}>Awaiting</span>
-                  {awaitingActionOrders.length > 0 && (
-                    <span className="bg-[#DB271E] text-white text-xs py-0.5 px-1.5 rounded-full font-medium min-w-[20px] h-5 flex items-center justify-center">
-                      {awaitingActionOrders.length}
-                    </span>
-                  )}
+                  
+                  {/* Show counter only when active */}
+                  <Tabs defaultValue="new-orders">
+                    <TabsContent value="awaiting" className="m-0 p-0">
+                      {awaitingActionOrders.length > 0 && (
+                        <span className="bg-white/20 text-white text-xs py-0.5 px-1.5 rounded-full font-medium min-w-[20px] h-5 flex items-center justify-center border border-white/20">
+                          {awaitingActionOrders.length}
+                        </span>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 </TabsTrigger>
               </TabsList>
             </div>
