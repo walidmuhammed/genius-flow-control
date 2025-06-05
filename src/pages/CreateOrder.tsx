@@ -25,6 +25,7 @@ import { Order } from '@/services/orders';
 import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import OrderTypeSelector from '@/components/dashboard/OrderTypeSelector';
+import { useScreenSize } from '@/hooks/useScreenSize';
 
 // Create a unique form key for forcing re-render
 const getUniqueFormKey = () => `order-form-${Date.now()}`;
@@ -33,6 +34,7 @@ const CreateOrder = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
+  const { isMobile } = useScreenSize();
   const [formKey, setFormKey] = useState(getUniqueFormKey());
   const initialRenderRef = useRef(true);
 
@@ -309,42 +311,44 @@ const CreateOrder = () => {
     <MainLayout className="bg-gray-50/30">
       <div className="min-h-screen w-full" key={formKey}>
         {/* Full width page container */}
-        <div className="w-full px-4 py-4">
+        <div className="w-full px-4 py-6">
           
-          {/* Integrated Header */}
-          <div className="flex items-center justify-between mb-6 bg-white rounded-lg border border-gray-200 px-6 py-4 shadow-sm">
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">Create New Order</h1>
-              <p className="text-sm text-gray-500 mt-0.5">Fill in the details to create a new delivery order</p>
+          {/* Page Header - Integrated into main page flow */}
+          {!isMobile && (
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900">Create New Order</h1>
+                <p className="text-sm text-gray-500 mt-1">Fill in the details to create a new delivery order</p>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleSubmit(true)}
+                  className="px-4 py-2 text-sm"
+                >
+                  Create & Add Another
+                </Button>
+                <Button 
+                  onClick={() => handleSubmit(false)}
+                  className="px-6 py-2 text-sm bg-[#DC291E] hover:bg-[#c0211a]"
+                >
+                  Create Order
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => handleSubmit(true)}
-                className="px-4 py-2 text-sm"
-              >
-                Create & Add Another
-              </Button>
-              <Button 
-                onClick={() => handleSubmit(false)}
-                className="px-6 py-2 text-sm bg-[#DC291E] hover:bg-[#c0211a]"
-              >
-                Create Order
-              </Button>
-            </div>
-          </div>
+          )}
 
-          {/* Main Form Grid - Full Width */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Form - 100% Width Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
             
-            {/* Left Column - Customer & Address (2/3 width) */}
-            <div className="lg:col-span-2 space-y-6">
+            {/* Left Column - Customer & Address (8/12 width) */}
+            <div className="lg:col-span-8 space-y-6">
               
               {/* Customer Information */}
               <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-600" />
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <Phone className="h-5 w-5 text-gray-600" />
                     Customer Information
                   </CardTitle>
                 </CardHeader>
@@ -362,7 +366,7 @@ const CreateOrder = () => {
                         defaultCountry="LB" 
                         onValidationChange={setPhoneValid} 
                         placeholder="Enter phone number" 
-                        className={cn("h-9", errors.phone ? "border-red-300" : "border-gray-300")} 
+                        className={cn("h-10", errors.phone ? "border-red-300" : "border-gray-300")} 
                       />
                       {errors.phone && <p className="text-xs text-red-600">{errors.phone}</p>}
                       {searchingCustomers && (
@@ -393,7 +397,7 @@ const CreateOrder = () => {
                             setErrors(prev => ({ ...prev, name: undefined }));
                           }
                         }} 
-                        className={cn("h-9", errors.name ? "border-red-300" : "border-gray-300")} 
+                        className={cn("h-10", errors.name ? "border-red-300" : "border-gray-300")} 
                       />
                       {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
                     </div>
@@ -446,7 +450,7 @@ const CreateOrder = () => {
                         defaultCountry="LB" 
                         onValidationChange={setSecondaryPhoneValid} 
                         placeholder="Enter secondary phone" 
-                        className={cn("h-9", errors.secondaryPhone ? "border-red-300" : "border-gray-300")} 
+                        className={cn("h-10", errors.secondaryPhone ? "border-red-300" : "border-gray-300")} 
                       />
                       {errors.secondaryPhone && <p className="text-xs text-red-600">{errors.secondaryPhone}</p>}
                     </div>
@@ -456,9 +460,9 @@ const CreateOrder = () => {
 
               {/* Address Information */}
               <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-600" />
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-gray-600" />
                     Address Information
                   </CardTitle>
                 </CardHeader>
@@ -494,7 +498,7 @@ const CreateOrder = () => {
                           setErrors(prev => ({ ...prev, address: undefined }));
                         }
                       }} 
-                      className={cn("h-9", errors.address ? "border-red-300" : "border-gray-300")} 
+                      className={cn("h-10", errors.address ? "border-red-300" : "border-gray-300")} 
                     />
                     {errors.address && <p className="text-xs text-red-600">{errors.address}</p>}
                   </div>
@@ -520,10 +524,10 @@ const CreateOrder = () => {
 
               {/* Package Information */}
               <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                      <Package className="h-4 w-4 text-gray-600" />
+                    <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                      <Package className="h-5 w-5 text-gray-600" />
                       Package Information
                     </CardTitle>
                     <Button 
@@ -549,7 +553,7 @@ const CreateOrder = () => {
                         placeholder="Electronics, clothes, etc." 
                         value={description} 
                         onChange={e => setDescription(e.target.value)} 
-                        className="h-9 border-gray-300"
+                        className="h-10 border-gray-300"
                       />
                     </div>
                     
@@ -563,7 +567,7 @@ const CreateOrder = () => {
                         min={1} 
                         value={itemsCount} 
                         onChange={e => setItemsCount(parseInt(e.target.value) || 1)} 
-                        className="h-9 border-gray-300"
+                        className="h-10 border-gray-300"
                       />
                     </div>
                   </div>
@@ -571,27 +575,27 @@ const CreateOrder = () => {
               </Card>
             </div>
             
-            {/* Right Column - Order Details (1/3 width) */}
-            <div className="space-y-6">
+            {/* Right Column - Order Details (4/12 width) */}
+            <div className="lg:col-span-4 space-y-6">
               
               {/* Order Type */}
               <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-semibold text-gray-900">Order Type</CardTitle>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg font-semibold text-gray-900">Order Type</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <Button 
                       variant={orderType === 'shipment' ? "default" : "outline"} 
                       onClick={() => setOrderType('shipment')}
-                      className={cn("h-9 text-sm", orderType === 'shipment' ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
+                      className={cn("h-10 text-sm", orderType === 'shipment' ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
                     >
                       Shipment
                     </Button>
                     <Button 
                       variant={orderType === 'exchange' ? "default" : "outline"} 
                       onClick={() => setOrderType('exchange')}
-                      className={cn("h-9 text-sm", orderType === 'exchange' ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
+                      className={cn("h-10 text-sm", orderType === 'exchange' ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
                     >
                       Exchange
                     </Button>
@@ -601,9 +605,9 @@ const CreateOrder = () => {
               
               {/* Cash Collection */}
               <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-semibold text-gray-900">Cash Collection</CardTitle>
+                    <CardTitle className="text-lg font-semibold text-gray-900">Cash Collection</CardTitle>
                     <div className="flex items-center space-x-2">
                       <Checkbox 
                         id="cash-collection" 
@@ -620,14 +624,16 @@ const CreateOrder = () => {
                 </CardHeader>
                 {cashCollection && (
                   <CardContent className="space-y-4">
-                    {/* USD and LBP Side by Side */}
+                    {/* USD and LBP Side by Side with Enhanced Icons */}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <Label htmlFor="usd-amount" className={cn("text-sm font-medium", errors.usdAmount ? "text-red-600" : "text-gray-700")}>
                           USD Amount
                         </Label>
                         <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">$</div>
+                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 font-semibold text-sm pointer-events-none z-10">
+                            $
+                          </span>
                           <Input 
                             id="usd-amount" 
                             type="text" 
@@ -650,7 +656,7 @@ const CreateOrder = () => {
                                 }));
                               }
                             }}
-                            className={cn("h-9 pl-8", errors.usdAmount ? "border-red-300" : "border-gray-300")} 
+                            className={cn("h-10 pl-8 bg-white", errors.usdAmount ? "border-red-300" : "border-gray-300")} 
                             placeholder="0.00"
                           />
                         </div>
@@ -662,7 +668,9 @@ const CreateOrder = () => {
                           LBP Amount
                         </Label>
                         <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 text-xs">LBP</div>
+                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 font-semibold text-xs pointer-events-none z-10">
+                            LBP
+                          </span>
                           <Input 
                             id="lbp-amount" 
                             type="text" 
@@ -678,7 +686,7 @@ const CreateOrder = () => {
                                 }));
                               }
                             }}
-                            className={cn("h-9 pl-10", errors.lbpAmount ? "border-red-300" : "border-gray-300")} 
+                            className={cn("h-10 pl-12 bg-white", errors.lbpAmount ? "border-red-300" : "border-gray-300")} 
                             placeholder="0"
                           />
                         </div>
@@ -701,33 +709,33 @@ const CreateOrder = () => {
 
               {/* Package Type */}
               <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-semibold text-gray-900">Package Type</CardTitle>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg font-semibold text-gray-900">Package Type</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                   <div className="grid grid-cols-3 gap-2">
                     <Button 
                       variant={packageType === "parcel" ? "default" : "outline"} 
                       onClick={() => setPackageType("parcel")}
-                      className={cn("h-12 flex-col gap-1 text-xs", packageType === "parcel" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
+                      className={cn("h-14 flex-col gap-1 text-xs", packageType === "parcel" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
                     >
-                      <Package className="h-3 w-3" />
+                      <Package className="h-4 w-4" />
                       Parcel
                     </Button>
                     <Button 
                       variant={packageType === "document" ? "default" : "outline"} 
                       onClick={() => setPackageType("document")}
-                      className={cn("h-12 flex-col gap-1 text-xs", packageType === "document" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
+                      className={cn("h-14 flex-col gap-1 text-xs", packageType === "document" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
                     >
-                      <FileText className="h-3 w-3" />
+                      <FileText className="h-4 w-4" />
                       Document
                     </Button>
                     <Button 
                       variant={packageType === "bulky" ? "default" : "outline"} 
                       onClick={() => setPackageType("bulky")}
-                      className={cn("h-12 flex-col gap-1 text-xs", packageType === "bulky" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
+                      className={cn("h-14 flex-col gap-1 text-xs", packageType === "bulky" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}
                     >
-                      <Package className="h-3 w-3" />
+                      <Package className="h-4 w-4" />
                       Bulky
                     </Button>
                   </div>
@@ -753,8 +761,8 @@ const CreateOrder = () => {
               
               {/* Additional Information */}
               <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-semibold text-gray-900">Additional Information</CardTitle>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg font-semibold text-gray-900">Additional Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -766,7 +774,7 @@ const CreateOrder = () => {
                       placeholder="Your tracking reference" 
                       value={orderReference} 
                       onChange={e => setOrderReference(e.target.value)} 
-                      className="h-9 border-gray-300"
+                      className="h-10 border-gray-300"
                     />
                   </div>
                   
@@ -788,9 +796,9 @@ const CreateOrder = () => {
             </div>
           </div>
 
-          {/* Mobile Action Buttons - Sticky Bottom */}
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-10">
-            <div className="flex flex-col gap-3">
+          {/* Mobile Action Buttons - At Bottom */}
+          {isMobile && (
+            <div className="mt-8 space-y-3">
               <Button 
                 onClick={() => handleSubmit(false)}
                 className="w-full py-3 bg-[#DC291E] hover:bg-[#c0211a]"
@@ -805,10 +813,10 @@ const CreateOrder = () => {
                 Create & Add Another
               </Button>
             </div>
-          </div>
+          )}
 
           {/* Mobile Bottom Padding */}
-          <div className="lg:hidden h-32"></div>
+          {isMobile && <div className="h-8"></div>}
         </div>
       </div>
       
