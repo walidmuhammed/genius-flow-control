@@ -94,7 +94,7 @@ export const OrdersFilterTabs: React.FC<OrdersFilterTabsProps> = ({
   return (
     <div className="px-4 sm:px-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30">
       <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-        <style jsx>{`
+        <style>{`
           .scrollbar-hide {
             scrollbar-width: none;
             -ms-overflow-style: none;
