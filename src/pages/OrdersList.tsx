@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { AlertCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -252,7 +253,7 @@ const OrdersList: React.FC = () => {
                 searchQuery={searchQuery}
                 onSearchChange={handleSearch}
                 dateRange={dateRange}
-                onDateRangeChange={handleDateRangeChange}
+                onDateRangeChange={handleDateChange}
                 onImport={() => setImportModalOpen(true)}
                 onExport={() => console.log('Export')}
                 selectedCount={selectedOrders.length}
