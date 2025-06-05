@@ -182,7 +182,7 @@ const OrdersList: React.FC = () => {
   const filteredOrdersForMobile = useMemo(() => mapOrdersToTableFormat(filteredOrders), [filteredOrders]);
   
   return (
-    <MainLayout hideMobileNav={true}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
         {/* Header Section */}
         <OrdersPageHeader
@@ -328,7 +328,7 @@ const OrdersList: React.FC = () => {
           />
         )}
       </div>
-    </MainLayout>
+    </div>
   );
 };
 

@@ -15,89 +15,71 @@ const TopBar: React.FC = () => {
   const { toggleSidebar } = useLayoutStore();
 
   return (
-    <header className={cn(
-      "fixed top-0 left-0 right-0 z-50 h-16 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800",
-      "flex items-center justify-between px-4 lg:px-6"
-    )}>
-      {/* Left Section */}
-      <div className="flex items-center gap-4 flex-1 min-w-0">
-        {/* Mobile Menu Button */}
+    <motion.header 
+      className={cn(
+        "bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 h-16 flex items-center justify-between sticky top-0 z-40",
+        isMobile ? "px-3" : "px-4 md:px-6"
+      )}
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         {(isMobile || isTablet) && (
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={toggleSidebar}
-            className="h-9 w-9 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0"
           >
             <Menu className="h-5 w-5" />
           </Button>
         )}
         
-        {/* Logo - Always visible */}
-        <div className="flex items-center gap-2">
-          <div className="bg-[#DC291E] h-8 w-8 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">T</span>
-          </div>
-          {!isMobile && (
-            <span className="font-bold text-xl text-gray-900 dark:text-gray-100">
-              Topspeed
-            </span>
-          )}
-        </div>
-        
-        {/* Desktop Search */}
         {!isMobile && (
-          <div className="relative max-w-md flex-1 ml-8">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input 
               placeholder="Search orders, customers..." 
-              className="pl-10 h-9 bg-gray-50 dark:bg-gray-900 border-0 focus:ring-1 focus:ring-[#DC291E] rounded-lg" 
+              className="pl-10 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-[#DC291E] focus:border-[#DC291E]" 
             />
+          </div>
+        )}
+
+        {isMobile && (
+          <div className="flex-1 text-center">
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+              Topspeed
+            </h1>
           </div>
         )}
       </div>
       
-      {/* Right Section */}
-      <div className="flex items-center gap-2">
-        {/* Mobile Search Button */}
+      <div className="flex items-center gap-2 shrink-0">
+        {/* Create Button - only show on desktop */}
+        {!isMobile && <CreateButton />}
+        
         {isMobile && (
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-9 w-9 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <Search className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
+            <Search className="h-5 w-5" />
           </Button>
         )}
         
-        {/* Create Button - Desktop only */}
-        {!isMobile && <CreateButton />}
-        
-        {/* Notifications */}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="relative h-9 w-9 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <Bell className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
+          <Bell className="h-5 w-5" />
           <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 bg-[#DC291E] hover:bg-[#DC291E] text-xs flex items-center justify-center">
             3
           </Badge>
         </Button>
         
-        {/* User Menu */}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-9 w-9 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          <User className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
+          <User className="h-5 w-5" />
         </Button>
-        
-        {/* Mobile Create Button */}
-        {isMobile && <CreateButton />}
       </div>
-    </header>
+      
+      {/* Mobile Create Button */}
+      {isMobile && <CreateButton />}
+    </motion.header>
   );
 };
 

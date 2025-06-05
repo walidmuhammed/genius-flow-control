@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Package, Truck, Home, Clock, Users, Wallet, BarChart3, Ticket } from 'lucide-react';
+import { Package, Truck, Home, Clock, Users, Wallet, BarChart3, Settings, Ticket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -57,21 +57,23 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed }) => {
   ];
 
   return (
-    <div className="space-y-1">
-      <div className="mb-4">
-        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-3 mb-2 uppercase tracking-wider">
-          Main
-        </h3>
+    <div className="flex flex-col gap-6">
+      <div className="space-y-1">
+        <div className="mb-2">
+          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 px-4">
+            Main
+          </h3>
+        </div>
+        
+        {mainMenuItems.map(item => (
+          <MenuItem 
+            key={item.path} 
+            collapsed={collapsed} 
+            item={item} 
+            isActive={location.pathname === item.path} 
+          />
+        ))}
       </div>
-      
-      {mainMenuItems.map(item => (
-        <MenuItem 
-          key={item.path} 
-          collapsed={collapsed} 
-          item={item} 
-          isActive={location.pathname === item.path} 
-        />
-      ))}
     </div>
   );
 };
@@ -87,27 +89,32 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, collapsed }) => {
     <Link to={item.path}>
       <motion.div 
         className={cn(
-          "flex items-center gap-3 px-3 py-2.5 mx-1 rounded-lg text-sm font-medium transition-all duration-200",
+          "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium mb-1 transition-all duration-200", 
           isActive 
-            ? "bg-[#DC291E]/10 text-[#DC291E] border-r-2 border-[#DC291E]" 
-            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white"
+            ? "bg-gray-200 dark:bg-gray-800 text-[#DC291E] dark:text-[#DC291E]" 
+            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
         )} 
         whileHover={{ 
-          x: isActive ? 0 : 4,
+          x: 4,
           transition: { duration: 0.2 }
         }}
         whileTap={{ scale: 0.98 }}
       >
         <span className={cn(
-          "flex items-center justify-center transition-colors duration-200",
+          "flex items-center justify-center transition-all duration-200", 
           isActive 
             ? "text-[#DC291E]" 
-            : "text-gray-500 dark:text-gray-400"
+            : "text-gray-600 dark:text-gray-400"
         )}>
           {item.icon}
         </span>
         
-        <span className="font-medium">
+        <span className={cn(
+          "transition-all duration-200",
+          isActive 
+            ? "font-medium" 
+            : ""
+        )}>
           {item.label}
         </span>
       </motion.div>
