@@ -246,83 +246,50 @@ const Dashboard: React.FC = () => {
           <Tabs defaultValue="new-orders" className="w-full">
             {/* Enhanced Tab Navigation - Modern & Clean */}
             <div className="w-full mb-6">
-              <TabsList className="w-full h-14 bg-gray-50/80 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/30 rounded-xl p-1.5 grid grid-cols-3 gap-1.5">
+              <TabsList className="w-full h-16 bg-gray-50/80 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/30 rounded-xl p-2 grid grid-cols-3 gap-2">
                 <TabsTrigger 
                   value="new-orders" 
                   className={cn(
-                    "flex items-center justify-center gap-2 h-11 rounded-lg transition-all duration-300 font-medium",
+                    "flex items-center justify-center gap-2 h-12 rounded-lg transition-all duration-300 font-medium",
                     "data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md",
-                    "data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50",
+                    "data-[state=inactive]:bg-white data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:bg-gray-50",
                     "dark:data-[state=inactive]:bg-gray-700/30 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DB271E]/20",
-                    isMobile ? "text-xs px-2" : "text-sm px-4"
+                    isMobile ? "text-sm px-3" : "text-sm px-4"
                   )}
                 >
-                  <ShoppingCart className={cn("h-4 w-4", isMobile && "h-3 w-3")} />
-                  <span className={cn("font-medium", isMobile ? "text-xs" : "text-sm")}>New Orders</span>
-                  
-                  {/* Show counter only when active */}
-                  <Tabs defaultValue="new-orders">
-                    <TabsContent value="new-orders" className="m-0 p-0">
-                      {todayOrders.length > 0 && (
-                        <span className="bg-white/20 text-white text-xs py-0.5 px-1.5 rounded-full font-medium min-w-[20px] h-5 flex items-center justify-center border border-white/20">
-                          {todayOrders.length}
-                        </span>
-                      )}
-                    </TabsContent>
-                  </Tabs>
+                  <ShoppingCart className={cn("h-4 w-4", isMobile && "h-4 w-4")} />
+                  <span className={cn("font-medium", isMobile ? "text-sm" : "text-sm")}>New Orders</span>
                 </TabsTrigger>
                 
                 <TabsTrigger 
                   value="pickups" 
                   className={cn(
-                    "flex items-center justify-center gap-2 h-11 rounded-lg transition-all duration-300 font-medium",
+                    "flex items-center justify-center gap-2 h-12 rounded-lg transition-all duration-300 font-medium",
                     "data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md",
-                    "data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50",
+                    "data-[state=inactive]:bg-white data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:bg-gray-50",
                     "dark:data-[state=inactive]:bg-gray-700/30 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DB271E]/20",
-                    isMobile ? "text-xs px-2" : "text-sm px-4"
+                    isMobile ? "text-sm px-3" : "text-sm px-4"
                   )}
                 >
-                  <Calendar className={cn("h-4 w-4", isMobile && "h-3 w-3")} />
-                  <span className={cn("font-medium", isMobile ? "text-xs" : "text-sm")}>Pickups</span>
-                  
-                  {/* Show counter only when active */}
-                  <Tabs defaultValue="new-orders">
-                    <TabsContent value="pickups" className="m-0 p-0">
-                      {todayPickups.length > 0 && (
-                        <span className="bg-white/20 text-white text-xs py-0.5 px-1.5 rounded-full font-medium min-w-[20px] h-5 flex items-center justify-center border border-white/20">
-                          {todayPickups.length}
-                        </span>
-                      )}
-                    </TabsContent>
-                  </Tabs>
+                  <Calendar className={cn("h-4 w-4", isMobile && "h-4 w-4")} />
+                  <span className={cn("font-medium", isMobile ? "text-sm" : "text-sm")}>Pickups</span>
                 </TabsTrigger>
                 
                 <TabsTrigger 
                   value="awaiting" 
                   className={cn(
-                    "flex items-center justify-center gap-2 h-11 rounded-lg transition-all duration-300 font-medium",
+                    "flex items-center justify-center gap-2 h-12 rounded-lg transition-all duration-300 font-medium",
                     "data-[state=active]:bg-[#DB271E] data-[state=active]:text-white data-[state=active]:shadow-md",
-                    "data-[state=inactive]:bg-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50",
+                    "data-[state=inactive]:bg-white data-[state=inactive]:text-gray-500 data-[state=inactive]:hover:bg-gray-50",
                     "dark:data-[state=inactive]:bg-gray-700/30 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:bg-gray-700/50",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DB271E]/20",
-                    isMobile ? "text-xs px-2" : "text-sm px-4"
+                    isMobile ? "text-sm px-3" : "text-sm px-4"
                   )}
                 >
-                  <Inbox className={cn("h-4 w-4", isMobile && "h-3 w-3")} />
-                  <span className={cn("font-medium", isMobile ? "text-xs" : "text-sm")}>Awaiting</span>
-                  
-                  {/* Show counter only when active */}
-                  <Tabs defaultValue="new-orders">
-                    <TabsContent value="awaiting" className="m-0 p-0">
-                      {awaitingActionOrders.length > 0 && (
-                        <span className="bg-white/20 text-white text-xs py-0.5 px-1.5 rounded-full font-medium min-w-[20px] h-5 flex items-center justify-center border border-white/20">
-                          {awaitingActionOrders.length}
-                        </span>
-                      )}
-                    </TabsContent>
-                  </Tabs>
+                  <Inbox className={cn("h-4 w-4", isMobile && "h-4 w-4")} />
+                  <span className={cn("font-medium", isMobile ? "text-sm" : "text-sm")}>Awaiting</span>
                 </TabsTrigger>
               </TabsList>
             </div>
