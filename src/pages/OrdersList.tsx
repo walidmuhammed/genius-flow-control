@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { AlertCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -13,8 +12,7 @@ import { cn } from '@/lib/utils';
 import OrdersTableMobile from '@/components/orders/OrdersTableMobile';
 import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 import { OrdersPageHeader } from '@/components/orders/OrdersPageHeader';
-import { OrdersFilterTabs } from '@/components/orders/OrdersFilterTabs';
-import { EnhancedOrdersTable } from '@/components/orders/EnhancedOrdersTable';
+import { OrdersTableContainer } from '@/components/orders/OrdersTableContainer';
 import { BulkActionsBar } from '@/components/orders/BulkActionsBar';
 import OrderDetailsDialog from '@/components/orders/OrderDetailsDialog';
 
@@ -199,13 +197,6 @@ const OrdersList: React.FC = () => {
           selectedCount={selectedOrders.length}
         />
         
-        {/* Filter Tabs */}
-        <OrdersFilterTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          tabs={tabs}
-        />
-        
         {/* Loading State */}
         {isLoadingAllOrders && (
           <motion.div 
@@ -255,7 +246,7 @@ const OrdersList: React.FC = () => {
                   canDelete={canDeleteSelected}
                 />
 
-                {/* Table or Mobile Cards */}
+                {/* Unified Filter Tabs + Orders Table Container */}
                 {isMobile ? (
                   <OrdersTableMobile 
                     orders={filteredOrdersForMobile}
@@ -271,7 +262,10 @@ const OrdersList: React.FC = () => {
                     showActions={true}
                   />
                 ) : (
-                  <EnhancedOrdersTable
+                  <OrdersTableContainer
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    tabs={tabs}
                     orders={filteredOrders}
                     selectedOrderIds={selectedOrders}
                     onOrderSelection={setSelectedOrders}

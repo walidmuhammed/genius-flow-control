@@ -79,8 +79,19 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
   const canEdit = (order: OrderWithCustomer) => order.status === 'New';
   const canDelete = (order: OrderWithCustomer) => order.status === 'New';
 
+  if (orders.length === 0) {
+    return (
+      <div className="p-12 text-center">
+        <div className="text-gray-500 dark:text-gray-400">
+          <p className="text-lg font-medium mb-2">No orders found</p>
+          <p className="text-sm">Try adjusting your filters or search criteria</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200/50 dark:border-gray-700/30 rounded-2xl overflow-hidden shadow-sm">
+    <div className="overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">

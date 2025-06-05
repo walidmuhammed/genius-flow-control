@@ -23,7 +23,10 @@ import {
   Edit,
   Printer,
   Trash2,
-  Phone
+  Phone,
+  CalendarDays,
+  FileText,
+  DollarSign
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -94,167 +97,214 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-xl flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              Order #{order.id}
-              <Badge variant="outline" className="ml-2">
-                {order.referenceNumber || 'No Reference'}
-              </Badge>
+      <DialogContent className="max-w-4xl max-h-[95vh] w-[95vw] overflow-hidden flex flex-col p-0">
+        {/* Header */}
+        <DialogHeader className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-[#DC291E]" />
+                <DialogTitle className="text-xl font-semibold">Order #{order.id}</DialogTitle>
+              </div>
+              {order.referenceNumber && (
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-medium">
+                  Ref: {order.referenceNumber}
+                </Badge>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button variant="outline" size="sm" className="rounded-xl">
                 <Printer className="h-4 w-4 mr-2" />
                 Print Label
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="rounded-xl">
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
               </Button>
               {order.status === 'New' && (
-                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 rounded-xl">
                   <X className="h-4 w-4 mr-2" />
                   Cancel
                 </Button>
               )}
             </div>
-          </DialogTitle>
+          </div>
         </DialogHeader>
         
         <Tabs defaultValue="overview" className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="mb-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="activity">Activity Log</TabsTrigger>
-          </TabsList>
+          <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-700">
+            <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800 rounded-xl">
+              <TabsTrigger value="overview" className="rounded-lg">Overview</TabsTrigger>
+              <TabsTrigger value="activity" className="rounded-lg">Activity Log</TabsTrigger>
+            </TabsList>
+          </div>
           
-          <TabsContent value="overview" className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full pr-2">
+          <TabsContent value="overview" className="flex-1 overflow-hidden m-0">
+            <ScrollArea className="h-full px-6 py-4">
               <div className="space-y-6">
-                {/* Order Overview */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Package className="h-5 w-5" />
-                    Order Overview
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Status</p>
-                      <Badge className={cn("text-white", getStatusColor(order.status))}>
-                        {order.status}
+                {/* Quick Stats Bar */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className={cn("text-white text-xs", getStatusColor(order.status))}>
+                        {getStatusIcon(order.status)}
                       </Badge>
+                      <span className="text-xs text-gray-500 uppercase tracking-wide">Status</span>
+                    </div>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{order.status}</p>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Package className="h-4 w-4 text-blue-500" />
+                      <span className="text-xs text-gray-500 uppercase tracking-wide">Type</span>
+                    </div>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{order.type}</p>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-2 mb-2">
+                      <DollarSign className="h-4 w-4 text-green-500" />
+                      <span className="text-xs text-gray-500 uppercase tracking-wide">Amount</span>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 mb-1">Type</p>
-                      <p className="font-medium">{order.type}</p>
+                      {order.amount.valueUSD > 0 && (
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">${order.amount.valueUSD}</p>
+                      )}
+                      {order.amount.valueLBP > 0 && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{order.amount.valueLBP.toLocaleString()} LBP</p>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Amount</p>
-                      <div>
-                        {order.amount.valueUSD > 0 && (
-                          <p className="font-medium">${order.amount.valueUSD}</p>
-                        )}
-                        {order.amount.valueLBP > 0 && (
-                          <p className="text-sm text-gray-600">{order.amount.valueLBP.toLocaleString()} LBP</p>
-                        )}
-                      </div>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CalendarDays className="h-4 w-4 text-purple-500" />
+                      <span className="text-xs text-gray-500 uppercase tracking-wide">Created</span>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Delivery Fee</p>
-                      <div>
-                        {order.deliveryCharge.valueUSD > 0 && (
-                          <p className="font-medium">${order.deliveryCharge.valueUSD}</p>
-                        )}
-                        {order.deliveryCharge.valueLBP > 0 && (
-                          <p className="text-sm text-gray-600">{order.deliveryCharge.valueLBP.toLocaleString()} LBP</p>
-                        )}
-                      </div>
-                    </div>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+                      {format(new Date(order.lastUpdate), 'MMM dd, yyyy')}
+                    </p>
+                    <p className="text-xs text-gray-500">{format(new Date(order.lastUpdate), 'h:mm a')}</p>
                   </div>
                 </div>
 
                 {/* Status Progress Bar */}
-                <div className="bg-white border rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Progress</h3>
-                  <div className="mb-4">
-                    <Progress value={getStatusProgress()} className="h-2" />
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                    <Truck className="h-5 w-5" />
+                    Order Progress
+                  </h3>
+                  <div className="mb-6">
+                    <Progress value={getStatusProgress()} className="h-3 rounded-full" />
                   </div>
-                  <div className="flex justify-between">
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                     {statusSteps.map((step, index) => (
                       <div 
                         key={index} 
                         className={cn(
-                          "flex flex-col items-center text-center", 
-                          index <= currentStepIndex ? "opacity-100" : "opacity-50"
+                          "flex flex-col items-center text-center p-3 rounded-lg transition-all", 
+                          index <= currentStepIndex 
+                            ? "bg-[#DC291E]/10 border border-[#DC291E]/20" 
+                            : "bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
                         )}
-                        style={{ width: `${100 / statusSteps.length}%` }}
                       >
                         <div className={cn(
-                          "w-8 h-8 rounded-full flex items-center justify-center mb-2 text-white text-sm",
-                          index <= currentStepIndex ? getStatusColor(step) : "bg-gray-200"
+                          "w-10 h-10 rounded-full flex items-center justify-center mb-2 text-white text-sm transition-all",
+                          index <= currentStepIndex ? getStatusColor(step) : "bg-gray-300 dark:bg-gray-600"
                         )}>
                           {getStatusIcon(step)}
                         </div>
-                        <span className="text-xs">{step}</span>
+                        <span className={cn(
+                          "text-xs font-medium",
+                          index <= currentStepIndex ? "text-[#DC291E]" : "text-gray-500"
+                        )}>{step}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Customer Details */}
-                  <div className="bg-white border rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                       <User className="h-5 w-5" />
                       Customer Details
                     </h3>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Name</p>
-                        <p className="font-medium">{order.customer.name}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Phone</p>
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-gray-400" />
-                          <p className="font-medium">{order.customer.phone}</p>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <User className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Name</p>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">{order.customer.name}</p>
                         </div>
                       </div>
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Location</p>
-                        <div className="flex items-start gap-2">
-                          <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
-                          <div>
-                            <p className="font-medium">{order.location.city}, {order.location.area}</p>
-                            {order.location.address && (
-                              <p className="text-sm text-gray-600 mt-1">{order.location.address}</p>
-                            )}
-                          </div>
+                      <div className="flex items-start gap-3">
+                        <Phone className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Phone</p>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">{order.customer.phone}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Location</p>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">{order.location.city}, {order.location.area}</p>
+                          {order.location.address && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{order.location.address}</p>
+                          )}
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Delivery Info */}
-                  <div className="bg-white border rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  {/* Delivery & Payment Info */}
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                       <Truck className="h-5 w-5" />
-                      Delivery Info
+                      Delivery & Payment
                     </h3>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Courier</p>
-                        <p className="font-medium">Not assigned yet</p>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <User className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Courier</p>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">Not assigned yet</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Payment State</p>
-                        <Badge variant="outline">
-                          {order.amount.valueUSD > 0 || order.amount.valueLBP > 0 ? 'Cash Collection' : 'Prepaid'}
-                        </Badge>
+                      
+                      <div className="flex items-start gap-3">
+                        <DollarSign className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Payment Type</p>
+                          <Badge variant="outline" className="font-medium">
+                            {order.amount.valueUSD > 0 || order.amount.valueLBP > 0 ? 'Cash Collection' : 'Prepaid'}
+                          </Badge>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Last Update</p>
-                        <p className="font-medium">{format(new Date(order.lastUpdate), 'PPp')}</p>
+                      
+                      <div className="flex items-start gap-3">
+                        <Truck className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Delivery Fee</p>
+                          <div>
+                            {order.deliveryCharge.valueUSD > 0 && (
+                              <p className="font-medium text-gray-900 dark:text-gray-100">${order.deliveryCharge.valueUSD}</p>
+                            )}
+                            {order.deliveryCharge.valueLBP > 0 && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{order.deliveryCharge.valueLBP.toLocaleString()} LBP</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-3">
+                        <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Last Updated</p>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">{format(new Date(order.lastUpdate), 'PPp')}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -262,10 +312,13 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
 
                 {/* Notes */}
                 {order.note && (
-                  <div className="bg-white border rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Notes</h3>
-                    <div className="bg-gray-50 p-3 rounded-md">
-                      <p className="text-sm text-gray-700">{order.note}</p>
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Notes
+                    </h3>
+                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{order.note}</p>
                     </div>
                   </div>
                 )}
@@ -273,18 +326,25 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </ScrollArea>
           </TabsContent>
           
-          <TabsContent value="activity" className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full pr-2">
+          <TabsContent value="activity" className="flex-1 overflow-hidden m-0">
+            <ScrollArea className="h-full px-6 py-4">
               {isLoadingLogs ? (
-                <p className="text-sm text-center text-gray-500 py-4">Loading activity logs...</p>
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#DC291E]"></div>
+                </div>
               ) : activityLogs && activityLogs.length > 0 ? (
                 <div className="space-y-4">
-                  {activityLogs.map((log) => (
-                    <ActivityLogItem key={log.id} log={log} />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Activity Timeline</h3>
+                  {activityLogs.map((log, index) => (
+                    <ActivityLogItem key={log.id} log={log} isLast={index === activityLogs.length - 1} />
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-center text-gray-500 py-4">No activity logs available for this order.</p>
+                <div className="text-center py-12">
+                  <Clock className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-lg font-medium text-gray-500 mb-2">No activity logs</p>
+                  <p className="text-sm text-gray-400">Activity will appear here as the order progresses</p>
+                </div>
               )}
             </ScrollArea>
           </TabsContent>
@@ -294,7 +354,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   );
 };
 
-const ActivityLogItem: React.FC<{ log: ActivityLog }> = ({ log }) => {
+const ActivityLogItem: React.FC<{ log: ActivityLog; isLast: boolean }> = ({ log, isLast }) => {
   const getActivityDescription = () => {
     switch (log.action) {
       case 'created':
@@ -311,18 +371,42 @@ const ActivityLogItem: React.FC<{ log: ActivityLog }> = ({ log }) => {
         return 'Activity performed';
     }
   };
+
+  const getActivityIcon = () => {
+    switch (log.action) {
+      case 'created':
+        return <Package className="h-4 w-4" />;
+      case 'updated':
+        return <Edit className="h-4 w-4" />;
+      case 'status_changed':
+        return <Truck className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
+    }
+  };
   
   return (
-    <div className="border-l-2 border-blue-200 pl-4 py-2">
-      <div className="flex justify-between items-start">
-        <p className="font-medium text-sm">{getActivityDescription()}</p>
-        <p className="text-xs text-gray-500">
-          {format(new Date(log.created_at), 'PPp')}
-        </p>
+    <div className="relative">
+      <div className="flex items-start gap-4">
+        <div className="flex-shrink-0 w-8 h-8 bg-[#DC291E] rounded-full flex items-center justify-center text-white">
+          {getActivityIcon()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">{getActivityDescription()}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  By {log.performed_by || 'System'} • {format(new Date(log.created_at), 'PPp')}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <p className="text-xs text-gray-500 mt-1">
-        By {log.performed_by || 'System'}
-      </p>
+      {!isLast && (
+        <div className="absolute left-4 top-8 w-0.5 h-6 bg-gray-200 dark:bg-gray-700" />
+      )}
     </div>
   );
 };
