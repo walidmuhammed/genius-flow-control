@@ -80,246 +80,172 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
   const canDelete = (order: OrderWithCustomer) => order.status === 'New';
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200/60 dark:border-gray-700/40 rounded-2xl overflow-hidden shadow-sm">
-      {/* Desktop Table */}
-      <div className="hidden lg:block overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-              <TableHead className="w-12 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider pl-6">
-                <Checkbox
-                  checked={isAllSelected}
-                  ref={(el) => {
-                    if (el) {
-                      const input = el.querySelector('input') as HTMLInputElement;
-                      if (input) input.indeterminate = isPartiallySelected;
-                    }
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+            <TableHead className="w-12 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider pl-6">
+              <Checkbox
+                checked={isAllSelected}
+                ref={(el) => {
+                  if (el) {
+                    const input = el.querySelector('input') as HTMLInputElement;
+                    if (input) input.indeterminate = isPartiallySelected;
+                  }
+                }}
+                onCheckedChange={handleSelectAll}
+                className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md"
+              />
+            </TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">ORDER ID</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">REFERENCE</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">CUSTOMER</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">LOCATION</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">TYPE</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">AMOUNT</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">STATUS</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">DATE</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">ACTIONS</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {orders.map((order, index) => (
+            <motion.tr
+              key={order.id}
+              className={cn(
+                "border-b border-gray-100/50 dark:border-gray-700/30 transition-all duration-200 cursor-pointer",
+                selectedOrderIds.includes(order.id) 
+                  ? "bg-[#DB271E]/5 border-[#DB271E]/20" 
+                  : "hover:bg-gray-50/30 dark:hover:bg-gray-800/30",
+                hoveredRow === order.id && "shadow-sm"
+              )}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              onMouseEnter={() => setHoveredRow(order.id)}
+              onMouseLeave={() => setHoveredRow(null)}
+              onClick={() => onViewOrder(order)}
+            >
+              <TableCell className="pl-6" onClick={e => e.stopPropagation()}>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ 
+                    opacity: hoveredRow === order.id || selectedOrderIds.includes(order.id) ? 1 : 0.6,
+                    scale: 1 
                   }}
-                  onCheckedChange={handleSelectAll}
-                  className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md"
-                />
-              </TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">ORDER ID</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">REFERENCE</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">CUSTOMER</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">LOCATION</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">TYPE</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">AMOUNT</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">STATUS</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">DATE</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">ACTIONS</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.map((order, index) => (
-              <motion.tr
-                key={order.id}
-                className={cn(
-                  "border-b border-gray-100/50 dark:border-gray-700/30 transition-all duration-200 cursor-pointer",
-                  selectedOrderIds.includes(order.id) 
-                    ? "bg-[#DB271E]/5 border-[#DB271E]/20" 
-                    : "hover:bg-gray-50/30 dark:hover:bg-gray-800/30",
-                  hoveredRow === order.id && "shadow-sm"
+                  transition={{ duration: 0.2 }}
+                >
+                  <Checkbox
+                    checked={selectedOrderIds.includes(order.id)}
+                    onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+                    className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md"
+                  />
+                </motion.div>
+              </TableCell>
+              <TableCell className="font-semibold text-[#DB271E]">
+                #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+              </TableCell>
+              <TableCell>
+                {order.reference_number ? (
+                  <span className="font-medium text-gray-900 dark:text-gray-100">{order.reference_number}</span>
+                ) : (
+                  <span className="text-gray-400">-</span>
                 )}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                onMouseEnter={() => setHoveredRow(order.id)}
-                onMouseLeave={() => setHoveredRow(null)}
-                onClick={() => onViewOrder(order)}
-              >
-                <TableCell className="pl-6" onClick={e => e.stopPropagation()}>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ 
-                      opacity: hoveredRow === order.id || selectedOrderIds.includes(order.id) ? 1 : 0.6,
-                      scale: 1 
-                    }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Checkbox
-                      checked={selectedOrderIds.includes(order.id)}
-                      onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
-                      className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md"
-                    />
-                  </motion.div>
-                </TableCell>
-                <TableCell className="font-semibold text-[#DB271E]">
-                  #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-                </TableCell>
-                <TableCell>
-                  {order.reference_number ? (
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{order.reference_number}</span>
-                  ) : (
-                    <span className="text-gray-400">-</span>
+              </TableCell>
+              <TableCell>
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100">{order.customer?.name}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer?.phone}</div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100">{order.customer?.city_name}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer?.governorate_name}</div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline" className="px-3 py-1 text-xs font-medium rounded-full border">
+                  {order.type}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <div>
+                  {order.cash_collection_usd > 0 && (
+                    <div className="font-semibold text-gray-900 dark:text-gray-100">${order.cash_collection_usd}</div>
                   )}
-                </TableCell>
-                <TableCell>
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{order.customer?.name}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer?.phone}</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{order.customer?.city_name}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer?.governorate_name}</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="px-3 py-1 text-xs font-medium rounded-full border">
-                    {order.type}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div>
-                    {order.cash_collection_usd > 0 && (
-                      <div className="font-semibold text-gray-900 dark:text-gray-100">${order.cash_collection_usd}</div>
-                    )}
-                    {order.cash_collection_lbp > 0 && (
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border", getStatusColor(order.status))}>
-                    {order.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm text-gray-900 dark:text-gray-100">
-                    {formatDate(new Date(order.created_at))}
-                  </div>
-                </TableCell>
-                <TableCell className="text-right" onClick={e => e.stopPropagation()}>
-                  <div className="flex items-center justify-end gap-1">
+                  {order.cash_collection_lbp > 0 && (
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell>
+                <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border", getStatusColor(order.status))}>
+                  {order.status}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <div className="text-sm text-gray-900 dark:text-gray-100">
+                  {formatDate(new Date(order.created_at))}
+                </div>
+              </TableCell>
+              <TableCell className="text-right" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                    onClick={() => onViewOrder(order)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  
+                  {canEdit(order) && onEditOrder && (
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                      onClick={() => onViewOrder(order)}
+                      onClick={() => onEditOrder(order)}
                     >
-                      <Eye className="h-4 w-4" />
+                      <Edit className="h-4 w-4" />
                     </Button>
-                    
-                    {canEdit(order) && onEditOrder && (
+                  )}
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                        onClick={() => onEditOrder(order)}
                       >
-                        <Edit className="h-4 w-4" />
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
-                    )}
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="rounded-xl border-gray-200 dark:border-gray-700 shadow-xl">
-                        <DropdownMenuItem className="rounded-lg">
-                          <Printer className="h-4 w-4 mr-2" />
-                          Print Label
-                        </DropdownMenuItem>
-                        {canEdit(order) && (
-                          <>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              className="text-red-600 rounded-lg"
-                              onClick={() => onDeleteOrder?.(order)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete Order
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </TableCell>
-              </motion.tr>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Mobile Cards */}
-      <div className="lg:hidden divide-y divide-gray-100 dark:divide-gray-700">
-        {orders.map((order, index) => (
-          <motion.div
-            key={order.id}
-            className={cn(
-              "p-4 transition-all duration-200",
-              selectedOrderIds.includes(order.id) 
-                ? "bg-[#DB271E]/5" 
-                : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
-            )}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
-            onClick={() => onViewOrder(order)}
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  checked={selectedOrderIds.includes(order.id)}
-                  onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
-                  className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md"
-                  onClick={e => e.stopPropagation()}
-                />
-                <div>
-                  <div className="font-semibold text-[#DB271E]">
-                    #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-                  </div>
-                  {order.reference_number && (
-                    <div className="text-sm text-gray-500">{order.reference_number}</div>
-                  )}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="rounded-xl border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-800 z-50">
+                      <DropdownMenuItem className="rounded-lg">
+                        <Printer className="h-4 w-4 mr-2" />
+                        Print Label
+                      </DropdownMenuItem>
+                      {canEdit(order) && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            className="text-red-600 rounded-lg"
+                            onClick={() => onDeleteOrder?.(order)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Order
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-              </div>
-              <Badge className={cn("px-2 py-1 text-xs font-medium rounded-full", getStatusColor(order.status))}>
-                {order.status}
-              </Badge>
-            </div>
-
-            <div className="space-y-2">
-              <div>
-                <div className="font-medium text-gray-900 dark:text-gray-100">{order.customer?.name}</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer?.phone}</div>
-              </div>
-
-              <div className="flex justify-between items-center text-sm">
-                <div>
-                  <div className="text-gray-500">Location</div>
-                  <div className="font-medium">{order.customer?.city_name}, {order.customer?.governorate_name}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-gray-500">Amount</div>
-                  <div className="font-medium">
-                    {order.cash_collection_usd > 0 && `$${order.cash_collection_usd}`}
-                    {order.cash_collection_lbp > 0 && `${order.cash_collection_lbp.toLocaleString()} LBP`}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center pt-2">
-                <Badge variant="outline" className="px-2 py-1 text-xs">
-                  {order.type}
-                </Badge>
-                <div className="text-sm text-gray-500">
-                  {formatDate(new Date(order.created_at))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+              </TableCell>
+            </motion.tr>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 };

@@ -54,7 +54,7 @@ export const OrdersPageHeader: React.FC<OrdersPageHeaderProps> = ({
   );
 };
 
-// New component for the search controls inside the unified container
+// Search controls component for inside the unified container
 export const OrdersSearchControls: React.FC<{
   searchQuery: string;
   onSearchChange: (query: string) => void;
@@ -114,14 +114,14 @@ export const OrdersSearchControls: React.FC<{
                 Export
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-xl">
-              <DropdownMenuItem onClick={() => onExport()}>
+            <DropdownMenuContent align="end" className="rounded-xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-xl z-50">
+              <DropdownMenuItem onClick={() => onExport()} className="rounded-lg">
                 Export Selected ({selectedCount})
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onExport()}>
+              <DropdownMenuItem onClick={() => onExport()} className="rounded-lg">
                 Export All Filtered
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onExport()}>
+              <DropdownMenuItem onClick={() => onExport()} className="rounded-lg">
                 Export All Orders
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -170,14 +170,14 @@ export const OrdersSearchControls: React.FC<{
                 Export
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-xl">
-              <DropdownMenuItem onClick={() => onExport()}>
+            <DropdownMenuContent align="end" className="rounded-xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-xl z-50">
+              <DropdownMenuItem onClick={() => onExport()} className="rounded-lg">
                 Export Selected ({selectedCount})
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onExport()}>
+              <DropdownMenuItem onClick={() => onExport()} className="rounded-lg">
                 Export All Filtered
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onExport()}>
+              <DropdownMenuItem onClick={() => onExport()} className="rounded-lg">
                 Export All Orders
               </DropdownMenuItem>
             </DropdownMenuContent>

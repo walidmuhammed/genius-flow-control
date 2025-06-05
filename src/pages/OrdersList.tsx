@@ -236,74 +236,96 @@ const OrdersList: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            {filteredOrders.length > 0 ? (
-              <div className="space-y-4">
-                {/* Bulk Actions Bar - Outside container */}
-                <BulkActionsBar
-                  selectedCount={selectedOrders.length}
-                  onClearSelection={() => setSelectedOrders([])}
-                  onBulkPrint={handleBulkActions.print}
-                  onBulkExport={handleBulkActions.export}
-                  onBulkDelete={handleBulkActions.delete}
-                  canDelete={canDeleteSelected}
-                />
+            {/* Bulk Actions Bar - Outside container */}
+            <BulkActionsBar
+              selectedCount={selectedOrders.length}
+              onClearSelection={() => setSelectedOrders([])}
+              onBulkPrint={handleBulkActions.print}
+              onBulkExport={handleBulkActions.export}
+              onBulkDelete={handleBulkActions.delete}
+              canDelete={canDeleteSelected}
+            />
 
-                {/* Unified Container */}
-                <OrdersUnifiedContainer>
-                  {/* Search Controls */}
-                  <OrdersSearchControls
-                    searchQuery={searchQuery}
-                    onSearchChange={handleSearch}
-                    dateRange={dateRange}
-                    onDateRangeChange={handleDateChange}
-                    onImport={() => setImportModalOpen(true)}
-                    onExport={() => console.log('Export')}
-                    selectedCount={selectedOrders.length}
-                  />
-                  
-                  {/* Filter Tabs */}
-                  <OrdersFilterTabs
-                    activeTab={activeTab}
-                    onTabChange={setActiveTab}
-                    tabs={tabs}
-                  />
-                  
-                  {/* Orders Table */}
-                  <div className="overflow-hidden">
-                    {isMobile ? (
-                      <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                        {filteredOrdersForMobile.map((order, index) => (
-                          <div key={order.id} className="p-4">
-                            <div onClick={() => handleViewOrder(filteredOrders.find(o => o.id === order.id)!)}>
-                              {order.customer?.name} - {order.status}
+            {/* Unified Container */}
+            <OrdersUnifiedContainer>
+              {/* Search Controls */}
+              <OrdersSearchControls
+                searchQuery={searchQuery}
+                onSearchChange={handleSearch}
+                dateRange={dateRange}
+                onDateRangeChange={handleDateChange}
+                onImport={() => setImportModalOpen(true)}
+                onExport={() => console.log('Export')}
+                selectedCount={selectedOrders.length}
+              />
+              
+              {/* Filter Tabs */}
+              <OrdersFilterTabs
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                tabs={tabs}
+              />
+              
+              {/* Orders Content */}
+              <div className="p-4 sm:p-6">
+                {filteredOrders.length > 0 ? (
+                  isMobile ? (
+                    <div className="space-y-4">
+                      {filteredOrders.map((order, index) => (
+                        <motion.div
+                          key={order.id}
+                          className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                          onClick={() => handleViewOrder(order)}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="font-semibold text-[#DB271E]">
+                              #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {order.status}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <EnhancedOrdersTable
-                        orders={filteredOrders}
-                        selectedOrderIds={selectedOrders}
-                        onOrderSelection={setSelectedOrders}
-                        onViewOrder={handleViewOrder}
-                        onEditOrder={handleEditOrder}
-                        onDeleteOrder={handleDeleteOrder}
-                      />
-                    )}
+                          <div className="space-y-2">
+                            <div className="font-medium">{order.customer?.name}</div>
+                            <div className="text-sm text-gray-600">{order.customer?.phone}</div>
+                            <div className="text-sm text-gray-600">
+                              {order.customer?.city_name}, {order.customer?.governorate_name}
+                            </div>
+                            {order.cash_collection_usd > 0 && (
+                              <div className="font-semibold text-green-600">
+                                ${order.cash_collection_usd}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : (
+                    <EnhancedOrdersTable
+                      orders={filteredOrders}
+                      selectedOrderIds={selectedOrders}
+                      onOrderSelection={setSelectedOrders}
+                      onViewOrder={handleViewOrder}
+                      onEditOrder={handleEditOrder}
+                      onDeleteOrder={handleDeleteOrder}
+                    />
+                  )
+                ) : (
+                  <div className="py-12">
+                    <EmptyState 
+                      icon={AlertCircle}
+                      title="No orders found"
+                      description="There are no orders matching your current filters."
+                      actionLabel="Create Order"
+                      actionHref="/orders/new"
+                    />
                   </div>
-                </OrdersUnifiedContainer>
+                )}
               </div>
-            ) : (
-              <div className="mt-8">
-                <EmptyState 
-                  icon={AlertCircle}
-                  title="No orders found"
-                  description="There are no orders matching your current filters."
-                  actionLabel="Create Order"
-                  actionHref="/orders/new"
-                />
-              </div>
-            )}
+            </OrdersUnifiedContainer>
           </motion.div>
         )}
         
