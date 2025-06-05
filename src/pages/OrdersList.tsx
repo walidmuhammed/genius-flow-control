@@ -9,7 +9,6 @@ import { useOrders, useOrdersByStatus } from '@/hooks/use-orders';
 import { toast } from 'sonner';
 import { OrderWithCustomer } from '@/services/orders';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
 import OrdersTableMobile from '@/components/orders/OrdersTableMobile';
 import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 import { OrdersPageHeader } from '@/components/orders/OrdersPageHeader';
@@ -214,7 +213,7 @@ const OrdersList: React.FC = () => {
             animate={{ opacity: 1 }}
           >
             <div className="text-center">
-              <div className="w-8 h-8 border-2 border-[#DC291E] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="w-8 h-8 border-2 border-[#DB271E] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-gray-600 dark:text-gray-400">Loading orders...</p>
             </div>
           </motion.div>
