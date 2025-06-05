@@ -16,20 +16,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className, hideMobile
   const isMobile = useIsMobile();
 
   return (
-    <div className={cn("min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col", className)}>
-      {/* Top Bar */}
+    <div className={cn("min-h-screen bg-gray-50 dark:bg-gray-900", className)}>
+      {/* Fixed Top Bar */}
       <TopBar />
       
-      {/* Main Content Container */}
-      <div className="flex flex-1 pt-16">
-        {/* Desktop Sidebar */}
-        {!isMobile && <Sidebar />}
-        
-        {/* Main Content */}
-        <main className="flex-1 w-full">
+      {/* Fixed Sidebar - Desktop only */}
+      {!isMobile && <Sidebar />}
+      
+      {/* Mobile Sidebar - Handled internally by Sidebar component */}
+      {isMobile && <Sidebar />}
+      
+      {/* Main Content */}
+      <main className={cn(
+        "pt-16 min-h-screen transition-all duration-200",
+        !isMobile ? "pl-64" : "pl-0"
+      )}>
+        <div className="w-full">
           {children}
-        </main>
-      </div>
+        </div>
+      </main>
       
       {/* Mobile Navigation - conditionally hidden */}
       {isMobile && !hideMobileNav && <MobileNavigation />}
