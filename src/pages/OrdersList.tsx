@@ -150,10 +150,12 @@ const OrdersList: React.FC = () => {
   };
 
   const handleEditOrder = (order: OrderWithCustomer) => {
+    // Navigate to edit order page
     console.log('Edit order:', order.id);
   };
 
   const handleDeleteOrder = (order: OrderWithCustomer) => {
+    // Show confirmation dialog and delete
     console.log('Delete order:', order.id);
   };
 
@@ -179,6 +181,7 @@ const OrdersList: React.FC = () => {
     { key: 'paid', label: 'Paid', count: paidOrders?.length }
   ];
 
+  // Transform orders for mobile display
   const filteredOrdersForMobile = useMemo(() => mapOrdersToTableFormat(filteredOrders), [filteredOrders]);
   
   return (
@@ -226,50 +229,47 @@ const OrdersList: React.FC = () => {
           </motion.div>
         )}
         
-        {/* Main Content */}
+        {/* Unified Container for Search + Filters + Table */}
         {!isLoadingAllOrders && !ordersError && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="space-y-4"
           >
-            {/* Bulk Actions Bar - Outside container when items selected */}
-            {selectedOrders.length > 0 && (
-              <BulkActionsBar
-                selectedCount={selectedOrders.length}
-                onClearSelection={() => setSelectedOrders([])}
-                onBulkPrint={handleBulkActions.print}
-                onBulkExport={handleBulkActions.export}
-                onBulkDelete={handleBulkActions.delete}
-                canDelete={canDeleteSelected}
-              />
-            )}
+            {filteredOrders.length > 0 ? (
+              <div className="space-y-4">
+                {/* Bulk Actions Bar - Outside container */}
+                <BulkActionsBar
+                  selectedCount={selectedOrders.length}
+                  onClearSelection={() => setSelectedOrders([])}
+                  onBulkPrint={handleBulkActions.print}
+                  onBulkExport={handleBulkActions.export}
+                  onBulkDelete={handleBulkActions.delete}
+                  canDelete={canDeleteSelected}
+                />
 
-            {/* Unified Container */}
-            <OrdersUnifiedContainer>
-              {/* Search Controls */}
-              <OrdersSearchControls
-                searchQuery={searchQuery}
-                onSearchChange={handleSearch}
-                dateRange={dateRange}
-                onDateRangeChange={handleDateChange}
-                onImport={() => setImportModalOpen(true)}
-                onExport={() => console.log('Export')}
-                selectedCount={selectedOrders.length}
-              />
-              
-              {/* Filter Tabs */}
-              <OrdersFilterTabs
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                tabs={tabs}
-              />
-              
-              {/* Orders Table/Content */}
-              <div className="overflow-hidden">
-                {filteredOrders.length > 0 ? (
-                  <>
+                {/* Unified Container */}
+                <OrdersUnifiedContainer>
+                  {/* Search Controls */}
+                  <OrdersSearchControls
+                    searchQuery={searchQuery}
+                    onSearchChange={handleSearch}
+                    dateRange={dateRange}
+                    onDateRangeChange={handleDateChange}
+                    onImport={() => setImportModalOpen(true)}
+                    onExport={() => console.log('Export')}
+                    selectedCount={selectedOrders.length}
+                  />
+                  
+                  {/* Filter Tabs */}
+                  <OrdersFilterTabs
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    tabs={tabs}
+                  />
+                  
+                  {/* Orders Table */}
+                  <div className="overflow-hidden">
                     {isMobile ? (
                       <div className="divide-y divide-gray-100 dark:divide-gray-700">
                         {filteredOrdersForMobile.map((order, index) => (
@@ -290,20 +290,20 @@ const OrdersList: React.FC = () => {
                         onDeleteOrder={handleDeleteOrder}
                       />
                     )}
-                  </>
-                ) : (
-                  <div className="p-8 text-center">
-                    <EmptyState 
-                      icon={AlertCircle}
-                      title="No orders found"
-                      description="There are no orders matching your current filters."
-                      actionLabel="Create Order"
-                      actionHref="/orders/new"
-                    />
                   </div>
-                )}
+                </OrdersUnifiedContainer>
               </div>
-            </OrdersUnifiedContainer>
+            ) : (
+              <div className="mt-8">
+                <EmptyState 
+                  icon={AlertCircle}
+                  title="No orders found"
+                  description="There are no orders matching your current filters."
+                  actionLabel="Create Order"
+                  actionHref="/orders/new"
+                />
+              </div>
+            )}
           </motion.div>
         )}
         

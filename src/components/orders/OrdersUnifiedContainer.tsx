@@ -16,9 +16,7 @@ export const OrdersUnifiedContainer: React.FC<OrdersUnifiedContainerProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="divide-y divide-gray-200/30 dark:divide-gray-700/30">
-        {children}
-      </div>
+      {children}
     </motion.div>
   );
 };

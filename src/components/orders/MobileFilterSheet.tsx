@@ -72,19 +72,18 @@ export const MobileFilterSheet: React.FC<MobileFilterSheetProps> = ({
             onClick={onClose}
           />
           
-          {/* Sheet - Fixed height to prevent bottom nav overlap */}
+          {/* Sheet */}
           <motion.div
-            className="fixed inset-x-0 bottom-0 bg-white dark:bg-gray-800 rounded-t-2xl z-50 max-h-[70vh] overflow-hidden"
+            className="fixed inset-x-0 bottom-0 bg-white dark:bg-gray-800 rounded-t-2xl z-50 max-h-[80vh] overflow-hidden"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200/60 dark:border-gray-700/40 bg-white dark:bg-gray-800 sticky top-0 z-10">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200/60 dark:border-gray-700/40">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                Filter Orders
+                Filters
               </h3>
               <Button
                 variant="ghost"
@@ -96,8 +95,8 @@ export const MobileFilterSheet: React.FC<MobileFilterSheetProps> = ({
               </Button>
             </div>
             
-            {/* Filter Options - Scrollable content */}
-            <div className="p-4 space-y-3 overflow-y-auto" style={{ maxHeight: 'calc(70vh - 80px)', paddingBottom: '20px' }}>
+            {/* Filter Options */}
+            <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
               {tabs.map((tab) => {
                 const Icon = getTabIcon(tab.key);
                 const isActive = activeTab === tab.key;
@@ -106,16 +105,16 @@ export const MobileFilterSheet: React.FC<MobileFilterSheetProps> = ({
                   <button
                     key={tab.key}
                     className={cn(
-                      "w-full flex items-center justify-between p-4 rounded-xl transition-all duration-200 border",
+                      "w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200",
                       isActive
-                        ? 'bg-[#DB271E] text-white border-[#DB271E] shadow-sm'
-                        : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-600'
+                        ? 'bg-[#DB271E] text-white'
+                        : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
                     )}
                     onClick={() => handleTabSelect(tab.key)}
                   >
                     <div className="flex items-center gap-3">
                       <Icon className="h-5 w-5" />
-                      <span className="font-medium text-left">{tab.label}</span>
+                      <span className="font-medium">{tab.label}</span>
                     </div>
                     {tab.count !== undefined && (
                       <Badge
