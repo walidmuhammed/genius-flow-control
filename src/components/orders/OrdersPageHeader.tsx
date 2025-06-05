@@ -1,15 +1,14 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, Search, Upload, Download } from 'lucide-react';
+import { Calendar, Search, Filter, Upload, Download, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-
+import { format } from "date-fns";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 interface OrdersPageHeaderProps {
   totalOrders: number;
   searchQuery: string;
@@ -26,7 +25,6 @@ interface OrdersPageHeaderProps {
   onExport: () => void;
   selectedCount: number;
 }
-
 export const OrdersPageHeader: React.FC<OrdersPageHeaderProps> = ({
   totalOrders,
   searchQuery,
@@ -37,31 +35,7 @@ export const OrdersPageHeader: React.FC<OrdersPageHeaderProps> = ({
   onExport,
   selectedCount
 }) => {
-  const datePresets = [
-    {
-      label: "Today",
-      value: () => ({ from: new Date(), to: new Date() })
-    },
-    {
-      label: "Yesterday", 
-      value: () => ({ from: subDays(new Date(), 1), to: subDays(new Date(), 1) })
-    },
-    {
-      label: "Last 7 days",
-      value: () => ({ from: subDays(new Date(), 6), to: new Date() })
-    },
-    {
-      label: "Last 30 days",
-      value: () => ({ from: subDays(new Date(), 29), to: new Date() })
-    },
-    {
-      label: "This month",
-      value: () => ({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) })
-    }
-  ];
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* Main Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -76,6 +50,7 @@ export const OrdersPageHeader: React.FC<OrdersPageHeaderProps> = ({
           <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 px-3 py-1.5 font-medium">
             {totalOrders} Total Orders
           </Badge>
+          
         </div>
       </div>
 
@@ -85,100 +60,40 @@ export const OrdersPageHeader: React.FC<OrdersPageHeaderProps> = ({
           {/* Search Bar */}
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search orders by ID, reference, customer, phone..."
-              value={searchQuery}
-              onChange={e => onSearchChange(e.target.value)}
-              className="pl-10 h-10 border-gray-200/50 dark:border-gray-700/30 focus:border-[#DC291E] focus:ring-[#DC291E]/20 rounded-xl"
-            />
+            <Input placeholder="Search orders by ID, reference, customer, phone..." value={searchQuery} onChange={e => onSearchChange(e.target.value)} className="pl-10 h-10 border-gray-200/50 dark:border-gray-700/30 focus:border-[#DC291E] focus:ring-[#DC291E]/20 rounded-xl" />
           </div>
 
-          {/* Date Range with Presets */}
+          {/* Date Range */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="h-10 px-4 border-gray-200/50 dark:border-gray-700/30 hover:border-gray-300 dark:hover:border-gray-600 rounded-xl min-w-[200px] justify-start"
-              >
+              <Button variant="outline" className="h-10 px-4 border-gray-200/50 dark:border-gray-700/30 hover:border-gray-300 dark:hover:border-gray-600 rounded-xl min-w-[200px] justify-start">
                 <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                {dateRange.from ? 
-                  dateRange.to ? 
-                    <>
+                {dateRange.from ? dateRange.to ? <>
                       {format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}
-                    </> : 
-                    format(dateRange.from, "LLL dd, y") : 
-                  <span className="text-gray-500">Date range</span>
-                }
+                    </> : format(dateRange.from, "LLL dd, y") : <span className="text-gray-500">Date range</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
-              <div className="flex">
-                {/* Date Presets */}
-                <div className="border-r border-gray-100 dark:border-gray-700 p-3 w-40">
-                  <div className="space-y-1">
-                    {datePresets.map((preset) => (
-                      <Button
-                        key={preset.label}
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start text-left font-normal"
-                        onClick={() => onDateRangeChange(preset.value())}
-                      >
-                        {preset.label}
-                      </Button>
-                    ))}
-                    <DropdownMenuSeparator />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start text-left font-normal"
-                      onClick={() => onDateRangeChange({ from: undefined, to: undefined })}
-                    >
-                      Clear
-                    </Button>
-                  </div>
-                </div>
-                {/* Calendar */}
-                <div>
-                  <CalendarComponent
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dateRange.from}
-                    selected={{
-                      from: dateRange.from,
-                      to: dateRange.to
-                    }}
-                    onSelect={range => onDateRangeChange({
-                      from: range?.from,
-                      to: range?.to
-                    })}
-                    numberOfMonths={2}
-                    className="pointer-events-auto"
-                  />
-                </div>
-              </div>
+              <CalendarComponent initialFocus mode="range" defaultMonth={dateRange.from} selected={{
+              from: dateRange.from,
+              to: dateRange.to
+            }} onSelect={range => onDateRangeChange({
+              from: range?.from,
+              to: range?.to
+            })} numberOfMonths={2} />
             </PopoverContent>
           </Popover>
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onImport}
-              className="h-10 px-4 border-gray-200/50 dark:border-gray-700/30 hover:border-gray-300 dark:hover:border-gray-600 rounded-xl"
-            >
+            <Button variant="outline" size="sm" onClick={onImport} className="h-10 px-4 border-gray-200/50 dark:border-gray-700/30 hover:border-gray-300 dark:hover:border-gray-600 rounded-xl">
               <Upload className="h-4 w-4 mr-2" />
               Import
             </Button>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-10 px-4 border-gray-200/50 dark:border-gray-700/30 hover:border-gray-300 dark:hover:border-gray-600 rounded-xl"
-                >
+                <Button variant="outline" size="sm" className="h-10 px-4 border-gray-200/50 dark:border-gray-700/30 hover:border-gray-300 dark:hover:border-gray-600 rounded-xl">
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
@@ -198,6 +113,5 @@ export const OrdersPageHeader: React.FC<OrdersPageHeaderProps> = ({
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
