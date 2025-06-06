@@ -75,10 +75,10 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
           transition={{ duration: 0.3, delay: index * 0.05 }}
           onClick={() => onViewDetails(order)}
         >
-          {/* Card Header */}
-          <div className="p-4 pb-3">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+          {/* Card Header - Improved spacing and responsiveness */}
+          <div className="p-3 sm:p-4 pb-2 sm:pb-3">
+            <div className="flex items-start justify-between mb-2 sm:mb-3">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                 <div 
                   className="shrink-0"
                   onClick={(e) => e.stopPropagation()}
@@ -86,18 +86,18 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
                   <Checkbox 
                     checked={selectedOrders.includes(order.id)}
                     onCheckedChange={() => toggleSelectOrder(order.id)}
-                    className="data-[state=checked]:bg-[#DC291E] data-[state=checked]:border-[#DC291E] rounded-md"
+                    className="data-[state=checked]:bg-[#DC291E] data-[state=checked]:border-[#DC291E] rounded-md h-4 w-4 sm:h-5 sm:w-5"
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-[#DC291E] text-base">#{order.id}</span>
-                    <Badge variant="outline" className="text-xs px-2 py-0.5 bg-gray-50 text-gray-600 border-gray-200">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                    <span className="font-semibold text-[#DC291E] text-sm sm:text-base">#{order.id}</span>
+                    <Badge variant="outline" className="text-xs px-1.5 py-0.5 sm:px-2 bg-gray-50 text-gray-600 border-gray-200">
                       {order.type}
                     </Badge>
                   </div>
                   {order.referenceNumber && (
-                    <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                    <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-gray-500">
                       <Hash className="h-3 w-3" />
                       <span className="truncate">{order.referenceNumber}</span>
                     </div>
@@ -110,26 +110,26 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
             </div>
           </div>
 
-          {/* Card Content */}
-          <div className="px-4 pb-4 space-y-3">
+          {/* Card Content - Better responsive spacing */}
+          <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-2.5 sm:space-y-3">
             {/* Customer Info */}
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                <User className="h-4 w-4 text-blue-600" />
+            <div className="flex items-start gap-2 sm:gap-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900 text-sm truncate">{order.customer.name}</p>
-                <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5">
+                <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-gray-500 mt-0.5">
                   <Phone className="h-3 w-3" />
-                  <span>{order.customer.phone}</span>
+                  <span className="truncate">{order.customer.phone}</span>
                 </div>
               </div>
             </div>
             
             {/* Location */}
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center shrink-0">
-                <MapPin className="h-4 w-4 text-green-600" />
+            <div className="flex items-start gap-2 sm:gap-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-50 rounded-lg flex items-center justify-center shrink-0">
+                <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-900 font-medium truncate">
@@ -139,11 +139,11 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
               </div>
             </div>
             
-            {/* Amount & Date Row */}
+            {/* Amount & Date Row - Better responsive layout */}
             <div className="flex items-center justify-between pt-2 border-t border-gray-100">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
-                  <DollarSign className="h-4 w-4 text-emerald-600" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                  <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-600" />
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900 text-sm">${order.amount.valueUSD}</p>
@@ -151,26 +151,26 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
                 </div>
               </div>
               
-              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+              <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-gray-500">
                 <Calendar className="h-3 w-3" />
                 <span>2 days ago</span>
               </div>
             </div>
           </div>
           
-          {/* Actions Footer */}
+          {/* Actions Footer - Improved touch targets */}
           {showActions && (
-            <div className="flex items-center justify-between px-4 py-3 bg-gray-50/50 border-t border-gray-100">
+            <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50/50 border-t border-gray-100">
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 px-3 rounded-lg hover:bg-white/80 text-gray-600 hover:text-gray-900 text-xs font-medium"
+                className="h-8 sm:h-9 px-3 rounded-lg hover:bg-white/80 text-gray-600 hover:text-gray-900 text-xs font-medium"
                 onClick={(e) => {
                   e.stopPropagation();
                   onViewDetails(order);
                 }}
               >
-                <Eye className="h-4 w-4 mr-1.5" />
+                <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
                 View Details
               </Button>
               
@@ -179,20 +179,20 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-9 w-9 p-0 rounded-lg hover:bg-white/80"
+                    className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-white/80"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <Edit className="h-4 w-4 text-gray-500" />
+                    <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500" />
                   </Button>
                 )}
                 
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-9 w-9 p-0 rounded-lg hover:bg-white/80"
+                  className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-white/80"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Printer className="h-4 w-4 text-gray-500" />
+                  <Printer className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500" />
                 </Button>
                 
                 <DropdownMenu>
@@ -200,10 +200,10 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-9 w-9 p-0 rounded-lg hover:bg-white/80"
+                      className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-white/80"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <MoreVertical className="h-4 w-4 text-gray-500" />
+                      <MoreVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent 

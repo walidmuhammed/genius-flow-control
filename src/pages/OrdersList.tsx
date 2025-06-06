@@ -269,11 +269,29 @@ const OrdersList: React.FC = () => {
               {/* Orders Content */}
               <div className="p-4 sm:p-6">
                 {filteredOrders.length > 0 ? (
-                  isMobile || isTablet ? (
-                    <div className={cn(
-                      "w-full",
-                      isTablet ? "grid grid-cols-2 gap-4" : "space-y-4"
-                    )}>
+                  isMobile ? (
+                    <div className="w-full space-y-4">
+                      <OrdersTableMobile
+                        orders={filteredOrdersForMobile}
+                        selectedOrders={selectedOrders}
+                        toggleSelectOrder={(orderId) => {
+                          setSelectedOrders(prev => 
+                            prev.includes(orderId) 
+                              ? prev.filter(id => id !== orderId)
+                              : [...prev, orderId]
+                          );
+                        }}
+                        onViewDetails={(order) => {
+                          const originalOrder = filteredOrders.find(o => o.id === order.id);
+                          if (originalOrder) {
+                            handleViewOrder(originalOrder);
+                          }
+                        }}
+                        showActions={true}
+                      />
+                    </div>
+                  ) : isTablet ? (
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                       <OrdersTableMobile
                         orders={filteredOrdersForMobile}
                         selectedOrders={selectedOrders}
