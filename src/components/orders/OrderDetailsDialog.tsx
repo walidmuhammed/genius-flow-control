@@ -7,6 +7,7 @@ import { Order } from './OrdersTableRow';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
 import { useActivityLogsByEntityId } from '@/hooks/use-activity';
 import { ActivityLog } from '@/services/activity';
 import { format } from 'date-fns';
@@ -17,19 +18,14 @@ import {
   Truck, 
   Clock, 
   Check, 
+  AlertTriangle, 
   X,
   Edit,
   Printer,
+  Trash2,
   Phone,
   Calendar,
-  DollarSign,
-  Hash,
-  FileText,
-  Package2,
-  CreditCard,
-  AlertCircle,
-  MessageSquare,
-  Route
+  DollarSign
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -62,31 +58,39 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'New': return <Package className="h-4 w-4" />;
-      case 'Pending Pickup': return <Clock className="h-4 w-4" />;
-      case 'In Progress': return <Truck className="h-4 w-4" />;
-      case 'Heading to Customer': return <MapPin className="h-4 w-4" />;
-      case 'Heading to You': return <Route className="h-4 w-4" />;
-      case 'Successful': return <Check className="h-4 w-4" />;
-      case 'Unsuccessful': return <X className="h-4 w-4" />;
-      case 'Returned': return <Package2 className="h-4 w-4" />;
-      case 'Paid': return <CreditCard className="h-4 w-4" />;
-      default: return <Clock className="h-4 w-4" />;
+      case 'New':
+        return <Package className="h-4 w-4" />;
+      case 'Pending Pickup':
+        return <Clock className="h-4 w-4" />;
+      case 'In Progress':
+        return <Truck className="h-4 w-4" />;
+      case 'Heading to Customer':
+        return <MapPin className="h-4 w-4" />;
+      case 'Successful':
+        return <Check className="h-4 w-4" />;
+      case 'Unsuccessful':
+        return <X className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'New': return 'bg-blue-500';
-      case 'Pending Pickup': return 'bg-orange-500';
-      case 'In Progress': return 'bg-yellow-500';
-      case 'Heading to Customer': return 'bg-purple-500';
-      case 'Heading to You': return 'bg-indigo-500';
-      case 'Successful': return 'bg-green-500';
-      case 'Unsuccessful': return 'bg-red-500';
-      case 'Returned': return 'bg-gray-500';
-      case 'Paid': return 'bg-emerald-500';
-      default: return 'bg-gray-500';
+      case 'New':
+        return 'bg-blue-500';
+      case 'Pending Pickup':
+        return 'bg-orange-500';
+      case 'In Progress':
+        return 'bg-yellow-500';
+      case 'Heading to Customer':
+        return 'bg-purple-500';
+      case 'Successful':
+        return 'bg-green-500';
+      case 'Unsuccessful':
+        return 'bg-red-500';
+      default:
+        return 'bg-gray-500';
     }
   };
 
@@ -96,45 +100,32 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
-        "w-full max-h-[95vh] p-0 overflow-hidden bg-white",
+        "w-full max-h-[95vh] p-0 overflow-hidden",
         isMobile 
-          ? "max-w-[95vw] h-[95vh] rounded-t-2xl rounded-b-none" 
+          ? "max-w-[95vw] h-[95vh]" 
           : isTablet 
-            ? "max-w-4xl max-h-[90vh]" 
-            : "sm:max-w-5xl max-h-[90vh]"
+            ? "max-w-3xl" 
+            : "sm:max-w-4xl"
       )}>
-        {/* Enhanced Header */}
+        {/* Header */}
         <DialogHeader className={cn(
-          "border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white",
-          isMobile ? "px-4 py-4" : "px-6 py-5"
+          "border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50",
+          isMobile ? "px-4 py-3" : "px-6 py-4"
         )}>
           <div className={cn(
             "flex justify-between gap-4",
             isMobile ? "flex-col space-y-3" : "flex-row items-center"
           )}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#DB271E]/10 rounded-lg flex items-center justify-center">
-                <Package className="h-5 w-5 text-[#DB271E]" />
-              </div>
-              <div>
-                <DialogTitle className={cn(
-                  "font-semibold text-gray-900",
-                  isMobile ? "text-lg" : "text-xl"
-                )}>
-                  Order #{order.id}
-                </DialogTitle>
-                <div className="flex items-center gap-2 mt-1">
-                  {order.referenceNumber && (
-                    <div className="flex items-center gap-1 text-sm text-gray-500">
-                      <Hash className="h-3 w-3" />
-                      <span>{order.referenceNumber}</span>
-                    </div>
-                  )}
-                  <Badge variant="outline" className="text-xs px-2 py-0.5">
-                    {order.type}
-                  </Badge>
-                </div>
-              </div>
+              <DialogTitle className={cn(
+                "font-semibold",
+                isMobile ? "text-lg" : "text-xl"
+              )}>
+                Order #{order.id}
+              </DialogTitle>
+              <Badge variant="outline" className="px-2 py-1 text-xs">
+                {order.referenceNumber || 'No Reference'}
+              </Badge>
             </div>
             <div className={cn(
               "flex items-center gap-2",
@@ -176,102 +167,114 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                 isMobile ? "px-4 pb-4" : "px-6 pb-6"
               )}>
                 <div className={cn(
-                  "space-y-6",
-                  isMobile && "space-y-4"
+                  "space-y-4",
+                  !isMobile && "space-y-6"
                 )}>
-                  {/* Enhanced Status Section */}
+                  {/* Order Status Card */}
                   <motion.div 
-                    className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-6"
+                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                   >
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white", getStatusColor(order.status))}>
-                        {getStatusIcon(order.status)}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 text-lg">Order Status</h3>
-                        <p className="text-sm text-gray-500">Current progress and timeline</p>
-                      </div>
-                    </div>
+                    <h3 className={cn(
+                      "font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2",
+                      isMobile ? "text-base" : "text-lg"
+                    )}>
+                      <Package className="h-5 w-5 text-[#DB271E]" />
+                      Order Status
+                    </h3>
                     
-                    <div className="flex items-center gap-4 mb-6">
-                      <Badge className={cn("text-white px-4 py-2 font-medium", getStatusColor(order.status))}>
+                    {/* Current Status */}
+                    <div className={cn(
+                      "flex gap-4 mb-4",
+                      isMobile ? "flex-col space-y-2" : "items-center mb-6"
+                    )}>
+                      <Badge className={cn("text-white px-4 py-2", getStatusColor(order.status))}>
                         {order.status}
                       </Badge>
                       <div className="text-sm text-gray-500">
-                        Last updated: {format(new Date(order.lastUpdate), 'PPp')}
+                        Last updated: {format(new Date(order.lastUpdate), isMobile ? 'MMM d, h:mm a' : 'PPp')}
                       </div>
                     </div>
 
+                    {/* Progress Bar */}
                     <div className="mb-4">
                       <Progress value={getStatusProgress()} className="h-2" />
                     </div>
                     
-                    <div className="flex justify-between">
+                    {/* Status Steps */}
+                    <div className={cn(
+                      "flex justify-between",
+                      isMobile ? "space-x-1" : ""
+                    )}>
                       {statusSteps.map((step, index) => (
                         <div 
                           key={index} 
                           className={cn(
-                            "flex flex-col items-center text-center",
-                            index <= currentStepIndex ? "opacity-100" : "opacity-40"
+                            "flex flex-col items-center text-center", 
+                            index <= currentStepIndex ? "opacity-100" : "opacity-50"
                           )}
                           style={{ width: `${100 / statusSteps.length}%` }}
                         >
                           <div className={cn(
-                            "w-6 h-6 rounded-full flex items-center justify-center mb-2 text-white text-xs",
+                            "rounded-full flex items-center justify-center mb-2 text-white",
+                            isMobile ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm",
                             index <= currentStepIndex ? getStatusColor(step) : "bg-gray-200"
                           )}>
                             {getStatusIcon(step)}
                           </div>
-                          <span className="text-xs font-medium">{step}</span>
+                          <span className={cn(
+                            "font-medium",
+                            isMobile ? "text-xs" : "text-xs"
+                          )}>{step}</span>
                         </div>
                       ))}
                     </div>
                   </motion.div>
 
-                  {/* Enhanced Details Grid */}
+                  {/* Order Details Grid */}
                   <div className={cn(
-                    "grid gap-6",
-                    isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"
+                    "grid gap-4",
+                    isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2",
+                    !isMobile && "gap-6"
                   )}>
                     {/* Customer Information */}
                     <motion.div 
-                      className="bg-white border border-gray-200 rounded-xl p-6"
+                      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
                     >
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <User className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <h3 className="font-semibold text-gray-900">Customer Details</h3>
-                      </div>
-                      
+                      <h3 className={cn(
+                        "font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2",
+                        isMobile ? "text-base" : "text-lg"
+                      )}>
+                        <User className="h-5 w-5 text-[#DB271E]" />
+                        Customer Details
+                      </h3>
                       <div className="space-y-4">
                         <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Name</label>
-                          <p className="text-base font-medium text-gray-900 mt-1">{order.customer.name}</p>
+                          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</label>
+                          <p className="text-base font-medium text-gray-900 dark:text-gray-100">{order.customer.name}</p>
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Phone</label>
-                          <div className="flex items-center gap-2 mt-1">
+                          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</label>
+                          <div className="flex items-center gap-2">
                             <Phone className="h-4 w-4 text-gray-400" />
-                            <p className="text-base text-gray-900">{order.customer.phone}</p>
+                            <p className="text-base font-medium text-gray-900 dark:text-gray-100">{order.customer.phone}</p>
                           </div>
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Location</label>
-                          <div className="flex items-start gap-2 mt-1">
+                          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Location</label>
+                          <div className="flex items-start gap-2">
                             <MapPin className="h-4 w-4 text-gray-400 mt-1" />
                             <div>
-                              <p className="text-base text-gray-900 font-medium">
+                              <p className="text-base font-medium text-gray-900 dark:text-gray-100">
                                 {order.location.city}, {order.location.area}
                               </p>
                               {order.location.address && (
-                                <p className="text-sm text-gray-600 mt-1">{order.location.address}</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{order.location.address}</p>
                               )}
                             </div>
                           </div>
@@ -279,151 +282,79 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                       </div>
                     </motion.div>
 
-                    {/* Financial Information */}
+                    {/* Order Information */}
                     <motion.div 
-                      className="bg-white border border-gray-200 rounded-xl p-6"
+                      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
                     >
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                          <DollarSign className="h-4 w-4 text-emerald-600" />
-                        </div>
-                        <h3 className="font-semibold text-gray-900">Financial Details</h3>
-                      </div>
-                      
+                      <h3 className={cn(
+                        "font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2",
+                        isMobile ? "text-base" : "text-lg"
+                      )}>
+                        <DollarSign className="h-5 w-5 text-[#DB271E]" />
+                        Order Information
+                      </h3>
                       <div className="space-y-4">
                         <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Collection Amount</label>
-                          <div className="mt-1">
-                            {order.amount.valueUSD > 0 ? (
-                              <p className="text-lg font-semibold text-gray-900">${order.amount.valueUSD}</p>
-                            ) : order.amount.valueLBP > 0 ? (
-                              <p className="text-lg font-semibold text-gray-900">{order.amount.valueLBP.toLocaleString()} LBP</p>
-                            ) : (
+                          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Type</label>
+                          <Badge variant="outline" className="block w-fit mt-1 px-3 py-1">
+                            {order.type}
+                          </Badge>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Collection Amount</label>
+                          <div>
+                            {order.amount.valueUSD > 0 && (
+                              <p className="text-base font-semibold text-gray-900 dark:text-gray-100">${order.amount.valueUSD}</p>
+                            )}
+                            {order.amount.valueLBP > 0 && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{order.amount.valueLBP.toLocaleString()} LBP</p>
+                            )}
+                            {order.amount.valueUSD === 0 && order.amount.valueLBP === 0 && (
                               <p className="text-sm text-gray-500">No cash collection</p>
                             )}
                           </div>
                         </div>
-                        
                         <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Delivery Fee</label>
-                          <div className="mt-1">
-                            {order.deliveryCharge.valueUSD > 0 ? (
-                              <p className="text-base font-medium text-gray-900">${order.deliveryCharge.valueUSD}</p>
-                            ) : order.deliveryCharge.valueLBP > 0 ? (
-                              <p className="text-base font-medium text-gray-900">{order.deliveryCharge.valueLBP.toLocaleString()} LBP</p>
-                            ) : (
-                              <p className="text-sm text-gray-500">—</p>
+                          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Delivery Fee</label>
+                          <div>
+                            {order.deliveryCharge.valueUSD > 0 && (
+                              <p className="text-base font-medium text-gray-900 dark:text-gray-100">${order.deliveryCharge.valueUSD}</p>
+                            )}
+                            {order.deliveryCharge.valueLBP > 0 && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{order.deliveryCharge.valueLBP.toLocaleString()} LBP</p>
                             )}
                           </div>
                         </div>
-
                         <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Order Type</label>
-                          <Badge variant="outline" className="mt-1 px-3 py-1">
-                            {order.type}
-                          </Badge>
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Created</label>
-                          <div className="flex items-center gap-2 mt-1">
+                          <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Created</label>
+                          <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-gray-400" />
-                            <p className="text-base text-gray-900">
+                            <p className="text-base text-gray-900 dark:text-gray-100">
                               {format(new Date(order.lastUpdate), 'PPP')}
                             </p>
                           </div>
                         </div>
                       </div>
                     </motion.div>
+                  </div>
 
-                    {/* Package Information */}
+                  {/* Notes */}
+                  {order.note && (
                     <motion.div 
-                      className="bg-white border border-gray-200 rounded-xl p-6"
+                      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
                     >
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                          <Package2 className="h-4 w-4 text-purple-600" />
-                        </div>
-                        <h3 className="font-semibold text-gray-900">Package Details</h3>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Package Type</label>
-                          <p className="text-base text-gray-900 mt-1">Document</p>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Items Count</label>
-                          <p className="text-base text-gray-900 mt-1">1 item</p>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Opening Allowed</label>
-                          <p className="text-base text-gray-900 mt-1">No</p>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Description</label>
-                          <p className="text-sm text-gray-600 mt-1">—</p>
-                        </div>
-                      </div>
-                    </motion.div>
-
-                    {/* Courier Information */}
-                    <motion.div 
-                      className="bg-white border border-gray-200 rounded-xl p-6"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 }}
-                    >
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                          <Truck className="h-4 w-4 text-orange-600" />
-                        </div>
-                        <h3 className="font-semibold text-gray-900">Courier Info</h3>
-                      </div>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Assigned Courier</label>
-                          <p className="text-base text-gray-900 mt-1">—</p>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Vehicle Type</label>
-                          <p className="text-base text-gray-900 mt-1">—</p>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Contact</label>
-                          <p className="text-base text-gray-900 mt-1">—</p>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Estimated Delivery</label>
-                          <p className="text-base text-gray-900 mt-1">—</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </div>
-
-                  {/* Notes Section */}
-                  {order.note && (
-                    <motion.div 
-                      className="bg-white border border-gray-200 rounded-xl p-6"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6 }}
-                    >
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                          <MessageSquare className="h-4 w-4 text-yellow-600" />
-                        </div>
-                        <h3 className="font-semibold text-gray-900">Notes</h3>
-                      </div>
-                      <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-                        <p className="text-sm text-gray-700 whitespace-pre-wrap">{order.note}</p>
+                      <h3 className={cn(
+                        "font-semibold text-gray-900 dark:text-gray-100 mb-4",
+                        isMobile ? "text-base" : "text-lg"
+                      )}>Notes</h3>
+                      <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                        <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{order.note}</p>
                       </div>
                     </motion.div>
                   )}
@@ -437,11 +368,8 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                 isMobile ? "px-4 pb-4" : "px-6 pb-6"
               )}>
                 {isLoadingLogs ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="text-center">
-                      <div className="w-8 h-8 border-2 border-[#DB271E] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                      <p className="text-sm text-gray-500">Loading activity logs...</p>
-                    </div>
+                  <div className="flex justify-center py-8">
+                    <div className="text-sm text-gray-500">Loading activity logs...</div>
                   </div>
                 ) : activityLogs && activityLogs.length > 0 ? (
                   <div className="space-y-4">
@@ -457,13 +385,8 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                     ))}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="text-center">
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FileText className="h-6 w-6 text-gray-400" />
-                      </div>
-                      <p className="text-sm text-gray-500">No activity logs available for this order.</p>
-                    </div>
+                  <div className="flex justify-center py-8">
+                    <div className="text-sm text-gray-500">No activity logs available for this order.</div>
                   </div>
                 )}
               </ScrollArea>
@@ -494,14 +417,14 @@ const ActivityLogItem: React.FC<{ log: ActivityLog }> = ({ log }) => {
   };
   
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
       <div className="flex justify-between items-start mb-2">
-        <p className="font-medium text-sm text-gray-900">{getActivityDescription()}</p>
-        <p className="text-xs text-gray-500">
+        <p className="font-medium text-sm text-gray-900 dark:text-gray-100">{getActivityDescription()}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           {format(new Date(log.created_at), 'PPp')}
         </p>
       </div>
-      <p className="text-xs text-gray-600">
+      <p className="text-xs text-gray-600 dark:text-gray-400">
         By {log.performed_by || 'System'}
       </p>
     </div>
