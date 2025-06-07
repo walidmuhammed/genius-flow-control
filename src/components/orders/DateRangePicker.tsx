@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
 import { useScreenSize } from '@/hooks/useScreenSize';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 interface DateRange {
   from: Date | undefined;
@@ -183,124 +183,109 @@ export function DateRangePicker({ className, onDateChange }: {
     return isMobile ? 'Filter dates' : 'Filter by date range';
   };
 
-  const triggerButton = (
-    <Button 
-      variant="outline" 
-      className={cn(
-        "gap-2 border-gray-200 bg-white shadow-sm text-sm",
-        isMobile ? "h-10 w-full justify-start" : "h-10 w-auto justify-start",
-        date.from && "text-black border-[#DB271E]/20 bg-[#DB271E]/5",
-        className
-      )}
-    >
-      <CalendarIcon className="h-4 w-4 text-gray-500" />
-      <span className={cn(
-        "truncate",
-        isMobile ? "text-sm" : "text-sm"
-      )}>{formatDateRange()}</span>
-    </Button>
-  );
-
-  const pickerContent = (
-    <div className="flex flex-col space-y-4">
-      {/* Presets Section */}
-      <div>
-        <h3 className="font-semibold text-sm mb-3 text-gray-900">Quick Select</h3>
-        <div className={cn(
-          "grid gap-2",
-          isMobile ? "grid-cols-2" : "grid-cols-3"
-        )}>
-          {presets.map(preset => (
-            <Button 
-              key={preset.name} 
-              variant="ghost" 
-              size="sm" 
-              className="justify-start text-left font-normal h-9 px-3 rounded-lg hover:bg-gray-100 transition-colors text-sm"
-              onClick={() => handleSelectPreset(preset)}
-            >
-              {preset.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-      
-      {/* Calendar Section */}
-      <div className="border-t pt-4">
-        <Calendar 
-          mode="range" 
-          selected={date} 
-          onSelect={handleSelect} 
-          numberOfMonths={isMobile ? 1 : 2} 
-          className="p-0" 
-        />
-        
-        {/* Instruction text */}
-        {date.from && !date.to && (
-          <p className="text-center text-sm text-muted-foreground mt-3 p-2 bg-blue-50 rounded-lg">
-            Please select an end date
-          </p>
-        )}
-        
-        {/* Actions */}
-        <div className="flex items-center justify-between pt-4 border-t mt-4">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-sm h-9 px-4 hover:bg-gray-100" 
-            onClick={handleClear}
-          >
-            <X className="h-4 w-4 mr-2" /> 
-            Clear
-          </Button>
-          
-          <Button 
-            size="sm" 
-            onClick={handleApply} 
-            className="text-sm h-9 px-4 font-medium bg-[#DB271E] hover:bg-[#c8251c] text-white shadow-sm"
-            disabled={!date.from}
-          >
-            <Check className="h-4 w-4 mr-2" /> 
-            Apply Filter
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Mobile: Use Sheet (slide-up modal)
-  if (isMobile) {
-    return (
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          {triggerButton}
-        </SheetTrigger>
-        <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Select Date Range</SheetTitle>
-          </SheetHeader>
-          <div className="mt-6">
-            {pickerContent}
-          </div>
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
-  // Desktop & iPad: Use Popover (floating dropdown)
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        {triggerButton}
+        <Button 
+          variant="outline" 
+          className={cn(
+            "gap-2 border-gray-200 bg-white shadow-sm text-sm",
+            isMobile ? "h-10 w-full justify-start" : "h-10 w-auto justify-start",
+            date.from && "text-black border-[#DB271E]/20 bg-[#DB271E]/5",
+            className
+          )}
+        >
+          <CalendarIcon className="h-4 w-4 text-gray-500" />
+          <span className={cn(
+            "truncate",
+            isMobile ? "text-sm" : "text-sm"
+          )}>{formatDateRange()}</span>
+        </Button>
       </PopoverTrigger>
       <PopoverContent 
         className={cn(
-          "w-auto p-6 bg-white shadow-xl border-gray-200",
-          isTablet ? "max-w-md" : "max-w-2xl"
+          "p-0 bg-white shadow-xl border-gray-200",
+          isMobile ? "w-screen max-w-sm mx-auto" : "w-auto"
         )} 
-        align="end"
+        align={isMobile ? "center" : "end"}
         sideOffset={8}
       >
-        {pickerContent}
+        <div className={cn(
+          "flex",
+          isMobile ? "flex-col" : "flex-col md:flex-row"
+        )}>
+          {/* Presets */}
+          <div className={cn(
+            "bg-gray-50 border-gray-100 p-3",
+            isMobile ? "border-b" : "border-b md:border-b-0 md:border-r",
+            isMobile ? "w-full" : "w-full md:w-48"
+          )}>
+            <h3 className="font-semibold text-sm mb-3 text-gray-900">Quick Select</h3>
+            <div className={cn(
+              "space-y-1",
+              isMobile ? "grid grid-cols-2 gap-1 space-y-0" : ""
+            )}>
+              {presets.map(preset => (
+                <Button 
+                  key={preset.name} 
+                  variant="ghost" 
+                  size="sm" 
+                  className={cn(
+                    "w-full justify-start text-left font-normal h-9 px-3 rounded-lg hover:bg-white hover:shadow-sm transition-all",
+                    isMobile ? "text-xs" : "text-sm"
+                  )}
+                  onClick={() => handleSelectPreset(preset)}
+                >
+                  {preset.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Calendar */}
+          <div className="p-4">
+            <Calendar 
+              mode="range" 
+              selected={date} 
+              onSelect={handleSelect} 
+              numberOfMonths={isMobile ? 1 : 2} 
+              className="p-0 pointer-events-auto" 
+            />
+            
+            {/* Instruction text */}
+            {date.from && !date.to && (
+              <p className="text-center text-sm text-muted-foreground mt-3 p-2 bg-blue-50 rounded-lg">
+                Please select an end date
+              </p>
+            )}
+            
+            {/* Actions */}
+            <div className="flex items-center justify-between pt-4 border-t mt-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-sm h-9 px-4 hover:bg-gray-100" 
+                onClick={handleClear}
+              >
+                <X className="h-4 w-4 mr-2" /> 
+                Clear
+              </Button>
+              
+              <Button 
+                size="sm" 
+                onClick={handleApply} 
+                className={cn(
+                  "text-sm h-9 px-4 font-medium",
+                  "bg-[#DB271E] hover:bg-[#c8251c] text-white shadow-sm"
+                )}
+                disabled={!date.from}
+              >
+                <Check className="h-4 w-4 mr-2" /> 
+                Apply Filter
+              </Button>
+            </div>
+          </div>
+        </div>
       </PopoverContent>
     </Popover>
   );
