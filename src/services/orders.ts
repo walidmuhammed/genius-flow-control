@@ -23,6 +23,7 @@ export interface Order {
   delivery_fees_lbp: number;
   note?: string;
   status: OrderStatus;
+  courier_name?: string; // Added missing courier_name property
   created_at: string;
   updated_at: string;
   order_reference?: string;
