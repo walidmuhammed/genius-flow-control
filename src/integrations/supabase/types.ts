@@ -227,6 +227,7 @@ export type Database = {
           cash_collection_enabled: boolean | null
           cash_collection_lbp: number | null
           cash_collection_usd: number | null
+          client_id: string | null
           courier_name: string | null
           created_at: string
           customer_id: string
@@ -248,6 +249,7 @@ export type Database = {
           cash_collection_enabled?: boolean | null
           cash_collection_lbp?: number | null
           cash_collection_usd?: number | null
+          client_id?: string | null
           courier_name?: string | null
           created_at?: string
           customer_id: string
@@ -269,6 +271,7 @@ export type Database = {
           cash_collection_enabled?: boolean | null
           cash_collection_lbp?: number | null
           cash_collection_usd?: number | null
+          client_id?: string | null
           courier_name?: string | null
           created_at?: string
           customer_id?: string
@@ -523,6 +526,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_current_user_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          user_type: string
+        }[]
+      }
       get_top_courier_today: {
         Args: { start_date: string; end_date: string }
         Returns: {
@@ -541,6 +551,10 @@ export type Database = {
           business_type: string
           user_type: string
         }[]
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
     }
     Enums: {

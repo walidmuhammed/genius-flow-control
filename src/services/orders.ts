@@ -8,10 +8,11 @@ export type PackageType = 'parcel' | 'document' | 'bulky';
 
 export interface Order {
   id: string;
-  order_id: number; // Sequential order ID
+  order_id: number;
   reference_number: string;
   type: OrderType;
   customer_id: string;
+  client_id?: string;
   package_type: PackageType;
   package_description?: string;
   items_count: number;
@@ -23,7 +24,7 @@ export interface Order {
   delivery_fees_lbp: number;
   note?: string;
   status: OrderStatus;
-  courier_name?: string; // Added missing courier_name property
+  courier_name?: string;
   created_at: string;
   updated_at: string;
   order_reference?: string;
@@ -32,6 +33,12 @@ export interface Order {
 export interface OrderWithCustomer extends Order {
   customer: CustomerWithLocation;
 }
+
+// Check if user is authenticated and get their ID
+const getCurrentUserId = () => {
+  const { data: { user } } = supabase.auth.getUser();
+  return user?.id;
+};
 
 // Transforms raw data to match our interface
 const transformOrderData = (order: any): OrderWithCustomer => {
@@ -65,7 +72,7 @@ const transformOrderData = (order: any): OrderWithCustomer => {
   
   return {
     ...order,
-    order_id: order.order_id, // Now properly available from database
+    order_id: order.order_id,
     type: orderType as OrderType,
     package_type: packageType as PackageType,
     status: statusType as OrderStatus,
@@ -78,6 +85,12 @@ const transformOrderData = (order: any): OrderWithCustomer => {
 };
 
 export async function getOrders() {
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
   const { data, error } = await supabase
     .from('orders')
     .select(`
@@ -95,13 +108,17 @@ export async function getOrders() {
     throw error;
   }
   
-  // Transform the data to match our interface
   const transformedData: OrderWithCustomer[] = data.map(transformOrderData);
-  
   return transformedData;
 }
 
 export async function getOrdersByStatus(status: OrderStatus) {
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
   const { data, error } = await supabase
     .from('orders')
     .select(`
@@ -120,30 +137,25 @@ export async function getOrdersByStatus(status: OrderStatus) {
     throw error;
   }
   
-  // Transform the data to match our interface
   const transformedData: OrderWithCustomer[] = data.map(order => {
     const customerData = order.customer as any;
     
-    // Ensure type is correctly cast to one of the allowed types
     let orderType = order.type;
     if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
       orderType = 'Deliver';
     }
     
-    // Ensure package_type is correctly cast to one of the allowed types
     let packageType = order.package_type;
     if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
       packageType = 'parcel';
     }
     
-    // Status is already filtered so it should match the OrderStatus type
-    
     return {
       ...order,
-      order_id: order.order_id, // Now properly available from database
+      order_id: order.order_id,
       type: orderType as OrderType,
       package_type: packageType as PackageType,
-      status: status, // This is already the correct type since we filtered by it
+      status: status,
       customer: {
         ...customerData,
         city_name: customerData.cities?.name,
@@ -156,6 +168,12 @@ export async function getOrdersByStatus(status: OrderStatus) {
 }
 
 export async function getOrderById(id: string) {
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
   const { data, error } = await supabase
     .from('orders')
     .select(`
@@ -175,14 +193,25 @@ export async function getOrderById(id: string) {
   }
   
   const order = transformOrderData(data);
-  
   return order;
 }
 
 export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>) {
+  // Check authentication and get current user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  // Add client_id to the order for proper RLS
+  const orderWithClientId = {
+    ...order,
+    client_id: user.id
+  };
+
   const { data, error } = await supabase
     .from('orders')
-    .insert([order])
+    .insert([orderWithClientId])
     .select()
     .single();
   
@@ -195,6 +224,12 @@ export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'refere
 }
 
 export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>>) {
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
   const { data, error } = await supabase
     .from('orders')
     .update(updates)
@@ -211,6 +246,12 @@ export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' 
 }
 
 export async function getOrdersWithDateRange(startDate: string, endDate: string) {
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
   const { data, error } = await supabase
     .from('orders')
     .select(`
@@ -230,8 +271,6 @@ export async function getOrdersWithDateRange(startDate: string, endDate: string)
     throw error;
   }
   
-  // Transform the data to match our interface
   const transformedData: OrderWithCustomer[] = data.map(transformOrderData);
-  
   return transformedData;
 }
