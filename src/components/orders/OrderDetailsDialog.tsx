@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDate } from '@/utils/format';
 import { OrderWithCustomer } from '@/services/orders';
+import OrderProgressBar from './OrderProgressBar';
 import { 
   MapPin, 
   Phone, 
@@ -70,7 +71,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh]">
+      <DialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="h-5 w-5 text-[#DB271E]" />
@@ -107,6 +108,22 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                   <Clock className="h-4 w-4" />
                   <span>Updated: {formatDate(new Date(order.updated_at))}</span>
                 </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Order Progress Bar */}
+            <div className="space-y-3">
+              <h3 className="font-semibold text-lg flex items-center gap-2">
+                <Package className="h-5 w-5 text-[#DB271E]" />
+                Order Progress
+              </h3>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <OrderProgressBar 
+                  status={order.status as any} 
+                  type={order.type as any} 
+                />
               </div>
             </div>
 
