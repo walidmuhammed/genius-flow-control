@@ -5,7 +5,7 @@ import { Order as TableOrder } from '@/components/orders/OrdersTableRow';
 /**
  * Maps an order from the API format to the format expected by OrdersTableRow
  */
-export function mapOrderToTableFormat(order: OrderWithCustomer): TableOrder {
+export function mapOrderToTableFormat(order: OrderWithCustomer): TableOrder & { originalOrder: OrderWithCustomer } {
   return {
     id: order.order_id.toString().padStart(3, '0'), // Use sequential order_id, properly formatted
     referenceNumber: order.reference_number || '', // Don't show anything if no reference provided
@@ -29,13 +29,14 @@ export function mapOrderToTableFormat(order: OrderWithCustomer): TableOrder {
     },
     status: order.status as OrderStatus,
     lastUpdate: order.updated_at,
-    note: order.note
+    note: order.note,
+    originalOrder: order // Include the original order data
   };
 }
 
 /**
  * Maps an array of API orders to table format orders
  */
-export function mapOrdersToTableFormat(orders: OrderWithCustomer[]): TableOrder[] {
+export function mapOrdersToTableFormat(orders: OrderWithCustomer[]): (TableOrder & { originalOrder: OrderWithCustomer })[] {
   return orders.map(mapOrderToTableFormat);
 }

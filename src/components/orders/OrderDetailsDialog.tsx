@@ -3,7 +3,6 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Order } from './OrdersTableRow';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
@@ -35,9 +34,10 @@ import {
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useScreenSize } from '@/hooks/useScreenSize';
+import { OrderWithCustomer } from '@/services/orders';
 
 interface OrderDetailsDialogProps {
-  order: Order | null;
+  order: OrderWithCustomer | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -126,10 +126,10 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                 "font-semibold truncate",
                 isMobile ? "text-lg" : "text-xl"
               )}>
-                Order #{order.id}
+                Order #{order.order_id?.toString().padStart(3, '0')}
               </DialogTitle>
               <Badge variant="outline" className="px-2 py-1 text-xs shrink-0">
-                {order.referenceNumber || 'No Reference'}
+                {order.reference_number || 'No Reference'}
               </Badge>
             </div>
             <div className={cn(
@@ -196,7 +196,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                         {order.status}
                       </Badge>
                       <div className="text-sm text-gray-500">
-                        Last updated: {format(new Date(order.lastUpdate), isMobile ? 'MMM d, h:mm a' : 'PPp')}
+                        Last updated: {format(new Date(order.updated_at), isMobile ? 'MMM d, h:mm a' : 'PPp')}
                       </div>
                     </div>
 
@@ -254,11 +254,11 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                       <div className="space-y-4">
                         <div>
                           <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Order ID</label>
-                          <p className="text-base font-medium text-gray-900 dark:text-gray-100">#{order.id}</p>
+                          <p className="text-base font-medium text-gray-900 dark:text-gray-100">#{order.order_id?.toString().padStart(3, '0')}</p>
                         </div>
                         <div>
                           <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Reference Number</label>
-                          <p className="text-base font-medium text-gray-900 dark:text-gray-100">{order.referenceNumber || '—'}</p>
+                          <p className="text-base font-medium text-gray-900 dark:text-gray-100">{order.reference_number || '—'}</p>
                         </div>
                         <div>
                           <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Type</label>
@@ -271,7 +271,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-gray-400" />
                             <p className="text-base text-gray-900 dark:text-gray-100">
-                              {format(new Date(order.lastUpdate), 'PPP')}
+                              {format(new Date(order.created_at), 'PPP')}
                             </p>
                           </div>
                         </div>
@@ -308,7 +308,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                           <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Secondary Phone</label>
                           <div className="flex items-center gap-2">
                             <Phone className="h-4 w-4 text-gray-400" />
-                            <p className="text-base text-gray-900 dark:text-gray-100">{order.customer.secondaryPhone || '—'}</p>
+                            <p className="text-base text-gray-900 dark:text-gray-100">{order.customer.secondary_phone || '—'}</p>
                           </div>
                         </div>
                         <div>
@@ -317,7 +317,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                             <MapPin className="h-4 w-4 text-gray-400 mt-1" />
                             <div>
                               <p className="text-base font-medium text-gray-900 dark:text-gray-100">
-                                {order.location.city}, {order.location.area}
+                                {order.customer.city_name}, {order.customer.governorate_name}
                               </p>
                             </div>
                           </div>
@@ -326,7 +326,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                           <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Full Address</label>
                           <div className="flex items-start gap-2">
                             <Building className="h-4 w-4 text-gray-400 mt-1" />
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{order.location.address || '—'}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{order.customer.address || '—'}</p>
                           </div>
                         </div>
                       </div>
@@ -352,7 +352,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                           <div className="flex items-center gap-2">
                             <CreditCard className="h-4 w-4 text-gray-400" />
                             <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                              {order.amount.valueUSD > 0 ? `$${order.amount.valueUSD}` : '—'}
+                              {order.cash_collection_usd > 0 ? `$${order.cash_collection_usd}` : '—'}
                             </p>
                           </div>
                         </div>
@@ -361,20 +361,20 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                           <div className="flex items-center gap-2">
                             <CreditCard className="h-4 w-4 text-gray-400" />
                             <p className="text-base font-medium text-gray-900 dark:text-gray-100">
-                              {order.amount.valueLBP > 0 ? `${order.amount.valueLBP.toLocaleString()} LBP` : '—'}
+                              {order.cash_collection_lbp > 0 ? `${order.cash_collection_lbp.toLocaleString()} LBP` : '—'}
                             </p>
                           </div>
                         </div>
                         <div>
                           <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Delivery Fee (USD)</label>
                           <p className="text-base font-medium text-gray-900 dark:text-gray-100">
-                            {order.deliveryCharge.valueUSD > 0 ? `$${order.deliveryCharge.valueUSD}` : '—'}
+                            {order.delivery_fees_usd > 0 ? `$${order.delivery_fees_usd}` : '—'}
                           </p>
                         </div>
                         <div>
                           <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Delivery Fee (LBP)</label>
                           <p className="text-base font-medium text-gray-900 dark:text-gray-100">
-                            {order.deliveryCharge.valueLBP > 0 ? `${order.deliveryCharge.valueLBP.toLocaleString()} LBP` : '—'}
+                            {order.delivery_fees_lbp > 0 ? `${order.delivery_fees_lbp.toLocaleString()} LBP` : '—'}
                           </p>
                         </div>
                       </div>
@@ -398,21 +398,21 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                         <div>
                           <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Package Type</label>
                           <Badge variant="outline" className="block w-fit mt-1 px-3 py-1">
-                            {order.packageType || '—'}
+                            {order.package_type || '—'}
                           </Badge>
                         </div>
                         <div>
                           <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Items Count</label>
-                          <p className="text-base font-medium text-gray-900 dark:text-gray-100">{order.itemsCount || '—'}</p>
+                          <p className="text-base font-medium text-gray-900 dark:text-gray-100">{order.items_count || '—'}</p>
                         </div>
                         <div>
                           <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Package Description</label>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{order.packageDescription || '—'}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{order.package_description || '—'}</p>
                         </div>
                         <div>
                           <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Allow Opening</label>
-                          <Badge variant={order.allowOpening ? "default" : "secondary"} className="block w-fit mt-1 px-3 py-1">
-                            {order.allowOpening ? 'Yes' : 'No'}
+                          <Badge variant={order.allow_opening ? "default" : "secondary"} className="block w-fit mt-1 px-3 py-1">
+                            {order.allow_opening ? 'Yes' : 'No'}
                           </Badge>
                         </div>
                       </div>
@@ -436,11 +436,11 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
                         <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Courier Name</label>
-                        <p className="text-base font-medium text-gray-900 dark:text-gray-100">{order.courierName || '—'}</p>
+                        <p className="text-base font-medium text-gray-900 dark:text-gray-100">{order.courier_name || '—'}</p>
                       </div>
                       <div>
                         <label className="text-sm font-medium text-gray-500 dark:text-gray-400">Courier Phone</label>
-                        <p className="text-base font-medium text-gray-900 dark:text-gray-100">{order.courierPhone || '—'}</p>
+                        <p className="text-base font-medium text-gray-900 dark:text-gray-100">—</p>
                       </div>
                     </div>
                   </motion.div>

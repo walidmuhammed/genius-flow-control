@@ -12,6 +12,7 @@ import CurrencyDisplay from './CurrencyDisplay';
 import OrderRowActions from './OrderRowActions';
 import OrderDetailsDialog from './OrderDetailsDialog';
 import { formatDate } from '@/utils/format';
+import { OrderWithCustomer } from '@/services/orders';
 
 export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid' | 'Awaiting Action';
 export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection' | 'Return';
@@ -44,6 +45,7 @@ export interface Order {
 
 interface OrdersTableRowProps {
   order: Order;
+  originalOrder?: OrderWithCustomer; // Add this to pass the original order data
   isSelected: boolean;
   onToggleSelect: (orderId: string) => void;
   onViewDetails?: (order: Order) => void;
@@ -52,6 +54,7 @@ interface OrdersTableRowProps {
 
 const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   order,
+  originalOrder,
   isSelected,
   onToggleSelect,
   onViewDetails,
@@ -189,7 +192,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
       </TableRow>
 
       <OrderDetailsDialog
-        order={order}
+        order={originalOrder || null}
         open={showDetailsDialog}
         onOpenChange={setShowDetailsDialog}
       />
