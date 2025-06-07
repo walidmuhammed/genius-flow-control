@@ -35,8 +35,8 @@ export interface OrderWithCustomer extends Order {
 }
 
 // Check if user is authenticated and get their ID
-const getCurrentUserId = () => {
-  const { data: { user } } = supabase.auth.getUser();
+const getCurrentUserId = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
   return user?.id;
 };
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Bell, Search, Plus, ChevronDown, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,7 @@ import { useScreenSize } from '@/hooks/useScreenSize';
 
 const AdminTopBar: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { toggleSidebar } = useLayoutStore();
   const { isMobile, isTablet } = useScreenSize();
 
@@ -203,7 +202,7 @@ const AdminTopBar: React.FC = () => {
                 <Avatar className="h-full w-full">
                   <AvatarImage src="/avatars/admin.png" alt="Admin" />
                   <AvatarFallback className="bg-[#DC291E]/10 text-[#DC291E] font-medium">
-                    {user?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'A'}
+                    {profile?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'A'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -217,7 +216,7 @@ const AdminTopBar: React.FC = () => {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {user?.full_name || user?.email?.split('@')[0] || 'Admin User'}
+                  {profile?.full_name || user?.email?.split('@')[0] || 'Admin User'}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">System Administrator</p>
               </div>
