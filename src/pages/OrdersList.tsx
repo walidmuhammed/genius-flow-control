@@ -344,13 +344,11 @@ const OrdersList: React.FC = () => {
         />
 
         {/* Order Details Dialog */}
-        {selectedOrder && (
-          <OrderDetailsDialog
-            order={mapOrdersToTableFormat([selectedOrder])[0]}
-            open={orderDetailsOpen}
-            onOpenChange={setOrderDetailsOpen}
-          />
-        )}
+        <OrderDetailsDialog
+          order={selectedOrder}
+          open={orderDetailsOpen}
+          onOpenChange={setOrderDetailsOpen}
+        />
       </div>
     </MainLayout>
   );
