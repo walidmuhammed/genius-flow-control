@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { addDays, format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear, subWeeks, subMonths } from 'date-fns';
-import { Calendar as CalendarIcon, Check, X, ChevronRight } from 'lucide-react';
+import { Calendar as CalendarIcon, Check, X, ChevronRight, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -33,7 +33,7 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
   const [isOpen, setIsOpen] = useState(false);
   const [mobileStep, setMobileStep] = useState<'presets' | 'custom'>('presets');
 
-  // Premium presets for business use
+  // Clean presets for business use
   const presets: Preset[] = [
     {
       name: 'today',
@@ -163,33 +163,30 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
     return isMobile ? 'Filter dates' : 'Filter by date range';
   };
 
-  // Desktop Layout Component
+  // Desktop Layout Component - Clean and centered
   const DesktopDatePicker = () => (
-    <div className="flex bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden min-w-[800px]">
+    <div className="flex bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden w-[720px]">
       {/* Left Panel - Presets */}
-      <div className="w-64 bg-gray-50/80 border-r border-gray-100 p-6">
-        <h3 className="text-sm font-semibold text-gray-900 mb-4">Quick Select</h3>
+      <div className="w-56 bg-gray-50 border-r border-gray-200 p-4">
+        <h3 className="text-sm font-medium text-gray-900 mb-3">Quick Select</h3>
         <div className="space-y-1">
           {presets.map(preset => (
-            <motion.button
+            <button
               key={preset.name}
-              whileHover={{ scale: 1.02, x: 4 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded-xl transition-all duration-200 flex items-center justify-between group"
+              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-white rounded-lg transition-colors duration-150"
               onClick={() => handleSelectPreset(preset)}
             >
-              <span>{preset.label}</span>
-              <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </motion.button>
+              {preset.label}
+            </button>
           ))}
         </div>
       </div>
       
       {/* Right Panel - Calendar */}
-      <div className="flex-1 p-6">
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Select Date Range</h3>
-          <p className="text-sm text-gray-600">Choose start and end dates for your filter</p>
+      <div className="flex-1 p-4">
+        <div className="mb-4">
+          <h3 className="text-base font-medium text-gray-900 mb-1">Select Date Range</h3>
+          <p className="text-sm text-gray-600">Choose start and end dates</p>
         </div>
         
         <Calendar 
@@ -199,22 +196,22 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
           numberOfMonths={2} 
           className="p-0 pointer-events-auto w-full" 
           classNames={{
-            months: "flex space-x-8",
+            months: "flex space-x-6",
             month: "space-y-4",
-            caption: "flex justify-center pt-1 relative items-center mb-4",
-            caption_label: "text-sm font-semibold",
+            caption: "flex justify-center pt-1 relative items-center mb-3",
+            caption_label: "text-sm font-medium",
             nav: "space-x-1 flex items-center",
-            nav_button: "h-8 w-8 bg-transparent p-0 opacity-60 hover:opacity-100 hover:bg-gray-100 rounded-lg transition-all",
+            nav_button: "h-7 w-7 bg-transparent p-0 opacity-60 hover:opacity-100 hover:bg-gray-100 rounded-md transition-all",
             nav_button_previous: "absolute left-1",
             nav_button_next: "absolute right-1",
             table: "w-full border-collapse space-y-1",
             head_row: "flex",
-            head_cell: "text-gray-500 rounded-md w-10 font-medium text-xs uppercase tracking-wide",
+            head_cell: "text-gray-500 rounded-md w-9 font-normal text-xs",
             row: "flex w-full mt-2",
-            cell: "h-10 w-10 text-center text-sm p-0 relative hover:bg-gray-50 rounded-lg transition-colors",
-            day: "h-10 w-10 p-0 font-medium rounded-lg hover:bg-gray-100 transition-all",
-            day_selected: "bg-[#DB271E] text-white hover:bg-[#c0211a] shadow-sm",
-            day_today: "bg-gray-100 text-gray-900 font-semibold",
+            cell: "h-9 w-9 text-center text-sm p-0 relative hover:bg-gray-50 rounded-md transition-colors",
+            day: "h-9 w-9 p-0 font-normal rounded-md hover:bg-gray-100 transition-all",
+            day_selected: "bg-[#DB271E] text-white hover:bg-[#c0211a]",
+            day_today: "bg-gray-100 text-gray-900 font-medium",
             day_outside: "text-gray-400 opacity-50",
             day_disabled: "text-gray-400 opacity-50",
             day_range_middle: "bg-[#DB271E]/10 text-gray-900 hover:bg-[#DB271E]/20",
@@ -224,22 +221,20 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
         />
         
         {/* Action Buttons */}
-        <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-200">
           <Button 
             variant="outline" 
             onClick={handleClear}
-            className="h-10 px-6 rounded-xl border-gray-200 hover:bg-gray-50"
+            className="h-9 px-4 rounded-lg border-gray-300 hover:bg-gray-50"
           >
-            <X className="h-4 w-4 mr-2" /> 
             Clear
           </Button>
           
           <Button 
             onClick={handleApply} 
-            className="h-10 px-8 rounded-xl bg-[#DB271E] hover:bg-[#c0211a] text-white shadow-sm"
+            className="h-9 px-6 rounded-lg bg-[#DB271E] hover:bg-[#c0211a] text-white"
             disabled={!date.from}
           >
-            <Check className="h-4 w-4 mr-2" /> 
             Apply Filter
           </Button>
         </div>
@@ -247,34 +242,31 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
     </div>
   );
 
-  // Tablet Layout Component
+  // Tablet Layout Component - Compact and clean
   const TabletDatePicker = () => (
-    <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden w-[700px] max-h-[90vh]">
-      <div className="p-6 border-b border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-900">Select Date Range</h3>
-        <p className="text-sm text-gray-600 mt-1">Choose your preferred time period</p>
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden w-[640px] max-h-[80vh]">
+      <div className="p-4 border-b border-gray-200">
+        <h3 className="text-base font-medium text-gray-900">Select Date Range</h3>
       </div>
       
       <div className="flex">
         {/* Presets Sidebar */}
-        <div className="w-56 bg-gray-50/80 border-r border-gray-100 p-4 max-h-[60vh] overflow-y-auto">
+        <div className="w-48 bg-gray-50 border-r border-gray-200 p-3 max-h-[60vh] overflow-y-auto">
           <div className="space-y-1">
             {presets.map(preset => (
-              <motion.button
+              <button
                 key={preset.name}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full text-left px-3 py-2.5 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded-lg transition-all duration-200"
+                className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-white rounded-lg transition-colors duration-150"
                 onClick={() => handleSelectPreset(preset)}
               >
                 {preset.label}
-              </motion.button>
+              </button>
             ))}
           </div>
         </div>
         
         {/* Calendar */}
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-4">
           <Calendar 
             mode="range" 
             selected={date} 
@@ -284,18 +276,18 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
           />
           
           {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between pt-3 mt-3 border-t border-gray-200">
             <Button 
               variant="outline" 
               onClick={handleClear}
-              className="h-9 px-4 rounded-lg"
+              className="h-8 px-3 rounded-lg text-sm"
             >
               Clear
             </Button>
             
             <Button 
               onClick={handleApply} 
-              className="h-9 px-6 rounded-lg bg-[#DB271E] hover:bg-[#c0211a]"
+              className="h-8 px-4 rounded-lg bg-[#DB271E] hover:bg-[#c0211a] text-sm"
               disabled={!date.from}
             >
               Apply
@@ -306,12 +298,11 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
     </div>
   );
 
-  // Mobile Layout Component
+  // Mobile Layout Component - Compact and organized
   const MobileDatePicker = () => (
-    <div className="h-full flex flex-col bg-white">
-      <div className="p-6 border-b border-gray-100">
-        <h3 className="text-xl font-semibold text-gray-900">Select Date Range</h3>
-        <p className="text-gray-600 mt-1">Choose your time period</p>
+    <div className="h-full flex flex-col bg-white max-h-[75vh]">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
+        <h3 className="text-lg font-medium text-gray-900">Select Date Range</h3>
       </div>
       
       <div className="flex-1 overflow-y-auto">
@@ -321,48 +312,44 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
               key="presets"
               initial={{ x: 0, opacity: 1 }}
               exit={{ x: -100, opacity: 0 }}
-              className="p-6 space-y-3"
+              className="p-4 space-y-2"
             >
               {presets.map(preset => (
-                <motion.button
+                <button
                   key={preset.name}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full text-left px-6 py-4 text-base font-medium text-gray-700 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-all duration-200 flex items-center justify-between"
+                  className="w-full text-left px-4 py-3 text-base text-gray-700 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all duration-150 flex items-center justify-between"
                   onClick={() => handleSelectPreset(preset)}
                 >
                   <span>{preset.label}</span>
-                  <ChevronRight className="h-5 w-5 text-gray-400" />
-                </motion.button>
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                </button>
               ))}
               
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full text-left px-6 py-4 text-base font-medium text-gray-700 hover:text-gray-900 bg-blue-50 hover:bg-blue-100 rounded-2xl transition-all duration-200 flex items-center justify-between border-2 border-blue-200"
+              <button
+                className="w-full text-left px-4 py-3 text-base text-gray-700 hover:text-gray-900 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all duration-150 flex items-center justify-between border border-blue-200"
                 onClick={() => setMobileStep('custom')}
               >
                 <span>Custom Range</span>
-                <ChevronRight className="h-5 w-5 text-blue-600" />
-              </motion.button>
+                <ChevronRight className="h-4 w-4 text-blue-600" />
+              </button>
             </motion.div>
           ) : (
             <motion.div
               key="custom"
               initial={{ x: 100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              className="p-6"
+              className="p-4"
             >
-              <div className="mb-6">
+              <div className="mb-4">
                 <button 
                   onClick={() => setMobileStep('presets')}
-                  className="flex items-center text-blue-600 font-medium mb-4"
+                  className="flex items-center text-blue-600 font-medium mb-3"
                 >
-                  <ChevronRight className="h-5 w-5 rotate-180 mr-1" />
+                  <ChevronLeft className="h-4 w-4 mr-1" />
                   Back to Presets
                 </button>
                 
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Custom Date Range</h4>
+                <h4 className="text-base font-medium text-gray-900 mb-1">Custom Date Range</h4>
                 <p className="text-gray-600 text-sm">Select start and end dates</p>
               </div>
               
@@ -373,16 +360,16 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
                 numberOfMonths={1} 
                 className="p-0 pointer-events-auto w-full" 
                 classNames={{
-                  day: "h-12 w-12 p-0 text-base font-medium rounded-xl hover:bg-gray-100 transition-all",
-                  day_selected: "bg-[#DB271E] text-white hover:bg-[#c0211a] shadow-sm",
-                  day_today: "bg-gray-100 text-gray-900 font-semibold",
+                  day: "h-10 w-10 p-0 text-sm font-normal rounded-lg hover:bg-gray-100 transition-all",
+                  day_selected: "bg-[#DB271E] text-white hover:bg-[#c0211a]",
+                  day_today: "bg-gray-100 text-gray-900 font-medium",
                   day_range_middle: "bg-[#DB271E]/10 text-gray-900 hover:bg-[#DB271E]/20",
                 }}
               />
               
               {date.from && !date.to && (
-                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                  <p className="text-sm text-blue-700 text-center font-medium">
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-700 text-center">
                     Please select an end date
                   </p>
                 </div>
@@ -393,19 +380,19 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
       </div>
       
       {/* Fixed Bottom Actions */}
-      <div className="p-6 border-t border-gray-100 bg-white">
+      <div className="p-4 border-t border-gray-200 bg-white flex-shrink-0">
         <div className="flex gap-3">
           <Button 
             variant="outline" 
             onClick={handleClear}
-            className="flex-1 h-12 rounded-xl border-gray-200 text-base font-medium"
+            className="flex-1 h-10 rounded-lg border-gray-300 text-sm"
           >
             Clear
           </Button>
           
           <Button 
             onClick={handleApply} 
-            className="flex-1 h-12 rounded-xl bg-[#DB271E] hover:bg-[#c0211a] text-white text-base font-medium shadow-sm"
+            className="flex-1 h-10 rounded-lg bg-[#DB271E] hover:bg-[#c0211a] text-white text-sm"
             disabled={!date.from}
           >
             Apply Filter
@@ -417,21 +404,19 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
 
   // Trigger Button
   const TriggerButton = () => (
-    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-      <Button 
-        variant="outline" 
-        className={cn(
-          "gap-3 border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm text-sm h-11 justify-start transition-all duration-200 hover:shadow-md hover:border-gray-300",
-          date.from && "text-black border-[#DB271E]/30 bg-[#DB271E]/5 shadow-md",
-          isMobile ? "w-full" : "min-w-[220px]",
-          className
-        )}
-        onClick={() => setIsOpen(true)}
-      >
-        <CalendarIcon className="h-4 w-4 text-gray-500" />
-        <span className="truncate font-medium">{formatDateRange()}</span>
-      </Button>
-    </motion.div>
+    <Button 
+      variant="outline" 
+      className={cn(
+        "gap-2 border-gray-200 bg-white text-sm h-10 justify-start transition-all duration-150",
+        date.from && "text-black border-[#DB271E]/20 bg-[#DB271E]/5",
+        isMobile ? "w-full" : "min-w-[200px]",
+        className
+      )}
+      onClick={() => setIsOpen(true)}
+    >
+      <CalendarIcon className="h-4 w-4 text-gray-500" />
+      <span className="truncate font-normal">{formatDateRange()}</span>
+    </Button>
   );
 
   // Render based on screen size
@@ -442,7 +427,7 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetContent 
             side="bottom" 
-            className="h-[95vh] max-h-[800px] p-0 rounded-t-3xl border-0 shadow-2xl"
+            className="h-[75vh] max-h-[600px] p-0 rounded-t-2xl border-0"
           >
             <MobileDatePicker />
           </SheetContent>
@@ -472,10 +457,10 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
             }}
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
+              initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ duration: 0.15 }}
             >
               <TabletDatePicker />
             </motion.div>
@@ -495,14 +480,21 @@ export function PremiumDateRangePicker({ className, onDateChange }: {
         </PopoverTrigger>
         <PopoverContent 
           className="p-0 bg-transparent border-0 shadow-none w-auto" 
-          align="end"
+          align="center"
           sideOffset={12}
+          style={{ 
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 50
+          }}
         >
           <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: -10 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: -10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            initial={{ scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.96, opacity: 0 }}
+            transition={{ duration: 0.15 }}
           >
             <DesktopDatePicker />
           </motion.div>
