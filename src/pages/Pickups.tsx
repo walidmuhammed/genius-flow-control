@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from "@/components/layout/MainLayout";
@@ -160,7 +159,7 @@ const Pickups: React.FC = () => {
               "bg-[#DC291E] hover:bg-[#c0211a] text-white rounded-xl shadow-sm",
               isMobile && "w-full"
             )}
-            onClick={() => navigate('/pickups/new')}
+            onClick={() => navigate('/schedule-pickup')}
           >
             <Plus className="h-4 w-4 mr-2" />
             Schedule Pickup
@@ -226,7 +225,7 @@ const Pickups: React.FC = () => {
                         title="No upcoming pickups"
                         description="You don't have any scheduled pickups at the moment"
                         actionLabel="Schedule Pickup"
-                        onAction={() => navigate('/pickups/new')}
+                        onAction={() => navigate('/schedule-pickup')}
                       />
                     </div>
                   ) : (

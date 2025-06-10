@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Package, Calendar, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,7 +26,7 @@ const CreateButton: React.FC = () => {
     {
       icon: Calendar,
       label: 'Schedule Pickup',
-      action: () => navigate('/pickups/new'),
+      action: () => navigate('/schedule-pickup'),
     },
     {
       icon: MessageSquare,

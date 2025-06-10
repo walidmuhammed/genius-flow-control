@@ -359,7 +359,7 @@ const Dashboard: React.FC = () => {
                       title="No pickups scheduled today"
                       description="When pickups are scheduled for today, they will appear here."
                       actionLabel="Schedule Pickup"
-                      actionHref="/pickups"
+                      actionHref="/schedule-pickup"
                     />
                   )}
                 </motion.div>
