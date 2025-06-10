@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from 'react';
 import { AlertCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
@@ -11,8 +10,7 @@ import { OrderWithCustomer } from '@/services/orders';
 import { motion } from 'framer-motion';
 import OrdersTableMobile from '@/components/orders/OrdersTableMobile';
 import { mapOrdersToTableFormat } from '@/utils/orderMappers';
-import { OrdersPageHeader } from '@/components/orders/OrdersPageHeader';
-import { OrdersSearchControls } from '@/components/orders/OrdersSearchControls';
+import { OrdersPageHeader, OrdersSearchControls } from '@/components/orders/OrdersPageHeader';
 import { OrdersFilterTabs } from '@/components/orders/OrdersFilterTabs';
 import { EnhancedOrdersTable } from '@/components/orders/EnhancedOrdersTable';
 import { BulkActionsBar } from '@/components/orders/BulkActionsBar';
