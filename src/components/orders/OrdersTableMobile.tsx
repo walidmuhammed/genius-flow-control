@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { Order } from './OrdersTableRow';
+import { OrderWithCustomer } from '@/services/orders';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -16,10 +16,10 @@ import {
 import { motion } from 'framer-motion';
 
 interface OrdersTableMobileProps {
-  orders: Order[];
+  orders: (Order & { originalOrder: OrderWithCustomer })[];
   selectedOrders?: string[];
   toggleSelectOrder?: (orderId: string) => void;
-  onViewDetails?: (order: Order) => void;
+  onViewDetails?: (order: Order & { originalOrder: OrderWithCustomer }) => void;
   showActions?: boolean;
 }
 
