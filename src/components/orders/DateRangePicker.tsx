@@ -1,311 +1,378 @@
 
 import React, { useState } from 'react';
-import { addDays, format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear, subWeeks, subMonths } from 'date-fns';
-import { Calendar as CalendarIcon, Check, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
+import { Calendar, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useScreenSize } from '@/hooks/useScreenSize';
+import { cn } from '@/lib/utils';
 
-interface DateRange {
-  from: Date | undefined;
-  to?: Date | undefined;
+interface DateRangePickerProps {
+  onDateChange: (range: { from?: Date; to?: Date }) => void;
+  className?: string;
 }
 
-type Preset = {
-  name: string;
+interface DatePreset {
   label: string;
-  date: () => DateRange;
-};
+  range: { from: Date; to: Date };
+}
 
-export function DateRangePicker({ className, onDateChange }: { 
-  className?: string;
-  onDateChange?: (range: DateRange) => void;
-}) {
+export const DateRangePicker: React.FC<DateRangePickerProps> = ({ 
+  onDateChange, 
+  className 
+}) => {
   const { isMobile, isTablet } = useScreenSize();
-  const [date, setDate] = useState<DateRange>({
-    from: undefined,
-    to: undefined
-  });
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [selectedRange, setSelectedRange] = useState<{ from?: Date; to?: Date }>({});
+  const [mobileStep, setMobileStep] = useState<'presets' | 'custom'>('presets');
 
-  // Premium presets for business use
-  const presets: Preset[] = [
+  const today = new Date();
+  
+  const presets: DatePreset[] = [
     {
-      name: 'today',
       label: 'Today',
-      date: () => {
-        const today = new Date();
-        return {
-          from: today,
-          to: today
-        };
-      }
+      range: { from: today, to: today }
     },
     {
-      name: 'yesterday',
-      label: 'Yesterday',
-      date: () => {
-        const yesterday = addDays(new Date(), -1);
-        return {
-          from: yesterday,
-          to: yesterday
-        };
-      }
+      label: 'Yesterday', 
+      range: { from: subDays(today, 1), to: subDays(today, 1) }
     },
     {
-      name: 'thisWeek',
       label: 'This Week',
-      date: () => {
-        const today = new Date();
-        return {
-          from: startOfWeek(today, { weekStartsOn: 1 }),
-          to: today
-        };
-      }
+      range: { from: startOfWeek(today, { weekStartsOn: 1 }), to: endOfWeek(today, { weekStartsOn: 1 }) }
     },
     {
-      name: 'lastWeek',
       label: 'Last Week',
-      date: () => {
-        const lastWeek = subWeeks(new Date(), 1);
-        return {
-          from: startOfWeek(lastWeek, { weekStartsOn: 1 }),
-          to: endOfWeek(lastWeek, { weekStartsOn: 1 })
-        };
-      }
+      range: { from: startOfWeek(subDays(today, 7), { weekStartsOn: 1 }), to: endOfWeek(subDays(today, 7), { weekStartsOn: 1 }) }
     },
     {
-      name: 'last7',
-      label: 'Last 7 Days',
-      date: () => {
-        const today = new Date();
-        const last7Days = addDays(today, -6);
-        return {
-          from: last7Days,
-          to: today
-        };
-      }
-    },
-    {
-      name: 'thisMonth',
       label: 'This Month',
-      date: () => {
-        const today = new Date();
-        return {
-          from: startOfMonth(today),
-          to: today
-        };
-      }
+      range: { from: startOfMonth(today), to: endOfMonth(today) }
     },
     {
-      name: 'lastMonth',
       label: 'Last Month',
-      date: () => {
-        const lastMonth = subMonths(new Date(), 1);
-        return {
-          from: startOfMonth(lastMonth),
-          to: endOfMonth(lastMonth)
-        };
-      }
+      range: { from: startOfMonth(subDays(today, 30)), to: endOfMonth(subDays(today, 30)) }
     },
     {
-      name: 'thisQuarter',
-      label: 'This Quarter',
-      date: () => {
-        const today = new Date();
-        return {
-          from: startOfQuarter(today),
-          to: today
-        };
-      }
+      label: 'Last 7 Days',
+      range: { from: subDays(today, 7), to: today }
     },
     {
-      name: 'thisYear',
-      label: 'This Year',
-      date: () => {
-        const today = new Date();
-        return {
-          from: startOfYear(today),
-          to: today
-        };
-      }
+      label: 'Last 30 Days',
+      range: { from: subDays(today, 30), to: today }
+    },
+    {
+      label: 'Last 90 Days',
+      range: { from: subDays(today, 90), to: today }
     }
   ];
 
-  const handleSelectPreset = (preset: Preset) => {
-    const newDate = preset.date();
-    setDate(newDate);
-    if (onDateChange) {
-      onDateChange(newDate);
-    }
-    setIsOpen(false);
+  const handlePresetSelect = (preset: DatePreset) => {
+    setSelectedRange(preset.range);
+    onDateChange(preset.range);
+    setOpen(false);
+    setMobileStep('presets');
   };
 
-  const handleClear = () => {
-    setDate({
-      from: undefined,
-      to: undefined
-    });
-    if (onDateChange) {
-      onDateChange({
-        from: undefined,
-        to: undefined
-      });
-    }
-  };
-
-  const handleApply = () => {
-    setIsOpen(false);
-    if (onDateChange) {
-      onDateChange(date);
-    }
-  };
-
-  const handleSelect = (range: DateRange | undefined) => {
-    if (range) {
-      setDate(range);
+  const handleCustomRangeApply = () => {
+    if (selectedRange.from && selectedRange.to) {
+      onDateChange(selectedRange);
+      setOpen(false);
+      setMobileStep('presets');
     }
   };
 
   const formatDateRange = () => {
-    if (date.from && date.to) {
-      if (date.from.toDateString() === date.to.toDateString()) {
-        return format(date.from, isMobile ? 'MMM d' : 'MMM d, yyyy');
-      } else {
-        return isMobile 
-          ? `${format(date.from, 'MMM d')} – ${format(date.to, 'MMM d')}`
-          : `${format(date.from, 'MMM d')} – ${format(date.to, 'MMM d, yyyy')}`;
-      }
+    if (!selectedRange.from && !selectedRange.to) {
+      return "Select date range";
     }
-    return isMobile ? 'Filter dates' : 'Filter by date range';
+    if (selectedRange.from && selectedRange.to) {
+      if (selectedRange.from.getTime() === selectedRange.to.getTime()) {
+        return format(selectedRange.from, 'MMM dd, yyyy');
+      }
+      return `${format(selectedRange.from, 'MMM dd')} - ${format(selectedRange.to, 'MMM dd, yyyy')}`;
+    }
+    if (selectedRange.from) {
+      return `From ${format(selectedRange.from, 'MMM dd, yyyy')}`;
+    }
+    return "Select date range";
   };
 
-  const DateRangeContent = () => (
-    <div className="w-full">
-      {/* Presets Section */}
-      <div className="p-4 border-b border-gray-100 bg-gray-50/50">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Quick Select</h3>
-        <div className={cn(
-          "grid gap-2",
-          isMobile ? "grid-cols-2" : "grid-cols-3"
-        )}>
-          {presets.map(preset => (
-            <Button 
-              key={preset.name} 
-              variant="ghost" 
-              size="sm" 
-              className="h-9 px-3 text-left justify-start font-normal text-sm bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-md shadow-sm transition-all"
-              onClick={() => handleSelectPreset(preset)}
-            >
-              {preset.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-      
-      {/* Calendar Section */}
-      <div className="p-4">
-        <Calendar 
-          mode="range" 
-          selected={date} 
-          onSelect={handleSelect} 
-          numberOfMonths={isMobile ? 1 : 2} 
-          className="p-0 pointer-events-auto w-full" 
-        />
-        
-        {/* Instruction text */}
-        {date.from && !date.to && (
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-700 text-center">
-              Please select an end date
-            </p>
-          </div>
-        )}
-        
-        {/* Actions */}
-        <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-100">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-9 px-4 text-sm border-gray-200 hover:bg-gray-50" 
-            onClick={handleClear}
-          >
-            <X className="h-4 w-4 mr-2" /> 
-            Clear
-          </Button>
-          
-          <Button 
-            size="sm" 
-            onClick={handleApply} 
-            className="h-9 px-4 text-sm font-medium bg-[#DB271E] hover:bg-[#c8251c] text-white shadow-sm"
-            disabled={!date.from}
-          >
-            <Check className="h-4 w-4 mr-2" /> 
-            Apply Filter
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-
-  if (isMobile || isTablet) {
+  // Mobile View
+  if (isMobile) {
     return (
       <>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
+          onClick={() => setOpen(true)}
           className={cn(
-            "gap-2 border-gray-200 bg-white shadow-sm text-sm h-10 w-full justify-start",
-            date.from && "text-black border-[#DB271E]/20 bg-[#DB271E]/5",
+            "w-full h-11 justify-start text-left border-gray-200/60 dark:border-gray-700/40 rounded-xl bg-gray-50/50 dark:bg-gray-900/50",
             className
           )}
-          onClick={() => setIsOpen(true)}
         >
-          <CalendarIcon className="h-4 w-4 text-gray-500" />
-          <span className="truncate text-sm">{formatDateRange()}</span>
+          <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {formatDateRange()}
+          </span>
         </Button>
 
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetContent 
-            side="bottom" 
-            className="h-[85vh] max-h-[600px] p-0 rounded-t-xl"
-          >
-            <SheetHeader className="p-4 pb-0">
-              <SheetTitle className="text-lg font-semibold">Select Date Range</SheetTitle>
-            </SheetHeader>
-            <div className="overflow-y-auto h-full">
-              <DateRangeContent />
+        {open && (
+          <div className="fixed inset-0 z-50 bg-black/50">
+            <div className="fixed inset-x-0 bottom-0 bg-white dark:bg-gray-900 rounded-t-3xl max-h-[85vh] overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  {mobileStep === 'presets' ? '📅 Choose Date Filter' : 'Select your travel dates'}
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setOpen(false);
+                    setMobileStep('presets');
+                  }}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="overflow-y-auto max-h-[calc(85vh-80px)]">
+                {mobileStep === 'presets' ? (
+                  /* Presets Step */
+                  <div className="p-6 space-y-3">
+                    {presets.map((preset) => (
+                      <button
+                        key={preset.label}
+                        onClick={() => handlePresetSelect(preset)}
+                        className="w-full p-4 text-left rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                          {preset.label}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          {preset.range.from.getTime() === preset.range.to.getTime() 
+                            ? format(preset.range.from, 'MMM dd, yyyy')
+                            : `${format(preset.range.from, 'MMM dd')} - ${format(preset.range.to, 'MMM dd, yyyy')}`
+                          }
+                        </div>
+                      </button>
+                    ))}
+                    
+                    <button
+                      onClick={() => setMobileStep('custom')}
+                      className="w-full p-4 text-left rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                        Custom Range
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Choose specific dates
+                      </div>
+                    </button>
+                  </div>
+                ) : (
+                  /* Custom Range Step */
+                  <div className="p-6 space-y-6">
+                    {/* Date Inputs */}
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Start date
+                          </label>
+                          <Input
+                            value={selectedRange.from ? format(selectedRange.from, 'dd.MM.yyyy') : ''}
+                            placeholder="23.06.2025"
+                            readOnly
+                            className="h-11 text-center border-gray-200 dark:border-gray-700 rounded-xl"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            End date
+                          </label>
+                          <Input
+                            value={selectedRange.to ? format(selectedRange.to, 'dd.MM.yyyy') : ''}
+                            placeholder="09.07.2025"
+                            readOnly
+                            className="h-11 text-center border-gray-200 dark:border-gray-700 rounded-xl"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Calendar */}
+                    <div className="space-y-4">
+                      <CalendarComponent
+                        mode="range"
+                        numberOfMonths={2}
+                        selected={selectedRange}
+                        onSelect={setSelectedRange}
+                        className="w-full border-0 p-0"
+                        classNames={{
+                          months: "flex flex-col space-y-6",
+                          month: "space-y-4",
+                          caption: "flex justify-center pt-1 relative items-center text-base font-medium",
+                          nav: "space-x-1 flex items-center",
+                          nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 border border-gray-200 dark:border-gray-700 rounded-lg",
+                          nav_button_previous: "absolute left-1",
+                          nav_button_next: "absolute right-1",
+                          table: "w-full border-collapse space-y-1",
+                          head_row: "flex",
+                          head_cell: "text-gray-500 dark:text-gray-400 rounded-md w-9 font-normal text-xs uppercase tracking-wide",
+                          row: "flex w-full mt-2",
+                          cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+                          day: "h-9 w-9 p-0 font-normal hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors",
+                          day_selected: "bg-[#22c55e] text-white hover:bg-[#22c55e] rounded-lg",
+                          day_today: "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg",
+                          day_outside: "text-gray-400 dark:text-gray-600",
+                          day_disabled: "text-gray-300 dark:text-gray-700",
+                          day_range_middle: "bg-[#22c55e]/20 text-gray-900 dark:text-gray-100 rounded-none",
+                          day_range_start: "bg-[#22c55e] text-white hover:bg-[#22c55e] rounded-lg",
+                          day_range_end: "bg-[#22c55e] text-white hover:bg-[#22c55e] rounded-lg"
+                        }}
+                      />
+                    </div>
+
+                    {/* Apply Button */}
+                    <Button
+                      onClick={handleCustomRangeApply}
+                      disabled={!selectedRange.from || !selectedRange.to}
+                      className="w-full h-12 bg-[#22c55e] hover:bg-[#22c55e]/90 text-white rounded-xl font-medium"
+                    >
+                      Save dates
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
-          </SheetContent>
-        </Sheet>
+          </div>
+        )}
       </>
     );
   }
 
+  // Desktop/Tablet View
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className={cn(
-            "gap-2 border-gray-200 bg-white shadow-sm text-sm h-10 w-auto justify-start min-w-[200px]",
-            date.from && "text-black border-[#DB271E]/20 bg-[#DB271E]/5",
+            "h-11 justify-start text-left border-gray-200/60 dark:border-gray-700/40 rounded-xl bg-gray-50/50 dark:bg-gray-900/50",
+            isTablet ? "w-full" : "w-[280px]",
             className
           )}
         >
-          <CalendarIcon className="h-4 w-4 text-gray-500" />
-          <span className="text-sm">{formatDateRange()}</span>
+          <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {formatDateRange()}
+          </span>
         </Button>
       </PopoverTrigger>
+      
       <PopoverContent 
-        className="w-auto p-0 bg-white shadow-xl border border-gray-200 rounded-lg" 
-        align="end"
+        className="w-auto p-0 border-0 shadow-xl" 
+        align="center"
+        side="bottom"
         sideOffset={8}
       >
-        <DateRangeContent />
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200/30 dark:border-gray-700/30 overflow-hidden">
+          <div className="flex">
+            {/* Left Side - Presets */}
+            <div className="w-48 p-6 border-r border-gray-100 dark:border-gray-800">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4 text-sm">
+                Quick Select
+              </h3>
+              <div className="space-y-1">
+                {presets.map((preset) => (
+                  <button
+                    key={preset.label}
+                    onClick={() => handlePresetSelect(preset)}
+                    className="w-full text-left py-2 px-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Side - Calendar */}
+            <div className="p-6">
+              <div className="space-y-6">
+                {/* Date Inputs */}
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                      Start date
+                    </label>
+                    <Input
+                      value={selectedRange.from ? format(selectedRange.from, 'dd.MM.yyyy') : ''}
+                      placeholder="23.06.2025"
+                      readOnly
+                      className="h-10 text-center border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+                      End date
+                    </label>
+                    <Input
+                      value={selectedRange.to ? format(selectedRange.to, 'dd.MM.yyyy') : ''}
+                      placeholder="09.07.2025"
+                      readOnly
+                      className="h-10 text-center border-gray-200 dark:border-gray-700 rounded-lg text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Calendar */}
+                <CalendarComponent
+                  mode="range"
+                  numberOfMonths={2}
+                  selected={selectedRange}
+                  onSelect={setSelectedRange}
+                  className="border-0 p-0"
+                  classNames={{
+                    months: "flex space-x-6",
+                    month: "space-y-4",
+                    caption: "flex justify-center pt-1 relative items-center text-sm font-medium",
+                    nav: "space-x-1 flex items-center",
+                    nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 border border-gray-200 dark:border-gray-700 rounded-md",
+                    nav_button_previous: "absolute left-1",
+                    nav_button_next: "absolute right-1",
+                    table: "w-full border-collapse space-y-1",
+                    head_row: "flex",
+                    head_cell: "text-gray-500 dark:text-gray-400 rounded-md w-8 font-normal text-xs uppercase tracking-wide",
+                    row: "flex w-full mt-1",
+                    cell: "h-8 w-8 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+                    day: "h-8 w-8 p-0 font-normal hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors text-sm",
+                    day_selected: "bg-[#22c55e] text-white hover:bg-[#22c55e] rounded-md",
+                    day_today: "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md",
+                    day_outside: "text-gray-400 dark:text-gray-600",
+                    day_disabled: "text-gray-300 dark:text-gray-700",
+                    day_range_middle: "bg-[#22c55e]/20 text-gray-900 dark:text-gray-100 rounded-none",
+                    day_range_start: "bg-[#22c55e] text-white hover:bg-[#22c55e] rounded-md",
+                    day_range_end: "bg-[#22c55e] text-white hover:bg-[#22c55e] rounded-md"
+                  }}
+                />
+
+                {/* Apply Button */}
+                <Button
+                  onClick={handleCustomRangeApply}
+                  disabled={!selectedRange.from || !selectedRange.to}
+                  className="w-full h-10 bg-[#22c55e] hover:bg-[#22c55e]/90 text-white rounded-lg font-medium text-sm"
+                >
+                  Apply Filter
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </PopoverContent>
     </Popover>
   );
-}
+};
