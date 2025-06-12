@@ -282,9 +282,9 @@ const OrdersList: React.FC = () => {
                           );
                         }}
                         onViewDetails={(order) => {
-                          const originalOrder = filteredOrders.find(o => o.id === order.id);
-                          if (originalOrder) {
-                            handleViewOrder(originalOrder);
+                          // Use the originalOrder property that's already included in the mapped data
+                          if (order.originalOrder) {
+                            handleViewOrder(order.originalOrder);
                           }
                         }}
                         showActions={true}
@@ -303,9 +303,9 @@ const OrdersList: React.FC = () => {
                           );
                         }}
                         onViewDetails={(order) => {
-                          const originalOrder = filteredOrders.find(o => o.id === order.id);
-                          if (originalOrder) {
-                            handleViewOrder(originalOrder);
+                          // Use the originalOrder property that's already included in the mapped data
+                          if (order.originalOrder) {
+                            handleViewOrder(order.originalOrder);
                           }
                         }}
                         showActions={true}

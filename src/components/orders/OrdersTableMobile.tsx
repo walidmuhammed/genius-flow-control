@@ -64,7 +64,7 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
         <motion.div 
           key={order.id} 
           className={cn(
-            "bg-white rounded-xl border border-gray-100 transition-all duration-200 overflow-hidden",
+            "bg-white rounded-xl border border-gray-100 transition-all duration-200 overflow-hidden cursor-pointer",
             "active:scale-[0.98] active:shadow-sm",
             selectedOrders.includes(order.id) 
               ? "border-[#DC291E]/30 bg-[#DC291E]/5 shadow-sm" 
