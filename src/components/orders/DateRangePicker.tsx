@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { Calendar, X } from 'lucide-react';
@@ -109,12 +110,12 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           variant="outline"
           onClick={() => setOpen(true)}
           className={cn(
-            "w-full h-10 justify-start text-left font-normal bg-white border-gray-200 rounded-lg",
+            "w-full h-11 justify-start text-left font-medium bg-white border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200",
             className
           )}
         >
-          <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-          <span className="text-sm text-gray-700">
+          <Calendar className="h-4 w-4 mr-3 text-gray-500" />
+          <span className="text-sm text-gray-800">
             {formatDateRange()}
           </span>
         </Button>
@@ -123,24 +124,24 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           <>
             {/* Backdrop */}
             <div 
-              className="fixed inset-0 z-[9998] bg-black/30 transition-opacity duration-300"
+              className="fixed inset-0 z-[9998] bg-black/40 transition-opacity duration-300"
               onClick={() => {
                 setOpen(false);
                 setMobileStep('presets');
               }}
             />
             
-            {/* Bottom Sheet Container - Fixed background continuity */}
+            {/* Bottom Sheet Container - Unified background */}
             <div 
               className={cn(
-                "fixed inset-x-0 bottom-0 z-[9999] bg-gray-50 rounded-t-2xl max-h-[90vh] overflow-hidden",
+                "fixed inset-x-0 bottom-0 z-[9999] bg-white rounded-t-3xl max-h-[90vh] overflow-hidden shadow-2xl",
                 "transform transition-all duration-300 ease-out",
                 open ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
               )}
             >
               {/* Header - Same background as container */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50 sticky top-0 z-10">
-                <h2 className="text-lg font-semibold text-gray-900">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-white">
+                <h2 className="text-xl font-semibold text-gray-900 tracking-tight">
                   {mobileStep === 'presets' ? 'Choose Date Filter' : 'Select Date Range'}
                 </h2>
                 <Button
@@ -150,41 +151,43 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     setOpen(false);
                     setMobileStep('presets');
                   }}
-                  className="h-8 w-8 p-0"
+                  className="h-9 w-9 p-0 rounded-full hover:bg-gray-100 transition-colors"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5 text-gray-500" />
                 </Button>
               </div>
 
               {/* Content */}
-              <div className="overflow-y-auto bg-gray-50" style={{ maxHeight: 'calc(90vh - 80px)' }}>
+              <div className="overflow-y-auto bg-white" style={{ maxHeight: 'calc(90vh - 88px)' }}>
                 {mobileStep === 'presets' ? (
                   /* Presets Step */
-                  <div className="p-4 space-y-2 bg-gray-50">
+                  <div className="p-6 space-y-3 bg-white">
                     {presets.map((preset) => (
                       <button
                         key={preset.label}
                         onClick={() => handlePresetSelect(preset)}
-                        className="w-full p-4 text-left rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-900 font-medium text-base bg-white"
+                        className="w-full p-4 text-left rounded-2xl hover:bg-gray-50 active:bg-gray-100 transition-all duration-200 text-gray-900 font-medium text-base bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200"
                       >
                         {preset.label}
                       </button>
                     ))}
                     
-                    <button
-                      onClick={() => setMobileStep('custom')}
-                      className="w-full p-4 text-left rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-900 font-medium text-base border-t border-gray-100 mt-4 bg-white"
-                    >
-                      Custom Range
-                    </button>
+                    <div className="pt-4 border-t border-gray-100">
+                      <button
+                        onClick={() => setMobileStep('custom')}
+                        className="w-full p-4 text-left rounded-2xl hover:bg-[#DC291E]/5 active:bg-[#DC291E]/10 transition-all duration-200 text-[#DC291E] font-semibold text-base bg-white border border-[#DC291E]/20 shadow-sm hover:shadow-md hover:border-[#DC291E]/30"
+                      >
+                        Custom Range
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   /* Custom Range Step - Same background continuity */
-                  <div className="p-6 space-y-6 min-h-full bg-gray-50">
+                  <div className="p-6 space-y-6 min-h-full bg-white">
                     {/* Back Button */}
                     <button
                       onClick={() => setMobileStep('presets')}
-                      className="flex items-center gap-2 text-[#DC291E] font-medium mb-2"
+                      className="flex items-center gap-2 text-[#DC291E] font-semibold mb-2 hover:text-[#DC291E]/80 transition-colors"
                     >
                       ← Back to Presets
                     </button>
@@ -192,31 +195,31 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     {/* Date Inputs */}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-3">
                           Start date
                         </label>
                         <Input
                           value={selectedRange?.from ? format(selectedRange.from, 'dd.MM.yyyy') : ''}
                           placeholder="23.06.2025"
                           readOnly
-                          className="text-center border-gray-200 rounded-lg h-12 bg-white"
+                          className="text-center border-gray-200 rounded-xl h-12 bg-gray-50 font-medium text-gray-800 shadow-sm"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-3">
                           End date
                         </label>
                         <Input
                           value={selectedRange?.to ? format(selectedRange.to, 'dd.MM.yyyy') : ''}
                           placeholder="09.07.2025"
                           readOnly
-                          className="text-center border-gray-200 rounded-lg h-12 bg-white"
+                          className="text-center border-gray-200 rounded-xl h-12 bg-gray-50 font-medium text-gray-800 shadow-sm"
                         />
                       </div>
                     </div>
 
                     {/* Calendar */}
-                    <div className="bg-white rounded-xl p-4">
+                    <div className="bg-gray-50 rounded-2xl p-5 shadow-sm border border-gray-100">
                       <CalendarComponent
                         mode="range"
                         numberOfMonths={1}
@@ -225,22 +228,22 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                         className="w-full border-0 p-0 pointer-events-auto"
                         classNames={{
                           months: "flex flex-col space-y-4",
-                          month: "space-y-3",
-                          caption: "flex justify-center pt-1 relative items-center text-base font-medium",
+                          month: "space-y-4",
+                          caption: "flex justify-center pt-1 relative items-center text-lg font-semibold text-gray-900",
                           nav: "hidden",
                           table: "w-full border-collapse space-y-1",
                           head_row: "flex",
-                          head_cell: "text-gray-500 rounded-md w-10 font-normal text-sm",
+                          head_cell: "text-gray-600 rounded-md w-10 font-semibold text-sm",
                           row: "flex w-full mt-2",
-                          cell: "h-10 w-10 text-center text-sm p-0 relative",
-                          day: "h-10 w-10 p-0 font-normal hover:bg-gray-100 rounded-lg transition-colors",
-                          day_selected: "bg-[#DC291E] text-white hover:bg-[#DC291E] rounded-lg",
-                          day_today: "bg-gray-100 text-gray-900 rounded-lg font-semibold",
+                          cell: "h-12 w-10 text-center text-sm p-0 relative",
+                          day: "h-12 w-10 p-0 font-medium hover:bg-gray-200 rounded-xl transition-all duration-200 text-gray-800",
+                          day_selected: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-xl shadow-md",
+                          day_today: "bg-gray-200 text-gray-900 rounded-xl font-bold",
                           day_outside: "text-gray-400",
                           day_disabled: "text-gray-300",
                           day_range_middle: "bg-[#DC291E]/20 text-gray-900 rounded-none",
-                          day_range_start: "bg-[#DC291E] text-white hover:bg-[#DC291E] rounded-lg",
-                          day_range_end: "bg-[#DC291E] text-white hover:bg-[#DC291E] rounded-lg"
+                          day_range_start: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-xl shadow-md",
+                          day_range_end: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-xl shadow-md"
                         }}
                         fixedWeeks
                         showOutsideDays={false}
@@ -251,7 +254,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     <Button
                       onClick={handleCustomRangeApply}
                       disabled={!selectedRange?.from || !selectedRange?.to}
-                      className="w-full h-12 bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-xl font-medium text-base"
+                      className="w-full h-14 bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Apply Date Range
                     </Button>
@@ -261,31 +264,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
             </div>
           </>
         )}
-
-        {/* Mobile Animation Styles - Fixed JSX props */}
-        <style>{`
-          @keyframes slideUpMobile {
-            from {
-              transform: translateY(100%);
-              opacity: 0;
-            }
-            to {
-              transform: translateY(0);
-              opacity: 1;
-            }
-          }
-          
-          @keyframes slideDownMobile {
-            from {
-              transform: translateY(0);
-              opacity: 1;
-            }
-            to {
-              transform: translateY(100%);
-              opacity: 0;
-            }
-          }
-        `}</style>
       </>
     );
   }
