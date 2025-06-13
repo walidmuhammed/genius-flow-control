@@ -130,16 +130,16 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               }}
             />
             
-            {/* Bottom Sheet Container with improved animation */}
+            {/* Bottom Sheet Container - Fixed background continuity */}
             <div 
               className={cn(
-                "fixed inset-x-0 bottom-0 z-[9999] bg-white rounded-t-2xl max-h-[90vh] overflow-hidden",
+                "fixed inset-x-0 bottom-0 z-[9999] bg-gray-50 rounded-t-2xl max-h-[90vh] overflow-hidden",
                 "transform transition-all duration-300 ease-out",
                 open ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
               )}
             >
-              {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
+              {/* Header - Same background as container */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50 sticky top-0 z-10">
                 <h2 className="text-lg font-semibold text-gray-900">
                   {mobileStep === 'presets' ? 'Choose Date Filter' : 'Select Date Range'}
                 </h2>
@@ -157,15 +157,15 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               </div>
 
               {/* Content */}
-              <div className="overflow-y-auto" style={{ maxHeight: 'calc(90vh - 80px)' }}>
+              <div className="overflow-y-auto bg-gray-50" style={{ maxHeight: 'calc(90vh - 80px)' }}>
                 {mobileStep === 'presets' ? (
                   /* Presets Step */
-                  <div className="p-4 space-y-2">
+                  <div className="p-4 space-y-2 bg-gray-50">
                     {presets.map((preset) => (
                       <button
                         key={preset.label}
                         onClick={() => handlePresetSelect(preset)}
-                        className="w-full p-4 text-left rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors text-gray-900 font-medium text-base"
+                        className="w-full p-4 text-left rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-900 font-medium text-base bg-white"
                       >
                         {preset.label}
                       </button>
@@ -173,14 +173,14 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     
                     <button
                       onClick={() => setMobileStep('custom')}
-                      className="w-full p-4 text-left rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors text-gray-900 font-medium text-base border-t border-gray-100 mt-4"
+                      className="w-full p-4 text-left rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-900 font-medium text-base border-t border-gray-100 mt-4 bg-white"
                     >
                       Custom Range
                     </button>
                   </div>
                 ) : (
-                  /* Custom Range Step - Full screen panel */
-                  <div className="p-6 space-y-6 min-h-full">
+                  /* Custom Range Step - Same background continuity */
+                  <div className="p-6 space-y-6 min-h-full bg-gray-50">
                     {/* Back Button */}
                     <button
                       onClick={() => setMobileStep('presets')}
@@ -199,7 +199,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                           value={selectedRange?.from ? format(selectedRange.from, 'dd.MM.yyyy') : ''}
                           placeholder="23.06.2025"
                           readOnly
-                          className="text-center border-gray-200 rounded-lg h-12"
+                          className="text-center border-gray-200 rounded-lg h-12 bg-white"
                         />
                       </div>
                       <div>
@@ -210,13 +210,13 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                           value={selectedRange?.to ? format(selectedRange.to, 'dd.MM.yyyy') : ''}
                           placeholder="09.07.2025"
                           readOnly
-                          className="text-center border-gray-200 rounded-lg h-12"
+                          className="text-center border-gray-200 rounded-lg h-12 bg-white"
                         />
                       </div>
                     </div>
 
-                    {/* Calendar - Fixed to remove nav arrows */}
-                    <div className="bg-gray-50 rounded-xl p-4">
+                    {/* Calendar */}
+                    <div className="bg-white rounded-xl p-4">
                       <CalendarComponent
                         mode="range"
                         numberOfMonths={1}
@@ -227,7 +227,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                           months: "flex flex-col space-y-4",
                           month: "space-y-3",
                           caption: "flex justify-center pt-1 relative items-center text-base font-medium",
-                          nav: "hidden", // Hide navigation completely to remove the arrow
+                          nav: "hidden",
                           table: "w-full border-collapse space-y-1",
                           head_row: "flex",
                           head_cell: "text-gray-500 rounded-md w-10 font-normal text-sm",
