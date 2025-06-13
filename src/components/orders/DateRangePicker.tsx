@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { Calendar, X } from 'lucide-react';
@@ -122,7 +121,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
         {open && (
           <>
-            {/* Backdrop with proper z-index */}
+            {/* Backdrop */}
             <div 
               className="fixed inset-0 z-[9998] bg-black/30 transition-opacity duration-300"
               onClick={() => {
@@ -131,15 +130,13 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               }}
             />
             
-            {/* Bottom Sheet Container */}
+            {/* Bottom Sheet Container with improved animation */}
             <div 
               className={cn(
-                "fixed inset-x-0 bottom-0 z-[9999] bg-white rounded-t-2xl max-h-[90vh] overflow-hidden transition-transform duration-300 ease-out",
-                open ? "translate-y-0" : "translate-y-full"
+                "fixed inset-x-0 bottom-0 z-[9999] bg-white rounded-t-2xl max-h-[90vh] overflow-hidden",
+                "transform transition-all duration-300 ease-out",
+                open ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
               )}
-              style={{
-                animation: open ? 'slideUpMobile 300ms ease-out' : 'slideDownMobile 300ms ease-out'
-              }}
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
@@ -182,8 +179,8 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     </button>
                   </div>
                 ) : (
-                  /* Custom Range Step */
-                  <div className="p-4 space-y-6">
+                  /* Custom Range Step - Full screen panel */
+                  <div className="p-6 space-y-6 min-h-full">
                     {/* Back Button */}
                     <button
                       onClick={() => setMobileStep('presets')}
@@ -193,7 +190,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     </button>
 
                     {/* Date Inputs */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Start date
@@ -218,7 +215,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                       </div>
                     </div>
 
-                    {/* Calendar - Fixed navigation arrows */}
+                    {/* Calendar - Fixed to remove nav arrows */}
                     <div className="bg-gray-50 rounded-xl p-4">
                       <CalendarComponent
                         mode="range"
@@ -230,10 +227,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                           months: "flex flex-col space-y-4",
                           month: "space-y-3",
                           caption: "flex justify-center pt-1 relative items-center text-base font-medium",
-                          nav: "space-x-1 flex items-center",
-                          nav_button: "h-8 w-8 bg-white border border-gray-200 p-0 opacity-70 hover:opacity-100 rounded-lg shadow-sm",
-                          nav_button_previous: "absolute left-2",
-                          nav_button_next: "absolute right-2",
+                          nav: "hidden", // Hide navigation completely to remove the arrow
                           table: "w-full border-collapse space-y-1",
                           head_row: "flex",
                           head_cell: "text-gray-500 rounded-md w-10 font-normal text-sm",
@@ -268,8 +262,8 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           </>
         )}
 
-        {/* Mobile Animation Keyframes */}
-        <style jsx global>{`
+        {/* Mobile Animation Styles - Fixed JSX props */}
+        <style>{`
           @keyframes slideUpMobile {
             from {
               transform: translateY(100%);
