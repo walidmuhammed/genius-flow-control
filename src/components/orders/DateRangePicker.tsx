@@ -110,7 +110,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           variant="outline"
           onClick={() => setOpen(true)}
           className={cn(
-            "w-full h-11 justify-start text-left font-medium bg-white border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200",
+            "w-full h-11 justify-start text-left font-medium bg-white border-gray-200 rounded-xl transition-all duration-200",
             className
           )}
         >
@@ -131,18 +131,18 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               }}
             />
             
-            {/* Bottom Sheet Container - Unified background */}
+            {/* Bottom Sheet Container - Clean seamless design */}
             <div 
               className={cn(
-                "fixed inset-x-0 bottom-0 z-[9999] bg-white rounded-t-3xl max-h-[90vh] overflow-hidden shadow-2xl",
+                "fixed inset-x-0 bottom-0 z-[9999] bg-white rounded-t-xl max-h-[85vh] overflow-hidden",
                 "transform transition-all duration-300 ease-out",
                 open ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
               )}
             >
-              {/* Header - Same background as container */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-white">
-                <h2 className="text-xl font-semibold text-gray-900 tracking-tight">
-                  {mobileStep === 'presets' ? 'Choose Date Filter' : 'Select Date Range'}
+              {/* Header - No border, seamless */}
+              <div className="flex items-center justify-between px-5 py-4 bg-white">
+                <h2 className="text-lg font-medium text-gray-900">
+                  {mobileStep === 'presets' ? 'Date Filter' : 'Select Range'}
                 </h2>
                 <Button
                   variant="ghost"
@@ -151,75 +151,75 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     setOpen(false);
                     setMobileStep('presets');
                   }}
-                  className="h-9 w-9 p-0 rounded-full hover:bg-gray-100 transition-colors"
+                  className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <X className="h-5 w-5 text-gray-500" />
+                  <X className="h-4 w-4 text-gray-500" />
                 </Button>
               </div>
 
-              {/* Content */}
-              <div className="overflow-y-auto bg-white" style={{ maxHeight: 'calc(90vh - 88px)' }}>
+              {/* Content - Seamless background */}
+              <div className="overflow-y-auto bg-white" style={{ maxHeight: 'calc(85vh - 72px)' }}>
                 {mobileStep === 'presets' ? (
-                  /* Presets Step */
-                  <div className="p-6 space-y-3 bg-white">
+                  /* Presets Step - Clean flat design */
+                  <div className="px-5 pb-5 space-y-2 bg-white">
                     {presets.map((preset) => (
                       <button
                         key={preset.label}
                         onClick={() => handlePresetSelect(preset)}
-                        className="w-full p-4 text-left rounded-2xl hover:bg-gray-50 active:bg-gray-100 transition-all duration-200 text-gray-900 font-medium text-base bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200"
+                        className="w-full p-3 text-left rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors text-gray-900 font-medium text-base bg-white"
                       >
                         {preset.label}
                       </button>
                     ))}
                     
-                    <div className="pt-4 border-t border-gray-100">
+                    <div className="pt-3">
                       <button
                         onClick={() => setMobileStep('custom')}
-                        className="w-full p-4 text-left rounded-2xl hover:bg-[#DC291E]/5 active:bg-[#DC291E]/10 transition-all duration-200 text-[#DC291E] font-semibold text-base bg-white border border-[#DC291E]/20 shadow-sm hover:shadow-md hover:border-[#DC291E]/30"
+                        className="w-full p-3 text-left rounded-lg hover:bg-[#DC291E]/5 active:bg-[#DC291E]/10 transition-colors text-[#DC291E] font-medium text-base bg-white"
                       >
                         Custom Range
                       </button>
                     </div>
                   </div>
                 ) : (
-                  /* Custom Range Step - Same background continuity */
-                  <div className="p-6 space-y-6 min-h-full bg-white">
+                  /* Custom Range Step - Clean design */
+                  <div className="px-5 pb-5 space-y-4 bg-white">
                     {/* Back Button */}
                     <button
                       onClick={() => setMobileStep('presets')}
-                      className="flex items-center gap-2 text-[#DC291E] font-semibold mb-2 hover:text-[#DC291E]/80 transition-colors"
+                      className="flex items-center gap-2 text-[#DC291E] font-medium hover:text-[#DC291E]/80 transition-colors"
                     >
-                      ← Back to Presets
+                      ← Back
                     </button>
 
                     {/* Date Inputs */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Start date
                         </label>
                         <Input
                           value={selectedRange?.from ? format(selectedRange.from, 'dd.MM.yyyy') : ''}
                           placeholder="23.06.2025"
                           readOnly
-                          className="text-center border-gray-200 rounded-xl h-12 bg-gray-50 font-medium text-gray-800 shadow-sm"
+                          className="text-center border-gray-200 rounded-lg h-10 bg-gray-50 font-medium text-gray-800"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           End date
                         </label>
                         <Input
                           value={selectedRange?.to ? format(selectedRange.to, 'dd.MM.yyyy') : ''}
                           placeholder="09.07.2025"
                           readOnly
-                          className="text-center border-gray-200 rounded-xl h-12 bg-gray-50 font-medium text-gray-800 shadow-sm"
+                          className="text-center border-gray-200 rounded-lg h-10 bg-gray-50 font-medium text-gray-800"
                         />
                       </div>
                     </div>
 
-                    {/* Calendar */}
-                    <div className="bg-gray-50 rounded-2xl p-5 shadow-sm border border-gray-100">
+                    {/* Calendar - Clean design without container */}
+                    <div className="py-2">
                       <CalendarComponent
                         mode="range"
                         numberOfMonths={1}
@@ -229,34 +229,34 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                         classNames={{
                           months: "flex flex-col space-y-4",
                           month: "space-y-4",
-                          caption: "flex justify-center pt-1 relative items-center text-lg font-semibold text-gray-900",
+                          caption: "flex justify-center pt-1 relative items-center text-base font-medium text-gray-900",
                           nav: "hidden",
                           table: "w-full border-collapse space-y-1",
                           head_row: "flex",
-                          head_cell: "text-gray-600 rounded-md w-10 font-semibold text-sm",
+                          head_cell: "text-gray-600 rounded-md w-10 font-medium text-sm",
                           row: "flex w-full mt-2",
-                          cell: "h-12 w-10 text-center text-sm p-0 relative",
-                          day: "h-12 w-10 p-0 font-medium hover:bg-gray-200 rounded-xl transition-all duration-200 text-gray-800",
-                          day_selected: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-xl shadow-md",
-                          day_today: "bg-gray-200 text-gray-900 rounded-xl font-bold",
+                          cell: "h-10 w-10 text-center text-sm p-0 relative",
+                          day: "h-10 w-10 p-0 font-medium hover:bg-gray-100 rounded-lg transition-colors text-gray-800",
+                          day_selected: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-lg",
+                          day_today: "bg-gray-100 text-gray-900 rounded-lg font-semibold",
                           day_outside: "text-gray-400",
                           day_disabled: "text-gray-300",
-                          day_range_middle: "bg-[#DC291E]/20 text-gray-900 rounded-none",
-                          day_range_start: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-xl shadow-md",
-                          day_range_end: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-xl shadow-md"
+                          day_range_middle: "bg-[#DC291E]/15 text-gray-900 rounded-none",
+                          day_range_start: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-lg",
+                          day_range_end: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-lg"
                         }}
                         fixedWeeks
                         showOutsideDays={false}
                       />
                     </div>
 
-                    {/* Apply Button */}
+                    {/* Apply Button - Clean design */}
                     <Button
                       onClick={handleCustomRangeApply}
                       disabled={!selectedRange?.from || !selectedRange?.to}
-                      className="w-full h-14 bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full h-12 bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-lg font-medium text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Apply Date Range
+                      Apply Range
                     </Button>
                   </div>
                 )}
