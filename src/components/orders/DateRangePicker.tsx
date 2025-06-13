@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { Calendar, X } from 'lucide-react';
@@ -131,17 +130,16 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               }}
             />
             
-            {/* Bottom Sheet Container - Fixed white bar glitch */}
+            {/* Bottom Sheet Container with improved animation */}
             <div 
               className={cn(
-                "fixed inset-x-0 bottom-0 z-[9999] bg-white rounded-t-2xl overflow-hidden",
+                "fixed inset-x-0 bottom-0 z-[9999] bg-white rounded-t-2xl max-h-[90vh] overflow-hidden",
                 "transform transition-all duration-300 ease-out",
-                mobileStep === 'presets' ? "max-h-[85vh]" : "max-h-[95vh] h-[95vh]",
                 open ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
               )}
             >
-              {/* Header - Fixed to prevent white bar */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white shrink-0">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
                 <h2 className="text-lg font-semibold text-gray-900">
                   {mobileStep === 'presets' ? 'Choose Date Filter' : 'Select Date Range'}
                 </h2>
@@ -158,8 +156,8 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 </Button>
               </div>
 
-              {/* Content - Fixed scrolling */}
-              <div className="flex-1 overflow-y-auto">
+              {/* Content */}
+              <div className="overflow-y-auto" style={{ maxHeight: 'calc(90vh - 80px)' }}>
                 {mobileStep === 'presets' ? (
                   /* Presets Step */
                   <div className="p-4 space-y-2">
@@ -181,18 +179,18 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     </button>
                   </div>
                 ) : (
-                  /* Custom Range Step - Full screen panel with 2 months */
-                  <div className="p-4 space-y-4 h-full flex flex-col">
+                  /* Custom Range Step - Full screen panel */
+                  <div className="p-6 space-y-6 min-h-full">
                     {/* Back Button */}
                     <button
                       onClick={() => setMobileStep('presets')}
-                      className="flex items-center gap-2 text-[#DC291E] font-medium"
+                      className="flex items-center gap-2 text-[#DC291E] font-medium mb-2"
                     >
                       ← Back to Presets
                     </button>
 
                     {/* Date Inputs */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Start date
@@ -201,7 +199,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                           value={selectedRange?.from ? format(selectedRange.from, 'dd.MM.yyyy') : ''}
                           placeholder="23.06.2025"
                           readOnly
-                          className="text-center border-gray-200 rounded-lg h-10"
+                          className="text-center border-gray-200 rounded-lg h-12"
                         />
                       </div>
                       <div>
@@ -212,30 +210,30 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                           value={selectedRange?.to ? format(selectedRange.to, 'dd.MM.yyyy') : ''}
                           placeholder="09.07.2025"
                           readOnly
-                          className="text-center border-gray-200 rounded-lg h-10"
+                          className="text-center border-gray-200 rounded-lg h-12"
                         />
                       </div>
                     </div>
 
-                    {/* Calendar - 2 months side by side with horizontal scroll */}
-                    <div className="flex-1 bg-gray-50 rounded-xl p-3 overflow-x-auto">
+                    {/* Calendar - Fixed to remove nav arrows */}
+                    <div className="bg-gray-50 rounded-xl p-4">
                       <CalendarComponent
                         mode="range"
-                        numberOfMonths={2}
+                        numberOfMonths={1}
                         selected={selectedRange}
                         onSelect={setSelectedRange}
-                        className="w-full border-0 p-0 pointer-events-auto min-w-[600px]"
+                        className="w-full border-0 p-0 pointer-events-auto"
                         classNames={{
-                          months: "flex space-x-4",
-                          month: "space-y-3 flex-shrink-0",
-                          caption: "flex justify-center pt-1 relative items-center text-sm font-medium",
-                          nav: "hidden",
+                          months: "flex flex-col space-y-4",
+                          month: "space-y-3",
+                          caption: "flex justify-center pt-1 relative items-center text-base font-medium",
+                          nav: "hidden", // Hide navigation completely to remove the arrow
                           table: "w-full border-collapse space-y-1",
                           head_row: "flex",
-                          head_cell: "text-gray-500 rounded-md w-8 font-normal text-xs",
-                          row: "flex w-full mt-1",
-                          cell: "h-8 w-8 text-center text-xs p-0 relative",
-                          day: "h-8 w-8 p-0 font-normal hover:bg-gray-100 rounded-lg transition-colors text-xs",
+                          head_cell: "text-gray-500 rounded-md w-10 font-normal text-sm",
+                          row: "flex w-full mt-2",
+                          cell: "h-10 w-10 text-center text-sm p-0 relative",
+                          day: "h-10 w-10 p-0 font-normal hover:bg-gray-100 rounded-lg transition-colors",
                           day_selected: "bg-[#DC291E] text-white hover:bg-[#DC291E] rounded-lg",
                           day_today: "bg-gray-100 text-gray-900 rounded-lg font-semibold",
                           day_outside: "text-gray-400",
@@ -250,21 +248,44 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     </div>
 
                     {/* Apply Button */}
-                    <div className="shrink-0 pt-2">
-                      <Button
-                        onClick={handleCustomRangeApply}
-                        disabled={!selectedRange?.from || !selectedRange?.to}
-                        className="w-full h-12 bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-xl font-medium text-base"
-                      >
-                        Apply Date Range
-                      </Button>
-                    </div>
+                    <Button
+                      onClick={handleCustomRangeApply}
+                      disabled={!selectedRange?.from || !selectedRange?.to}
+                      className="w-full h-12 bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-xl font-medium text-base"
+                    >
+                      Apply Date Range
+                    </Button>
                   </div>
                 )}
               </div>
             </div>
           </>
         )}
+
+        {/* Mobile Animation Styles - Fixed JSX props */}
+        <style>{`
+          @keyframes slideUpMobile {
+            from {
+              transform: translateY(100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateY(0);
+              opacity: 1;
+            }
+          }
+          
+          @keyframes slideDownMobile {
+            from {
+              transform: translateY(0);
+              opacity: 1;
+            }
+            to {
+              transform: translateY(100%);
+              opacity: 0;
+            }
+          }
+        `}</style>
       </>
     );
   }
