@@ -304,7 +304,7 @@ const CreateOrder = () => {
         delivery_fees_usd: deliveryFees.usd,
         delivery_fees_lbp: deliveryFees.lbp,
         note: deliveryNotes || undefined,
-        status: 'New',
+        status: 'New' as import('@/services/orders').OrderStatus,
         ...(orderReference.trim() && {
           reference_number: orderReference.trim()
         })
