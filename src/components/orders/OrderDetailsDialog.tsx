@@ -388,13 +388,15 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     </div>
   );
 
-  // --- DESKTOP Dialog, using CustomDialogContent (NO X) ---
+  // --- DESKTOP: Use DialogContent but hide close button visually using CSS ---
   if (!isMobile) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <CustomDialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
+        <DialogContent
+          className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full [&>button.absolute.right-4.top-4]:hidden"
+          // The selector above hides the Radix X/close button, but keeps backdrop click-to-close and focus trapping.
+        >
           <DialogHeader>
-            {/* Header: [Package] Order #xxx [ref] [badges] ... right: actions + close */}
             <div className="flex items-center justify-between w-full flex-wrap gap-y-2">
               <div className="flex items-center gap-2 min-w-0 flex-wrap">
                 <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
@@ -402,7 +404,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               </div>
               <div className="flex items-center gap-2 ml-auto">
                 <HeaderActions />
-                {/* NO X/CLOSE */}
+                {/* No close button */}
               </div>
             </div>
           </DialogHeader>
@@ -411,16 +413,23 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               <OrderContent />
             </div>
           </ScrollArea>
-        </CustomDialogContent>
+        </DialogContent>
       </Dialog>
     );
   }
 
-  // --- MOBILE Sheet, using CustomSheetContent (NO X) ---
+  // --- MOBILE: Use SheetContent but hide close button, add handle/pill, and extra space at top ---
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <CustomSheetContent side="bottom" className="h-[90vh] p-0">
-        <div className="flex flex-col h-full">
+      <SheetContent
+        side="bottom"
+        className="h-[85vh] p-0 [&>button.absolute.right-4.top-4]:hidden"
+      >
+        {/* Pill-shaped drag handle at the top */}
+        <div className="flex justify-center items-center h-10 bg-transparent select-none">
+          <div className="w-12 h-1.5 rounded-full bg-gray-300" />
+        </div>
+        <div className="flex flex-col h-[calc(100%-40px)]"> {/* 40px top handle area */}
           <SheetHeader className="px-4 py-3 border-b bg-white">
             <div className="flex flex-col gap-1 w-full">
               <div className="flex items-center gap-2 min-w-0 flex-wrap">
@@ -428,7 +437,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                 <EnhancedOrderHeader />
                 <div className="flex items-center gap-2 ml-auto">
                   <HeaderActions />
-                  {/* NO CLOSE */}
+                  {/* No close button */}
                 </div>
               </div>
             </div>
@@ -439,7 +448,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </div>
           </ScrollArea>
         </div>
-      </CustomSheetContent>
+      </SheetContent>
     </Sheet>
   );
 };
