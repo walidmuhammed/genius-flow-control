@@ -143,7 +143,8 @@ const Dashboard: React.FC = () => {
               className={cn(
                 "border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800",
                 "h-32 min-h-[8rem] max-h-[8rem] flex flex-col justify-between",
-                "transition-all"
+                "transition-all",
+                "shadow-none"
               )}
               style={{
                 height: "8rem",
@@ -151,19 +152,36 @@ const Dashboard: React.FC = () => {
                 maxHeight: "8rem",
               }}
             >
-              <CardContent className={cn("p-4", !isMobile && "p-6")}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500 shadow-sm">
+              <CardContent className={cn("p-4", !isMobile && "p-6", "flex flex-col justify-center h-full")}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500">
                     <Package className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
                   </div>
                 </div>
-                
-                <div className="space-y-1">
-                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>New Orders</h3>
-                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
+                <div className="flex flex-col flex-1 justify-center">
+                  <h3 className={cn(
+                    "font-medium text-gray-500 dark:text-gray-400",
+                    isMobile ? "text-xs" : "text-sm",
+                    "truncate"
+                  )}>
+                    New Orders
+                  </h3>
+                  <div className={cn(
+                    "font-bold text-gray-800 dark:text-white",
+                    isMobile ? "text-xl" : "text-2xl",
+                    "text-center",
+                    "truncate"
+                  )}>
                     {isOrdersLoading ? '--' : todayOrders.length}
                   </div>
-                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>New orders today</p>
+                  <p className={cn(
+                    "text-gray-500 dark:text-gray-400 mt-1",
+                    isMobile ? "text-xs" : "text-xs",
+                    "text-center",
+                    "truncate"
+                  )}>
+                    New orders today
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -175,7 +193,8 @@ const Dashboard: React.FC = () => {
               className={cn(
                 "border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800",
                 "h-32 min-h-[8rem] max-h-[8rem] flex flex-col justify-between",
-                "transition-all"
+                "transition-all",
+                "shadow-none"
               )}
               style={{
                 height: "8rem",
@@ -183,19 +202,36 @@ const Dashboard: React.FC = () => {
                 maxHeight: "8rem",
               }}
             >
-              <CardContent className={cn("p-4", !isMobile && "p-6")}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-500 shadow-sm">
+              <CardContent className={cn("p-4", !isMobile && "p-6", "flex flex-col justify-center h-full")}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-500">
                     <Clock className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
                   </div>
                 </div>
-                
-                <div className="space-y-1">
-                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>In Progress</h3>
-                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
+                <div className="flex flex-col flex-1 justify-center">
+                  <h3 className={cn(
+                    "font-medium text-gray-500 dark:text-gray-400",
+                    isMobile ? "text-xs" : "text-sm",
+                    "truncate"
+                  )}>
+                    In Progress
+                  </h3>
+                  <div className={cn(
+                    "font-bold text-gray-800 dark:text-white",
+                    isMobile ? "text-xl" : "text-2xl",
+                    "text-center",
+                    "truncate"
+                  )}>
                     {isOrdersLoading ? '--' : inProgressOrders.length}
                   </div>
-                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>Orders filtered as In Progress</p>
+                  <p className={cn(
+                    "text-gray-500 dark:text-gray-400 mt-1",
+                    isMobile ? "text-xs" : "text-xs",
+                    "text-center",
+                    "truncate"
+                  )}>
+                    Orders filtered as In Progress
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -207,7 +243,8 @@ const Dashboard: React.FC = () => {
               className={cn(
                 "border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800",
                 "h-32 min-h-[8rem] max-h-[8rem] flex flex-col justify-between",
-                "transition-all"
+                "transition-all",
+                "shadow-none"
               )}
               style={{
                 height: "8rem",
@@ -215,19 +252,36 @@ const Dashboard: React.FC = () => {
                 maxHeight: "8rem",
               }}
             >
-              <CardContent className={cn("p-4", !isMobile && "p-6")}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 shadow-sm">
+              <CardContent className={cn("p-4", !isMobile && "p-6", "flex flex-col justify-center h-full")}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500">
                     <AlertCircle className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
                   </div>
                 </div>
-                
-                <div className="space-y-1">
-                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>Awaiting Action</h3>
-                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
+                <div className="flex flex-col flex-1 justify-center">
+                  <h3 className={cn(
+                    "font-medium text-gray-500 dark:text-gray-400",
+                    isMobile ? "text-xs" : "text-sm",
+                    "truncate"
+                  )}>
+                    Awaiting Action
+                  </h3>
+                  <div className={cn(
+                    "font-bold text-gray-800 dark:text-white",
+                    isMobile ? "text-xl" : "text-2xl",
+                    "text-center",
+                    "truncate"
+                  )}>
                     {isOrdersLoading ? '--' : awaitingActionOrders.length}
                   </div>
-                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>Orders requiring intervention</p>
+                  <p className={cn(
+                    "text-gray-500 dark:text-gray-400 mt-1",
+                    isMobile ? "text-xs" : "text-xs",
+                    "text-center",
+                    "truncate"
+                  )}>
+                    Orders requiring intervention
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -239,7 +293,8 @@ const Dashboard: React.FC = () => {
               className={cn(
                 "border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800",
                 "h-32 min-h-[8rem] max-h-[8rem] flex flex-col justify-between",
-                "transition-all"
+                "transition-all",
+                "shadow-none"
               )}
               style={{
                 height: "8rem",
@@ -247,19 +302,36 @@ const Dashboard: React.FC = () => {
                 maxHeight: "8rem",
               }}
             >
-              <CardContent className={cn("p-4", !isMobile && "p-6")}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 shadow-sm">
+              <CardContent className={cn("p-4", !isMobile && "p-6", "flex flex-col justify-center h-full")}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500">
                     <DollarSign className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
                   </div>
                 </div>
-                
-                <div className="space-y-1">
-                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>Expected Cash</h3>
-                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
+                <div className="flex flex-col flex-1 justify-center">
+                  <h3 className={cn(
+                    "font-medium text-gray-500 dark:text-gray-400",
+                    isMobile ? "text-xs" : "text-sm",
+                    "truncate"
+                  )}>
+                    Expected Cash
+                  </h3>
+                  <div className={cn(
+                    "font-bold text-gray-800 dark:text-white",
+                    isMobile ? "text-xl" : "text-2xl",
+                    "text-center",
+                    "truncate"
+                  )}>
                     {isOrdersLoading ? '--' : `$${todayTotalCash.toFixed(2)}`}
                   </div>
-                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>Total amount today</p>
+                  <p className={cn(
+                    "text-gray-500 dark:text-gray-400 mt-1",
+                    isMobile ? "text-xs" : "text-xs",
+                    "text-center",
+                    "truncate"
+                  )}>
+                    Total amount today
+                  </p>
                 </div>
               </CardContent>
             </Card>
