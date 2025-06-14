@@ -129,7 +129,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   // Check if order can be edited/deleted (only NEW orders)
   const canEditDelete = order.status === 'New';
 
-  // --- HEADER ACTION BUTTONS moved here ---
+  // --- HEADER ACTION BUTTONS ---
   const HeaderActions = () => (
     canEditDelete ? (
       <div className="flex items-center gap-1 ml-2">
@@ -173,24 +173,21 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     ) : null
   );
 
-  // --- Renders the container without duplicate icons/buttons/badge ---
+  // --- OrderContent (no badge/type here anymore) ---
   const OrderContent = () => (
     <div className="space-y-4 sm:space-y-6">
-      {/* Order Status & Basic Info - cleaned duplicate icons/btns/status */}
+      {/* Order Status & Basic Info - now just grid of fields */}
       <div className="bg-white rounded-lg border p-4">
         <div className="flex flex-col space-y-3">
-          {/* No icons or status here anymore */}
-
+          {/* no icons/status/type here! */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            {/* Removed type filter badge from here. Only add what is left */}
             <div className="flex items-center gap-2">
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border border-transparent ${getTypeColor(order.type)}`}>
-                {order.type}
-              </span>
+              {/* Type moved to header */}
             </div>
             {order.reference_number && (
               <div>
-                <span className="font-medium text-gray-700">Reference:</span>
-                <span className="ml-2 text-gray-900">{order.reference_number}</span>
+                {/* Reference now shown as big/bold in header, so we can omit from content. */}
               </div>
             )}
             <div className="flex items-center gap-2">
@@ -202,8 +199,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               <span className="text-gray-600">Updated: {formatDate(new Date(order.updated_at))}</span>
             </div>
           </div>
-
-          {/* Edit History Section - Show if order was edited */}
+          {/* ... keep edit history section ... */}
           {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && (
             <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
@@ -221,7 +217,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           )}
         </div>
       </div>
-
+      {/* ... keep rest of OrderContent the same ... */}
       {/* Order Progress */}
       <div className="bg-white rounded-lg border p-4">
         <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
@@ -380,20 +376,32 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         <DialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
           <DialogHeader>
             <div className="flex items-center justify-between w-full">
-              {/* Header: [Icon] Order #xxx ..right.. [Edit][Delete][Status][X] */}
-              <div className="flex items-center gap-2 min-w-0">
-                <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
-                <span className="text-lg font-semibold truncate">
-                  Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-                </span>
+              {/* Header: [Package] Order #xxx [type badge][ref]... right: actions + status + X */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
+                  <span className="text-lg font-semibold truncate">
+                    Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+                  </span>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ml-2 ${getTypeColor(order.type)}`}
+                  >
+                    {order.type}
+                  </span>
+                </div>
+                {order.reference_number && (
+                  <span className="block text-[#DB271E] font-bold text-base sm:text-lg mt-1 sm:mt-0 ml-8 sm:ml-0" style={{ letterSpacing: "0.5px" }}>
+                    Ref: {order.reference_number}
+                  </span>
+                )}
               </div>
-              {/* Actions + Status + Close: always at right */}
-              <div className="flex items-center gap-2">
+              {/* Actions + Status + Close at end */}
+              <div className="flex items-center gap-2 ml-auto">
                 <HeaderActions />
                 <Badge className={`px-3 py-1 text-sm font-medium ${getStatusColor(order.status)}`}>
                   {order.status}
                 </Badge>
-                {/* Default close button provided via Dialog; it's at far right in header */}
+                {/* Close button is provided by DialogContent */}
               </div>
             </div>
           </DialogHeader>
@@ -414,14 +422,25 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         <div className="flex flex-col h-full">
           <SheetHeader className="px-4 py-3 border-b bg-white">
             <div className="flex items-center justify-between w-full">
-              {/* Header: [Icon] Order #xxx ... right ... [Edit][Delete][Status][X] */}
-              <div className="flex items-center gap-2 min-w-0">
-                <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
-                <span className="text-lg font-semibold truncate">
-                  Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-                </span>
+              <div className="flex flex-col gap-1 min-w-0 w-full">
+                <div className="flex items-center gap-2 min-w-0 w-full">
+                  <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
+                  <span className="text-lg font-semibold truncate">
+                    Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+                  </span>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ml-2 ${getTypeColor(order.type)}`}
+                  >
+                    {order.type}
+                  </span>
+                </div>
+                {order.reference_number && (
+                  <span className="block text-[#DB271E] font-bold text-base mt-1" style={{ letterSpacing: "0.5px" }}>
+                    Ref: {order.reference_number}
+                  </span>
+                )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 ml-auto">
                 <HeaderActions />
                 <Badge className={`px-3 py-1 text-sm font-medium ${getStatusColor(order.status)}`}>
                   {order.status}
