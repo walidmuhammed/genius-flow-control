@@ -21,7 +21,6 @@ interface OrderDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
 const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   order,
   open,
@@ -30,14 +29,12 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const deleteOrder = useDeleteOrder();
-
   const handleEditOrder = () => {
     if (order) {
       navigate(`/create-order?edit=${order.id}`);
       onOpenChange(false);
     }
   };
-
   const handleDeleteOrder = async () => {
     if (order) {
       try {
@@ -49,11 +46,9 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       }
     }
   };
-
   if (!order) {
     // Mobile: Drawer, Desktop: Dialog fallback for no order
-    return isMobile ? (
-      <Drawer open={open} onOpenChange={onOpenChange}>
+    return isMobile ? <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className="max-h-[90vh]">
           <DrawerHeader>
             <DrawerTitle>Order Details</DrawerTitle>
@@ -62,10 +57,10 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             No order selected
           </div>
         </DrawerContent>
-      </Drawer>
-    ) : (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full" style={{ zIndex: 60 }}>
+      </Drawer> : <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full" style={{
+        zIndex: 60
+      }}>
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
           </DialogHeader>
@@ -73,10 +68,8 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             No order selected
           </div>
         </DialogContent>
-      </Dialog>
-    );
+      </Dialog>;
   }
-
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'new':
@@ -101,7 +94,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
-
   const getTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'shipment':
@@ -121,45 +113,34 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   const canEditDelete = order?.status === 'New';
 
   // --- Drawer drag handle (simple visual bar, iOS style) ---
-  const DrawerDragHandle = () => (
-    <div className="mx-auto my-2 h-1.5 w-12 rounded-full bg-gray-300 opacity-60" aria-hidden="true" />
-  );
+  const DrawerDragHandle = () => <div className="mx-auto my-2 h-1.5 w-12 rounded-full bg-gray-300 opacity-60" aria-hidden="true" />;
 
   // --- STATUS BADGE + TYPE BADGE ---
-  const StatusTypeBadges = () => (
-    <div className="flex items-center gap-2 flex-wrap min-w-0">
+  const StatusTypeBadges = () => <div className="flex items-center gap-2 flex-wrap min-w-0">
       <Badge className={`px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}>{order.status}</Badge>
       <Badge className={`px-3 py-1 text-xs font-medium ${getTypeColor(order.type)}`}>{order.type}</Badge>
-    </div>
-  );
+    </div>;
 
   // --- ENHANCED OrderHeaderIdRef ---
-  const EnhancedOrderHeader = () => (
-    <div className="w-full">
+  const EnhancedOrderHeader = () => <div className="w-full">
       <div className="flex items-center min-w-0 gap-2">
         <span className="text-lg font-semibold truncate shrink-0">
           Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
         </span>
-        {order.reference_number && (
-          <span
-            className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none"
-            style={{ lineHeight: '1.6' }}
-          >
+        {order.reference_number && <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none" style={{
+        lineHeight: '1.6'
+      }}>
             {order.reference_number}
-          </span>
-        )}
+          </span>}
         <div className="ml-auto flex items-center gap-1"></div>
       </div>
       <div className="flex flex-wrap items-center gap-2 mt-1">
         <StatusTypeBadges />
       </div>
-    </div>
-  );
+    </div>;
 
   // --- HEADER ACTION BUTTONS ---
-  const HeaderActions = () =>
-    canEditDelete ? (
-      <div className="flex items-center gap-1 ml-2">
+  const HeaderActions = () => canEditDelete ? <div className="flex items-center gap-1 ml-2">
         <Button onClick={handleEditOrder} variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 text-xs">
           <Edit className="h-4 w-4" />
         </Button>
@@ -184,13 +165,11 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
-    ) : null;
+      </div> : null;
 
   // --- OrderContent ---
   // Remove StatusTypeBadges from the first container ("bg-white rounded-lg border p-4")
-  const OrderContent = () => (
-    <div className="space-y-4 sm:space-y-6">
+  const OrderContent = () => <div className="space-y-4 sm:space-y-6">
       {/* Basic Info (timestamps, edit history only) */}
       <div className="bg-white rounded-lg border p-4">
         <div className="flex flex-col space-y-3">
@@ -204,21 +183,17 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               <span className="text-gray-600">Updated: {formatDate(new Date(order.updated_at))}</span>
             </div>
           </div>
-          {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && (
-            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Edit className="h-4 w-4 text-amber-600" />
                 <span className="font-medium text-amber-800">🛠 This order was edited:</span>
               </div>
               <div className="space-y-1 text-sm text-amber-700">
-                {order.edit_history.map((change: any, index: number) => (
-                  <div key={index}>
+                {order.edit_history.map((change: any, index: number) => <div key={index}>
                     • {change.field}: "{change.oldValue}" → "{change.newValue}"
-                  </div>
-                ))}
+                  </div>)}
               </div>
-            </div>
-          )}
+            </div>}
         </div>
       </div>
       {/* Order Progress */}
@@ -357,17 +332,15 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{order.note}</p>
           </div>
         </div>}
-    </div>
-  );
+    </div>;
 
   // DESKTOP: fix dialog constraints, add DialogDescription
   if (!isMobile) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full shadow-lg border bg-background p-0"
-          style={{ zIndex: 60, overflow: 'hidden' }}
-        >
+    return <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full shadow-lg border bg-background p-0" style={{
+        zIndex: 60,
+        overflow: 'hidden'
+      }}>
           <DialogHeader className="sr-only">
             <DialogTitle>Order Details</DialogTitle>
             <DialogDescription>
@@ -375,21 +348,18 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </DialogDescription>
           </DialogHeader>
           {/* ACTUAL header UI */}
-          <div className="border-b p-6 pt-4 pb-2 bg-background z-10 relative">
+          <div className="border-b p-6 pt-4 pb-2 bg-background z-10 relative py-[20px]">
             <div className="flex items-center justify-between w-full flex-wrap gap-y-2">
               <div className="flex items-center gap-2 min-w-0 flex-wrap flex-1">
                 <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
                 <span className="text-lg font-semibold truncate shrink-0">
                   Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
                 </span>
-                {order.reference_number && (
-                  <span
-                    className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none"
-                    style={{ lineHeight: '1.6' }}
-                  >
+                {order.reference_number && <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none" style={{
+                lineHeight: '1.6'
+              }}>
                     {order.reference_number}
-                  </span>
-                )}
+                  </span>}
                 {/* Status and Type Badges */}
                 <div className="flex items-center gap-2 min-w-0 ml-2 flex-wrap">
                   <StatusTypeBadges />
@@ -402,29 +372,23 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </div>
             {/* REMOVED badges row here */}
           </div>
-          <ScrollArea className="max-h-[calc(95vh-140px)]" style={{ padding: 0 }}>
+          <ScrollArea className="max-h-[calc(95vh-140px)]" style={{
+          padding: 0
+        }}>
             <div className="p-6 pt-4">
               <OrderContent />
             </div>
           </ScrollArea>
         </DialogContent>
-      </Dialog>
-    );
+      </Dialog>;
   }
 
   // MOBILE drawer
-  return (
-    <Drawer
-      open={open}
-      onOpenChange={onOpenChange}
-      shouldScaleBackground={true}
-    >
+  return <Drawer open={open} onOpenChange={onOpenChange} shouldScaleBackground={true}>
       <DrawerContent className="max-h-[85vh] p-0 rounded-t-2xl border-t-0 shadow-lg">
-        <DrawerHeader
-          className="px-4 pt-0 pb-3 bg-white rounded-t-2xl border-b flex flex-col gap-0"
-          data-vaul-drag-handle
-          style={{ touchAction: "pan-y" }}
-        >
+        <DrawerHeader className="px-4 pt-0 pb-3 bg-white rounded-t-2xl border-b flex flex-col gap-0" data-vaul-drag-handle style={{
+        touchAction: "pan-y"
+      }}>
           <DrawerDragHandle />
           <div className="w-full flex flex-col gap-0">
             <div className="flex items-center min-w-0 gap-2 flex-wrap">
@@ -432,14 +396,11 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               <span className="text-lg font-semibold truncate shrink-0">
                 Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
               </span>
-              {order.reference_number && (
-                <span
-                  className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none"
-                  style={{ lineHeight: '1.6' }}
-                >
+              {order.reference_number && <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none" style={{
+              lineHeight: '1.6'
+            }}>
                   {order.reference_number}
-                </span>
-              )}
+                </span>}
               {/* Status and Type Badges */}
               <div className="flex items-center gap-2 min-w-0 ml-2 flex-wrap">
                 <StatusTypeBadges />
@@ -452,18 +413,14 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           </div>
         </DrawerHeader>
         {/* Improved: isolate scroll, no background scroll, safe for touch devices */}
-        <ScrollArea
-          className="flex-1 max-h-[calc(85vh-65px)] overflow-y-auto overscroll-y-contain scroll-touch isolate"
-          data-vaul-no-drag
-          style={{ touchAction: "pan-y" }}
-        >
+        <ScrollArea className="flex-1 max-h-[calc(85vh-65px)] overflow-y-auto overscroll-y-contain scroll-touch isolate" data-vaul-no-drag style={{
+        touchAction: "pan-y"
+      }}>
           <div className="p-4 pb-8">
             <OrderContent />
           </div>
         </ScrollArea>
       </DrawerContent>
-    </Drawer>
-  );
+    </Drawer>;
 };
-
 export default OrderDetailsDialog;
