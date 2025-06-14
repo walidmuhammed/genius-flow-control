@@ -284,14 +284,14 @@ const CreateOrder = () => {
         customerId = newCustomer.id;
       }
 
-      // --- FIXED TYPE MAPPING BELOW ---
-      // When submitting, map orderType to backend-expected value
-      let typeForBackend: "Deliver" | "Exchange" | "Cash Collection";
+      // Backend expects these type strings
+      type BackendOrderType = "Deliver" | "Exchange" | "Cash Collection" | "Return";
+      let typeForBackend: BackendOrderType;
       if (orderType === "shipment") typeForBackend = "Deliver";
       else if (orderType === "exchange") typeForBackend = "Exchange";
-      else typeForBackend = "Deliver"; // Default fallback
+      else typeForBackend = "Deliver"; // default/fallback, could add more if needed
 
-      const orderData: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'> = {
+      const orderPayload = {
         type: typeForBackend,
         customer_id: customerId,
         package_type: packageType,
@@ -309,7 +309,7 @@ const CreateOrder = () => {
           reference_number: orderReference.trim()
         })
       };
-      
+
       if (isEditMode && editOrderId) {
         // Track changes for edit history
         const changes = [];
@@ -334,7 +334,7 @@ const CreateOrder = () => {
 
         // Update existing order with edit tracking
         const updatePayload = {
-          ...orderData,
+          ...orderPayload,
           ...(changes.length > 0 && {
             edited: true,
             edit_history: changes
@@ -346,7 +346,7 @@ const CreateOrder = () => {
         navigate('/orders');
       } else {
         // Create new order
-        await createOrder.mutateAsync(orderData);
+        await createOrder.mutateAsync(orderPayload);
         if (createAnother) {
           resetForm();
           toast.success("Order created successfully. Create another one.");
