@@ -7,6 +7,7 @@ import {
   updateOrder, 
   getOrdersByStatus,
   getOrdersWithDateRange,
+  archiveOrder,
   Order 
 } from "@/services/orders";
 import { toast } from "sonner";
@@ -38,7 +39,7 @@ export function useCreateOrder() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (order: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>) => 
+    mutationFn: (order: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at' | 'archived' | 'edited' | 'edit_history'>) => 
       createOrder(order),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -54,8 +55,8 @@ export function useUpdateOrder() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string, updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>> }) => 
-      updateOrder(id, updates),
+    mutationFn: ({ id, updates, editHistory }: { id: string, updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>>, editHistory?: any[] }) => 
+      updateOrder(id, updates, editHistory),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['order', variables.id] });
@@ -63,6 +64,21 @@ export function useUpdateOrder() {
     },
     onError: (error) => {
       toast.error(`Error updating order: ${error.message}`);
+    }
+  });
+}
+
+export function useArchiveOrder() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (id: string) => archiveOrder(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast.success("Order archived successfully");
+    },
+    onError: (error) => {
+      toast.error(`Error archiving order: ${error.message}`);
     }
   });
 }

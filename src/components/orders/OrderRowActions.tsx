@@ -26,8 +26,19 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@/components/ui/sheet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Order } from './OrdersTableRow';
 import { useScreenSize } from '@/hooks/useScreenSize';
+import { useArchiveOrder } from '@/hooks/use-orders';
 
 interface OrderRowActionsProps {
   order: Order;
@@ -42,6 +53,8 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
 }) => {
   const navigate = useNavigate();
   const { isMobile } = useScreenSize();
+  const archiveOrderMutation = useArchiveOrder();
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const isNewStatus = order.status === 'New';
 
   const handleCreateTicket = (e: React.MouseEvent) => {
@@ -61,7 +74,9 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
 
   const handleEditOrder = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log(`Editing order ${order.id}`);
+    if (isNewStatus) {
+      navigate(`/orders/${order.id}/edit`);
+    }
   };
 
   const handleCancelOrder = (e: React.MouseEvent) => {
@@ -71,7 +86,18 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
 
   const handleDeleteOrder = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log(`Deleting order ${order.id}`);
+    if (isNewStatus) {
+      setShowDeleteDialog(true);
+    }
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await archiveOrderMutation.mutateAsync(order.id);
+      setShowDeleteDialog(false);
+    } catch (error) {
+      console.error('Error archiving order:', error);
+    }
   };
 
   const actionItems = (
@@ -134,9 +160,113 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
 
   if (isMobile) {
     return (
+      <>
+        <div className="flex items-center justify-end">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button 
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg text-gray-500 hover:bg-muted/60 hover:text-gray-700"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-auto">
+              <SheetHeader>
+                <SheetTitle>Order Actions</SheetTitle>
+              </SheetHeader>
+              <div className="grid gap-2 py-4">
+                <Button 
+                  variant="ghost" 
+                  className="justify-start h-12"
+                  onClick={handleViewDetails}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  View Details
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  className="justify-start h-12"
+                  onClick={handlePrintLabel}
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print Label
+                </Button>
+                
+                {isNewStatus && (
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start h-12"
+                    onClick={handleEditOrder}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Order
+                  </Button>
+                )}
+                
+                {isNewStatus && (
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start h-12 text-[#DB271E] hover:text-[#DB271E] hover:bg-[#DB271E]/10"
+                    onClick={handleCancelOrder}
+                  >
+                    <Ban className="h-4 w-4 mr-2" />
+                    Cancel Order
+                  </Button>
+                )}
+                
+                {isNewStatus && (
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start h-12 text-[#DB271E] hover:text-[#DB271E] hover:bg-[#DB271E]/10"
+                    onClick={handleDeleteOrder}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Order
+                  </Button>
+                )}
+                
+                <Button 
+                  variant="ghost" 
+                  className="justify-start h-12"
+                  onClick={handleCreateTicket}
+                >
+                  <Ticket className="h-4 w-4 mr-2" />
+                  Create Ticket
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Order</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this order? This will archive it and it won't be visible in the list anymore.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
+    );
+  }
+
+  return (
+    <>
       <div className="flex items-center justify-end">
-        <Sheet>
-          <SheetTrigger asChild>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button 
               variant="ghost"
               size="icon"
@@ -145,101 +275,35 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
               <MoreHorizontal className="h-4 w-4" />
               <span className="sr-only">Open menu</span>
             </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="h-auto">
-            <SheetHeader>
-              <SheetTitle>Order Actions</SheetTitle>
-            </SheetHeader>
-            <div className="grid gap-2 py-4">
-              <Button 
-                variant="ghost" 
-                className="justify-start h-12"
-                onClick={handleViewDetails}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                View Details
-              </Button>
-              
-              <Button 
-                variant="ghost" 
-                className="justify-start h-12"
-                onClick={handlePrintLabel}
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                Print Label
-              </Button>
-              
-              {isNewStatus && (
-                <Button 
-                  variant="ghost" 
-                  className="justify-start h-12"
-                  onClick={handleEditOrder}
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Order
-                </Button>
-              )}
-              
-              {isNewStatus && (
-                <Button 
-                  variant="ghost" 
-                  className="justify-start h-12 text-[#DB271E] hover:text-[#DB271E] hover:bg-[#DB271E]/10"
-                  onClick={handleCancelOrder}
-                >
-                  <Ban className="h-4 w-4 mr-2" />
-                  Cancel Order
-                </Button>
-              )}
-              
-              {isNewStatus && (
-                <Button 
-                  variant="ghost" 
-                  className="justify-start h-12 text-[#DB271E] hover:text-[#DB271E] hover:bg-[#DB271E]/10"
-                  onClick={handleDeleteOrder}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Order
-                </Button>
-              )}
-              
-              <Button 
-                variant="ghost" 
-                className="justify-start h-12"
-                onClick={handleCreateTicket}
-              >
-                <Ticket className="h-4 w-4 mr-2" />
-                Create Ticket
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center justify-end">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-lg text-gray-500 hover:bg-muted/60 hover:text-gray-700"
+          </DropdownMenuTrigger>
+          <DropdownMenuContent 
+            align="end" 
+            className="w-[180px] shadow-lg border-border/10 rounded-lg p-1 bg-white z-50"
+            sideOffset={5}
+            alignOffset={-5}
           >
-            <MoreHorizontal className="h-4 w-4" />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent 
-          align="end" 
-          className="w-[180px] shadow-lg border-border/10 rounded-lg p-1 bg-white z-50"
-          sideOffset={5}
-          alignOffset={-5}
-        >
-          {actionItems}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+            {actionItems}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Order</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this order? This will archive it and it won't be visible in the list anymore.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
