@@ -105,10 +105,38 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   };
 
   // Check if order can be edited/deleted (only NEW orders)
-  const canEditDelete = order.status === 'New';
+  const canEditDelete = order?.status === 'New';
+
+  // --- STATUS BADGE + TYPE BADGE (moved to header) ---
+  const StatusTypeBadges = () => (
+    <div className="flex items-center gap-2 flex-wrap min-w-0">
+      <Badge className={`px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}>{order.status}</Badge>
+      <Badge className={`px-3 py-1 text-xs font-medium ${getTypeColor(order.type)}`}>{order.type}</Badge>
+    </div>
+  );
+
+  // --- ENHANCED OrderHeaderIdRef ---
+  // - Enhanced ref number, badges beside it, next to order ID
+  const EnhancedOrderHeader = () => (
+    <div className="flex items-center flex-wrap gap-2 min-w-0">
+      {/* Order ID padded if present, else show first 8 chars */}
+      <span className="text-lg font-semibold truncate shrink-0">
+        Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+      </span>
+      {order.reference_number &&
+        <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10" style={{lineHeight: '1.6'}}>
+          {order.reference_number}
+        </span>
+      }
+      <StatusTypeBadges />
+    </div>
+  );
 
   // --- HEADER ACTION BUTTONS ---
-  const HeaderActions = () => canEditDelete ? <div className="flex items-center gap-1 ml-2">
+  const HeaderActions = () =>
+    canEditDelete ? (
+      <div className="flex items-center gap-1 ml-2">
+        {/* ... keep existing code for edit/delete buttons ... */}
         <Button onClick={handleEditOrder} variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 text-xs">
           <Edit className="h-4 w-4" />
         </Button>
@@ -133,28 +161,15 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div> : null;
+      </div>
+    ) : null;
 
-  // --- BADGES FOR FIRST CONTAINER ---
-  const StatusTypeBadges = () => <div className="flex items-center gap-2 mb-3">
-      <Badge className={`px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}>{order.status}</Badge>
-      <Badge className={`px-3 py-1 text-xs font-medium ${getTypeColor(order.type)}`}>{order.type}</Badge>
-    </div>;
-
-  // --- HEADER ORDER ID + REF NUMBER ---
-  const OrderHeaderIdRef = () => <span className="flex items-center text-lg font-semibold truncate gap-2">
-      {/* Order ID padded if present, else show first 8 chars */}
-      Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-      {order.reference_number && <span className="ml-2 text-lg font-semibold text-gray-700">{order.reference_number}</span>}
-    </span>;
-
-  // --- OrderContent (no badge/type here anymore except our badges at top) ---
-  const OrderContent = () => <div className="space-y-4 sm:space-y-6">
-      {/* Order Status & Basic Info */}
+  // --- OrderContent ---
+  // Remove StatusTypeBadges from the first container ("bg-white rounded-lg border p-4")
+  const OrderContent = () => (
+    <div className="space-y-4 sm:space-y-6">
+      {/* Basic Info (timestamps, edit history only) */}
       <div className="bg-white rounded-lg border p-4">
-        <StatusTypeBadges />
-        {/* Display as "Type: X -- Status: Y" */}
-        
         <div className="flex flex-col space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2">
@@ -167,20 +182,24 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </div>
           </div>
           {/* ... keep edit history section ... */}
-          {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && (
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Edit className="h-4 w-4 text-amber-600" />
                 <span className="font-medium text-amber-800">🛠 This order was edited:</span>
               </div>
               <div className="space-y-1 text-sm text-amber-700">
-                {order.edit_history.map((change: any, index: number) => <div key={index}>
+                {order.edit_history.map((change: any, index: number) => (
+                  <div key={index}>
                     • {change.field}: "{change.oldValue}" → "{change.newValue}"
-                  </div>)}
+                  </div>
+                ))}
               </div>
-            </div>}
+            </div>
+          )}
         </div>
       </div>
-      {/* ... keep rest of OrderContent the same ... */}
+      {/* ... keep the rest of OrderContent the same ... */}
       {/* Order Progress */}
       <div className="bg-white rounded-lg border p-4">
         <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
@@ -317,22 +336,24 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{order.note}</p>
           </div>
         </div>}
-    </div>;
+    </div>
+  );
 
   // --- DESKTOP Dialog ---
   if (!isMobile) {
-    return <Dialog open={open} onOpenChange={onOpenChange}>
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
           <DialogHeader>
-            <div className="flex items-center justify-between w-full">
-              {/* Header: [Package] Order #xxx [ref] ... right: actions + close */}
-              <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center justify-between w-full flex-wrap gap-y-2">
+              {/* Header: [Package] Order #xxx [ref] [badges] ... right: actions + close */}
+              <div className="flex items-center gap-2 min-w-0 flex-wrap">
                 <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
-                <OrderHeaderIdRef />
+                <EnhancedOrderHeader />
               </div>
               <div className="flex items-center gap-2 ml-auto">
                 <HeaderActions />
-                {/* Close button is provided by DialogContent */}
+                {/* Close button provided by DialogContent as before */}
               </div>
             </div>
           </DialogHeader>
@@ -342,19 +363,23 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </div>
           </ScrollArea>
         </DialogContent>
-      </Dialog>;
+      </Dialog>
+    );
   }
 
   // --- MOBILE Sheet ---
-  return <Sheet open={open} onOpenChange={onOpenChange}>
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[90vh] p-0">
         <div className="flex flex-col h-full">
           <SheetHeader className="px-4 py-3 border-b bg-white">
-            <div className="flex items-center w-full gap-2">
-              <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
-              <OrderHeaderIdRef />
-              <div className="flex items-center gap-2 ml-auto">
-                <HeaderActions />
+            <div className="flex flex-col gap-1 w-full">
+              <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
+                <EnhancedOrderHeader />
+                <div className="flex items-center gap-2 ml-auto">
+                  <HeaderActions />
+                </div>
               </div>
             </div>
           </SheetHeader>
@@ -365,6 +390,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           </ScrollArea>
         </div>
       </SheetContent>
-    </Sheet>;
+    </Sheet>
+  );
 };
 export default OrderDetailsDialog;
