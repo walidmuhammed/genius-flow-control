@@ -127,18 +127,30 @@ const Dashboard: React.FC = () => {
         </AnimatePresence>
 
         {/* Overview Cards - Responsive Grid */}
-        <div className={cn(
-          "grid gap-4",
-          isMobile ? "grid-cols-2" : isTablet ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
-        )}>
+        <div
+          className={cn(
+            "grid gap-4",
+            isMobile
+              ? "grid-cols-2"
+              : isTablet
+              ? "grid-cols-2 lg:grid-cols-4"
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+          )}
+        >
           {/* New Orders Card */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
-            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
-          >
-            <Card className="overflow-hidden border-0 shadow-lg shadow-blue-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
+          <div>
+            <Card
+              className={cn(
+                "border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800",
+                "h-32 min-h-[8rem] max-h-[8rem] flex flex-col justify-between",
+                "transition-all"
+              )}
+              style={{
+                height: "8rem",
+                minHeight: "8rem",
+                maxHeight: "8rem",
+              }}
+            >
               <CardContent className={cn("p-4", !isMobile && "p-6")}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500 shadow-sm">
@@ -155,16 +167,22 @@ const Dashboard: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
           
           {/* In Progress Card */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
-          >
-            <Card className="overflow-hidden border-0 shadow-lg shadow-amber-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
+          <div>
+            <Card
+              className={cn(
+                "border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800",
+                "h-32 min-h-[8rem] max-h-[8rem] flex flex-col justify-between",
+                "transition-all"
+              )}
+              style={{
+                height: "8rem",
+                minHeight: "8rem",
+                maxHeight: "8rem",
+              }}
+            >
               <CardContent className={cn("p-4", !isMobile && "p-6")}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-500 shadow-sm">
@@ -181,16 +199,22 @@ const Dashboard: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
           
           {/* Awaiting Action Card */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
-          >
-            <Card className="overflow-hidden border-0 shadow-lg shadow-orange-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
+          <div>
+            <Card
+              className={cn(
+                "border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800",
+                "h-32 min-h-[8rem] max-h-[8rem] flex flex-col justify-between",
+                "transition-all"
+              )}
+              style={{
+                height: "8rem",
+                minHeight: "8rem",
+                maxHeight: "8rem",
+              }}
+            >
               <CardContent className={cn("p-4", !isMobile && "p-6")}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 shadow-sm">
@@ -207,16 +231,22 @@ const Dashboard: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
           
           {/* Expected Cash Card */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
-          >
-            <Card className="overflow-hidden border-0 shadow-lg shadow-emerald-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
+          <div>
+            <Card
+              className={cn(
+                "border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800",
+                "h-32 min-h-[8rem] max-h-[8rem] flex flex-col justify-between",
+                "transition-all"
+              )}
+              style={{
+                height: "8rem",
+                minHeight: "8rem",
+                maxHeight: "8rem",
+              }}
+            >
               <CardContent className={cn("p-4", !isMobile && "p-6")}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 shadow-sm">
@@ -233,7 +263,7 @@ const Dashboard: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
 
         {/* Enhanced Tab Bar - Full Width, Clean, Responsive */}
