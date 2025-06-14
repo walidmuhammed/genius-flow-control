@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useCreateOrder, useUpdateOrder } from '@/hooks/use-orders';
 import { useSearchCustomersByPhone, useCreateCustomer } from '@/hooks/use-customers';
 import { useGovernorates } from '@/hooks/use-governorates';
@@ -18,6 +18,7 @@ import { Customer } from '@/services/customers';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { ImprovedCashCollectionFields } from './ImprovedCashCollectionFields';
 import { toast } from 'sonner';
+import { Package, FileText, Box, Plus } from 'lucide-react';
 
 interface CreateOrderFormProps {
   initialOrder?: OrderWithCustomer;
@@ -36,11 +37,14 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ initialOrder, isEditi
   const [itemsCount, setItemsCount] = useState(initialOrder?.items_count || 1);
   const [allowOpening, setAllowOpening] = useState(initialOrder?.allow_opening || false);
   const [note, setNote] = useState(initialOrder?.note || '');
+  const [orderReference, setOrderReference] = useState('');
   
   // Customer state
   const [customerPhone, setCustomerPhone] = useState(initialOrder?.customer?.phone || '');
   const [customerName, setCustomerName] = useState(initialOrder?.customer?.name || '');
   const [customerAddress, setCustomerAddress] = useState(initialOrder?.customer?.address || '');
+  const [secondaryPhone, setSecondaryPhone] = useState(initialOrder?.customer?.secondary_phone || '');
+  const [showSecondaryPhone, setShowSecondaryPhone] = useState(false);
   const [selectedGovernorate, setSelectedGovernorate] = useState(initialOrder?.customer?.governorate_id || '');
   const [selectedCity, setSelectedCity] = useState(initialOrder?.customer?.city_id || '');
   const [isWorkAddress, setIsWorkAddress] = useState(initialOrder?.customer?.is_work_address || false);
@@ -85,6 +89,8 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ initialOrder, isEditi
     setSelectedGovernorate(customer.governorate_id || '');
     setSelectedCity(customer.city_id || '');
     setIsWorkAddress(customer.is_work_address || false);
+    setSecondaryPhone(customer.secondary_phone || '');
+    setShowSecondaryPhone(!!customer.secondary_phone);
   };
 
   const resetCustomerForm = () => {
@@ -94,6 +100,8 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ initialOrder, isEditi
     setSelectedGovernorate('');
     setSelectedCity('');
     setIsWorkAddress(false);
+    setSecondaryPhone('');
+    setShowSecondaryPhone(false);
   };
 
   const generateEditHistory = (original: OrderWithCustomer, updated: any) => {
@@ -182,6 +190,7 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ initialOrder, isEditi
         const newCustomer = await createCustomerMutation.mutateAsync({
           name: customerName,
           phone: customerPhone,
+          secondary_phone: secondaryPhone || undefined,
           address: customerAddress,
           governorate_id: selectedGovernorate,
           city_id: selectedCity,
@@ -236,236 +245,351 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ initialOrder, isEditi
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Customer Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Customer Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number *</Label>
-            <PhoneInput
-              id="phone"
-              value={customerPhone}
-              onChange={setCustomerPhone}
-              className="w-full"
-            />
-            {customerPhone.length >= 8 && selectedCustomer && (
-              <button
-                type="button"
-                onClick={resetCustomerForm}
-                className="text-sm text-blue-600 hover:text-blue-800"
-              >
-                Clear and search again
-              </button>
-            )}
-          </div>
+  const handleCreateAndAddAnother = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Same logic as handleSubmit but don't navigate away
+    // Just reset the form for another order
+  };
 
-          {showCustomerSearch && searchResults.length > 0 && (
-            <Card className="border-blue-200 bg-blue-50">
-              <CardContent className="p-4">
-                <h4 className="font-medium text-blue-900 mb-3">Existing Customers Found</h4>
-                <div className="space-y-2">
-                  {searchResults.map((customer) => (
-                    <div
-                      key={customer.id}
-                      className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleCustomerSelect(customer)}
-                    >
-                      <div>
-                        <p className="font-medium">{customer.name}</p>
-                        <p className="text-sm text-gray-600">{customer.phone}</p>
-                      </div>
-                      <Button size="sm" variant="outline">Select</Button>
+  return (
+    <div className="max-w-7xl mx-auto p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Create New Order</h1>
+          <p className="text-gray-600 mt-1">Fill out the form below to create a new delivery order</p>
+        </div>
+        <div className="flex gap-3">
+          <Button 
+            variant="outline"
+            onClick={handleCreateAndAddAnother}
+            disabled={createOrderMutation.isPending || updateOrderMutation.isPending}
+          >
+            Create & Add Another
+          </Button>
+          <Button 
+            onClick={handleSubmit}
+            disabled={createOrderMutation.isPending || updateOrderMutation.isPending}
+          >
+            {isEditing ? 'Update Order' : 'Create Order'}
+          </Button>
+        </div>
+      </div>
+
+      <form className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column */}
+        <div className="space-y-6">
+          {/* Customer Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Customer Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number *</Label>
+                <PhoneInput
+                  id="phone"
+                  value={customerPhone}
+                  onChange={setCustomerPhone}
+                  className="w-full"
+                />
+                {customerPhone.length >= 8 && selectedCustomer && (
+                  <button
+                    type="button"
+                    onClick={resetCustomerForm}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Clear and search again
+                  </button>
+                )}
+              </div>
+
+              {showCustomerSearch && searchResults.length > 0 && (
+                <Card className="border-blue-200 bg-blue-50">
+                  <CardContent className="p-4">
+                    <h4 className="font-medium text-blue-900 mb-3">Existing Customers Found</h4>
+                    <div className="space-y-2">
+                      {searchResults.map((customer) => (
+                        <div
+                          key={customer.id}
+                          className="flex items-center justify-between p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50"
+                          onClick={() => handleCustomerSelect(customer)}
+                        >
+                          <div>
+                            <p className="font-medium">{customer.name}</p>
+                            <p className="text-sm text-gray-600">{customer.phone}</p>
+                          </div>
+                          <Button size="sm" variant="outline">Select</Button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {(showNewCustomerForm || selectedCustomer) && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Customer Name *</Label>
+                    <Input
+                      id="name"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Secondary Phone</Label>
+                    {showSecondaryPhone ? (
+                      <PhoneInput
+                        value={secondaryPhone}
+                        onChange={setSecondaryPhone}
+                        className="w-full"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowSecondaryPhone(true)}
+                        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add secondary phone
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Address Information */}
+          {(showNewCustomerForm || selectedCustomer) && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Address Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Governorate</Label>
+                    <Select value={selectedGovernorate} onValueChange={setSelectedGovernorate}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select governorate" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {governorates.map((gov) => (
+                          <SelectItem key={gov.id} value={gov.id}>
+                            {gov.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>City</Label>
+                    <Select value={selectedCity} onValueChange={setSelectedCity} disabled={!selectedGovernorate}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select city" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cities.filter(city => city.governorate_id === selectedGovernorate).map((city) => (
+                          <SelectItem key={city.id} value={city.id}>
+                            {city.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Textarea
+                    id="address"
+                    value={customerAddress}
+                    onChange={(e) => setCustomerAddress(e.target.value)}
+                    rows={3}
+                    placeholder="Enter complete address..."
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="work-address"
+                    checked={isWorkAddress}
+                    onCheckedChange={(checked) => setIsWorkAddress(checked === true)}
+                  />
+                  <Label htmlFor="work-address">This is a work address</Label>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {(showNewCustomerForm || selectedCustomer) && (
-            <>
+          {/* Package Information */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Package Information</CardTitle>
+                <button
+                  type="button"
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  View Guidelines
+                </button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Customer Name *</Label>
+                <Label htmlFor="package-description">Package Description</Label>
                 <Input
-                  id="name"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  required
+                  id="package-description"
+                  value={packageDescription}
+                  onChange={(e) => setPackageDescription(e.target.value)}
+                  placeholder="Describe the package contents..."
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Textarea
-                  id="address"
-                  value={customerAddress}
-                  onChange={(e) => setCustomerAddress(e.target.value)}
-                  rows={3}
+                <Label htmlFor="items-count">Items Count</Label>
+                <Input
+                  id="items-count"
+                  type="number"
+                  value={itemsCount}
+                  onChange={(e) => setItemsCount(parseInt(e.target.value) || 1)}
+                  min="1"
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Governorate</Label>
-                  <Select value={selectedGovernorate} onValueChange={setSelectedGovernorate}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select governorate" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {governorates.map((gov) => (
-                        <SelectItem key={gov.id} value={gov.id}>
-                          {gov.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>City</Label>
-                  <Select value={selectedCity} onValueChange={setSelectedCity} disabled={!selectedGovernorate}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select city" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cities.filter(city => city.governorate_id === selectedGovernorate).map((city) => (
-                        <SelectItem key={city.id} value={city.id}>
-                          {city.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
 
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="work-address"
-                  checked={isWorkAddress}
-                  onCheckedChange={(checked) => setIsWorkAddress(checked === true)}
+                  id="allow-opening"
+                  checked={allowOpening}
+                  onCheckedChange={(checked) => setAllowOpening(checked === true)}
                 />
-                <Label htmlFor="work-address">This is a work address</Label>
+                <Label htmlFor="allow-opening">Allow opening package for inspection</Label>
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Order Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Order Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-3">
-            <Label>Order Type *</Label>
-            <RadioGroup value={orderType} onValueChange={(value) => setOrderType(value as OrderType)}>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="Deliver" id="deliver" />
-                <Label htmlFor="deliver">Delivery</Label>
+        {/* Right Column */}
+        <div className="space-y-6">
+          {/* Order Type */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Type</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ToggleGroup 
+                type="single" 
+                value={orderType === 'Deliver' ? 'shipment' : orderType === 'Exchange' ? 'exchange' : 'cash-collection'}
+                onValueChange={(value) => {
+                  if (value === 'shipment') setOrderType('Deliver');
+                  else if (value === 'exchange') setOrderType('Exchange');
+                  else if (value === 'cash-collection') setOrderType('Cash Collection');
+                }}
+                className="grid grid-cols-2 gap-2 w-full"
+              >
+                <ToggleGroupItem value="shipment" className="flex-1">
+                  Shipment
+                </ToggleGroupItem>
+                <ToggleGroupItem value="exchange" className="flex-1">
+                  Exchange
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </CardContent>
+          </Card>
+
+          {/* Cash Collection */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Cash Collection</CardTitle>
+                <Switch 
+                  checked={cashCollectionEnabled} 
+                  onCheckedChange={setCashCollectionEnabled}
+                />
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="Exchange" id="exchange" />
-                <Label htmlFor="exchange">Exchange</Label>
+            </CardHeader>
+            {cashCollectionEnabled && (
+              <CardContent>
+                <ImprovedCashCollectionFields
+                  enabled={cashCollectionEnabled}
+                  onEnabledChange={setCashCollectionEnabled}
+                  usdAmount={cashCollectionUSD.toString()}
+                  lbpAmount={cashCollectionLBP.toString()}
+                  onUsdAmountChange={(amount) => setCashCollectionUSD(parseFloat(amount) || 0)}
+                  onLbpAmountChange={(amount) => setCashCollectionLBP(parseInt(amount) || 0)}
+                  deliveryFees={{
+                    usd: deliveryFeesUSD,
+                    lbp: deliveryFeesLBP
+                  }}
+                />
+              </CardContent>
+            )}
+          </Card>
+
+          {/* Package Type */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Package Type</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ToggleGroup 
+                type="single" 
+                value={packageType}
+                onValueChange={(value) => setPackageType(value as PackageType)}
+                className="grid grid-cols-3 gap-2 w-full"
+              >
+                <ToggleGroupItem value="parcel" className="flex flex-col items-center gap-2 h-16">
+                  <Package className="h-5 w-5" />
+                  <span className="text-xs">Parcel</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="document" className="flex flex-col items-center gap-2 h-16">
+                  <FileText className="h-5 w-5" />
+                  <span className="text-xs">Document</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="bulky" className="flex flex-col items-center gap-2 h-16">
+                  <Box className="h-5 w-5" />
+                  <span className="text-xs">Bulky</span>
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </CardContent>
+          </Card>
+
+          {/* Additional Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Additional Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="order-reference">Order Reference</Label>
+                <Input
+                  id="order-reference"
+                  value={orderReference}
+                  onChange={(e) => setOrderReference(e.target.value)}
+                  placeholder="Enter order reference..."
+                />
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="Cash Collection" id="cash-collection" />
-                <Label htmlFor="cash-collection">Cash Collection</Label>
+
+              <div className="space-y-2">
+                <Label htmlFor="delivery-notes">Delivery Notes</Label>
+                <Textarea
+                  id="delivery-notes"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  rows={3}
+                  placeholder="Add any special delivery instructions..."
+                />
               </div>
-            </RadioGroup>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Package Type</Label>
-            <Select value={packageType} onValueChange={(value) => setPackageType(value as PackageType)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="parcel">Parcel</SelectItem>
-                <SelectItem value="document">Document</SelectItem>
-                <SelectItem value="bulky">Bulky Item</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="package-description">Package Description</Label>
-            <Input
-              id="package-description"
-              value={packageDescription}
-              onChange={(e) => setPackageDescription(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="items-count">Items Count</Label>
-            <Input
-              id="items-count"
-              type="number"
-              value={itemsCount}
-              onChange={(e) => setItemsCount(parseInt(e.target.value) || 1)}
-              min="1"
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="allow-opening"
-              checked={allowOpening}
-              onCheckedChange={(checked) => setAllowOpening(checked === true)}
-            />
-            <Label htmlFor="allow-opening">Allow opening package for inspection</Label>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="note">Note</Label>
-            <Textarea
-              id="note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              rows={3}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Cash Collection */}
-      <ImprovedCashCollectionFields
-        enabled={cashCollectionEnabled}
-        onEnabledChange={setCashCollectionEnabled}
-        usdAmount={cashCollectionUSD.toString()}
-        lbpAmount={cashCollectionLBP.toString()}
-        onUsdAmountChange={(amount) => setCashCollectionUSD(parseFloat(amount) || 0)}
-        onLbpAmountChange={(amount) => setCashCollectionLBP(parseInt(amount) || 0)}
-        deliveryFees={{
-          usd: deliveryFeesUSD,
-          lbp: deliveryFeesLBP
-        }}
-      />
-
-      {/* Submit Button */}
-      <div className="flex gap-4">
-        <Button 
-          type="submit" 
-          className="flex-1"
-          disabled={createOrderMutation.isPending || updateOrderMutation.isPending}
-        >
-          {isEditing ? 'Update Order' : 'Create Order'}
-        </Button>
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => navigate('/orders')}
-        >
-          Cancel
-        </Button>
-      </div>
-    </form>
+            </CardContent>
+          </Card>
+        </div>
+      </form>
+    </div>
   );
 };
 
