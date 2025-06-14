@@ -428,6 +428,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   }
 
   // MOBILE: Use Drawer (Vaul) for swipe-close only from the drag handle (header)
+  // REFACTORED DRAWER HEADER FOR PERFECT ROUND EDGES AND MODERN DESIGN
   const DrawerDragHandle = () => (
     <div className="flex flex-col items-center py-2">
       <div
@@ -438,42 +439,83 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     </div>
   );
 
+  // NEW: Modern Reference Number Badge
+  const ModernRefBadge = ({ reference }: { reference: string }) => (
+    <span className="ml-0 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-300 font-medium text-xs tracking-wide align-middle shadow-inner shadow-white/5 truncate max-w-[110px] sm:max-w-none" style={{lineHeight: '1.6'}}>
+      {reference}
+    </span>
+  );
+
+  // NEW: Reusable Mobile Badges Section
+  const BadgesRow = () => (
+    <div className="flex items-center gap-2 mt-1">
+      <Badge className={`px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}>{order.status}</Badge>
+      <Badge className={`px-3 py-1 text-xs font-medium ${getTypeColor(order.type)}`}>{order.type}</Badge>
+    </div>
+  );
+
+  // NEW: Compact header actions area, stays compact if no actions are visible
+  const MobileHeaderActions = () =>
+    canEditDelete ? (
+      <div className="flex items-center gap-1 ml-2">
+        <Button onClick={handleEditOrder} variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 text-xs">
+          <Edit className="h-4 w-4" />
+        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline" size="sm" className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-none px-2 py-1 text-xs">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitlePrimitive>Are you sure?</AlertDialogTitlePrimitive>
+              <AlertDialogDescription>
+                Are you sure you want to delete this order? It will be archived and hidden from the list.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteOrder} className="bg-red-600 hover:bg-red-700">
+                Delete Order
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    ) : (
+      <div className="ml-2 min-w-[16px]">{/* Keeps alignment if no actions */}</div>
+    );
+
   return (
     <Drawer
       open={open}
       onOpenChange={onOpenChange}
       shouldScaleBackground={true}
     >
-      {/* 
-        Make DrawerHeader the drag handle by adding data-vaul-drag-handle
-        Only the header area (including drag bar and order info) responds to drag-to-close.
-      */}
-      <DrawerContent className="max-h-[85vh] p-0">
+      {/* DrawerHeader: now perfectly rounded, clean hierarchy, modern badges */}
+      <DrawerContent className="max-h-[85vh] p-0 rounded-t-2xl border-t-0 shadow-lg">
         <DrawerHeader
-          className="px-4 pt-0 pb-3 border-b bg-white"
+          className="px-4 pt-0 pb-3 bg-white rounded-t-2xl border-b flex flex-col gap-0"
           data-vaul-drag-handle
           style={{ touchAction: "pan-y" }}
         >
           <DrawerDragHandle />
-          {/* Refactored: Two-row header, no overlap */}
-          <div className="w-full">
+          {/* Header */}
+          <div className="w-full flex flex-col gap-0">
             <div className="flex items-center min-w-0 gap-2">
               <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
               <span className="text-lg font-semibold truncate shrink-0">
                 Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
               </span>
               {order.reference_number &&
-                <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none" style={{lineHeight: '1.6'}}>
-                  {order.reference_number}
-                </span>
+                <ModernRefBadge reference={order.reference_number} />
               }
               <div className="ml-auto flex items-center gap-1">
-                <HeaderActions />
+                <MobileHeaderActions />
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 mt-1">
-              <StatusTypeBadges />
-            </div>
+            <BadgesRow />
           </div>
         </DrawerHeader>
         {/* Improved: isolate scroll, no background scroll, safe for touch devices */}
