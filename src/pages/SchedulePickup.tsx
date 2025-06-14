@@ -303,26 +303,24 @@ const SchedulePickup: React.FC = () => {
   };
   return (
     <MainLayout>
-      {/* Simple modern header */}
-      <div className="max-w-7xl mx-auto px-4 pt-8 pb-6 flex flex-col gap-2">
-        <div className="flex items-center gap-2">
+      {/* Simple modern header as per user screenshot */}
+      <div className="max-w-7xl mx-auto px-4 pt-8 pb-6">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={() => navigate('/pickups')}
-            className="text-foreground"
+            className="text-[#DB271E] rounded-full"
+            aria-label="Back"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Pickups
+            <ArrowLeft className="h-5 w-5" />
           </Button>
-        </div>
-        <div className="flex items-center gap-2 mt-4">
-          <Truck className="h-6 w-6 text-[#DB271E]" />
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <Truck className="h-7 w-7 text-[#DB271E]" />
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
             Schedule Pickup
           </h1>
         </div>
-        <p className="text-muted-foreground text-base mt-1">
+        <p className="text-muted-foreground text-lg mt-3 ml-14">
           Create a new pickup request for your orders
         </p>
       </div>
