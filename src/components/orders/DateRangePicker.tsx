@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { Calendar, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,9 +19,9 @@ interface DatePreset {
   range: { from: Date; to: Date };
 }
 
-export const DateRangePicker: React.FC<DateRangePickerProps> = ({ 
-  onDateChange, 
-  className 
+export const DateRangePicker: React.FC<DateRangePickerProps> = ({
+  onDateChange,
+  className,
 }) => {
   const { isMobile, isTablet } = useScreenSize();
   const [open, setOpen] = useState(false);
@@ -102,6 +101,18 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     return "Select date range";
   };
 
+  // Fix: Add overflow-hidden to <body> when the modal is open on mobile
+  React.useEffect(() => {
+    if (open && isMobile) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [open, isMobile]);
+
   // Mobile View
   if (isMobile) {
     return (
@@ -122,24 +133,24 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
         {open && (
           <>
-            {/* Backdrop */}
-            <div 
-              className="fixed inset-0 z-[9998] bg-black/40 transition-opacity duration-300"
+            {/* Backdrop - now FULLY opaque and higher z-index */}
+            <div
+              className="fixed inset-0 z-[99999] bg-black/80 transition-opacity duration-300"
               onClick={() => {
                 setOpen(false);
                 setMobileStep('presets');
               }}
             />
-            
-            {/* Bottom Sheet Container - Clean seamless design */}
-            <div 
+
+            {/* Bottom Sheet Container - seamless white background with matching z-index */}
+            <div
               className={cn(
-                "fixed inset-x-0 bottom-0 z-[9999] bg-white rounded-t-xl max-h-[85vh] overflow-hidden",
+                "fixed inset-x-0 bottom-0 z-[100000] bg-white rounded-t-xl max-h-[85vh] overflow-hidden",
                 "transform transition-all duration-300 ease-out",
                 open ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
               )}
             >
-              {/* Header - No border, seamless */}
+              {/* Header */}
               <div className="flex items-center justify-between px-5 py-4 bg-white">
                 <h2 className="text-lg font-medium text-gray-900">
                   {mobileStep === 'presets' ? 'Date Filter' : 'Select Range'}
@@ -157,10 +168,12 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 </Button>
               </div>
 
-              {/* Content - Seamless background */}
-              <div className="overflow-y-auto bg-white" style={{ maxHeight: 'calc(85vh - 72px)' }}>
+              {/* Content - continuous white bg, no overlap */}
+              <div
+                className="overflow-y-auto bg-white"
+                style={{ maxHeight: 'calc(85vh - 72px)' }}
+              >
                 {mobileStep === 'presets' ? (
-                  /* Presets Step - Clean flat design */
                   <div className="px-5 pb-5 space-y-2 bg-white">
                     {presets.map((preset) => (
                       <button
@@ -171,7 +184,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                         {preset.label}
                       </button>
                     ))}
-                    
+
                     <div className="pt-3">
                       <button
                         onClick={() => setMobileStep('custom')}
@@ -182,9 +195,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     </div>
                   </div>
                 ) : (
-                  /* Custom Range Step - Clean design */
                   <div className="px-5 pb-5 space-y-4 bg-white">
-                    {/* Back Button */}
                     <button
                       onClick={() => setMobileStep('presets')}
                       className="flex items-center gap-2 text-[#DC291E] font-medium hover:text-[#DC291E]/80 transition-colors"
@@ -218,14 +229,14 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                       </div>
                     </div>
 
-                    {/* Calendar - Clean design without container */}
+                    {/* Calendar - seamless white bg, pointer-events-auto */}
                     <div className="py-2">
                       <CalendarComponent
                         mode="range"
                         numberOfMonths={1}
                         selected={selectedRange}
                         onSelect={setSelectedRange}
-                        className="w-full border-0 p-0 pointer-events-auto"
+                        className="w-full border-0 p-0 pointer-events-auto bg-white"
                         classNames={{
                           months: "flex flex-col space-y-4",
                           month: "space-y-4",
@@ -250,7 +261,6 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                       />
                     </div>
 
-                    {/* Apply Button - Clean design */}
                     <Button
                       onClick={handleCustomRangeApply}
                       disabled={!selectedRange?.from || !selectedRange?.to}
