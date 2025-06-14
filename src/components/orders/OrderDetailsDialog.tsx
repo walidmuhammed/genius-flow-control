@@ -1,5 +1,6 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetPortal, SheetOverlay } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -50,16 +51,20 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   };
 
   if (!order) {
-    return isMobile ? <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="h-[90vh]">
-          <SheetHeader>
-            <SheetTitle>Order Details</SheetTitle>
-          </SheetHeader>
+    // Mobile: Drawer, Desktop: Dialog fallback for no order
+    return isMobile ? (
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent className="max-h-[90vh]">
+          <DrawerHeader>
+            <DrawerTitle>Order Details</DrawerTitle>
+          </DrawerHeader>
           <div className="p-4 text-center text-gray-500">
             No order selected
           </div>
-        </SheetContent>
-      </Sheet> : <Dialog open={open} onOpenChange={onOpenChange}>
+        </DrawerContent>
+      </Drawer>
+    ) : (
+      <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
@@ -68,7 +73,8 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             No order selected
           </div>
         </DialogContent>
-      </Dialog>;
+      </Dialog>
+    );
   }
 
   const getStatusColor = (status: string) => {
@@ -417,68 +423,29 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     );
   }
 
-  // MOBILE: Use SheetContent, improved drag handle for swipe-to-close and smooth animation
+  // MOBILE: Use Drawer (Vaul) for true swipe-down gesture with smooth animation
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="h-[85vh] p-0 [&>button.absolute.right-4.top-4]:hidden transition-transform duration-400 will-change-transform"
-      >
-        {/* Enhanced Pill-shaped Drag Handle */}
-        <div
-          className="flex justify-center items-center h-12 bg-transparent select-none relative z-10"
-          style={{
-            touchAction: "pan-y",
-            WebkitTapHighlightColor: "transparent",
-            userSelect: "none"
-          }}
-        >
-          <button
-            aria-label="Drag down to close"
-            className="w-14 h-2 rounded-full bg-gray-300 shadow-[0_1.5px_20px_rgba(0,0,0,0.08)] active:bg-gray-400 transition-all duration-200 focus:outline-none"
-            style={{
-              transition: "background 0.16s, transform 0.18s cubic-bezier(.35,1.45,.5,1.02)"
-            }}
-            tabIndex={0}
-            // trap touch event so touchstart initiates drag on mobile
-            onTouchStart={e => {
-              // Radix handles swipe, but this prevents unwanted scrolls
-              e.stopPropagation();
-            }}
-            onMouseDown={e => {
-              // little scale feedback
-              e.currentTarget.style.transform = "scaleY(1.18)";
-            }}
-            onMouseUp={e => {
-              e.currentTarget.style.transform = "";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = "";
-            }}
-          />
-        </div>
-        {/* Content below handle */}
-        <div className="flex flex-col h-[calc(100%-48px)]"> {/* 48px top handle area */}
-          <SheetHeader className="px-4 py-3 border-b bg-white">
-            <div className="flex flex-col gap-1 w-full">
-              <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
-                <EnhancedOrderHeader />
-                <div className="flex items-center gap-2 ml-auto">
-                  <HeaderActions />
-                  {/* No close button */}
-                </div>
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className="max-h-[85vh]">
+        <DrawerHeader className="px-4 py-3 border-b bg-white">
+          <div className="flex flex-col gap-1 w-full">
+            <div className="flex items-center gap-2 min-w-0 flex-wrap">
+              <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
+              <EnhancedOrderHeader />
+              <div className="flex items-center gap-2 ml-auto">
+                <HeaderActions />
+                {/* No close button */}
               </div>
             </div>
-          </SheetHeader>
-          <ScrollArea className="flex-1">
-            <div className="p-4 pb-8">
-              <OrderContent />
-            </div>
-          </ScrollArea>
-        </div>
-      </SheetContent>
-    </Sheet>
+          </div>
+        </DrawerHeader>
+        <ScrollArea className="flex-1">
+          <div className="p-4 pb-8">
+            <OrderContent />
+          </div>
+        </ScrollArea>
+      </DrawerContent>
+    </Drawer>
   );
 };
 
