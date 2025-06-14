@@ -180,6 +180,15 @@
   .status-canceled {
     @apply bg-red-50/80 text-red-700 backdrop-blur-sm;
   }
+  
+  /* Gradient header for Schedule Pickup */
+  .pickup-gradient-header {
+    @apply bg-gradient-to-r from-[#DB271E] to-[#c0211a] w-full shadow-md;
+    min-height: 140px;
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.6s cubic-bezier(0.55,0,0.1,1);
+  }
 }
 
 @keyframes fadeIn {
