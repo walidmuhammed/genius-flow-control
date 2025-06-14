@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogPortal, DialogOverlay, DialogDescription } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetPortal, SheetOverlay } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
@@ -120,52 +120,12 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   // Check if order can be edited/deleted (only NEW orders)
   const canEditDelete = order?.status === 'New';
 
-  // --- INTERNAL: Custom DialogContent WITHOUT CLOSE BUTTON ---
-  const CustomDialogContent = React.forwardRef<
-    React.ElementRef<typeof DialogContent>,
-    React.ComponentPropsWithoutRef<typeof DialogContent>
-  >(({ className, children, ...props }, ref) => (
-    <DialogPortal>
-      <DialogOverlay />
-      <div
-        ref={ref as any}
-        className={cn(
-          "fixed left-1/2 top-1/2 z-50 grid w-full max-w-2xl translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
-          className
-        )}
-        {...props}
-      >
-        {children}
-        {/* NO CLOSE BUTTON */}
-      </div>
-    </DialogPortal>
-  ));
-  CustomDialogContent.displayName = "CustomDialogContent";
+  // --- Drawer drag handle (simple visual bar, iOS style) ---
+  const DrawerDragHandle = () => (
+    <div className="mx-auto my-2 h-1.5 w-12 rounded-full bg-gray-300 opacity-60" aria-hidden="true" />
+  );
 
-  // --- INTERNAL: Custom SheetContent WITHOUT CLOSE BUTTON ---
-  const CustomSheetContent = React.forwardRef<
-    React.ElementRef<typeof SheetContent>,
-    React.ComponentPropsWithoutRef<typeof SheetContent>
-  >(({ side = "bottom", className, children, ...props }, ref) => (
-    <SheetPortal>
-      <SheetOverlay />
-      <div
-        ref={ref as any}
-        className={cn(
-          // keep same Sheet "bottom" animation/appearance
-          "fixed inset-x-0 bottom-0 z-50 border-t bg-background p-0 shadow-lg h-[90vh] transition duration-500 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom",
-          className
-        )}
-        {...props}
-      >
-        {children}
-        {/* NO CLOSE BUTTON */}
-      </div>
-    </SheetPortal>
-  ));
-  CustomSheetContent.displayName = "CustomSheetContent";
-
-  // --- STATUS BADGE + TYPE BADGE (moved to header) ---
+  // --- STATUS BADGE + TYPE BADGE ---
   const StatusTypeBadges = () => (
     <div className="flex items-center gap-2 flex-wrap min-w-0">
       <Badge className={`px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}>{order.status}</Badge>
@@ -174,19 +134,21 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   );
 
   // --- ENHANCED OrderHeaderIdRef ---
-  // - Now: Two rows to prevent overlap on mobile
   const EnhancedOrderHeader = () => (
     <div className="w-full">
       <div className="flex items-center min-w-0 gap-2">
         <span className="text-lg font-semibold truncate shrink-0">
           Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
         </span>
-        {order.reference_number &&
-          <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none" style={{lineHeight: '1.6'}}>
+        {order.reference_number && (
+          <span
+            className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none"
+            style={{ lineHeight: '1.6' }}
+          >
             {order.reference_number}
           </span>
-        }
-        <div className="ml-auto flex items-center gap-1">{/* Only for drawer, header actions go here */}</div>
+        )}
+        <div className="ml-auto flex items-center gap-1"></div>
       </div>
       <div className="flex flex-wrap items-center gap-2 mt-1">
         <StatusTypeBadges />
@@ -398,18 +360,19 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     </div>
   );
 
-  // DESKTOP: fix dialog constraints and content containment
+  // DESKTOP: fix dialog constraints, add DialogDescription
   if (!isMobile) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full shadow-lg border bg-background p-0"
-          style={{ zIndex: 60, overflow: 'hidden' }} // z-60 is above the default sidebar, add overflow to prevent bleeding
+          style={{ zIndex: 60, overflow: 'hidden' }}
         >
-          {/* Visually hidden title & desc for a11y (prevent random selection/focus glitches) */}
           <DialogHeader className="sr-only">
             <DialogTitle>Order Details</DialogTitle>
-            <DialogDescription>Full details of order and customer package information</DialogDescription>
+            <DialogDescription>
+              Full details of order and customer package information
+            </DialogDescription>
           </DialogHeader>
           {/* ACTUAL header UI */}
           <div className="border-b p-6 pt-4 pb-2 bg-background z-10 relative">
@@ -419,25 +382,25 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                 <span className="text-lg font-semibold truncate shrink-0">
                   Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
                 </span>
-                {order.reference_number &&
-                  <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none" style={{lineHeight: '1.6'}}>
+                {order.reference_number && (
+                  <span
+                    className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none"
+                    style={{ lineHeight: '1.6' }}
+                  >
                     {order.reference_number}
                   </span>
-                }
+                )}
               </div>
               <div className="flex items-center gap-2 ml-auto">
                 {/* Header action buttons (Edit/Delete) */}
                 <HeaderActions />
               </div>
             </div>
-            {/* Status/Type Badges */}
             <div className="flex flex-wrap items-center gap-2 mt-1">
-              <Badge className={`px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}>{order.status}</Badge>
-              <Badge className={`px-3 py-1 text-xs font-medium ${getTypeColor(order.type)}`}>{order.type}</Badge>
+              <StatusTypeBadges />
             </div>
           </div>
-          {/* Scrollable area with a better height for content */}
-          <ScrollArea className="max-h-[calc(95vh-110px)]" style={{ padding: 0 }}>
+          <ScrollArea className="max-h-[calc(95vh-140px)]" style={{ padding: 0 }}>
             <div className="p-6 pt-4">
               <OrderContent />
             </div>
@@ -447,21 +410,19 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     );
   }
 
-  // The rest of the file is unchanged
+  // MOBILE drawer
   return (
     <Drawer
       open={open}
       onOpenChange={onOpenChange}
       shouldScaleBackground={true}
     >
-      {/* DrawerHeader: now perfectly rounded, clean hierarchy, modern badges */}
       <DrawerContent className="max-h-[85vh] p-0 rounded-t-2xl border-t-0 shadow-lg">
         <DrawerHeader
           className="px-4 pt-0 pb-3 bg-white rounded-t-2xl border-b flex flex-col gap-0"
           data-vaul-drag-handle
           style={{ touchAction: "pan-y" }}
         >
-          {/* Header */}
           <DrawerDragHandle />
           <div className="w-full flex flex-col gap-0">
             <div className="flex items-center min-w-0 gap-2">
@@ -469,14 +430,21 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               <span className="text-lg font-semibold truncate shrink-0">
                 Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
               </span>
-              {order.reference_number &&
-                <ModernRefBadge reference={order.reference_number} />
-              }
+              {order.reference_number && (
+                <span
+                  className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none"
+                  style={{ lineHeight: '1.6' }}
+                >
+                  {order.reference_number}
+                </span>
+              )}
               <div className="ml-auto flex items-center gap-1">
-                <MobileHeaderActions />
+                <HeaderActions />
               </div>
             </div>
-            <BadgesRow />
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <StatusTypeBadges />
+            </div>
           </div>
         </DrawerHeader>
         {/* Improved: isolate scroll, no background scroll, safe for touch devices */}
