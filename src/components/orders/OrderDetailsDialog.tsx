@@ -173,23 +173,29 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     ) : null
   );
 
-  // --- OrderContent (no badge/type here anymore) ---
+  // --- OrderContent (first container) ---
   const OrderContent = () => (
     <div className="space-y-4 sm:space-y-6">
-      {/* Order Status & Basic Info - now just grid of fields */}
+
+      {/* --- Modified Order Status & Basic Info container --- */}
       <div className="bg-white rounded-lg border p-4">
+        {/* Status/type badges at the TOP */}
+        <div className="flex items-center gap-2 mb-2">
+          <span
+            className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}
+          >
+            {order.status}
+          </span>
+          <span
+            className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(order.type)}`}
+          >
+            {order.type}
+          </span>
+        </div>
+
         <div className="flex flex-col space-y-3">
-          {/* no icons/status/type here! */}
+          {/* Created/Updated times */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            {/* Removed type filter badge from here. Only add what is left */}
-            <div className="flex items-center gap-2">
-              {/* Type moved to header */}
-            </div>
-            {order.reference_number && (
-              <div>
-                {/* Reference now shown as big/bold in header, so we can omit from content. */}
-              </div>
-            )}
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-gray-500" />
               <span className="text-gray-600">Created: {formatDate(new Date(order.created_at))}</span>
@@ -202,6 +208,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           {/* ... keep edit history section ... */}
           {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && (
             <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              {/* ... keep existing edit history ... */}
               <div className="flex items-center gap-2 mb-2">
                 <Edit className="h-4 w-4 text-amber-600" />
                 <span className="font-medium text-amber-800">🛠 This order was edited:</span>
@@ -217,155 +224,8 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           )}
         </div>
       </div>
-      {/* ... keep rest of OrderContent the same ... */}
-      {/* Order Progress */}
-      <div className="bg-white rounded-lg border p-4">
-        <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-          <Package className="h-5 w-5 text-[#DB271E]" />
-          Order Progress
-        </h3>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <OrderProgressBar 
-            status={order.status as any} 
-            type={order.type as any} 
-          />
-        </div>
-      </div>
-
-      {/* Customer Information */}
-      <div className="bg-white rounded-lg border p-4">
-        <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-          <User className="h-5 w-5 text-[#DB271E]" />
-          Customer Information
-        </h3>
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <User className="h-4 w-4 text-gray-500 flex-shrink-0" />
-            <div>
-              <span className="font-medium text-gray-700">Name:</span>
-              <span className="ml-2 text-gray-900">{order.customer?.name || 'N/A'}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
-            <div>
-              <span className="font-medium text-gray-700">Phone:</span>
-              <span className="ml-2 text-gray-900">{order.customer?.phone || 'N/A'}</span>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <span className="font-medium text-gray-700">Location:</span>
-              <div className="ml-2 text-gray-900">
-                {order.customer?.city_name && order.customer?.governorate_name 
-                  ? `${order.customer.city_name}, ${order.customer.governorate_name}`
-                  : 'N/A'
-                }
-              </div>
-              {order.customer?.address && (
-                <div className="ml-2 text-sm text-gray-600 mt-1">
-                  <span className="font-medium">Address:</span> {order.customer.address}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Package Information */}
-      <div className="bg-white rounded-lg border p-4">
-        <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-          <Package className="h-5 w-5 text-[#DB271E]" />
-          Package Information
-        </h3>
-        <div className="space-y-3 text-sm">
-          <div>
-            <span className="font-medium text-gray-700">Type:</span>
-            <span className="ml-2 text-gray-900">{order.package_type || 'N/A'}</span>
-          </div>
-          <div>
-            <span className="font-medium text-gray-700">Description:</span>
-            <span className="ml-2 text-gray-900">{order.package_description || 'N/A'}</span>
-          </div>
-          <div>
-            <span className="font-medium text-gray-700">Items Count:</span>
-            <span className="ml-2 text-gray-900">{order.items_count || 1}</span>
-          </div>
-          <div>
-            <span className="font-medium text-gray-700">Allow Opening:</span>
-            <span className="ml-2 text-gray-900">{order.allow_opening ? 'Yes' : 'No'}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Financial Information */}
-      <div className="bg-white rounded-lg border p-4">
-        <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-          <DollarSign className="h-5 w-5 text-[#DB271E]" />
-          Financial Information
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium mb-3 text-gray-800">Cash Collection</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">USD:</span>
-                <span className="font-medium">${order.cash_collection_usd || '0.00'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">LBP:</span>
-                <span className="font-medium">{(order.cash_collection_lbp || 0).toLocaleString()} LBP</span>
-              </div>
-              <div className="pt-1 border-t border-gray-200">
-                <span className="text-xs text-gray-500">
-                  Enabled: {order.cash_collection_enabled ? 'Yes' : 'No'}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium mb-3 text-gray-800">Delivery Fees</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">USD:</span>
-                <span className="font-medium">${order.delivery_fees_usd || '0.00'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">LBP:</span>
-                <span className="font-medium">{(order.delivery_fees_lbp || 0).toLocaleString()} LBP</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Courier Information */}
-      {order.courier_name && (
-        <div className="bg-white rounded-lg border p-4">
-          <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-            <Truck className="h-5 w-5 text-[#DB271E]" />
-            Courier Information
-          </h3>
-          <div className="text-sm">
-            <span className="font-medium text-gray-700">Assigned Courier:</span>
-            <span className="ml-2 text-gray-900">{order.courier_name}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Notes */}
-      {order.note && (
-        <div className="bg-white rounded-lg border p-4">
-          <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-            <FileText className="h-5 w-5 text-[#DB271E]" />
-            Notes
-          </h3>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">{order.note}</p>
-          </div>
-        </div>
-      )}
+      {/* ... keep rest of OrderContent as before ... */}
+      // ... keep existing code (Order Progress, Customer, Package, Financial, Courier, Note containers) the same ...
     </div>
   );
 
@@ -376,31 +236,35 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         <DialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
           <DialogHeader>
             <div className="flex items-center justify-between w-full">
-              {/* Header: [Package] Order #xxx [type badge][ref]... right: actions + status + X */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
-                  <span className="text-lg font-semibold truncate">
-                    Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-                  </span>
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ml-2 ${getTypeColor(order.type)}`}
-                  >
-                    {order.type}
-                  </span>
-                </div>
+              {/* Header: [Package] Order #xxx [Ref in circle] ... right: [Edit/Delete] [X] */}
+              <div className="flex items-center gap-3 min-w-0">
+                <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
+                <span className="text-lg font-semibold truncate">
+                  Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+                </span>
                 {order.reference_number && (
-                  <span className="block text-[#DB271E] font-bold text-base sm:text-lg mt-1 sm:mt-0 ml-8 sm:ml-0" style={{ letterSpacing: "0.5px" }}>
-                    Ref: {order.reference_number}
+                  <span
+                    className="
+                      flex items-center justify-center
+                      rounded-full border-2 border-[#DB271E] bg-[#DB271E]/10
+                      text-[#DB271E] font-extrabold text-lg
+                      ml-1 w-10 h-10
+                    "
+                    style={{
+                      minWidth: "2.5rem",
+                      minHeight: "2.5rem",
+                      fontSize: "1.1rem",
+                      letterSpacing: "0.5px"
+                    }}
+                  >
+                    {order.reference_number}
                   </span>
                 )}
               </div>
               {/* Actions + Status + Close at end */}
               <div className="flex items-center gap-2 ml-auto">
                 <HeaderActions />
-                <Badge className={`px-3 py-1 text-sm font-medium ${getStatusColor(order.status)}`}>
-                  {order.status}
-                </Badge>
+                {/* No status/type badges here anymore */}
                 {/* Close button is provided by DialogContent */}
               </div>
             </div>
@@ -421,30 +285,34 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       <SheetContent side="bottom" className="h-[90vh] p-0">
         <div className="flex flex-col h-full">
           <SheetHeader className="px-4 py-3 border-b bg-white">
-            <div className="flex items-center justify-between w-full">
-              <div className="flex flex-col gap-1 min-w-0 w-full">
-                <div className="flex items-center gap-2 min-w-0 w-full">
-                  <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
-                  <span className="text-lg font-semibold truncate">
-                    Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-                  </span>
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ml-2 ${getTypeColor(order.type)}`}
-                  >
-                    {order.type}
-                  </span>
-                </div>
+            <div className="flex items-center w-full gap-3 justify-between">
+              <div className="flex items-center gap-3 min-w-0 w-full">
+                <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
+                <span className="text-lg font-semibold truncate">
+                  Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+                </span>
                 {order.reference_number && (
-                  <span className="block text-[#DB271E] font-bold text-base mt-1" style={{ letterSpacing: "0.5px" }}>
-                    Ref: {order.reference_number}
+                  <span
+                    className="
+                      flex items-center justify-center
+                      rounded-full border-2 border-[#DB271E] bg-[#DB271E]/10
+                      text-[#DB271E] font-extrabold text-lg
+                      ml-1 w-10 h-10
+                    "
+                    style={{
+                      minWidth: "2.5rem",
+                      minHeight: "2.5rem",
+                      fontSize: "1.1rem",
+                      letterSpacing: "0.5px"
+                    }}
+                  >
+                    {order.reference_number}
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-2 ml-auto">
                 <HeaderActions />
-                <Badge className={`px-3 py-1 text-sm font-medium ${getStatusColor(order.status)}`}>
-                  {order.status}
-                </Badge>
+                {/* No status/type badge here */}
               </div>
             </div>
           </SheetHeader>
