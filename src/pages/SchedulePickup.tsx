@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from "@/components/layout/MainLayout";
@@ -12,7 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Slider } from "@/components/ui/slider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Package, MapPin, Calendar as CalendarIcon, Clock, Truck, User, FileText, Check, Car, Bike } from "lucide-react";
+import { ArrowLeft, Package, MapPin, Calendar as CalendarIcon, Clock, Truck, User, FileText, Check, Car, Bike, Hash, Phone } from "lucide-react";
 import { OrdersTable } from "@/components/orders/OrdersTable";
 import { useOrdersByStatus } from '@/hooks/use-orders';
 import { useCreatePickup } from '@/hooks/use-pickups';
@@ -20,6 +19,8 @@ import { useUpdateOrder } from '@/hooks/use-orders';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useScreenSize } from '@/hooks/useScreenSize';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface SelectedOrder {
   id: string;
@@ -30,6 +31,7 @@ interface SelectedOrder {
 
 const SchedulePickup: React.FC = () => {
   const navigate = useNavigate();
+  const { isMobile } = useScreenSize();
   const [selectedOrders, setSelectedOrders] = useState<SelectedOrder[]>([]);
   const [showOrderSelection, setShowOrderSelection] = useState(false);
   const [pickupDate, setPickupDate] = useState<Date>();
@@ -41,6 +43,7 @@ const SchedulePickup: React.FC = () => {
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tempSelectedOrderIds, setTempSelectedOrderIds] = useState<string[]>([]);
 
   const { data: newOrders, isLoading } = useOrdersByStatus('New');
   const createPickup = useCreatePickup();
@@ -72,6 +75,18 @@ const SchedulePickup: React.FC = () => {
     
     setSelectedOrders(orders);
     setShowOrderSelection(false);
+  };
+
+  const handleMobileOrderToggle = (orderId: string) => {
+    setTempSelectedOrderIds(prev => 
+      prev.includes(orderId) 
+        ? prev.filter(id => id !== orderId)
+        : [...prev, orderId]
+    );
+  };
+
+  const handleMobileOrderConfirm = () => {
+    handleOrderSelection(tempSelectedOrderIds);
   };
 
   const removeOrder = (orderId: string) => {
@@ -125,6 +140,101 @@ const SchedulePickup: React.FC = () => {
 
   const canSubmit = pickupDate && contactPerson && contactPhone && location && address && selectedOrders.length > 0;
 
+  const renderMobileOrderCards = () => {
+    if (!newOrders) return null;
+
+    return (
+      <div className="space-y-3 max-h-[50vh] overflow-y-auto px-1">
+        {newOrders.map((order) => (
+          <div
+            key={order.id}
+            className={cn(
+              "border rounded-lg p-4 transition-all duration-200 cursor-pointer",
+              tempSelectedOrderIds.includes(order.id)
+                ? "border-[#DB271E] bg-[#DB271E]/5"
+                : "border-gray-200 bg-white hover:border-gray-300"
+            )}
+            onClick={() => handleMobileOrderToggle(order.id)}
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  checked={tempSelectedOrderIds.includes(order.id)}
+                  onCheckedChange={() => handleMobileOrderToggle(order.id)}
+                  className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
+                />
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-[#DB271E] text-sm">#{order.id.slice(0, 8)}</span>
+                    <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50 border-gray-200">
+                      {order.shipment_type || 'Standard'}
+                    </Badge>
+                  </div>
+                  {order.reference_number && (
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <Hash className="h-3 w-3" />
+                      <span>{order.reference_number}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-blue-50 rounded-md flex items-center justify-center">
+                  <User className="h-3 w-3 text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 text-sm truncate">
+                    {order.customer?.name || 'Unknown Customer'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-green-50 rounded-md flex items-center justify-center">
+                  <Phone className="h-3 w-3 text-green-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-600 truncate">
+                    {order.customer?.phone || 'No phone'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-medium text-gray-500">Amount:</span>
+                  <span className="font-semibold text-sm text-gray-900">
+                    ${order.cash_collection_usd || 0}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="h-3 w-3 text-gray-400" />
+                  <span className="text-xs text-gray-500">
+                    {order.governorate?.name}, {order.city?.name}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        {tempSelectedOrderIds.length > 0 && (
+          <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-1">
+            <Button
+              onClick={handleMobileOrderConfirm}
+              className="w-full bg-[#DB271E] hover:bg-[#c0211a] text-white"
+            >
+              Select {tempSelectedOrderIds.length} Order{tempSelectedOrderIds.length !== 1 ? 's' : ''}
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto space-y-6">
@@ -156,22 +266,38 @@ const SchedulePickup: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Dialog open={showOrderSelection} onOpenChange={setShowOrderSelection}>
+                <Dialog 
+                  open={showOrderSelection} 
+                  onOpenChange={(open) => {
+                    setShowOrderSelection(open);
+                    if (open) {
+                      setTempSelectedOrderIds(selectedOrders.map(o => o.id));
+                    }
+                  }}
+                >
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full h-12">
                       <Package className="h-4 w-4 mr-2" />
                       Select Orders ({selectedOrders.length} selected)
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-6xl max-h-[80vh] overflow-hidden">
-                    <DialogHeader>
+                  <DialogContent className={cn(
+                    "overflow-hidden",
+                    isMobile ? "max-w-[95vw] max-h-[85vh] p-0" : "max-w-6xl max-h-[80vh]"
+                  )}>
+                    <DialogHeader className={isMobile ? "p-4 pb-2" : ""}>
                       <DialogTitle>Select Orders for Pickup</DialogTitle>
                     </DialogHeader>
-                    <div className="overflow-auto max-h-[60vh]">
+                    <div className={cn(
+                      "overflow-auto",
+                      isMobile ? "px-4 pb-4" : "max-h-[60vh]"
+                    )}>
                       {isLoading ? (
                         <div className="flex items-center justify-center h-32">
                           <Package className="h-8 w-8 animate-pulse text-gray-400" />
                         </div>
+                      ) : isMobile ? (
+                        renderMobileOrderCards()
                       ) : (
                         <OrdersTable
                           orders={newOrders || []}
