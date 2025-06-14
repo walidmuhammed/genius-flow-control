@@ -13,25 +13,12 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
 import { useDeleteOrder } from '@/hooks/use-orders';
 import { toast } from 'sonner';
-import {
-  MapPin,
-  Phone,
-  User,
-  Package,
-  DollarSign,
-  Clock,
-  FileText,
-  Truck,
-  Edit,
-  Trash2
-} from 'lucide-react';
-
+import { MapPin, Phone, User, Package, DollarSign, Clock, FileText, Truck, Edit, Trash2 } from 'lucide-react';
 interface OrderDetailsDialogProps {
   order: OrderWithCustomer | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
 const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   order,
   open,
@@ -40,14 +27,12 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const deleteOrder = useDeleteOrder();
-
   const handleEditOrder = () => {
     if (order) {
       navigate(`/create-order?edit=${order.id}`);
       onOpenChange(false);
     }
   };
-
   const handleDeleteOrder = async () => {
     if (order) {
       try {
@@ -59,10 +44,8 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       }
     }
   };
-
   if (!order) {
-    return isMobile ? (
-      <Sheet open={open} onOpenChange={onOpenChange}>
+    return isMobile ? <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="bottom" className="h-[90vh]">
           <SheetHeader>
             <SheetTitle>Order Details</SheetTitle>
@@ -71,9 +54,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             No order selected
           </div>
         </SheetContent>
-      </Sheet>
-    ) : (
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      </Sheet> : <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
@@ -82,10 +63,8 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             No order selected
           </div>
         </DialogContent>
-      </Dialog>
-    );
+      </Dialog>;
   }
-
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'new':
@@ -110,7 +89,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
-
   const getTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'shipment':
@@ -130,24 +108,13 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   const canEditDelete = order.status === 'New';
 
   // --- HEADER ACTION BUTTONS ---
-  const HeaderActions = () => (
-    canEditDelete ? (
-      <div className="flex items-center gap-1 ml-2">
-        <Button
-          onClick={handleEditOrder}
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-1 px-2 py-1 text-xs"
-        >
+  const HeaderActions = () => canEditDelete ? <div className="flex items-center gap-1 ml-2">
+        <Button onClick={handleEditOrder} variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 text-xs">
           <Edit className="h-4 w-4" />
         </Button>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-none px-2 py-1 text-xs"
-            >
+            <Button variant="outline" size="sm" className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-none px-2 py-1 text-xs">
               <Trash2 className="h-4 w-4" />
             </Button>
           </AlertDialogTrigger>
@@ -160,50 +127,34 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteOrder}
-                className="bg-red-600 hover:bg-red-700"
-              >
+              <AlertDialogAction onClick={handleDeleteOrder} className="bg-red-600 hover:bg-red-700">
                 Delete Order
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
-    ) : null
-  );
+      </div> : null;
 
   // --- BADGES FOR FIRST CONTAINER ---
-  const StatusTypeBadges = () => (
-    <div className="flex items-center gap-2 mb-3">
+  const StatusTypeBadges = () => <div className="flex items-center gap-2 mb-3">
       <Badge className={`px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}>{order.status}</Badge>
       <Badge className={`px-3 py-1 text-xs font-medium ${getTypeColor(order.type)}`}>{order.type}</Badge>
-    </div>
-  );
+    </div>;
 
   // --- HEADER ORDER ID + REF NUMBER ---
-  const OrderHeaderIdRef = () => (
-    <span className="flex items-center text-lg font-semibold truncate gap-2">
+  const OrderHeaderIdRef = () => <span className="flex items-center text-lg font-semibold truncate gap-2">
       {/* Order ID padded if present, else show first 8 chars */}
       Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-      {order.reference_number && (
-        <span className="ml-2 text-lg font-semibold text-gray-700">{order.reference_number}</span>
-      )}
-    </span>
-  );
+      {order.reference_number && <span className="ml-2 text-lg font-semibold text-gray-700">{order.reference_number}</span>}
+    </span>;
 
   // --- OrderContent (no badge/type here anymore except our badges at top) ---
-  const OrderContent = () => (
-    <div className="space-y-4 sm:space-y-6">
+  const OrderContent = () => <div className="space-y-4 sm:space-y-6">
       {/* Order Status & Basic Info */}
       <div className="bg-white rounded-lg border p-4">
         <StatusTypeBadges />
         {/* Display as "Type: X -- Status: Y" */}
-        <div className="mb-4 text-sm font-medium text-gray-700 flex flex-wrap gap-x-2">
-          <span>Type: {order.type || 'N/A'}</span>
-          <span>--</span>
-          <span>Status: {order.status || 'N/A'}</span>
-        </div>
+        
         <div className="flex flex-col space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2">
@@ -216,21 +167,17 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </div>
           </div>
           {/* ... keep edit history section ... */}
-          {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && (
-            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Edit className="h-4 w-4 text-amber-600" />
                 <span className="font-medium text-amber-800">🛠 This order was edited:</span>
               </div>
               <div className="space-y-1 text-sm text-amber-700">
-                {order.edit_history.map((change: any, index: number) => (
-                  <div key={index}>
+                {order.edit_history.map((change: any, index: number) => <div key={index}>
                     • {change.field}: "{change.oldValue}" → "{change.newValue}"
-                  </div>
-                ))}
+                  </div>)}
               </div>
-            </div>
-          )}
+            </div>}
         </div>
       </div>
       {/* ... keep rest of OrderContent the same ... */}
@@ -241,10 +188,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           Order Progress
         </h3>
         <div className="bg-gray-50 p-4 rounded-lg">
-          <OrderProgressBar
-            status={order.status as any}
-            type={order.type as any}
-          />
+          <OrderProgressBar status={order.status as any} type={order.type as any} />
         </div>
       </div>
 
@@ -274,16 +218,11 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             <div className="flex-1">
               <span className="font-medium text-gray-700">Location:</span>
               <div className="ml-2 text-gray-900">
-                {order.customer?.city_name && order.customer?.governorate_name 
-                  ? `${order.customer.city_name}, ${order.customer.governorate_name}`
-                  : 'N/A'
-                }
+                {order.customer?.city_name && order.customer?.governorate_name ? `${order.customer.city_name}, ${order.customer.governorate_name}` : 'N/A'}
               </div>
-              {order.customer?.address && (
-                <div className="ml-2 text-sm text-gray-600 mt-1">
+              {order.customer?.address && <div className="ml-2 text-sm text-gray-600 mt-1">
                   <span className="font-medium">Address:</span> {order.customer.address}
-                </div>
-              )}
+                </div>}
             </div>
           </div>
         </div>
@@ -357,8 +296,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       </div>
 
       {/* Courier Information */}
-      {order.courier_name && (
-        <div className="bg-white rounded-lg border p-4">
+      {order.courier_name && <div className="bg-white rounded-lg border p-4">
           <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
             <Truck className="h-5 w-5 text-[#DB271E]" />
             Courier Information
@@ -367,12 +305,10 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             <span className="font-medium text-gray-700">Assigned Courier:</span>
             <span className="ml-2 text-gray-900">{order.courier_name}</span>
           </div>
-        </div>
-      )}
+        </div>}
 
       {/* Notes */}
-      {order.note && (
-        <div className="bg-white rounded-lg border p-4">
+      {order.note && <div className="bg-white rounded-lg border p-4">
           <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
             <FileText className="h-5 w-5 text-[#DB271E]" />
             Notes
@@ -380,15 +316,12 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-700 whitespace-pre-wrap">{order.note}</p>
           </div>
-        </div>
-      )}
-    </div>
-  );
+        </div>}
+    </div>;
 
   // --- DESKTOP Dialog ---
   if (!isMobile) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
+    return <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
           <DialogHeader>
             <div className="flex items-center justify-between w-full">
@@ -409,13 +342,11 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </div>
           </ScrollArea>
         </DialogContent>
-      </Dialog>
-    );
+      </Dialog>;
   }
 
   // --- MOBILE Sheet ---
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+  return <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[90vh] p-0">
         <div className="flex flex-col h-full">
           <SheetHeader className="px-4 py-3 border-b bg-white">
@@ -434,8 +365,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           </ScrollArea>
         </div>
       </SheetContent>
-    </Sheet>
-  );
+    </Sheet>;
 };
-
 export default OrderDetailsDialog;
