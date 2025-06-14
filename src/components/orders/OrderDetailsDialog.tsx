@@ -439,7 +439,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       open={open}
       onOpenChange={onOpenChange}
       shouldScaleBackground={true}
-      handle={<DrawerDragHandle />}
     >
       <DrawerContent className="max-h-[85vh] p-0">
         <DrawerHeader className="px-4 pt-0 pb-3 border-b bg-white">
