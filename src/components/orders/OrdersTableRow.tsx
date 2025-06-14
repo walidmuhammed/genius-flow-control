@@ -76,6 +76,8 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   };
   const handleDeleteOrder = () => {
     if (originalOrder) {
+      // No prompt here — handled by confirmation dialog now
+      // Send archive request or similar logic here
       window.confirm('Are you sure you want to delete this order?') &&
         console.log(`Deleting order ${originalOrder.id}`);
     }
@@ -123,8 +125,8 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   
   return (
     <>
-      <TableRow 
-        className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+      <TableRow
+        className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer group"
         onClick={() => setShowDetailsDialog(true)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -191,7 +193,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
         </TableCell>
         
         {showActions && (
-          <TableCell className="text-right" onClick={e => e.stopPropagation()}>
+          <TableCell className="text-right relative" onClick={e => e.stopPropagation()}>
             <OrderRowActions
               order={order}
               isRowHovered={isHovered}
