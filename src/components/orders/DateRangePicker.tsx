@@ -1,4 +1,5 @@
 
+{`
 import React, { useState, useEffect } from 'react';
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { Calendar, X } from 'lucide-react';
@@ -94,10 +95,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
       if (selectedRange.from.getTime() === selectedRange.to.getTime()) {
         return format(selectedRange.from, 'MMM dd, yyyy');
       }
-      return `${format(selectedRange.from, 'MMM dd')} - ${format(selectedRange.to, 'MMM dd, yyyy')}`;
+      return \`\${format(selectedRange.from, 'MMM dd')} - \${format(selectedRange.to, 'MMM dd, yyyy')}\`;
     }
     if (selectedRange?.from) {
-      return `From ${format(selectedRange.from, 'MMM dd, yyyy')}`;
+      return \`From \${format(selectedRange.from, 'MMM dd, yyyy')}\`;
     }
     return "Select date range";
   };
@@ -157,8 +158,8 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               )}
               style={{ 
                 background: '#fff',
-                borderTopLeftRadius: '16px',
-                borderTopRightRadius: '16px',
+                // borderTopLeftRadius: '16px', // Removed
+                // borderTopRightRadius: '16px', // Removed
                 marginBottom: '0px',
                 paddingBottom: '0px'
               }}
@@ -412,3 +413,4 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     </Popover>
   );
 };
+`}
