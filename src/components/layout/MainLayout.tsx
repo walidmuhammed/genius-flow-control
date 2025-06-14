@@ -32,7 +32,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
         </Sheet>
       )}
       
-      <div className="flex-1 flex flex-col min-w-0">
+      <div
+        className={cn(
+          // Add left margin for the sidebar only on desktop
+          !isMobile && !isTablet ? "flex-1 flex flex-col min-w-0 ml-[260px]" : "flex-1 flex flex-col min-w-0",
+        )}
+      >
         <TopBar />
         <main className={cn(
           "flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-all",
