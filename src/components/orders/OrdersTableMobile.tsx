@@ -6,23 +6,19 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Eye, Printer, MoreVertical, Edit, Phone, MapPin, DollarSign, Calendar, Hash, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { motion } from 'framer-motion';
-
 interface OrdersTableMobileProps {
-  orders: (Order & { originalOrder: OrderWithCustomer })[];
+  orders: (Order & {
+    originalOrder: OrderWithCustomer;
+  })[];
   selectedOrders?: string[];
   toggleSelectOrder?: (orderId: string) => void;
-  onViewDetails?: (order: Order & { originalOrder: OrderWithCustomer }) => void;
+  onViewDetails?: (order: Order & {
+    originalOrder: OrderWithCustomer;
+  }) => void;
   showActions?: boolean;
 }
-
 const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
   orders,
   selectedOrders = [],
@@ -32,7 +28,6 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
 }) => {
   const getStatusBadge = (status: string) => {
     const baseClasses = "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border";
-    
     switch (status.toLowerCase()) {
       case 'new':
         return <Badge className={`${baseClasses} bg-blue-50 text-blue-700 border-blue-200`}>{status}</Badge>;
@@ -54,40 +49,25 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
         return <Badge className={`${baseClasses} bg-gray-50 text-gray-700 border-gray-200`}>{status}</Badge>;
     }
   };
-
   const canEdit = (order: Order) => order.status === 'New';
   const canDelete = (order: Order) => order.status === 'New';
-
-  return (
-    <div className="space-y-3 pb-4">
-      {orders.map((order, index) => (
-        <motion.div 
-          key={order.id} 
-          className={cn(
-            "bg-white rounded-xl border border-gray-100 transition-all duration-200 overflow-hidden cursor-pointer",
-            "active:scale-[0.98] active:shadow-sm",
-            selectedOrders.includes(order.id) 
-              ? "border-[#DC291E]/30 bg-[#DC291E]/5 shadow-sm" 
-              : "hover:shadow-md hover:border-gray-200"
-          )}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.05 }}
-          onClick={() => onViewDetails(order)}
-        >
+  return <div className="space-y-3 pb-4">
+      {orders.map((order, index) => <motion.div key={order.id} className={cn("bg-white rounded-xl border border-gray-100 transition-all duration-200 overflow-hidden cursor-pointer", "active:scale-[0.98] active:shadow-sm", selectedOrders.includes(order.id) ? "border-[#DC291E]/30 bg-[#DC291E]/5 shadow-sm" : "hover:shadow-md hover:border-gray-200")} initial={{
+      opacity: 0,
+      y: 20
+    }} animate={{
+      opacity: 1,
+      y: 0
+    }} transition={{
+      duration: 0.3,
+      delay: index * 0.05
+    }} onClick={() => onViewDetails(order)}>
           {/* Card Header - Improved spacing and responsiveness */}
           <div className="p-3 sm:p-4 pb-2 sm:pb-3">
             <div className="flex items-start justify-between mb-2 sm:mb-3">
               <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                <div 
-                  className="shrink-0"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Checkbox 
-                    checked={selectedOrders.includes(order.id)}
-                    onCheckedChange={() => toggleSelectOrder(order.id)}
-                    className="data-[state=checked]:bg-[#DC291E] data-[state=checked]:border-[#DC291E] rounded-md h-4 w-4 sm:h-5 sm:w-5"
-                  />
+                <div className="shrink-0" onClick={e => e.stopPropagation()}>
+                  <Checkbox checked={selectedOrders.includes(order.id)} onCheckedChange={() => toggleSelectOrder(order.id)} className="data-[state=checked]:bg-[#DC291E] data-[state=checked]:border-[#DC291E] rounded-md h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
@@ -96,12 +76,10 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
                       {order.type}
                     </Badge>
                   </div>
-                  {order.referenceNumber && (
-                    <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-gray-500">
+                  {order.referenceNumber && <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-gray-500">
                       <Hash className="h-3 w-3" />
                       <span className="truncate">{order.referenceNumber}</span>
-                    </div>
-                  )}
+                    </div>}
                 </div>
               </div>
               <div className="shrink-0">
@@ -152,81 +130,51 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
               </div>
               
               <div className="flex items-center gap-1 sm:gap-1.5 text-xs text-gray-500">
-                <Calendar className="h-3 w-3" />
-                <span>2 days ago</span>
+                
+                
               </div>
             </div>
           </div>
           
           {/* Actions Footer - Improved touch targets */}
-          {showActions && (
-            <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50/50 border-t border-gray-100">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 sm:h-9 px-3 rounded-lg hover:bg-white/80 text-gray-600 hover:text-gray-900 text-xs font-medium"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onViewDetails(order);
-                }}
-              >
+          {showActions && <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50/50 border-t border-gray-100">
+              <Button variant="ghost" size="sm" className="h-8 sm:h-9 px-3 rounded-lg hover:bg-white/80 text-gray-600 hover:text-gray-900 text-xs font-medium" onClick={e => {
+          e.stopPropagation();
+          onViewDetails(order);
+        }}>
                 <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
                 View Details
               </Button>
               
               <div className="flex items-center gap-1">
-                {canEdit(order) && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-white/80"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                {canEdit(order) && <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-white/80" onClick={e => e.stopPropagation()}>
                     <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500" />
-                  </Button>
-                )}
+                  </Button>}
                 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-white/80"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-white/80" onClick={e => e.stopPropagation()}>
                   <Printer className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500" />
                 </Button>
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-white/80"
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-white/80" onClick={e => e.stopPropagation()}>
                       <MoreVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
-                    className="bg-white rounded-xl border-gray-200 shadow-xl z-50 min-w-[160px]"
-                    sideOffset={4}
-                  >
+                  <DropdownMenuContent align="end" className="bg-white rounded-xl border-gray-200 shadow-xl z-50 min-w-[160px]" sideOffset={4}>
                     <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm">
                       View Order Details
                     </DropdownMenuItem>
-                    {canEdit(order) && (
-                      <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm">
+                    {canEdit(order) && <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm">
                         Edit Order
-                      </DropdownMenuItem>
-                    )}
+                      </DropdownMenuItem>}
                     <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm">
                       Print Shipping Label
                     </DropdownMenuItem>
                     <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm">
                       Create Support Ticket
                     </DropdownMenuItem>
-                    {canEdit(order) && (
-                      <>
+                    {canEdit(order) && <>
                         <DropdownMenuSeparator className="my-1" />
                         <DropdownMenuItem className="text-red-600 rounded-lg py-2.5 px-3 text-sm">
                           Cancel Order
@@ -234,17 +182,12 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
                         <DropdownMenuItem className="text-red-600 rounded-lg py-2.5 px-3 text-sm">
                           Delete Order
                         </DropdownMenuItem>
-                      </>
-                    )}
+                      </>}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-            </div>
-          )}
-        </motion.div>
-      ))}
-    </div>
-  );
+            </div>}
+        </motion.div>)}
+    </div>;
 };
-
 export default OrdersTableMobile;
