@@ -21,17 +21,17 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import { Checkbox } from '@/components/ui/checkbox';
-
 interface SelectedOrder {
   id: string;
   referenceNumber: string;
   customer: string;
   amount: string;
 }
-
 const SchedulePickup: React.FC = () => {
   const navigate = useNavigate();
-  const { isMobile } = useScreenSize();
+  const {
+    isMobile
+  } = useScreenSize();
   const [selectedOrders, setSelectedOrders] = useState<SelectedOrder[]>([]);
   const [showOrderSelection, setShowOrderSelection] = useState(false);
   const [pickupDate, setPickupDate] = useState<Date>();
@@ -44,79 +44,72 @@ const SchedulePickup: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tempSelectedOrderIds, setTempSelectedOrderIds] = useState<string[]>([]);
-
-  const { data: newOrders, isLoading } = useOrdersByStatus('New');
+  const {
+    data: newOrders,
+    isLoading
+  } = useOrdersByStatus('New');
   const createPickup = useCreatePickup();
   const updateOrder = useUpdateOrder();
-
-  const vehicleOptions = [
-    { value: 'small', label: 'Small', icon: Bike, description: 'Motorcycle' },
-    { value: 'medium', label: 'Medium', icon: Car, description: 'Car' },
-    { value: 'large', label: 'Large', icon: Truck, description: 'Van' },
-  ];
-
+  const vehicleOptions = [{
+    value: 'small',
+    label: 'Small',
+    icon: Bike,
+    description: 'Motorcycle'
+  }, {
+    value: 'medium',
+    label: 'Medium',
+    icon: Car,
+    description: 'Car'
+  }, {
+    value: 'large',
+    label: 'Large',
+    icon: Truck,
+    description: 'Van'
+  }];
   const formatTime = (hour: number) => {
     const period = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
     return `${displayHour}:00 ${period}`;
   };
-
   const handleOrderSelection = (orderIds: string[]) => {
     if (!newOrders) return;
-    
-    const orders = newOrders
-      .filter(order => orderIds.includes(order.id))
-      .map(order => ({
-        id: order.id,
-        referenceNumber: order.reference_number || '',
-        customer: order.customer?.name || 'Unknown',
-        amount: `$${order.cash_collection_usd || 0}`
-      }));
-    
+    const orders = newOrders.filter(order => orderIds.includes(order.id)).map(order => ({
+      id: order.id,
+      referenceNumber: order.reference_number || '',
+      customer: order.customer?.name || 'Unknown',
+      amount: `$${order.cash_collection_usd || 0}`
+    }));
     setSelectedOrders(orders);
     setShowOrderSelection(false);
   };
-
   const handleMobileOrderToggle = (orderId: string) => {
-    setTempSelectedOrderIds(prev => 
-      prev.includes(orderId) 
-        ? prev.filter(id => id !== orderId)
-        : [...prev, orderId]
-    );
+    setTempSelectedOrderIds(prev => prev.includes(orderId) ? prev.filter(id => id !== orderId) : [...prev, orderId]);
   };
-
   const handleSelectAll = () => {
     if (!newOrders) return;
-    
     const allOrderIds = newOrders.map(order => order.id);
     const allSelected = allOrderIds.length > 0 && allOrderIds.every(id => tempSelectedOrderIds.includes(id));
-    
     if (allSelected) {
       setTempSelectedOrderIds([]);
     } else {
       setTempSelectedOrderIds(allOrderIds);
     }
   };
-
   const handleMobileOrderConfirm = () => {
     handleOrderSelection(tempSelectedOrderIds);
   };
-
   const removeOrder = (orderId: string) => {
     setSelectedOrders(prev => prev.filter(order => order.id !== orderId));
   };
-
   const handleSubmit = async () => {
     if (!pickupDate || !contactPerson || !contactPhone || !location || !address || selectedOrders.length === 0) {
       toast.error('Please fill in all required fields and select at least one order');
       return;
     }
-
     setIsSubmitting(true);
     try {
       const pickupDateTime = new Date(pickupDate);
       pickupDateTime.setHours(timeRange[0], 0, 0, 0);
-
       const pickup = await createPickup.mutateAsync({
         status: 'Scheduled',
         location,
@@ -131,16 +124,12 @@ const SchedulePickup: React.FC = () => {
         note: notes || undefined,
         orders_count: selectedOrders.length
       });
-
-      await Promise.all(
-        selectedOrders.map(order =>
-          updateOrder.mutateAsync({
-            id: order.id,
-            updates: { status: 'Pending Pickup' }
-          })
-        )
-      );
-
+      await Promise.all(selectedOrders.map(order => updateOrder.mutateAsync({
+        id: order.id,
+        updates: {
+          status: 'Pending Pickup'
+        }
+      })));
       toast.success('Pickup scheduled successfully!');
       navigate('/pickups');
     } catch (error) {
@@ -150,25 +139,16 @@ const SchedulePickup: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
   const canSubmit = pickupDate && contactPerson && contactPhone && location && address && selectedOrders.length > 0;
-
   const renderMobileOrderCards = () => {
     if (!newOrders) return null;
-
     const allOrderIds = newOrders.map(order => order.id);
     const allSelected = allOrderIds.length > 0 && allOrderIds.every(id => tempSelectedOrderIds.includes(id));
-
-    return (
-      <div className="space-y-4">
+    return <div className="space-y-4">
         {/* Select All Section */}
         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
           <div className="flex items-center gap-3">
-            <Checkbox
-              checked={allSelected}
-              onCheckedChange={handleSelectAll}
-              className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
-            />
+            <Checkbox checked={allSelected} onCheckedChange={handleSelectAll} className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]" />
             <Label className="font-medium text-sm">Select All</Label>
           </div>
           <div className="text-sm font-medium text-[#DB271E]">
@@ -178,42 +158,23 @@ const SchedulePickup: React.FC = () => {
 
         {/* Orders List */}
         <div className="space-y-3 max-h-[50vh] overflow-y-auto px-1">
-          {newOrders.map((order) => (
-            <div
-              key={order.id}
-              className={cn(
-                "border rounded-lg p-4 transition-all duration-200 cursor-pointer",
-                tempSelectedOrderIds.includes(order.id)
-                  ? "border-[#DB271E] bg-[#DB271E]/5"
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              )}
-              onClick={() => handleMobileOrderToggle(order.id)}
-            >
+          {newOrders.map(order => <div key={order.id} className={cn("border rounded-lg p-4 transition-all duration-200 cursor-pointer", tempSelectedOrderIds.includes(order.id) ? "border-[#DB271E] bg-[#DB271E]/5" : "border-gray-200 bg-white hover:border-gray-300")} onClick={() => handleMobileOrderToggle(order.id)}>
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <Checkbox
-                    checked={tempSelectedOrderIds.includes(order.id)}
-                    onCheckedChange={() => handleMobileOrderToggle(order.id)}
-                    className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
-                  />
+                  <Checkbox checked={tempSelectedOrderIds.includes(order.id)} onCheckedChange={() => handleMobileOrderToggle(order.id)} className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]" />
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-[#DB271E] text-sm">
                         {order.order_id}
                       </span>
-                      <Badge
-                        variant="outline"
-                        className="text-xs px-1.5 py-0.5 bg-gray-50 border-gray-200"
-                      >
+                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50 border-gray-200">
                         {order.shipment_type || 'Standard'}
                       </Badge>
                     </div>
-                    {order.reference_number && (
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                    {order.reference_number && <div className="flex items-center gap-1 text-xs text-gray-500">
                         <Hash className="h-3 w-3" />
                         <span>{order.reference_number}</span>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                 </div>
               </div>
@@ -251,42 +212,26 @@ const SchedulePickup: React.FC = () => {
                   <div className="flex items-center gap-1.5">
                     <MapPin className="h-3 w-3 text-gray-400" />
                     <span className="text-xs text-gray-500">
-                      {order.customer?.city_name ||
-                        order.customer?.governorate_name ||
-                        'Unknown Area'}
+                      {order.customer?.city_name || order.customer?.governorate_name || 'Unknown Area'}
                     </span>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            </div>)}
         </div>
         
-        {tempSelectedOrderIds.length > 0 && (
-          <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-1">
-            <Button
-              onClick={handleMobileOrderConfirm}
-              className="w-full bg-[#DB271E] hover:bg-[#c0211a] text-white"
-            >
+        {tempSelectedOrderIds.length > 0 && <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-1">
+            <Button onClick={handleMobileOrderConfirm} className="w-full bg-[#DB271E] hover:bg-[#c0211a] text-white">
               Select {tempSelectedOrderIds.length} Order{tempSelectedOrderIds.length !== 1 ? 's' : ''}
             </Button>
-          </div>
-        )}
-      </div>
-    );
+          </div>}
+      </div>;
   };
-
-  return (
-    <MainLayout>
+  return <MainLayout>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/pickups')}
-            className="text-gray-600 hover:text-gray-900"
-          >
+          <Button variant="ghost" size="sm" onClick={() => navigate('/pickups')} className="text-gray-600 hover:text-gray-900">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Pickups
           </Button>
@@ -307,76 +252,47 @@ const SchedulePickup: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Dialog 
-                  open={showOrderSelection} 
-                  onOpenChange={(open) => {
-                    setShowOrderSelection(open);
-                    if (open) {
-                      setTempSelectedOrderIds(selectedOrders.map(o => o.id));
-                    }
-                  }}
-                >
+                <Dialog open={showOrderSelection} onOpenChange={open => {
+                setShowOrderSelection(open);
+                if (open) {
+                  setTempSelectedOrderIds(selectedOrders.map(o => o.id));
+                }
+              }}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full h-12">
                       <Package className="h-4 w-4 mr-2" />
                       Select Orders ({selectedOrders.length} selected)
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className={cn(
-                    "overflow-hidden",
-                    isMobile ? "max-w-[95vw] max-h-[85vh] p-0" : "max-w-6xl max-h-[80vh]"
-                  )}>
+                  <DialogContent className={cn("overflow-hidden", isMobile ? "max-w-[95vw] max-h-[85vh] p-0" : "max-w-6xl max-h-[80vh]")}>
                     <DialogHeader className={isMobile ? "p-4 pb-2" : ""}>
                       <DialogTitle>Select Orders for Pickup</DialogTitle>
                     </DialogHeader>
-                    <div className={cn(
-                      "overflow-auto",
-                      isMobile ? "px-4 pb-4" : "max-h-[60vh]"
-                    )}>
-                      {isLoading ? (
-                        <div className="flex items-center justify-center h-32">
+                    <div className={cn("overflow-auto", isMobile ? "px-4 pb-4" : "max-h-[60vh]")}>
+                      {isLoading ? <div className="flex items-center justify-center h-32">
                           <Package className="h-8 w-8 animate-pulse text-gray-400" />
-                        </div>
-                      ) : isMobile ? (
-                        renderMobileOrderCards()
-                      ) : (
-                        <OrdersTable
-                          orders={newOrders || []}
-                          onOrderSelection={handleOrderSelection}
-                          selectionMode={true}
-                          selectedOrderIds={selectedOrders.map(o => o.id)}
-                        />
-                      )}
+                        </div> : isMobile ? renderMobileOrderCards() : <OrdersTable orders={newOrders || []} onOrderSelection={handleOrderSelection} selectionMode={true} selectedOrderIds={selectedOrders.map(o => o.id)} />}
                     </div>
                   </DialogContent>
                 </Dialog>
 
-                {selectedOrders.length > 0 && (
-                  <div className="space-y-2">
+                {selectedOrders.length > 0 && <div className="space-y-2">
                     <Label className="text-sm font-medium">Selected Orders:</Label>
                     <div className="grid gap-2 max-h-40 overflow-y-auto">
-                      {selectedOrders.map(order => (
-                        <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => removeOrder(order.id)}>
+                      {selectedOrders.map(order => <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => removeOrder(order.id)}>
                           <div className="flex-1">
                             <p className="font-medium text-sm">{order.referenceNumber}</p>
                             <p className="text-xs text-gray-600">{order.customer} • {order.amount}</p>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeOrder(order.id);
-                            }}
-                            className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                          >
+                          <Button variant="ghost" size="sm" onClick={e => {
+                      e.stopPropagation();
+                      removeOrder(order.id);
+                    }} className="text-red-600 hover:text-red-800 hover:bg-red-50">
                             Remove
                           </Button>
-                        </div>
-                      ))}
+                        </div>)}
                     </div>
-                  </div>
-                )}
+                  </div>}
               </CardContent>
             </Card>
 
@@ -393,25 +309,13 @@ const SchedulePickup: React.FC = () => {
                   <Label>Pickup Date *</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal h-12",
-                          !pickupDate && "text-muted-foreground"
-                        )}
-                      >
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-12", !pickupDate && "text-muted-foreground")}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {pickupDate ? format(pickupDate, "PPP") : "Select date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={pickupDate}
-                        onSelect={setPickupDate}
-                        disabled={(date) => date < new Date()}
-                        initialFocus
-                      />
+                      <Calendar mode="single" selected={pickupDate} onSelect={setPickupDate} disabled={date => date < new Date()} initialFocus />
                     </PopoverContent>
                   </Popover>
                 </div>
@@ -424,18 +328,8 @@ const SchedulePickup: React.FC = () => {
                       <span>to</span>
                       <span>{formatTime(timeRange[1])}</span>
                     </div>
-                    <Slider
-                      value={timeRange}
-                      onValueChange={setTimeRange}
-                      min={6}
-                      max={22}
-                      step={1}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>6:00 AM</span>
-                      <span>10:00 PM</span>
-                    </div>
+                    <Slider value={timeRange} onValueChange={setTimeRange} min={6} max={22} step={1} className="w-full" />
+                    
                   </div>
                 </div>
               </CardContent>
@@ -452,27 +346,15 @@ const SchedulePickup: React.FC = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {vehicleOptions.map(option => {
-                    const IconComponent = option.icon;
-                    return (
-                      <Button
-                        key={option.value}
-                        variant={vehicleType === option.value ? "default" : "outline"}
-                        className={cn(
-                          "h-20 p-4 flex flex-col items-center gap-2 border-2 transition-all",
-                          vehicleType === option.value 
-                            ? "bg-[#DB271E] hover:bg-[#c0211a] text-white border-[#DB271E]" 
-                            : "hover:border-gray-300"
-                        )}
-                        onClick={() => setVehicleType(option.value as any)}
-                      >
+                  const IconComponent = option.icon;
+                  return <Button key={option.value} variant={vehicleType === option.value ? "default" : "outline"} className={cn("h-20 p-4 flex flex-col items-center gap-2 border-2 transition-all", vehicleType === option.value ? "bg-[#DB271E] hover:bg-[#c0211a] text-white border-[#DB271E]" : "hover:border-gray-300")} onClick={() => setVehicleType(option.value as any)}>
                         <IconComponent className="h-6 w-6" />
                         <div className="text-center">
                           <p className="font-medium text-sm">{option.label}</p>
                           <p className="text-xs opacity-70">{option.description}</p>
                         </div>
-                      </Button>
-                    );
-                  })}
+                      </Button>;
+                })}
                 </div>
               </CardContent>
             </Card>
@@ -486,12 +368,7 @@ const SchedulePickup: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Textarea
-                  placeholder="Any special instructions for the pickup..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="min-h-[80px]"
-                />
+                <Textarea placeholder="Any special instructions for the pickup..." value={notes} onChange={e => setNotes(e.target.value)} className="min-h-[80px]" />
               </CardContent>
             </Card>
           </div>
@@ -509,44 +386,19 @@ const SchedulePickup: React.FC = () => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="location">Business/Store Name *</Label>
-                  <Input
-                    id="location"
-                    placeholder="Enter your business name"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    required
-                  />
+                  <Input id="location" placeholder="Enter your business name" value={location} onChange={e => setLocation(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="address">Full Address *</Label>
-                  <Textarea
-                    id="address"
-                    placeholder="Enter complete pickup address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    required
-                    rows={3}
-                  />
+                  <Textarea id="address" placeholder="Enter complete pickup address" value={address} onChange={e => setAddress(e.target.value)} required rows={3} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contactPerson">Contact Name *</Label>
-                  <Input
-                    id="contactPerson"
-                    placeholder="Contact person name"
-                    value={contactPerson}
-                    onChange={(e) => setContactPerson(e.target.value)}
-                    required
-                  />
+                  <Input id="contactPerson" placeholder="Contact person name" value={contactPerson} onChange={e => setContactPerson(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contactPhone">Phone Number *</Label>
-                  <Input
-                    id="contactPhone"
-                    placeholder="+961 XX XXX XXX"
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                    required
-                  />
+                  <Input id="contactPhone" placeholder="+961 XX XXX XXX" value={contactPhone} onChange={e => setContactPhone(e.target.value)} required />
                 </div>
               </CardContent>
             </Card>
@@ -563,12 +415,10 @@ const SchedulePickup: React.FC = () => {
                     <span className="font-medium">{selectedOrders.length} orders selected</span>
                   </div>
                   
-                  {pickupDate && (
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  {pickupDate && <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <CalendarIcon className="h-4 w-4 text-gray-500" />
                       <span>{format(pickupDate, "MMM dd, yyyy")}</span>
-                    </div>
-                  )}
+                    </div>}
                   
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     <Clock className="h-4 w-4 text-gray-500" />
@@ -580,20 +430,13 @@ const SchedulePickup: React.FC = () => {
                     <span className="capitalize">{vehicleType} vehicle</span>
                   </div>
                   
-                  {location && (
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  {location && <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <MapPin className="h-4 w-4 text-gray-500" />
                       <span className="truncate">{location}</span>
-                    </div>
-                  )}
+                    </div>}
                 </div>
 
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!canSubmit || isSubmitting}
-                  className="w-full bg-[#DB271E] hover:bg-[#c0211a] text-white h-12"
-                  size="lg"
-                >
+                <Button onClick={handleSubmit} disabled={!canSubmit || isSubmitting} className="w-full bg-[#DB271E] hover:bg-[#c0211a] text-white h-12" size="lg">
                   <Check className="h-4 w-4 mr-2" />
                   {isSubmitting ? 'Scheduling...' : 'Confirm Pickup'}
                 </Button>
@@ -602,8 +445,6 @@ const SchedulePickup: React.FC = () => {
           </div>
         </div>
       </div>
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default SchedulePickup;
