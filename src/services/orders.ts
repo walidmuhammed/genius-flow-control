@@ -28,9 +28,6 @@ export interface Order {
   created_at: string;
   updated_at: string;
   order_reference?: string;
-  archived: boolean;
-  edited: boolean;
-  edit_history: any[];
 }
 
 export interface OrderWithCustomer extends Order {
@@ -72,19 +69,6 @@ const transformOrderData = (order: any): OrderWithCustomer => {
       statusType !== 'Paid') {
     statusType = 'New';
   }
-
-  // Ensure edit_history is always an array
-  let editHistory = order.edit_history;
-  if (typeof editHistory === 'string') {
-    try {
-      editHistory = JSON.parse(editHistory);
-    } catch {
-      editHistory = [];
-    }
-  }
-  if (!Array.isArray(editHistory)) {
-    editHistory = [];
-  }
   
   return {
     ...order,
@@ -92,9 +76,6 @@ const transformOrderData = (order: any): OrderWithCustomer => {
     type: orderType as OrderType,
     package_type: packageType as PackageType,
     status: statusType as OrderStatus,
-    archived: order.archived || false,
-    edited: order.edited || false,
-    edit_history: editHistory,
     customer: {
       ...customerData,
       city_name: customerData.cities?.name,
@@ -120,7 +101,6 @@ export async function getOrders() {
         governorates:governorate_id(name)
       )
     `)
-    .eq('archived', false)
     .order('order_id', { ascending: false });
   
   if (error) {
@@ -150,7 +130,6 @@ export async function getOrdersByStatus(status: OrderStatus) {
       )
     `)
     .eq('status', status)
-    .eq('archived', false)
     .order('order_id', { ascending: false });
   
   if (error) {
@@ -170,19 +149,6 @@ export async function getOrdersByStatus(status: OrderStatus) {
     if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
       packageType = 'parcel';
     }
-
-    // Ensure edit_history is always an array
-    let editHistory = order.edit_history;
-    if (typeof editHistory === 'string') {
-      try {
-        editHistory = JSON.parse(editHistory);
-      } catch {
-        editHistory = [];
-      }
-    }
-    if (!Array.isArray(editHistory)) {
-      editHistory = [];
-    }
     
     return {
       ...order,
@@ -190,9 +156,6 @@ export async function getOrdersByStatus(status: OrderStatus) {
       type: orderType as OrderType,
       package_type: packageType as PackageType,
       status: status,
-      archived: order.archived || false,
-      edited: order.edited || false,
-      edit_history: editHistory,
       customer: {
         ...customerData,
         city_name: customerData.cities?.name,
@@ -233,7 +196,7 @@ export async function getOrderById(id: string) {
   return order;
 }
 
-export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at' | 'archived' | 'edited' | 'edit_history'>) {
+export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>) {
   // Check authentication and get current user
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -243,10 +206,7 @@ export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'refere
   // Add client_id to the order for proper RLS
   const orderWithClientId = {
     ...order,
-    client_id: user.id,
-    archived: false,
-    edited: false,
-    edit_history: []
+    client_id: user.id
   };
 
   const { data, error } = await supabase
@@ -263,50 +223,22 @@ export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'refere
   return data as Order;
 }
 
-export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>>, editHistory?: any[]) {
+export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>>) {
   // Check authentication
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     throw new Error('User not authenticated');
   }
 
-  const updateData = {
-    ...updates,
-    edited: true,
-    edit_history: editHistory || []
-  };
-
   const { data, error } = await supabase
     .from('orders')
-    .update(updateData)
+    .update(updates)
     .eq('id', id)
     .select()
     .single();
   
   if (error) {
     console.error(`Error updating order with id ${id}:`, error);
-    throw error;
-  }
-  
-  return data as Order;
-}
-
-export async function archiveOrder(id: string) {
-  // Check authentication
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
-
-  const { data, error } = await supabase
-    .from('orders')
-    .update({ archived: true })
-    .eq('id', id)
-    .select()
-    .single();
-  
-  if (error) {
-    console.error(`Error archiving order with id ${id}:`, error);
     throw error;
   }
   
@@ -330,7 +262,6 @@ export async function getOrdersWithDateRange(startDate: string, endDate: string)
         governorates:governorate_id(name)
       )
     `)
-    .eq('archived', false)
     .gte('created_at', startDate)
     .lte('created_at', endDate)
     .order('order_id', { ascending: false });
