@@ -129,7 +129,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   // Check if order can be edited/deleted (only NEW orders)
   const canEditDelete = order.status === 'New';
 
-  // -- RENDER HEADER ACTIONS as a separate fragment for DRY
+  // --- HEADER ACTION BUTTONS moved here ---
   const HeaderActions = () => (
     canEditDelete ? (
       <div className="flex items-center gap-1 ml-2">
@@ -173,28 +173,13 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     ) : null
   );
 
+  // --- Renders the container without duplicate icons/buttons/badge ---
   const OrderContent = () => (
     <div className="space-y-4 sm:space-y-6">
-      {/* Order Status & Basic Info */}
+      {/* Order Status & Basic Info - cleaned duplicate icons/btns/status */}
       <div className="bg-white rounded-lg border p-4">
         <div className="flex flex-col space-y-3">
-          {/* BEGIN: Header Row, moved buttons and badge up */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-[#DB271E]" />
-              <span className="font-semibold text-lg">
-                Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-              </span>
-              {/* Edit/Delete buttons here for clear desktop section */}
-              <HeaderActions />
-              <Badge className={`px-3 py-1 text-sm font-medium ml-2 ${getStatusColor(order.status)}`}>
-                {order.status}
-              </Badge>
-            </div>
-          </div>
-          {/* END: Header Row */}
-
-          {/* -- Removed: Action Buttons here, now empty/handled above -- */}
+          {/* No icons or status here anymore */}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2">
@@ -395,16 +380,20 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         <DialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
           <DialogHeader>
             <div className="flex items-center justify-between w-full">
-              {/* Title + buttons + status */}
-              <div className="flex items-center gap-2 truncate">
-                <Package className="h-5 w-5 text-[#DB271E]" />
+              {/* Header: [Icon] Order #xxx ..right.. [Edit][Delete][Status][X] */}
+              <div className="flex items-center gap-2 min-w-0">
+                <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
                 <span className="text-lg font-semibold truncate">
                   Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
                 </span>
+              </div>
+              {/* Actions + Status + Close: always at right */}
+              <div className="flex items-center gap-2">
                 <HeaderActions />
-                <Badge className={`px-3 py-1 text-sm font-medium ml-2 ${getStatusColor(order.status)}`}>
+                <Badge className={`px-3 py-1 text-sm font-medium ${getStatusColor(order.status)}`}>
                   {order.status}
                 </Badge>
+                {/* Default close button provided via Dialog; it's at far right in header */}
               </div>
             </div>
           </DialogHeader>
@@ -425,13 +414,16 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         <div className="flex flex-col h-full">
           <SheetHeader className="px-4 py-3 border-b bg-white">
             <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2 truncate">
-                <Package className="h-5 w-5 text-[#DB271E]" />
+              {/* Header: [Icon] Order #xxx ... right ... [Edit][Delete][Status][X] */}
+              <div className="flex items-center gap-2 min-w-0">
+                <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
                 <span className="text-lg font-semibold truncate">
                   Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
                 </span>
+              </div>
+              <div className="flex items-center gap-2">
                 <HeaderActions />
-                <Badge className={`px-3 py-1 text-sm font-medium ml-2 ${getStatusColor(order.status)}`}>
+                <Badge className={`px-3 py-1 text-sm font-medium ${getStatusColor(order.status)}`}>
                   {order.status}
                 </Badge>
               </div>
