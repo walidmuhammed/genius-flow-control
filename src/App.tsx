@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -42,48 +43,50 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <BrowserRouter>
-          <Suspense fallback={<div>Loading...</div>}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/sign-in" element={<SignIn />} />
-              
-              {/* Auth Routes */}
-              <Route path="/auth/client/sign-in" element={<ClientSignIn />} />
-              <Route path="/auth/client/sign-up" element={<ClientSignUp />} />
-              <Route path="/auth/admin/sign-in" element={<AdminSignIn />} />
-              
-              {/* Client Routes */}
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/orders" element={<ProtectedRoute><OrdersList /></ProtectedRoute>} />
-              <Route path="/orders/new" element={<ProtectedRoute><CreateOrder /></ProtectedRoute>} />
-              <Route path="/orders/:id/edit" element={<ProtectedRoute><EditOrder /></ProtectedRoute>} />
-              <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
-              <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-              <Route path="/pickups" element={<ProtectedRoute><Pickups /></ProtectedRoute>} />
-              <Route path="/pickups/schedule" element={<ProtectedRoute><SchedulePickup /></ProtectedRoute>} />
-              <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
-              <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-              
-              {/* Admin Routes */}
-              <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/orders" element={<ProtectedRoute requiredRole="admin"><AdminOrders /></ProtectedRoute>} />
-              <Route path="/admin/clients" element={<ProtectedRoute requiredRole="admin"><AdminClients /></ProtectedRoute>} />
-              <Route path="/admin/couriers" element={<ProtectedRoute requiredRole="admin"><AdminCouriers /></ProtectedRoute>} />
-              <Route path="/admin/pricing" element={<ProtectedRoute requiredRole="admin"><AdminPricing /></ProtectedRoute>} />
-              <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminSettings /></ProtectedRoute>} />
-              <Route path="/admin/dispatch" element={<ProtectedRoute requiredRole="admin"><AdminDispatch /></ProtectedRoute>} />
-              <Route path="/admin/tickets" element={<ProtectedRoute requiredRole="admin"><AdminTickets /></ProtectedRoute>} />
-              <Route path="/admin/activity" element={<ProtectedRoute requiredRole="admin"><AdminActivity /></ProtectedRoute>} />
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <BrowserRouter>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/sign-in" element={<SignIn />} />
+                
+                {/* Auth Routes */}
+                <Route path="/auth/client/sign-in" element={<ClientSignIn />} />
+                <Route path="/auth/client/sign-up" element={<ClientSignUp />} />
+                <Route path="/auth/admin/sign-in" element={<AdminSignIn />} />
+                
+                {/* Client Routes */}
+                <Route path="/dashboard" element={<ProtectedRoute requiredRole="client"><Dashboard /></ProtectedRoute>} />
+                <Route path="/orders" element={<ProtectedRoute requiredRole="client"><OrdersList /></ProtectedRoute>} />
+                <Route path="/orders/new" element={<ProtectedRoute requiredRole="client"><CreateOrder /></ProtectedRoute>} />
+                <Route path="/orders/:id/edit" element={<ProtectedRoute requiredRole="client"><EditOrder /></ProtectedRoute>} />
+                <Route path="/customers" element={<ProtectedRoute requiredRole="client"><Customers /></ProtectedRoute>} />
+                <Route path="/analytics" element={<ProtectedRoute requiredRole="client"><Analytics /></ProtectedRoute>} />
+                <Route path="/pickups" element={<ProtectedRoute requiredRole="client"><Pickups /></ProtectedRoute>} />
+                <Route path="/pickups/schedule" element={<ProtectedRoute requiredRole="client"><SchedulePickup /></ProtectedRoute>} />
+                <Route path="/wallet" element={<ProtectedRoute requiredRole="client"><Wallet /></ProtectedRoute>} />
+                <Route path="/support" element={<ProtectedRoute requiredRole="client"><Support /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute requiredRole="client"><Settings /></ProtectedRoute>} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+                <Route path="/admin/orders" element={<ProtectedRoute requiredRole="admin"><AdminOrders /></ProtectedRoute>} />
+                <Route path="/admin/clients" element={<ProtectedRoute requiredRole="admin"><AdminClients /></ProtectedRoute>} />
+                <Route path="/admin/couriers" element={<ProtectedRoute requiredRole="admin"><AdminCouriers /></ProtectedRoute>} />
+                <Route path="/admin/pricing" element={<ProtectedRoute requiredRole="admin"><AdminPricing /></ProtectedRoute>} />
+                <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminSettings /></ProtectedRoute>} />
+                <Route path="/admin/dispatch" element={<ProtectedRoute requiredRole="admin"><AdminDispatch /></ProtectedRoute>} />
+                <Route path="/admin/tickets" element={<ProtectedRoute requiredRole="admin"><AdminTickets /></ProtectedRoute>} />
+                <Route path="/admin/activity" element={<ProtectedRoute requiredRole="admin"><AdminActivity /></ProtectedRoute>} />
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
