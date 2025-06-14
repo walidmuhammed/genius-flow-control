@@ -320,7 +320,7 @@ const SchedulePickup: React.FC = () => {
             Schedule Pickup
           </h1>
         </div>
-        <p className="text-muted-foreground text-lg mt-3 ml-14">
+        <p className="text-muted-foreground text-lg mt-3">
           Create a new pickup request for your orders
         </p>
       </div>
