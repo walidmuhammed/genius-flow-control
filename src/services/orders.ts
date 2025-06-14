@@ -28,6 +28,9 @@ export interface Order {
   created_at: string;
   updated_at: string;
   order_reference?: string;
+  archived?: boolean;
+  edited?: boolean;
+  edit_history?: any[];
 }
 
 export interface OrderWithCustomer extends Order {
@@ -101,6 +104,7 @@ export async function getOrders() {
         governorates:governorate_id(name)
       )
     `)
+    .eq('archived', false)
     .order('order_id', { ascending: false });
   
   if (error) {
@@ -234,6 +238,60 @@ export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' 
     .from('orders')
     .update(updates)
     .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) {
+    console.error(`Error updating order with id ${id}:`, error);
+    throw error;
+  }
+  
+  return data as Order;
+}
+
+export async function archiveOrder(id: string) {
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ archived: true })
+    .eq('id', id)
+    .eq('status', 'New') // Only allow archiving NEW orders
+    .select()
+    .single();
+  
+  if (error) {
+    console.error(`Error archiving order with id ${id}:`, error);
+    throw error;
+  }
+  
+  return data as Order;
+}
+
+export async function updateOrderWithHistory(
+  id: string, 
+  updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>>,
+  changeHistory: any[]
+) {
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  const { data, error } = await supabase
+    .from('orders')
+    .update({
+      ...updates,
+      edited: true,
+      edit_history: changeHistory
+    })
+    .eq('id', id)
+    .eq('status', 'New') // Only allow editing NEW orders
     .select()
     .single();
   

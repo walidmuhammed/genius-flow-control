@@ -1,245 +1,130 @@
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Edit, 
-  Printer, 
-  Ticket, 
-  Trash2, 
-  Ban, 
-  MoreHorizontal, 
-  FileText 
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Eye, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger
-} from '@/components/ui/sheet';
-import { Order } from './OrdersTableRow';
-import { useScreenSize } from '@/hooks/useScreenSize';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useNavigate } from 'react-router-dom';
+import { useArchiveOrder } from '@/hooks/use-orders';
+import { OrderWithCustomer } from '@/services/orders';
 
 interface OrderRowActionsProps {
-  order: Order;
-  isHovered: boolean;
-  onViewDetails?: (order: Order) => void;
+  order: any;
+  originalOrder?: OrderWithCustomer;
+  isHovered?: boolean;
+  onViewDetails?: (order: any) => void;
 }
 
-const OrderRowActions: React.FC<OrderRowActionsProps> = ({ 
-  order, 
+const OrderRowActions: React.FC<OrderRowActionsProps> = ({
+  order,
+  originalOrder,
   isHovered,
   onViewDetails
 }) => {
   const navigate = useNavigate();
-  const { isMobile } = useScreenSize();
-  const isNewStatus = order.status === 'New';
+  const archiveOrder = useArchiveOrder();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const handleCreateTicket = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/support?order=${order.referenceNumber}`);
+  const handleEdit = () => {
+    if (originalOrder?.status === 'New') {
+      navigate(`/orders/${originalOrder.id}/edit`);
+    }
   };
 
-  const handlePrintLabel = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    console.log(`Printing label for order ${order.id}`);
+  const handleDelete = async () => {
+    if (originalOrder?.status === 'New') {
+      try {
+        await archiveOrder.mutateAsync(originalOrder.id);
+        setShowDeleteDialog(false);
+      } catch (error) {
+        console.error('Error archiving order:', error);
+      }
+    }
   };
 
-  const handleViewDetails = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onViewDetails) onViewDetails(order);
-  };
-
-  const handleEditOrder = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    console.log(`Editing order ${order.id}`);
-  };
-
-  const handleCancelOrder = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    console.log(`Canceling order ${order.id}`);
-  };
-
-  const handleDeleteOrder = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    console.log(`Deleting order ${order.id}`);
-  };
-
-  const actionItems = (
-    <>
-      <DropdownMenuItem 
-        className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
-        onClick={handleViewDetails}
-      >
-        <FileText className="h-4 w-4 text-gray-500" />
-        <span>View Details</span>
-      </DropdownMenuItem>
-      
-      <DropdownMenuItem 
-        className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
-        onClick={handlePrintLabel}
-      >
-        <Printer className="h-4 w-4 text-gray-500" />
-        <span>Print Label</span>
-      </DropdownMenuItem>
-      
-      {isNewStatus && (
-        <DropdownMenuItem 
-          className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
-          onClick={handleEditOrder}
-        >
-          <Edit className="h-4 w-4 text-gray-500" />
-          <span>Edit Order</span>
-        </DropdownMenuItem>
-      )}
-      
-      {isNewStatus && (
-        <DropdownMenuItem 
-          className="rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center gap-2 text-sm"
-          onClick={handleCancelOrder}
-        >
-          <Ban className="h-4 w-4" />
-          <span>Cancel Order</span>
-        </DropdownMenuItem>
-      )}
-      
-      {isNewStatus && (
-        <DropdownMenuItem 
-          className="rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center gap-2 text-sm"
-          onClick={handleDeleteOrder}
-        >
-          <Trash2 className="h-4 w-4" />
-          <span>Delete Order</span>
-        </DropdownMenuItem>
-      )}
-      
-      <DropdownMenuItem 
-        className="rounded-md py-2 px-3 cursor-pointer hover:bg-muted flex items-center gap-2 text-sm"
-        onClick={handleCreateTicket}
-      >
-        <Ticket className="h-4 w-4 text-gray-500" />
-        <span>Create Ticket</span>
-      </DropdownMenuItem>
-    </>
-  );
-
-  if (isMobile) {
-    return (
-      <div className="flex items-center justify-end">
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button 
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-lg text-gray-500 hover:bg-muted/60 hover:text-gray-700"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="h-auto">
-            <SheetHeader>
-              <SheetTitle>Order Actions</SheetTitle>
-            </SheetHeader>
-            <div className="grid gap-2 py-4">
-              <Button 
-                variant="ghost" 
-                className="justify-start h-12"
-                onClick={handleViewDetails}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                View Details
-              </Button>
-              
-              <Button 
-                variant="ghost" 
-                className="justify-start h-12"
-                onClick={handlePrintLabel}
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                Print Label
-              </Button>
-              
-              {isNewStatus && (
-                <Button 
-                  variant="ghost" 
-                  className="justify-start h-12"
-                  onClick={handleEditOrder}
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Order
-                </Button>
-              )}
-              
-              {isNewStatus && (
-                <Button 
-                  variant="ghost" 
-                  className="justify-start h-12 text-[#DB271E] hover:text-[#DB271E] hover:bg-[#DB271E]/10"
-                  onClick={handleCancelOrder}
-                >
-                  <Ban className="h-4 w-4 mr-2" />
-                  Cancel Order
-                </Button>
-              )}
-              
-              {isNewStatus && (
-                <Button 
-                  variant="ghost" 
-                  className="justify-start h-12 text-[#DB271E] hover:text-[#DB271E] hover:bg-[#DB271E]/10"
-                  onClick={handleDeleteOrder}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Order
-                </Button>
-              )}
-              
-              <Button 
-                variant="ghost" 
-                className="justify-start h-12"
-                onClick={handleCreateTicket}
-              >
-                <Ticket className="h-4 w-4 mr-2" />
-                Create Ticket
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
-    );
-  }
+  const canEdit = originalOrder?.status === 'New';
+  const canDelete = originalOrder?.status === 'New';
 
   return (
-    <div className="flex items-center justify-end">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-lg text-gray-500 hover:bg-muted/60 hover:text-gray-700"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent 
-          align="end" 
-          className="w-[180px] shadow-lg border-border/10 rounded-lg p-1 bg-white z-50"
-          sideOffset={5}
-          alignOffset={-5}
+    <>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => onViewDetails?.(order)}
         >
-          {actionItems}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+          <Eye className="h-4 w-4" />
+        </Button>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onViewDetails?.(order)}>
+              <Eye className="h-4 w-4 mr-2" />
+              View Details
+            </DropdownMenuItem>
+            
+            {canEdit && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleEdit}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Order
+                </DropdownMenuItem>
+              </>
+            )}
+            
+            {canDelete && (
+              <DropdownMenuItem 
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-red-600 focus:text-red-600"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Order
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Order</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this order? This action will archive the order 
+              and it will no longer appear in your orders list. The order ID will be preserved.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Delete Order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
