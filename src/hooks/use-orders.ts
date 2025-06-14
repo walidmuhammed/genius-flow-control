@@ -1,10 +1,10 @@
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   getOrders, 
   getOrderById, 
   createOrder, 
   updateOrder, 
+  deleteOrder,
   getOrdersByStatus,
   getOrdersWithDateRange,
   Order 
@@ -72,5 +72,20 @@ export function useOrdersWithDateRange(startDate: string | null, endDate: string
     queryKey: ['orders', 'date-range', startDate, endDate],
     queryFn: () => startDate && endDate ? getOrdersWithDateRange(startDate, endDate) : Promise.resolve([]),
     enabled: !!(startDate && endDate)
+  });
+}
+
+export function useDeleteOrder() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (id: string) => deleteOrder(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast.success("Order archived successfully");
+    },
+    onError: (error) => {
+      toast.error(`Error archiving order: ${error.message}`);
+    }
   });
 }

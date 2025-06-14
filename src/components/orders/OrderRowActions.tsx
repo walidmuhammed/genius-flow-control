@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -61,7 +60,7 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
 
   const handleEditOrder = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log(`Editing order ${order.id}`);
+    navigate(`/create-order?edit=${order.id}`);
   };
 
   const handleCancelOrder = (e: React.MouseEvent) => {

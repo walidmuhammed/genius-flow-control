@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerWithLocation } from "./customers";
 
@@ -28,6 +27,7 @@ export interface Order {
   created_at: string;
   updated_at: string;
   order_reference?: string;
+  archived?: boolean;
 }
 
 export interface OrderWithCustomer extends Order {
@@ -101,6 +101,7 @@ export async function getOrders() {
         governorates:governorate_id(name)
       )
     `)
+    .eq('archived', false) // Exclude archived orders
     .order('order_id', { ascending: false });
   
   if (error) {
@@ -130,6 +131,7 @@ export async function getOrdersByStatus(status: OrderStatus) {
       )
     `)
     .eq('status', status)
+    .eq('archived', false) // Exclude archived orders
     .order('order_id', { ascending: false });
   
   if (error) {
@@ -196,7 +198,7 @@ export async function getOrderById(id: string) {
   return order;
 }
 
-export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>) {
+export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at' | 'archived'>) {
   // Check authentication and get current user
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -223,7 +225,7 @@ export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'refere
   return data as Order;
 }
 
-export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>>) {
+export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at' | 'archived'>>) {
   // Check authentication
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -264,6 +266,7 @@ export async function getOrdersWithDateRange(startDate: string, endDate: string)
     `)
     .gte('created_at', startDate)
     .lte('created_at', endDate)
+    .eq('archived', false) // Exclude archived orders
     .order('order_id', { ascending: false });
   
   if (error) {
@@ -273,4 +276,28 @@ export async function getOrdersWithDateRange(startDate: string, endDate: string)
   
   const transformedData: OrderWithCustomer[] = data.map(transformOrderData);
   return transformedData;
+}
+
+export async function deleteOrder(id: string) {
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  // Archive the order instead of deleting permanently
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ archived: true })
+    .eq('id', id)
+    .eq('status', 'New') // Only allow deletion of NEW orders
+    .select()
+    .single();
+  
+  if (error) {
+    console.error(`Error archiving order with id ${id}:`, error);
+    throw error;
+  }
+  
+  return data as Order;
 }

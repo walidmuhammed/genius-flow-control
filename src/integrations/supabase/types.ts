@@ -224,6 +224,7 @@ export type Database = {
       orders: {
         Row: {
           allow_opening: boolean | null
+          archived: boolean | null
           cash_collection_enabled: boolean | null
           cash_collection_lbp: number | null
           cash_collection_usd: number | null
@@ -233,6 +234,8 @@ export type Database = {
           customer_id: string
           delivery_fees_lbp: number | null
           delivery_fees_usd: number | null
+          edit_history: Json | null
+          edited: boolean | null
           id: string
           items_count: number | null
           note: string | null
@@ -246,6 +249,7 @@ export type Database = {
         }
         Insert: {
           allow_opening?: boolean | null
+          archived?: boolean | null
           cash_collection_enabled?: boolean | null
           cash_collection_lbp?: number | null
           cash_collection_usd?: number | null
@@ -255,6 +259,8 @@ export type Database = {
           customer_id: string
           delivery_fees_lbp?: number | null
           delivery_fees_usd?: number | null
+          edit_history?: Json | null
+          edited?: boolean | null
           id?: string
           items_count?: number | null
           note?: string | null
@@ -268,6 +274,7 @@ export type Database = {
         }
         Update: {
           allow_opening?: boolean | null
+          archived?: boolean | null
           cash_collection_enabled?: boolean | null
           cash_collection_lbp?: number | null
           cash_collection_usd?: number | null
@@ -277,6 +284,8 @@ export type Database = {
           customer_id?: string
           delivery_fees_lbp?: number | null
           delivery_fees_usd?: number | null
+          edit_history?: Json | null
+          edited?: boolean | null
           id?: string
           items_count?: number | null
           note?: string | null

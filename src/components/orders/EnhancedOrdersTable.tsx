@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -189,6 +188,7 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
                   {formatDate(new Date(order.created_at))}
                 </div>
               </TableCell>
+              
               <TableCell className="text-right" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-end gap-1">
                   <Button
@@ -226,7 +226,7 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
                         <Printer className="h-4 w-4 mr-2" />
                         Print Label
                       </DropdownMenuItem>
-                      {canEdit(order) && (
+                      {canDelete(order) && (
                         <>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 

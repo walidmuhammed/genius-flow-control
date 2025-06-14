@@ -16,7 +16,7 @@ import { PackageGuidelinesModal } from '@/components/orders/PackageGuidelinesMod
 import { useGovernorates } from '@/hooks/use-governorates';
 import { useCity, useCitiesByGovernorate } from '@/hooks/use-cities';
 import { useSearchCustomersByPhone, useCreateCustomer } from '@/hooks/use-customers';
-import { useCreateOrder } from '@/hooks/use-orders';
+import { useCreateOrder, useUpdateOrder } from '@/hooks/use-orders';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CustomerWithLocation } from '@/services/customers';
@@ -32,9 +32,15 @@ const CreateOrder = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const {
-    isMobile
-  } = useScreenSize();
+  const { isMobile } = useScreenSize();
+  
+  // Check if we're in edit mode
+  const editOrderId = new URLSearchParams(location.search).get('edit');
+  const isEditMode = !!editOrderId;
+  
+  // Fetch order data if in edit mode
+  const { data: editOrder } = useOrder(editOrderId || undefined);
+  
   const [formKey, setFormKey] = useState(getUniqueFormKey());
   const initialRenderRef = useRef(true);
 
@@ -89,6 +95,7 @@ const CreateOrder = () => {
   } = useSearchCustomersByPhone(phone);
   const createCustomer = useCreateCustomer();
   const createOrder = useCreateOrder();
+  const updateOrder = useUpdateOrder();
   const clearCachedFormData = () => {
     const formKeys = ['order-form-data', 'order-form-customer', 'order-form-phone', 'order-form-address', 'order-form-governorate', 'order-form-city'];
     formKeys.forEach(key => {
@@ -202,6 +209,7 @@ const CreateOrder = () => {
       toast.error("Please fix the errors in the form");
       return;
     }
+    
     try {
       let customerId = existingCustomer?.id;
       const fullAddressData = {
@@ -210,6 +218,7 @@ const CreateOrder = () => {
         governorate_id: selectedGovernorateId || null,
         is_work_address: isWorkAddress
       };
+      
       if (!customerId) {
         const customerData = {
           name,
@@ -219,12 +228,8 @@ const CreateOrder = () => {
         };
         const newCustomer = await createCustomer.mutateAsync(customerData);
         customerId = newCustomer.id;
-      } else if (existingCustomer) {
-        const hasAddressChanged = existingCustomer.address !== address || existingCustomer.city_id !== selectedCityId || existingCustomer.governorate_id !== selectedGovernorateId || existingCustomer.is_work_address !== isWorkAddress;
-        if (hasAddressChanged) {
-          console.log("Address data changed, customer profile would be updated");
-        }
       }
+      
       const orderData: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'> = {
         type: orderType === 'exchange' ? 'Exchange' : 'Deliver',
         customer_id: customerId,
@@ -243,17 +248,26 @@ const CreateOrder = () => {
           reference_number: orderReference.trim()
         })
       };
-      await createOrder.mutateAsync(orderData);
-      if (createAnother) {
-        resetForm();
-        toast.success("Order created successfully. Create another one.");
-      } else {
-        toast.success("Order created successfully.");
+      
+      if (isEditMode && editOrderId) {
+        // Update existing order
+        await updateOrder.mutateAsync({ id: editOrderId, updates: orderData });
+        toast.success("Order updated successfully.");
         navigate('/orders');
+      } else {
+        // Create new order
+        await createOrder.mutateAsync(orderData);
+        if (createAnother) {
+          resetForm();
+          toast.success("Order created successfully. Create another one.");
+        } else {
+          toast.success("Order created successfully.");
+          navigate('/orders');
+        }
       }
     } catch (error) {
-      console.error("Error creating order:", error);
-      toast.error("Failed to create the order. Please try again.");
+      console.error("Error saving order:", error);
+      toast.error(isEditMode ? "Failed to update the order. Please try again." : "Failed to create the order. Please try again.");
     }
   };
   const handleGovernorateChange = (governorateId: string, governorateName: string) => {
@@ -292,21 +306,29 @@ const CreateOrder = () => {
         {/* Full width page container */}
         <div className="w-full px-4 py-6">
           
-          {/* Page Header - Integrated into main page flow */}
-          {!isMobile && <div className="flex items-center justify-between mb-8">
+          {/* Page Header */}
+          {!isMobile && (
+            <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">Create New Order</h1>
-                <p className="text-sm text-gray-500 mt-1">Fill in the details to create a new delivery order</p>
+                <h1 className="text-2xl font-semibold text-gray-900">
+                  {isEditMode ? 'Edit Order' : 'Create New Order'}
+                </h1>
+                <p className="text-sm text-gray-500 mt-1">
+                  {isEditMode ? 'Modify the order details below' : 'Fill in the details to create a new delivery order'}
+                </p>
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => handleSubmit(true)} className="px-4 py-2 text-sm">
-                  Create & Add Another
-                </Button>
+                {!isEditMode && (
+                  <Button variant="outline" onClick={() => handleSubmit(true)} className="px-4 py-2 text-sm">
+                    Create & Add Another
+                  </Button>
+                )}
                 <Button onClick={() => handleSubmit(false)} className="px-6 py-2 text-sm bg-[#DC291E] hover:bg-[#c0211a]">
-                  Create Order
+                  {isEditMode ? 'Update Order' : 'Create Order'}
                 </Button>
               </div>
-            </div>}
+            </div>
+          )}
 
           {/* Main Form - 100% Width Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
@@ -646,15 +668,19 @@ const CreateOrder = () => {
             </div>
           </div>
 
-          {/* Mobile Action Buttons - At Bottom */}
-          {isMobile && <div className="mt-8 space-y-3">
+          {/* Mobile Action Buttons */}
+          {isMobile && (
+            <div className="mt-8 space-y-3">
               <Button onClick={() => handleSubmit(false)} className="w-full py-3 bg-[#DC291E] hover:bg-[#c0211a]">
-                Create Order
+                {isEditMode ? 'Update Order' : 'Create Order'}
               </Button>
-              <Button variant="outline" onClick={() => handleSubmit(true)} className="w-full py-3 border-gray-300">
-                Create & Add Another
-              </Button>
-            </div>}
+              {!isEditMode && (
+                <Button variant="outline" onClick={() => handleSubmit(true)} className="w-full py-3 border-gray-300">
+                  Create & Add Another
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Mobile Bottom Padding */}
           {isMobile && <div className="h-8"></div>}

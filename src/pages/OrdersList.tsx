@@ -4,7 +4,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import { ImportOrdersModal } from '@/components/orders/ImportOrdersModal';
-import { useOrders, useOrdersByStatus } from '@/hooks/use-orders';
+import { useOrders, useOrdersByStatus, useDeleteOrder } from '@/hooks/use-orders';
 import { toast } from 'sonner';
 import { OrderWithCustomer } from '@/services/orders';
 import { motion } from 'framer-motion';
