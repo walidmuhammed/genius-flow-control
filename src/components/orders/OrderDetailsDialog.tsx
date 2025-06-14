@@ -440,8 +440,16 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       onOpenChange={onOpenChange}
       shouldScaleBackground={true}
     >
+      {/* 
+        Make DrawerHeader the drag handle by adding data-vaul-drag-handle
+        Only the header area (including drag bar and order info) responds to drag-to-close.
+      */}
       <DrawerContent className="max-h-[85vh] p-0">
-        <DrawerHeader className="px-4 pt-0 pb-3 border-b bg-white">
+        <DrawerHeader
+          className="px-4 pt-0 pb-3 border-b bg-white"
+          data-vaul-drag-handle
+          style={{ touchAction: "pan-y" }}  // Required for Vaul for drag gesture
+        >
           <DrawerDragHandle />
           <div className="flex flex-col gap-1 w-full">
             <div className="flex items-center gap-2 min-w-0 flex-wrap">
@@ -454,8 +462,15 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </div>
           </div>
         </DrawerHeader>
-        {/* Give ScrollArea a height to fill below header. pb-8 for safe area on mobile */}
-        <ScrollArea className="flex-1 max-h-[calc(85vh-65px)]">
+        {/* 
+          Give ScrollArea a height to fill below header. pb-8 for safe area on mobile.
+          Prevent this area from being a drag handle: data-vaul-no-drag disables swipe-to-close.
+        */}
+        <ScrollArea
+          className="flex-1 max-h-[calc(85vh-65px)]"
+          data-vaul-no-drag
+          style={{ touchAction: "auto" }}
+        >
           <div className="p-4 pb-8">
             <OrderContent />
           </div>
