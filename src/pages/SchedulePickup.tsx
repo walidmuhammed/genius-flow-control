@@ -448,7 +448,7 @@ const SchedulePickup: React.FC = () => {
                       <span>to</span>
                       <span>{formatTime(timeRange[1])}</span>
                     </div>
-                    {/* Slider and disabled handling */}
+                    {/* Slider */}
                     <div className="flex flex-col gap-2">
                       <Slider
                         value={timeRange}
@@ -466,38 +466,6 @@ const SchedulePickup: React.FC = () => {
                         }}
                         className="w-full"
                       />
-                      {/* Custom tick/label track, showing disabled hours */}
-                      <div className="relative flex w-full h-5 mt-2">
-                        {sliderMarks.map(mark => (
-                          <div
-                            key={mark.hour}
-                            className={cn(
-                              "flex-1 text-center text-xs",
-                              mark.disabled
-                                ? "text-gray-400"
-                                : "text-gray-700"
-                            )}
-                            style={{ pointerEvents: 'none' }}
-                          >
-                            <div
-                              className={cn(
-                                "w-1 h-1 mx-auto rounded-full mb-0.5",
-                                mark.disabled
-                                  ? "bg-gray-300"
-                                  : "bg-primary"
-                              )}
-                            ></div>
-                            <span>
-                              {mark.hour < 12
-                                ? `${mark.hour}:00`
-                                : mark.hour === 12
-                                  ? '12:00'
-                                  : `${mark.hour - 12}:00`}
-                              {mark.hour < 12 ? ' AM' : ' PM'}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   </div>
                 </div>
