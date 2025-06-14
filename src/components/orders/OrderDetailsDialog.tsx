@@ -13,11 +13,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
 import { useDeleteOrder } from '@/hooks/use-orders';
 import { toast } from 'sonner';
-import { 
-  MapPin, 
-  Phone, 
-  User, 
-  Package, 
+import {
+  MapPin,
+  Phone,
+  User,
+  Package,
   DollarSign,
   Clock,
   FileText,
@@ -173,23 +173,39 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     ) : null
   );
 
-  // --- OrderContent (no badge/type here anymore) ---
+  // --- BADGES FOR FIRST CONTAINER ---
+  const StatusTypeBadges = () => (
+    <div className="flex items-center gap-2 mb-3">
+      <Badge className={`px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}>{order.status}</Badge>
+      <Badge className={`px-3 py-1 text-xs font-medium ${getTypeColor(order.type)}`}>{order.type}</Badge>
+    </div>
+  );
+
+  // --- HEADER ORDER ID + REF NUMBER ---
+  const OrderHeaderIdRef = () => (
+    <span className="flex items-center text-lg font-semibold truncate gap-2">
+      {/* Order ID padded if present, else show first 8 chars */}
+      Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+      {order.reference_number && (
+        <span className="ml-2 text-lg font-semibold text-gray-700">{order.reference_number}</span>
+      )}
+    </span>
+  );
+
+  // --- OrderContent (no badge/type here anymore except our badges at top) ---
   const OrderContent = () => (
     <div className="space-y-4 sm:space-y-6">
-      {/* Order Status & Basic Info - now just grid of fields */}
+      {/* Order Status & Basic Info */}
       <div className="bg-white rounded-lg border p-4">
+        <StatusTypeBadges />
+        {/* Display as "Type: X -- Status: Y" */}
+        <div className="mb-4 text-sm font-medium text-gray-700 flex flex-wrap gap-x-2">
+          <span>Type: {order.type || 'N/A'}</span>
+          <span>--</span>
+          <span>Status: {order.status || 'N/A'}</span>
+        </div>
         <div className="flex flex-col space-y-3">
-          {/* no icons/status/type here! */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            {/* Removed type filter badge from here. Only add what is left */}
-            <div className="flex items-center gap-2">
-              {/* Type moved to header */}
-            </div>
-            {order.reference_number && (
-              <div>
-                {/* Reference now shown as big/bold in header, so we can omit from content. */}
-              </div>
-            )}
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-gray-500" />
               <span className="text-gray-600">Created: {formatDate(new Date(order.created_at))}</span>
@@ -225,9 +241,9 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           Order Progress
         </h3>
         <div className="bg-gray-50 p-4 rounded-lg">
-          <OrderProgressBar 
-            status={order.status as any} 
-            type={order.type as any} 
+          <OrderProgressBar
+            status={order.status as any}
+            type={order.type as any}
           />
         </div>
       </div>
@@ -376,31 +392,13 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         <DialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
           <DialogHeader>
             <div className="flex items-center justify-between w-full">
-              {/* Header: [Package] Order #xxx [type badge][ref]... right: actions + status + X */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
-                  <span className="text-lg font-semibold truncate">
-                    Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-                  </span>
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ml-2 ${getTypeColor(order.type)}`}
-                  >
-                    {order.type}
-                  </span>
-                </div>
-                {order.reference_number && (
-                  <span className="block text-[#DB271E] font-bold text-base sm:text-lg mt-1 sm:mt-0 ml-8 sm:ml-0" style={{ letterSpacing: "0.5px" }}>
-                    Ref: {order.reference_number}
-                  </span>
-                )}
+              {/* Header: [Package] Order #xxx [ref] ... right: actions + close */}
+              <div className="flex items-center gap-2 min-w-0">
+                <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
+                <OrderHeaderIdRef />
               </div>
-              {/* Actions + Status + Close at end */}
               <div className="flex items-center gap-2 ml-auto">
                 <HeaderActions />
-                <Badge className={`px-3 py-1 text-sm font-medium ${getStatusColor(order.status)}`}>
-                  {order.status}
-                </Badge>
                 {/* Close button is provided by DialogContent */}
               </div>
             </div>
@@ -421,30 +419,11 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       <SheetContent side="bottom" className="h-[90vh] p-0">
         <div className="flex flex-col h-full">
           <SheetHeader className="px-4 py-3 border-b bg-white">
-            <div className="flex items-center justify-between w-full">
-              <div className="flex flex-col gap-1 min-w-0 w-full">
-                <div className="flex items-center gap-2 min-w-0 w-full">
-                  <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
-                  <span className="text-lg font-semibold truncate">
-                    Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-                  </span>
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ml-2 ${getTypeColor(order.type)}`}
-                  >
-                    {order.type}
-                  </span>
-                </div>
-                {order.reference_number && (
-                  <span className="block text-[#DB271E] font-bold text-base mt-1" style={{ letterSpacing: "0.5px" }}>
-                    Ref: {order.reference_number}
-                  </span>
-                )}
-              </div>
+            <div className="flex items-center w-full gap-2">
+              <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
+              <OrderHeaderIdRef />
               <div className="flex items-center gap-2 ml-auto">
                 <HeaderActions />
-                <Badge className={`px-3 py-1 text-sm font-medium ${getStatusColor(order.status)}`}>
-                  {order.status}
-                </Badge>
               </div>
             </div>
           </SheetHeader>
