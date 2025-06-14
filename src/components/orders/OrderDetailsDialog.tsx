@@ -65,7 +65,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       </Drawer>
     ) : (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh]">
+        <DialogContent className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full" style={{ zIndex: 60 }}>
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
           </DialogHeader>
@@ -398,27 +398,47 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     </div>
   );
 
-  // --- DESKTOP: Use DialogContent but hide close button visually using CSS ---
+  // DESKTOP: fix dialog constraints and content containment
   if (!isMobile) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full [&>button.absolute.right-4.top-4]:hidden"
+          className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full shadow-lg border bg-background p-0"
+          style={{ zIndex: 60, overflow: 'hidden' }} // z-60 is above the default sidebar, add overflow to prevent bleeding
         >
-          <DialogHeader>
+          {/* Visually hidden title & desc for a11y (prevent random selection/focus glitches) */}
+          <DialogHeader className="sr-only">
+            <DialogTitle>Order Details</DialogTitle>
+            <DialogDescription>Full details of order and customer package information</DialogDescription>
+          </DialogHeader>
+          {/* ACTUAL header UI */}
+          <div className="border-b p-6 pt-4 pb-2 bg-background z-10 relative">
             <div className="flex items-center justify-between w-full flex-wrap gap-y-2">
               <div className="flex items-center gap-2 min-w-0 flex-wrap">
                 <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
-                <EnhancedOrderHeader />
+                <span className="text-lg font-semibold truncate shrink-0">
+                  Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+                </span>
+                {order.reference_number &&
+                  <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none" style={{lineHeight: '1.6'}}>
+                    {order.reference_number}
+                  </span>
+                }
               </div>
               <div className="flex items-center gap-2 ml-auto">
+                {/* Header action buttons (Edit/Delete) */}
                 <HeaderActions />
-                {/* No close button */}
               </div>
             </div>
-          </DialogHeader>
-          <ScrollArea className="max-h-[calc(90vh-120px)]">
-            <div className="p-1">
+            {/* Status/Type Badges */}
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <Badge className={`px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}>{order.status}</Badge>
+              <Badge className={`px-3 py-1 text-xs font-medium ${getTypeColor(order.type)}`}>{order.type}</Badge>
+            </div>
+          </div>
+          {/* Scrollable area with a better height for content */}
+          <ScrollArea className="max-h-[calc(95vh-110px)]" style={{ padding: 0 }}>
+            <div className="p-6 pt-4">
               <OrderContent />
             </div>
           </ScrollArea>
@@ -427,64 +447,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     );
   }
 
-  // MOBILE: Use Drawer (Vaul) for swipe-close only from the drag handle (header)
-  // REFACTORED DRAWER HEADER FOR PERFECT ROUND EDGES AND MODERN DESIGN
-  const DrawerDragHandle = () => (
-    <div className="flex flex-col items-center py-2">
-      <div
-        className="w-10 h-1.5 rounded-full bg-gray-300 mb-2"
-        style={{ touchAction: 'none' }}
-        aria-label="Drag to close"
-      />
-    </div>
-  );
-
-  // NEW: Modern Reference Number Badge
-  const ModernRefBadge = ({ reference }: { reference: string }) => (
-    <span className="ml-0 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-300 font-medium text-xs tracking-wide align-middle shadow-inner shadow-white/5 truncate max-w-[110px] sm:max-w-none" style={{lineHeight: '1.6'}}>
-      {reference}
-    </span>
-  );
-
-  // NEW: Reusable Mobile Badges Section
-  const BadgesRow = () => (
-    <div className="flex items-center gap-2 mt-1">
-      <Badge className={`px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}>{order.status}</Badge>
-      <Badge className={`px-3 py-1 text-xs font-medium ${getTypeColor(order.type)}`}>{order.type}</Badge>
-    </div>
-  );
-
-  // NEW: Compact header actions area, stays compact if no actions are visible
-  const MobileHeaderActions = () =>
-    canEditDelete ? (
-      <div className="flex items-center gap-1 ml-2">
-        <Button onClick={handleEditOrder} variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 text-xs">
-          <Edit className="h-4 w-4" />
-        </Button>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="outline" size="sm" className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-none px-2 py-1 text-xs">
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitlePrimitive>Are you sure?</AlertDialogTitlePrimitive>
-              <AlertDialogDescription>
-                Are you sure you want to delete this order? It will be archived and hidden from the list.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteOrder} className="bg-red-600 hover:bg-red-700">
-                Delete Order
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-    ) : null;
-
+  // The rest of the file is unchanged
   return (
     <Drawer
       open={open}
@@ -498,8 +461,8 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           data-vaul-drag-handle
           style={{ touchAction: "pan-y" }}
         >
-          <DrawerDragHandle />
           {/* Header */}
+          <DrawerDragHandle />
           <div className="w-full flex flex-col gap-0">
             <div className="flex items-center min-w-0 gap-2">
               <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
