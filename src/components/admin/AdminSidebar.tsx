@@ -1,10 +1,9 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Moon, Sun, Package, Truck, Home, Users, Wallet, BarChart3, Settings, Phone, LogOut, Activity, Navigation, DollarSign } from 'lucide-react';
+import { Moon, Sun, Truck, Settings, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AdminSidebarMenu from './AdminSidebarMenu';
-import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useScreenSize } from '@/hooks/useScreenSize';
@@ -18,7 +17,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ className }) => {
   const { signOut } = useAuth();
   const { isMobile } = useScreenSize();
   const location = useLocation();
-  
+
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
     if (!darkMode) {
@@ -33,9 +32,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ className }) => {
   };
 
   return (
-    <motion.aside 
+    <motion.aside
       className={cn(
-        "flex flex-col w-full sm:w-[260px] sm:min-w-[260px] bg-gray-50 dark:bg-gray-900 h-full relative border-r border-gray-200 dark:border-gray-800",
+        // Fixed sidebar, always visible, full height, with proper z-index
+        "fixed top-0 left-0 flex flex-col h-screen w-full sm:w-[260px] sm:min-w-[260px] bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-30",
         className
       )}
       layout
@@ -44,80 +44,83 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ className }) => {
         ease: "easeInOut"
       }}
     >
-      <div className="flex h-16 items-center px-5">
-        <Link to="/dashboard/admin" className="flex items-center gap-2.5 mx-auto">
-          <motion.div 
-            className="flex items-center" 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="bg-[#DC291E] h-9 w-9 rounded-lg flex items-center justify-center">
-              <Truck className="h-5 w-5 text-white" />
-            </div>
-            <span className="tracking-tight text-gray-900 dark:text-gray-100 font-bold text-xl px-2">
-              Topspeed
-            </span>
-          </motion.div>
-        </Link>
-      </div>
-      
-      <div className="flex-1 overflow-y-auto py-6 px-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
-        <AdminSidebarMenu collapsed={false} />
-      </div>
-      
-      <div className="p-5 flex flex-col gap-3 border-t border-gray-200 dark:border-gray-800">
-        <Link to="/admin/settings">
-          <motion.div 
+      <div className="flex flex-col h-full">
+        {/* Logo/Header */}
+        <div className="flex h-16 items-center px-5 flex-shrink-0">
+          <Link to="/dashboard/admin" className="flex items-center gap-2.5 mx-auto">
+            <motion.div
+              className="flex items-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="bg-[#DC291E] h-9 w-9 rounded-lg flex items-center justify-center">
+                <Truck className="h-5 w-5 text-white" />
+              </div>
+              <span className="tracking-tight text-gray-900 dark:text-gray-100 font-bold text-xl px-2">
+                Topspeed
+              </span>
+            </motion.div>
+          </Link>
+        </div>
+
+        {/* Scrollable Menu */}
+        <div className="flex-1 min-h-0 overflow-y-auto py-6 px-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+          <AdminSidebarMenu collapsed={false} />
+        </div>
+        
+        {/* Footer: Settings, Dark Mode, Sign Out - always at bottom */}
+        <div className="flex flex-col gap-3 border-t border-gray-200 dark:border-gray-800 px-5 py-5 flex-shrink-0">
+          <Link to="/admin/settings">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={cn(
+                "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium",
+                "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200",
+                location.pathname === '/admin/settings'
+                  ? "bg-gray-200 dark:bg-gray-800 text-[#DC291E] dark:text-[#DC291E]"
+                  : "text-gray-700 dark:text-gray-200"
+              )}
+            >
+              <Settings className="h-4 w-4" />
+              <span>Settings</span>
+            </motion.div>
+          </Link>
+          <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            onClick={toggleDarkMode}
             className={cn(
-              "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium", 
-              "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200",
-              location.pathname === '/admin/settings'
-                ? "bg-gray-200 dark:bg-gray-800 text-[#DC291E] dark:text-[#DC291E]"
-                : "text-gray-700 dark:text-gray-200"
+              "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium",
+              "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-gray-700 dark:text-gray-200"
             )}
           >
-            <Settings className="h-4 w-4" />
-            <span>Settings</span>
-          </motion.div>
-        </Link>
-        
-        <motion.button 
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={toggleDarkMode} 
-          className={cn(
-            "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium", 
-            "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-gray-700 dark:text-gray-200"
-          )}
-        >
-          {darkMode ? (
-            <>
-              <Sun className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              <span>Light Mode</span>
-            </>
-          ) : (
-            <>
-              <Moon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              <span>Dark Mode</span>
-            </>
-          )}
-        </motion.button>
-        
-        <motion.button 
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleSignOut}
-          className={cn(
-            "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200", 
-            "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
-          )}
-        >
-          <LogOut className="h-4 w-4" />
-          <span>Sign Out</span>
-        </motion.button>
+            {darkMode ? (
+              <>
+                <Sun className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                <span>Light Mode</span>
+              </>
+            ) : (
+              <>
+                <Moon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                <span>Dark Mode</span>
+              </>
+            )}
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleSignOut}
+            className={cn(
+              "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200",
+              "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+            )}
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Sign Out</span>
+          </motion.button>
+        </div>
       </div>
     </motion.aside>
   );
