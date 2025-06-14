@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Package } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useScreenSize } from '@/hooks/useScreenSize';
@@ -324,11 +324,11 @@ const OrdersList: React.FC = () => {
                 ) : (
                   <div className="py-12">
                     <EmptyState 
-                      icon={AlertCircle}
+                      icon={Package}
                       title="No orders found"
-                      description="There are no orders matching your current filters."
+                      description="You have not created any orders yet."
                       actionLabel="Create Order"
-                      actionHref="/orders/new"
+                      actionHref="/create-order"
                     />
                   </div>
                 )}

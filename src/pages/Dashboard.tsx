@@ -328,7 +328,7 @@ const Dashboard: React.FC = () => {
                       title="No new orders today"
                       description="When new orders come in, they will appear here."
                       actionLabel="Create Order"
-                      actionHref="/orders/new"
+                      actionHref="/create-order"
                     />
                   )}
                 </motion.div>
@@ -397,7 +397,7 @@ const Dashboard: React.FC = () => {
                       title="No orders are awaiting your action today"
                       description="When orders need your attention, they will appear here."
                       actionLabel="Create Order"
-                      actionHref="/orders/new"
+                      actionHref="/create-order"
                     />
                   )}
                 </motion.div>
