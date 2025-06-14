@@ -180,6 +180,11 @@
   .status-canceled {
     @apply bg-red-50/80 text-red-700 backdrop-blur-sm;
   }
+
+  /* Uniform dashboard card - minimal, clean, NO shadow, NO glow */
+  .dashboard-card {
+    @apply bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 transition-none shadow-none hover:shadow-none focus:shadow-none min-h-[120px] h-[120px] sm:min-h-[140px] sm:h-[140px] flex flex-col;
+  }
 }
 
 @keyframes fadeIn {
