@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { Calendar, X } from 'lucide-react';
@@ -136,7 +137,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
         {open && (
           <>
-            {/* Backdrop - FULLY opaque, highest z-index, fixed on entire viewport */}
+            {/* Backdrop */}
             <div
               className="fixed inset-0 z-[100000] bg-black opacity-100 pointer-events-auto"
               style={{ background: "rgba(0,0,0,0.85)" }}
@@ -147,15 +148,20 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               }}
             />
 
-            {/* Bottom Sheet Container - highest z-index, covers bottom half, no shadow/gaps */}
+            {/* Bottom Sheet Container - positioned at absolute bottom with no gaps */}
             <div
               className={cn(
-                "fixed inset-x-0 bottom-0 z-[100001] bg-white rounded-t-xl max-h-[85vh] overflow-hidden",
+                "fixed left-0 right-0 bottom-0 z-[100001] bg-white max-h-[85vh] overflow-hidden",
                 "transform transition-all duration-300 ease-out",
-                open ? "translate-y-0 opacity-100" : "translate-y-full opacity-0",
-                "shadow-none border-none"
+                open ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
               )}
-              style={{ boxShadow: 'none', border: 'none', background: '#fff' }}
+              style={{ 
+                background: '#fff',
+                borderTopLeftRadius: '16px',
+                borderTopRightRadius: '16px',
+                marginBottom: '0px',
+                paddingBottom: '0px'
+              }}
             >
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-4 bg-white">
@@ -236,7 +242,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                       </div>
                     </div>
 
-                    {/* Calendar - pointer-events-auto, no shadow */}
+                    {/* Calendar */}
                     <div className="py-2">
                       <CalendarComponent
                         mode="range"
