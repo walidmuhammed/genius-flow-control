@@ -238,6 +238,7 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
                     lastUpdate: order.updated_at,
                     note: order.note,
                   }}
+                  originalOrder={order}
                   isRowHovered={hoveredRow === order.id}
                   onViewDetails={() => onViewOrder(order)}
                   onEditOrder={() => onEditOrder && onEditOrder(order)}

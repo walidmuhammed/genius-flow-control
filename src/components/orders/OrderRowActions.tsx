@@ -14,9 +14,11 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from '@/components/ui/alert-dialog';
+import { OrderWithCustomer } from '@/services/orders';
 
 interface OrderRowActionsProps {
   order: Order;
+  originalOrder?: OrderWithCustomer;
   isRowHovered: boolean;
   onViewDetails: () => void;
   onEditOrder: () => void;
@@ -27,6 +29,7 @@ interface OrderRowActionsProps {
 
 const OrderRowActions: React.FC<OrderRowActionsProps> = ({
   order,
+  originalOrder,
   isRowHovered,
   onViewDetails,
   onEditOrder,
@@ -36,6 +39,13 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
 }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const isNewStatus = order.status === 'New';
+
+  // Correct, always use the real DB id for edit redirect
+  const handleEdit = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const dbId = originalOrder?.id || order.id;
+    window.location.href = `/create-order?edit=${dbId}`;
+  };
 
   return (
     <div className="flex items-center justify-end min-w-[80px] gap-1 relative">
@@ -69,10 +79,7 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
               type="button"
               className="group p-1 rounded-md hover:bg-muted transition-colors"
               aria-label="Edit Order"
-              onClick={e => {
-                e.stopPropagation();
-                onEditOrder();
-              }}
+              onClick={handleEdit}
               tabIndex={isRowHovered ? 0 : -1}
               style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
@@ -86,7 +93,8 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
         <OrderActionsMenu
           order={order}
           onViewDetails={onViewDetails}
-          onEditOrder={onEditOrder}
+          // Pass the same handler as above, so it works both from menu and icon
+          onEditOrder={handleEdit}
           onPrintLabel={onPrintLabel}
           onCreateTicket={onCreateTicket}
           onDeleteOrder={() => setShowDeleteDialog(true)}
@@ -120,3 +128,4 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
 };
 
 export default OrderRowActions;
+
