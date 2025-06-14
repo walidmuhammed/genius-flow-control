@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -38,10 +37,11 @@ export const OrderActionsMenu: React.FC<OrderActionsMenuProps> = ({
   onDeleteOrder,
 }) => {
   const { isMobile, isTablet } = useScreenSize();
+  const [open, setOpen] = React.useState(false);
   const isNewStatus = order.status === 'New';
 
   // Menu items component to use in both dropdown and sheet
-  const MenuItems = ({ close }: {close?: () => void}) => (
+  const MenuItems = ({ close }: { close?: () => void }) => (
     <div className="flex flex-col py-1">
       <DropdownMenuItem
         className="rounded-md px-3 py-2 text-sm flex items-center gap-2 cursor-pointer"
@@ -50,7 +50,6 @@ export const OrderActionsMenu: React.FC<OrderActionsMenuProps> = ({
         <FileText className="h-4 w-4 text-gray-500" />
         View Order Details
       </DropdownMenuItem>
-
       {isNewStatus && (
         <DropdownMenuItem
           className="rounded-md px-3 py-2 text-sm flex items-center gap-2 cursor-pointer"
@@ -60,7 +59,6 @@ export const OrderActionsMenu: React.FC<OrderActionsMenuProps> = ({
           Edit Order
         </DropdownMenuItem>
       )}
-
       <DropdownMenuItem
         className="rounded-md px-3 py-2 text-sm flex items-center gap-2 cursor-pointer"
         onClick={() => { onPrintLabel(); close && close(); }}
@@ -68,7 +66,6 @@ export const OrderActionsMenu: React.FC<OrderActionsMenuProps> = ({
         <Printer className="h-4 w-4 text-gray-500" />
         Print Shipping Label
       </DropdownMenuItem>
-
       <DropdownMenuItem
         className="rounded-md px-3 py-2 text-sm flex items-center gap-2 cursor-pointer"
         onClick={() => { onCreateTicket(); close && close(); }}
@@ -76,7 +73,6 @@ export const OrderActionsMenu: React.FC<OrderActionsMenuProps> = ({
         <Ticket className="h-4 w-4 text-gray-500" />
         Create Support Ticket
       </DropdownMenuItem>
-      
       {isNewStatus && (
         <>
           <DropdownMenuSeparator />
@@ -94,12 +90,14 @@ export const OrderActionsMenu: React.FC<OrderActionsMenuProps> = ({
 
   // Mobile/tablet as Sheet, desktop as DropdownMenu
   if (isMobile || isTablet) {
-    // On sheet close, must close menu (SheetContent receives onOpenChange)
-    const [open, setOpen] = React.useState(false);
     return (
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8 p-0 rounded-lg text-gray-500 hover:bg-muted/60 hover:text-gray-700">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 p-0 rounded-lg text-gray-500 hover:bg-muted/60 hover:text-gray-700"
+          >
             <MoreHorizontal className="h-5 w-5" />
             <span className="sr-only">Open actions menu</span>
           </Button>
@@ -118,9 +116,13 @@ export const OrderActionsMenu: React.FC<OrderActionsMenuProps> = ({
 
   // Desktop dropdown menu
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 p-0 rounded-lg text-gray-500 hover:bg-muted/60 hover:text-gray-700">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 p-0 rounded-lg text-gray-500 hover:bg-muted/60 hover:text-gray-700"
+        >
           <MoreHorizontal className="h-5 w-5" />
           <span className="sr-only">Open actions menu</span>
         </Button>
@@ -130,7 +132,7 @@ export const OrderActionsMenu: React.FC<OrderActionsMenuProps> = ({
         className="rounded-lg shadow-lg w-[210px] border bg-white z-50 p-1"
         sideOffset={5}
       >
-        <MenuItems />
+        <MenuItems close={() => setOpen(false)} />
       </DropdownMenuContent>
     </DropdownMenu>
   );
