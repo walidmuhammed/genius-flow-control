@@ -2,12 +2,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   getCustomers, 
-  getCustomerById,
+  getCustomerById, 
   createCustomer, 
-  updateCustomer,
+  updateCustomer, 
   searchCustomersByPhone,
-  Customer,
-  CustomerWithLocation 
+  Customer 
 } from "@/services/customers";
 import { toast } from "sonner";
 
@@ -23,19 +22,6 @@ export function useCustomer(id: string | undefined) {
     queryKey: ['customer', id],
     queryFn: () => id ? getCustomerById(id) : Promise.resolve(null),
     enabled: !!id
-  });
-}
-
-export function useSearchCustomersByPhone(phone: string) {
-  // Only search when phone number is complete (11+ digits excluding country code)
-  const cleanPhone = phone.replace(/\D/g, '');
-  const shouldSearch = cleanPhone.length >= 11;
-  
-  return useQuery({
-    queryKey: ['customers', 'search', phone],
-    queryFn: () => searchCustomersByPhone(phone),
-    enabled: shouldSearch,
-    staleTime: 1000 * 60 * 5 // 5 minutes
   });
 }
 
@@ -69,5 +55,28 @@ export function useUpdateCustomer() {
     onError: (error) => {
       toast.error(`Error updating customer: ${error.message}`);
     }
+  });
+}
+
+// Updated to only search when phone number is complete (full Lebanese number)
+export function useSearchCustomersByPhone(phone: string) {
+  // Clean the phone number for validation
+  const cleanPhone = phone.replace(/\D/g, '');
+  
+  // Only search if phone number is complete:
+  // Lebanese numbers: +961 followed by 8 digits (total 11 digits with country code)
+  // Or local format: starting with 03, 70, 71, 76, 78, 79, 81 (8 digits total)
+  const isCompleteNumber = cleanPhone.length >= 8 && (
+    // Full international format: +961 + 8 digits
+    (cleanPhone.startsWith('961') && cleanPhone.length === 11) ||
+    // Local format: 8 digits starting with valid prefixes
+    (cleanPhone.length === 8 && /^(03|70|71|76|78|79|81)/.test(cleanPhone))
+  );
+  
+  return useQuery({
+    queryKey: ['customers', 'search', phone],
+    queryFn: () => isCompleteNumber ? searchCustomersByPhone(phone) : Promise.resolve([]),
+    enabled: isCompleteNumber,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

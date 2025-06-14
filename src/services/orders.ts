@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerWithLocation } from "./customers";
 
@@ -27,9 +28,6 @@ export interface Order {
   created_at: string;
   updated_at: string;
   order_reference?: string;
-  archived?: boolean;
-  edited?: boolean;
-  edit_history?: any[];
 }
 
 export interface OrderWithCustomer extends Order {
@@ -71,21 +69,6 @@ const transformOrderData = (order: any): OrderWithCustomer => {
       statusType !== 'Paid') {
     statusType = 'New';
   }
-
-  // Handle edit_history field - ensure it's always an array
-  let editHistory: any[] = [];
-  if (order.edit_history) {
-    if (Array.isArray(order.edit_history)) {
-      editHistory = order.edit_history;
-    } else if (typeof order.edit_history === 'string') {
-      try {
-        const parsed = JSON.parse(order.edit_history);
-        editHistory = Array.isArray(parsed) ? parsed : [];
-      } catch {
-        editHistory = [];
-      }
-    }
-  }
   
   return {
     ...order,
@@ -93,7 +76,6 @@ const transformOrderData = (order: any): OrderWithCustomer => {
     type: orderType as OrderType,
     package_type: packageType as PackageType,
     status: statusType as OrderStatus,
-    edit_history: editHistory,
     customer: {
       ...customerData,
       city_name: customerData.cities?.name,
@@ -119,7 +101,6 @@ export async function getOrders() {
         governorates:governorate_id(name)
       )
     `)
-    .eq('archived', false)
     .order('order_id', { ascending: false });
   
   if (error) {
@@ -156,7 +137,33 @@ export async function getOrdersByStatus(status: OrderStatus) {
     throw error;
   }
   
-  const transformedData: OrderWithCustomer[] = data.map(transformOrderData);
+  const transformedData: OrderWithCustomer[] = data.map(order => {
+    const customerData = order.customer as any;
+    
+    let orderType = order.type;
+    if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
+      orderType = 'Deliver';
+    }
+    
+    let packageType = order.package_type;
+    if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
+      packageType = 'parcel';
+    }
+    
+    return {
+      ...order,
+      order_id: order.order_id,
+      type: orderType as OrderType,
+      package_type: packageType as PackageType,
+      status: status,
+      customer: {
+        ...customerData,
+        city_name: customerData.cities?.name,
+        governorate_name: customerData.governorates?.name
+      }
+    };
+  });
+  
   return transformedData;
 }
 
@@ -227,60 +234,6 @@ export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' 
     .from('orders')
     .update(updates)
     .eq('id', id)
-    .select()
-    .single();
-  
-  if (error) {
-    console.error(`Error updating order with id ${id}:`, error);
-    throw error;
-  }
-  
-  return data as Order;
-}
-
-export async function archiveOrder(id: string) {
-  // Check authentication
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
-
-  const { data, error } = await supabase
-    .from('orders')
-    .update({ archived: true })
-    .eq('id', id)
-    .eq('status', 'New') // Only allow archiving NEW orders
-    .select()
-    .single();
-  
-  if (error) {
-    console.error(`Error archiving order with id ${id}:`, error);
-    throw error;
-  }
-  
-  return data as Order;
-}
-
-export async function updateOrderWithHistory(
-  id: string, 
-  updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'>>,
-  changeHistory: any[]
-) {
-  // Check authentication
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
-
-  const { data, error } = await supabase
-    .from('orders')
-    .update({
-      ...updates,
-      edited: true,
-      edit_history: changeHistory
-    })
-    .eq('id', id)
-    .eq('status', 'New') // Only allow editing NEW orders
     .select()
     .single();
   
