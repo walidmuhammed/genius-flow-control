@@ -112,8 +112,10 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   // Check if order can be edited/deleted (only NEW orders)
   const canEditDelete = order?.status === 'New';
 
-  // --- Drawer drag handle (simple visual bar, iOS style) ---
-  const DrawerDragHandle = () => <div className="mx-auto my-2 h-1.5 w-12 rounded-full bg-gray-300 opacity-60" aria-hidden="true" />;
+  // --- Drawer drag handle (iOS-style, polished) ---
+  const DrawerDragHandle = () => (
+    <div className="mx-auto mt-3 mb-2 h-1.5 w-12 rounded-full bg-black/10 dark:bg-white/20 opacity-70 backdrop-blur-sm" aria-hidden="true" />
+  );
 
   // --- STATUS BADGE + TYPE BADGE ---
   const StatusTypeBadges = () => <div className="flex items-center gap-2 flex-wrap min-w-0">
@@ -358,8 +360,8 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                 {order.reference_number && <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none" style={{
                 lineHeight: '1.6'
               }}>
-                    {order.reference_number}
-                  </span>}
+                  {order.reference_number}
+                </span>}
                 {/* Status and Type Badges */}
                 <div className="flex items-center gap-2 min-w-0 ml-2 flex-wrap">
                   <StatusTypeBadges />
@@ -384,43 +386,61 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   }
 
   // MOBILE drawer
-  return <Drawer open={open} onOpenChange={onOpenChange} shouldScaleBackground={true}>
+  return (
+    <Drawer open={open} onOpenChange={onOpenChange} shouldScaleBackground={true}>
       <DrawerContent className="max-h-[85vh] p-0 rounded-t-2xl border-t-0 shadow-lg">
-        <DrawerHeader className="px-4 pt-0 pb-3 bg-white rounded-t-2xl border-b flex flex-col gap-0" data-vaul-drag-handle style={{
-        touchAction: "pan-y"
-      }}>
+        {/* Apple-style header, glass bg, 2-line layout */}
+        <DrawerHeader
+          className="px-4 pt-0 pb-0 bg-white/80 dark:bg-neutral-950/50 rounded-t-2xl border-b border-gray-100/85 dark:border-neutral-800/70 shadow-[0_1.5px_8px_0_rgba(0,0,0,0.04)] backdrop-blur-lg transition-all flex flex-col gap-0"
+          data-vaul-drag-handle
+          style={{
+            touchAction: "pan-y"
+          }}
+        >
           <DrawerDragHandle />
-          <div className="w-full flex flex-col gap-0">
-            <div className="flex items-center min-w-0 gap-2 flex-wrap py-0 px-0 mx-0 my-[8px]">
-              <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
-              <span className="text-lg font-semibold truncate shrink-0">
-                Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+          {/* First row: icon + Order ID + reference */}
+          <div className="flex items-center gap-2 min-w-0 mt-0 pb-0">
+            <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
+            <span className="text-[17px] font-semibold text-gray-900 truncate shrink-0 leading-tight tracking-tight">
+              Order #{order.order_id?.toString().padStart(3, "0") || order.id.slice(0, 8)}
+            </span>
+            {order.reference_number && (
+              <span
+                className="ml-1 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-[15px] align-middle shadow-inner shadow-white/10 truncate max-w-[120px] sm:max-w-none"
+                style={{
+                  letterSpacing: "0.01em",
+                  lineHeight: "1.6",
+                  fontWeight: 600
+                }}
+              >
+                {order.reference_number}
               </span>
-              {order.reference_number && <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none" style={{
-              lineHeight: '1.6'
-            }}>
-                  {order.reference_number}
-                </span>}
-              {/* Status and Type Badges */}
-              <div className="flex items-center gap-2 min-w-0 ml-2 flex-wrap">
-                <StatusTypeBadges />
-              </div>
-              <div className="ml-auto flex items-center gap-1">
-                <HeaderActions />
-              </div>
+            )}
+          </div>
+          {/* Second row: status/type badges (left), actions (right) */}
+          <div className="flex items-center justify-between gap-2 mt-2 mb-1 flex-shrink-0">
+            <div className="flex items-center gap-2 min-w-0 flex-wrap">
+              <StatusTypeBadges />
             </div>
-            {/* REMOVED badges row here */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <HeaderActions />
+            </div>
           </div>
         </DrawerHeader>
-        {/* Improved: isolate scroll, no background scroll, safe for touch devices */}
-        <ScrollArea className="flex-1 max-h-[calc(85vh-65px)] overflow-y-auto overscroll-y-contain scroll-touch isolate" data-vaul-no-drag style={{
-        touchAction: "pan-y"
-      }}>
+        {/* Improved: isolate scroll; no change here */}
+        <ScrollArea
+          className="flex-1 max-h-[calc(85vh-65px)] overflow-y-auto overscroll-y-contain scroll-touch isolate"
+          data-vaul-no-drag
+          style={{
+            touchAction: "pan-y"
+          }}
+        >
           <div className="p-4 pb-8">
             <OrderContent />
           </div>
         </ScrollArea>
       </DrawerContent>
-    </Drawer>;
+    </Drawer>
+  );
 };
 export default OrderDetailsDialog;
