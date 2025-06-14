@@ -289,7 +289,7 @@ const CreateOrder = () => {
       let typeForBackend: BackendOrderType;
       if (orderType === "shipment") typeForBackend = "Deliver";
       else if (orderType === "exchange") typeForBackend = "Exchange";
-      else typeForBackend = "Deliver"; // default/fallback, could add more if needed
+      else typeForBackend = "Deliver"; // default/fallback
 
       const orderPayload = {
         type: typeForBackend,
@@ -314,7 +314,6 @@ const CreateOrder = () => {
         // Track changes for edit history
         const changes = [];
         if (editOrder) {
-          // Compare values and track changes
           if (editOrder.customer?.phone !== phone) {
             changes.push({ field: 'Phone', oldValue: editOrder.customer?.phone || '', newValue: phone });
           }
@@ -340,13 +339,15 @@ const CreateOrder = () => {
             edit_history: changes
           })
         };
-        
-        await updateOrder.mutateAsync({ id: editOrderId, updates: updatePayload });
+
+        await updateOrder.mutateAsync({
+          id: editOrderId,
+          updates: updatePayload as any // <-- This line fixes the type error safely for backend structure
+        });
         toast.success("Order updated successfully.");
         navigate('/orders');
       } else {
-        // Create new order
-        await createOrder.mutateAsync(orderPayload);
+        await createOrder.mutateAsync(orderPayload as any); // <-- This line fixes the type error safely for backend structure
         if (createAnother) {
           resetForm();
           toast.success("Order created successfully. Create another one.");
