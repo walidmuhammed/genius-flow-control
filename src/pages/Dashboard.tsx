@@ -127,215 +127,113 @@ const Dashboard: React.FC = () => {
         </AnimatePresence>
 
         {/* Overview Cards - Responsive Grid */}
-        <div
-          className={cn(
-            "grid gap-4",
-            isMobile
-              ? "grid-cols-2"
-              : isTablet
-              ? "grid-cols-2 lg:grid-cols-4"
-              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
-          )}
-        >
+        <div className={cn(
+          "grid gap-4",
+          isMobile ? "grid-cols-2" : isTablet ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+        )}>
           {/* New Orders Card */}
-          <div>
-            <Card
-              className={cn(
-                "border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800",
-                "h-32 min-h-[8rem] max-h-[8rem] flex flex-col justify-between",
-                "transition-all",
-                "shadow-none"
-              )}
-              style={{
-                height: "8rem",
-                minHeight: "8rem",
-                maxHeight: "8rem",
-              }}
-            >
-              <CardContent className={cn("p-4", !isMobile && "p-6", "flex flex-col justify-center h-full")}>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
+          >
+            <Card className="overflow-hidden border-0 shadow-lg shadow-blue-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
+              <CardContent className={cn("p-4", !isMobile && "p-6")}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500 shadow-sm">
                     <Package className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
                   </div>
                 </div>
-                <div className="flex flex-col flex-1 justify-center">
-                  <h3 className={cn(
-                    "font-medium text-gray-500 dark:text-gray-400",
-                    isMobile ? "text-xs" : "text-sm",
-                    "truncate"
-                  )}>
-                    New Orders
-                  </h3>
-                  <div className={cn(
-                    "font-bold text-gray-800 dark:text-white",
-                    isMobile ? "text-xl" : "text-2xl",
-                    "text-center",
-                    "truncate"
-                  )}>
+                
+                <div className="space-y-1">
+                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>New Orders</h3>
+                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
                     {isOrdersLoading ? '--' : todayOrders.length}
                   </div>
-                  <p className={cn(
-                    "text-gray-500 dark:text-gray-400 mt-1",
-                    isMobile ? "text-xs" : "text-xs",
-                    "text-center",
-                    "truncate"
-                  )}>
-                    New orders today
-                  </p>
+                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>New orders today</p>
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
           
           {/* In Progress Card */}
-          <div>
-            <Card
-              className={cn(
-                "border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800",
-                "h-32 min-h-[8rem] max-h-[8rem] flex flex-col justify-between",
-                "transition-all",
-                "shadow-none"
-              )}
-              style={{
-                height: "8rem",
-                minHeight: "8rem",
-                maxHeight: "8rem",
-              }}
-            >
-              <CardContent className={cn("p-4", !isMobile && "p-6", "flex flex-col justify-center h-full")}>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-500">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
+          >
+            <Card className="overflow-hidden border-0 shadow-lg shadow-amber-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
+              <CardContent className={cn("p-4", !isMobile && "p-6")}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-500 shadow-sm">
                     <Clock className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
                   </div>
                 </div>
-                <div className="flex flex-col flex-1 justify-center">
-                  <h3 className={cn(
-                    "font-medium text-gray-500 dark:text-gray-400",
-                    isMobile ? "text-xs" : "text-sm",
-                    "truncate"
-                  )}>
-                    In Progress
-                  </h3>
-                  <div className={cn(
-                    "font-bold text-gray-800 dark:text-white",
-                    isMobile ? "text-xl" : "text-2xl",
-                    "text-center",
-                    "truncate"
-                  )}>
+                
+                <div className="space-y-1">
+                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>In Progress</h3>
+                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
                     {isOrdersLoading ? '--' : inProgressOrders.length}
                   </div>
-                  <p className={cn(
-                    "text-gray-500 dark:text-gray-400 mt-1",
-                    isMobile ? "text-xs" : "text-xs",
-                    "text-center",
-                    "truncate"
-                  )}>
-                    Orders filtered as In Progress
-                  </p>
+                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>Orders filtered as In Progress</p>
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
           
           {/* Awaiting Action Card */}
-          <div>
-            <Card
-              className={cn(
-                "border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800",
-                "h-32 min-h-[8rem] max-h-[8rem] flex flex-col justify-between",
-                "transition-all",
-                "shadow-none"
-              )}
-              style={{
-                height: "8rem",
-                minHeight: "8rem",
-                maxHeight: "8rem",
-              }}
-            >
-              <CardContent className={cn("p-4", !isMobile && "p-6", "flex flex-col justify-center h-full")}>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
+          >
+            <Card className="overflow-hidden border-0 shadow-lg shadow-orange-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
+              <CardContent className={cn("p-4", !isMobile && "p-6")}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 shadow-sm">
                     <AlertCircle className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
                   </div>
                 </div>
-                <div className="flex flex-col flex-1 justify-center">
-                  <h3 className={cn(
-                    "font-medium text-gray-500 dark:text-gray-400",
-                    isMobile ? "text-xs" : "text-sm",
-                    "truncate"
-                  )}>
-                    Awaiting Action
-                  </h3>
-                  <div className={cn(
-                    "font-bold text-gray-800 dark:text-white",
-                    isMobile ? "text-xl" : "text-2xl",
-                    "text-center",
-                    "truncate"
-                  )}>
+                
+                <div className="space-y-1">
+                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>Awaiting Action</h3>
+                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
                     {isOrdersLoading ? '--' : awaitingActionOrders.length}
                   </div>
-                  <p className={cn(
-                    "text-gray-500 dark:text-gray-400 mt-1",
-                    isMobile ? "text-xs" : "text-xs",
-                    "text-center",
-                    "truncate"
-                  )}>
-                    Orders requiring intervention
-                  </p>
+                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>Orders requiring intervention</p>
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
           
           {/* Expected Cash Card */}
-          <div>
-            <Card
-              className={cn(
-                "border border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800",
-                "h-32 min-h-[8rem] max-h-[8rem] flex flex-col justify-between",
-                "transition-all",
-                "shadow-none"
-              )}
-              style={{
-                height: "8rem",
-                minHeight: "8rem",
-                maxHeight: "8rem",
-              }}
-            >
-              <CardContent className={cn("p-4", !isMobile && "p-6", "flex flex-col justify-center h-full")}>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
+          >
+            <Card className="overflow-hidden border-0 shadow-lg shadow-emerald-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
+              <CardContent className={cn("p-4", !isMobile && "p-6")}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 shadow-sm">
                     <DollarSign className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
                   </div>
                 </div>
-                <div className="flex flex-col flex-1 justify-center">
-                  <h3 className={cn(
-                    "font-medium text-gray-500 dark:text-gray-400",
-                    isMobile ? "text-xs" : "text-sm",
-                    "truncate"
-                  )}>
-                    Expected Cash
-                  </h3>
-                  <div className={cn(
-                    "font-bold text-gray-800 dark:text-white",
-                    isMobile ? "text-xl" : "text-2xl",
-                    "text-center",
-                    "truncate"
-                  )}>
+                
+                <div className="space-y-1">
+                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>Expected Cash</h3>
+                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
                     {isOrdersLoading ? '--' : `$${todayTotalCash.toFixed(2)}`}
                   </div>
-                  <p className={cn(
-                    "text-gray-500 dark:text-gray-400 mt-1",
-                    isMobile ? "text-xs" : "text-xs",
-                    "text-center",
-                    "truncate"
-                  )}>
-                    Total amount today
-                  </p>
+                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>Total amount today</p>
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
         </div>
 
         {/* Enhanced Tab Bar - Full Width, Clean, Responsive */}
