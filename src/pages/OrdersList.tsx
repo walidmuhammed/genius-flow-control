@@ -1,4 +1,6 @@
+
 import React, { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Package } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -16,9 +18,9 @@ import { EnhancedOrdersTable } from '@/components/orders/EnhancedOrdersTable';
 import { BulkActionsBar } from '@/components/orders/BulkActionsBar';
 import { OrdersUnifiedContainer } from '@/components/orders/OrdersUnifiedContainer';
 import OrderDetailsDialog from '@/components/orders/OrderDetailsDialog';
-import cn from 'classnames';
 
 const OrdersList: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>('all');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -150,12 +152,11 @@ const OrdersList: React.FC = () => {
   };
 
   const handleEditOrder = (order: OrderWithCustomer) => {
-    // Navigate to edit order page
-    console.log('Edit order:', order.id);
+    navigate(`/orders/${order.id}/edit`);
   };
 
   const handleDeleteOrder = (order: OrderWithCustomer) => {
-    // Show confirmation dialog and delete
+    // This will be handled by the individual components
     console.log('Delete order:', order.id);
   };
 
@@ -328,7 +329,7 @@ const OrdersList: React.FC = () => {
                       title="No orders found"
                       description="You have not created any orders yet."
                       actionLabel="Create Order"
-                      actionHref="/create-order"
+                      actionHref="/orders/new"
                     />
                   </div>
                 )}

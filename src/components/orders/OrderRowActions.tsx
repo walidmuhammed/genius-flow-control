@@ -10,7 +10,6 @@ import {
   MoreHorizontal, 
   FileText 
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -131,16 +130,6 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
       {isNewStatus && (
         <DropdownMenuItem 
           className="rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center gap-2 text-sm"
-          onClick={handleCancelOrder}
-        >
-          <Ban className="h-4 w-4" />
-          <span>Cancel Order</span>
-        </DropdownMenuItem>
-      )}
-      
-      {isNewStatus && (
-        <DropdownMenuItem 
-          className="rounded-md py-2 px-3 cursor-pointer hover:bg-[#DB271E]/10 hover:text-[#DB271E] flex items-center gap-2 text-sm"
           onClick={handleDeleteOrder}
         >
           <Trash2 className="h-4 w-4" />
@@ -211,17 +200,6 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
                   <Button 
                     variant="ghost" 
                     className="justify-start h-12 text-[#DB271E] hover:text-[#DB271E] hover:bg-[#DB271E]/10"
-                    onClick={handleCancelOrder}
-                  >
-                    <Ban className="h-4 w-4 mr-2" />
-                    Cancel Order
-                  </Button>
-                )}
-                
-                {isNewStatus && (
-                  <Button 
-                    variant="ghost" 
-                    className="justify-start h-12 text-[#DB271E] hover:text-[#DB271E] hover:bg-[#DB271E]/10"
                     onClick={handleDeleteOrder}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
@@ -252,8 +230,12 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-                Delete
+              <AlertDialogAction 
+                onClick={confirmDelete} 
+                className="bg-red-600 hover:bg-red-700"
+                disabled={archiveOrderMutation.isPending}
+              >
+                {archiveOrderMutation.isPending ? 'Deleting...' : 'Delete'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -297,8 +279,12 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-              Delete
+            <AlertDialogAction 
+              onClick={confirmDelete} 
+              className="bg-red-600 hover:bg-red-700"
+              disabled={archiveOrderMutation.isPending}
+            >
+              {archiveOrderMutation.isPending ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
