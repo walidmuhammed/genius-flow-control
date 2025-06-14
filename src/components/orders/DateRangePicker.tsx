@@ -146,23 +146,22 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               }}
             />
 
-            {/* Bottom Sheet Container - positioned at absolute bottom with no gaps */}
+            {/* Bottom Sheet Container - remove margin, ensure it's flush with bottom, bg is always white ONLY for the modal */}
             <div
               className={cn(
-                "fixed left-0 right-0 bottom-0 z-[100001] bg-white max-h-[85vh] overflow-hidden",
-                "transform transition-all duration-300 ease-out",
+                "fixed left-0 right-0 bottom-0 z-[100001] max-h-[85vh] overflow-hidden transition-all duration-300 ease-out rounded-t-2xl",
                 open ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
               )}
-              style={{ 
-                background: '#fff',
-                borderTopLeftRadius: '16px',
+              style={{
+                background: '#fff',          // Modal content stays white
+                borderTopLeftRadius: '16px', // Top corners rounded
                 borderTopRightRadius: '16px',
-                marginBottom: '0px',
-                paddingBottom: '0px'
+                margin: 0,                   // Remove any margin, especially marginTop/marginBottom
+                padding: 0                   // No padding on outside!
               }}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 bg-white">
+              <div className="flex items-center justify-between px-5 py-4 bg-white rounded-t-2xl">
                 <h2 className="text-lg font-medium text-gray-900">
                   {mobileStep === 'presets' ? 'Date Filter' : 'Select Range'}
                 </h2>
@@ -182,7 +181,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               {/* Content */}
               <div
                 className="overflow-y-auto bg-white"
-                style={{ maxHeight: 'calc(85vh - 72px)', background: '#fff' }}
+                style={{ maxHeight: 'calc(85vh - 72px)' }}
               >
                 {mobileStep === 'presets' ? (
                   <div className="px-5 pb-5 space-y-2 bg-white">
