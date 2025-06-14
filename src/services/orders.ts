@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerWithLocation } from "./customers";
 
@@ -72,6 +71,21 @@ const transformOrderData = (order: any): OrderWithCustomer => {
       statusType !== 'Paid') {
     statusType = 'New';
   }
+
+  // Handle edit_history field - ensure it's always an array
+  let editHistory: any[] = [];
+  if (order.edit_history) {
+    if (Array.isArray(order.edit_history)) {
+      editHistory = order.edit_history;
+    } else if (typeof order.edit_history === 'string') {
+      try {
+        const parsed = JSON.parse(order.edit_history);
+        editHistory = Array.isArray(parsed) ? parsed : [];
+      } catch {
+        editHistory = [];
+      }
+    }
+  }
   
   return {
     ...order,
@@ -79,6 +93,7 @@ const transformOrderData = (order: any): OrderWithCustomer => {
     type: orderType as OrderType,
     package_type: packageType as PackageType,
     status: statusType as OrderStatus,
+    edit_history: editHistory,
     customer: {
       ...customerData,
       city_name: customerData.cities?.name,
@@ -141,33 +156,7 @@ export async function getOrdersByStatus(status: OrderStatus) {
     throw error;
   }
   
-  const transformedData: OrderWithCustomer[] = data.map(order => {
-    const customerData = order.customer as any;
-    
-    let orderType = order.type;
-    if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
-      orderType = 'Deliver';
-    }
-    
-    let packageType = order.package_type;
-    if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
-      packageType = 'parcel';
-    }
-    
-    return {
-      ...order,
-      order_id: order.order_id,
-      type: orderType as OrderType,
-      package_type: packageType as PackageType,
-      status: status,
-      customer: {
-        ...customerData,
-        city_name: customerData.cities?.name,
-        governorate_name: customerData.governorates?.name
-      }
-    };
-  });
-  
+  const transformedData: OrderWithCustomer[] = data.map(transformOrderData);
   return transformedData;
 }
 
