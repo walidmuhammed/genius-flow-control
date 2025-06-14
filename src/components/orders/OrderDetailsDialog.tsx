@@ -391,7 +391,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       }}>
           <DrawerDragHandle />
           <div className="w-full flex flex-col gap-0">
-            <div className="flex items-center min-w-0 gap-2 flex-wrap">
+            <div className="flex items-center min-w-0 gap-2 flex-wrap py-0 px-0 mx-0 my-[8px]">
               <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
               <span className="text-lg font-semibold truncate shrink-0">
                 Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
