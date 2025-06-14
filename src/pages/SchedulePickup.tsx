@@ -85,6 +85,19 @@ const SchedulePickup: React.FC = () => {
     );
   };
 
+  const handleSelectAll = () => {
+    if (!newOrders) return;
+    
+    const allOrderIds = newOrders.map(order => order.id);
+    const allSelected = allOrderIds.length > 0 && allOrderIds.every(id => tempSelectedOrderIds.includes(id));
+    
+    if (allSelected) {
+      setTempSelectedOrderIds([]);
+    } else {
+      setTempSelectedOrderIds(allOrderIds);
+    }
+  };
+
   const handleMobileOrderConfirm = () => {
     handleOrderSelection(tempSelectedOrderIds);
   };
@@ -143,83 +156,104 @@ const SchedulePickup: React.FC = () => {
   const renderMobileOrderCards = () => {
     if (!newOrders) return null;
 
+    const allOrderIds = newOrders.map(order => order.id);
+    const allSelected = allOrderIds.length > 0 && allOrderIds.every(id => tempSelectedOrderIds.includes(id));
+
     return (
-      <div className="space-y-3 max-h-[50vh] overflow-y-auto px-1">
-        {newOrders.map((order) => (
-          <div
-            key={order.id}
-            className={cn(
-              "border rounded-lg p-4 transition-all duration-200 cursor-pointer",
-              tempSelectedOrderIds.includes(order.id)
-                ? "border-[#DB271E] bg-[#DB271E]/5"
-                : "border-gray-200 bg-white hover:border-gray-300"
-            )}
-            onClick={() => handleMobileOrderToggle(order.id)}
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  checked={tempSelectedOrderIds.includes(order.id)}
-                  onCheckedChange={() => handleMobileOrderToggle(order.id)}
-                  className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
-                />
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-[#DB271E] text-sm">#{order.id.slice(0, 8)}</span>
-                    <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50 border-gray-200">
-                      {order.shipment_type || 'Standard'}
-                    </Badge>
-                  </div>
-                  {order.reference_number && (
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Hash className="h-3 w-3" />
-                      <span>{order.reference_number}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-blue-50 rounded-md flex items-center justify-center">
-                  <User className="h-3 w-3 text-blue-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 text-sm truncate">
-                    {order.customer?.name || 'Unknown Customer'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-green-50 rounded-md flex items-center justify-center">
-                  <Phone className="h-3 w-3 text-green-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-600 truncate">
-                    {order.customer?.phone || 'No phone'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-medium text-gray-500">Amount:</span>
-                  <span className="font-semibold text-sm text-gray-900">
-                    ${order.cash_collection_usd || 0}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <MapPin className="h-3 w-3 text-gray-400" />
-                  <span className="text-xs text-gray-500">
-                    {order.governorate?.name}, {order.city?.name}
-                  </span>
-                </div>
-              </div>
-            </div>
+      <div className="space-y-4">
+        {/* Select All Section */}
+        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+          <div className="flex items-center gap-3">
+            <Checkbox
+              checked={allSelected}
+              onCheckedChange={handleSelectAll}
+              className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
+            />
+            <Label className="font-medium text-sm">Select All</Label>
           </div>
-        ))}
+          <div className="text-sm font-medium text-[#DB271E]">
+            Selected: {tempSelectedOrderIds.length} Order{tempSelectedOrderIds.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+
+        {/* Orders List */}
+        <div className="space-y-3 max-h-[50vh] overflow-y-auto px-1">
+          {newOrders.map((order) => (
+            <div
+              key={order.id}
+              className={cn(
+                "border rounded-lg p-4 transition-all duration-200 cursor-pointer",
+                tempSelectedOrderIds.includes(order.id)
+                  ? "border-[#DB271E] bg-[#DB271E]/5"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+              )}
+              onClick={() => handleMobileOrderToggle(order.id)}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    checked={tempSelectedOrderIds.includes(order.id)}
+                    onCheckedChange={() => handleMobileOrderToggle(order.id)}
+                    className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-[#DB271E] text-sm">#{order.order_id}</span>
+                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50 border-gray-200">
+                        {order.shipment_type || 'Standard'}
+                      </Badge>
+                    </div>
+                    {order.reference_number && (
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Hash className="h-3 w-3" />
+                        <span>{order.reference_number}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-blue-50 rounded-md flex items-center justify-center">
+                    <User className="h-3 w-3 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 text-sm truncate">
+                      {order.customer?.name || 'Unknown Customer'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-green-50 rounded-md flex items-center justify-center">
+                    <Phone className="h-3 w-3 text-green-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-600 truncate">
+                      {order.customer?.phone || 'No phone'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-medium text-gray-500">Amount:</span>
+                    <span className="font-semibold text-sm text-gray-900">
+                      ${order.cash_collection_usd || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="h-3 w-3 text-gray-400" />
+                    <span className="text-xs text-gray-500">
+                      {order.city?.name || 'Unknown Area'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
         
         {tempSelectedOrderIds.length > 0 && (
           <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-1">
