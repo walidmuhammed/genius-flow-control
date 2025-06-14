@@ -303,31 +303,28 @@ const SchedulePickup: React.FC = () => {
   };
   return (
     <MainLayout>
-      {/* Enhanced gradient header */}
-      <div className="pickup-gradient-header relative">
-        <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-8">
+      {/* Simple modern header */}
+      <div className="max-w-7xl mx-auto px-4 pt-8 pb-6 flex flex-col gap-2">
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/pickups')}
-            className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg px-3 py-2 transition"
+            className="text-foreground"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Pickups
           </Button>
-          <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
-            <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
-              <Truck className="h-8 w-8 text-white drop-shadow-md" />
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white drop-shadow">
-                Schedule Pickup
-              </h1>
-            </div>
-            <p className="text-white/80 max-w-2xl text-base font-medium drop-shadow-md">
-              Create a new pickup request for your orders
-            </p>
-          </div>
         </div>
-        <div className="absolute left-0 bottom-0 w-full h-5 bg-gradient-to-t from-white/70 to-transparent pointer-events-none" />
+        <div className="flex items-center gap-2 mt-4">
+          <Truck className="h-6 w-6 text-[#DB271E]" />
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Schedule Pickup
+          </h1>
+        </div>
+        <p className="text-muted-foreground text-base mt-1">
+          Create a new pickup request for your orders
+        </p>
       </div>
       {/* Main page content */}
       <div className="max-w-7xl mx-auto space-y-6">
