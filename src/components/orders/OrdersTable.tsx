@@ -90,9 +90,11 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   const getTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'deliver':
-        return 'text-blue-600 bg-blue-50 border-blue-200';
+        // Update to green
+        return 'text-green-600 bg-green-50 border-green-200';
       case 'exchange':
-        return 'text-orange-600 bg-orange-50 border-orange-200';
+        // Update to purple
+        return 'text-purple-600 bg-purple-50 border-purple-200';
       case 'cash collection':
         return 'text-green-600 bg-green-50 border-green-200';
       case 'return':

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableRow, TableCell } from '@/components/ui/table';
@@ -99,9 +98,9 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   const getTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'deliver':
-        return 'text-blue-600 bg-blue-50';
+        return 'text-green-600 bg-green-50';
       case 'exchange':
-        return 'text-orange-600 bg-orange-50';
+        return 'text-purple-600 bg-purple-50';
       case 'cash collection':
         return 'text-green-600 bg-green-50';
       case 'return':
