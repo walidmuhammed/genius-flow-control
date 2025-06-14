@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useScreenSize } from '@/hooks/useScreenSize';
 import { cn } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface DateRangePickerProps {
   onDateChange: (range: { from?: Date; to?: Date }) => void;
@@ -31,42 +32,15 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const today = new Date();
   
   const presets: DatePreset[] = [
-    {
-      label: 'Today',
-      range: { from: today, to: today }
-    },
-    {
-      label: 'Yesterday', 
-      range: { from: subDays(today, 1), to: subDays(today, 1) }
-    },
-    {
-      label: 'This Week',
-      range: { from: startOfWeek(today, { weekStartsOn: 1 }), to: endOfWeek(today, { weekStartsOn: 1 }) }
-    },
-    {
-      label: 'Last Week',
-      range: { from: startOfWeek(subDays(today, 7), { weekStartsOn: 1 }), to: endOfWeek(subDays(today, 7), { weekStartsOn: 1 }) }
-    },
-    {
-      label: 'This Month',
-      range: { from: startOfMonth(today), to: endOfMonth(today) }
-    },
-    {
-      label: 'Last Month',
-      range: { from: startOfMonth(subDays(today, 30)), to: endOfMonth(subDays(today, 30)) }
-    },
-    {
-      label: 'Last 7 Days',
-      range: { from: subDays(today, 7), to: today }
-    },
-    {
-      label: 'Last 30 Days',
-      range: { from: subDays(today, 30), to: today }
-    },
-    {
-      label: 'Last 90 Days',
-      range: { from: subDays(today, 90), to: today }
-    }
+    { label: 'Today', range: { from: today, to: today } },
+    { label: 'Yesterday', range: { from: subDays(today, 1), to: subDays(today, 1) } },
+    { label: 'This Week', range: { from: startOfWeek(today, { weekStartsOn: 1 }), to: endOfWeek(today, { weekStartsOn: 1 }) } },
+    { label: 'Last Week', range: { from: startOfWeek(subDays(today, 7), { weekStartsOn: 1 }), to: endOfWeek(subDays(today, 7), { weekStartsOn: 1 }) } },
+    { label: 'This Month', range: { from: startOfMonth(today), to: endOfMonth(today) } },
+    { label: 'Last Month', range: { from: startOfMonth(subDays(today, 30)), to: endOfMonth(subDays(today, 30)) } },
+    { label: 'Last 7 Days', range: { from: subDays(today, 7), to: today } },
+    { label: 'Last 30 Days', range: { from: subDays(today, 30), to: today } },
+    { label: 'Last 90 Days', range: { from: subDays(today, 90), to: today } }
   ];
 
   const handlePresetSelect = (preset: DatePreset) => {
@@ -134,157 +108,156 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           </span>
         </Button>
 
-        {open && (
-          <>
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 z-[100000] bg-black/30 pointer-events-auto"
-              aria-hidden="true"
-              onClick={() => {
-                setOpen(false);
-                setMobileStep('presets');
-              }}
-            />
-
-            {/* Bottom Sheet Container - remove margin, ensure it's flush with bottom, bg is always white ONLY for the modal */}
-            <div
-              className={cn(
-                "fixed left-0 right-0 bottom-0 z-[100001] max-h-[85vh] overflow-hidden transition-all duration-300 ease-out rounded-t-2xl",
-                open ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
-              )}
-              style={{
-                background: '#fff',          // Modal content stays white
-                borderTopLeftRadius: '16px', // Top corners rounded
-                borderTopRightRadius: '16px',
-                margin: 0,                   // Remove any margin, especially marginTop/marginBottom
-                padding: 0                   // No padding on outside!
-              }}
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 bg-white rounded-t-2xl">
-                <h2 className="text-lg font-medium text-gray-900">
-                  {mobileStep === 'presets' ? 'Date Filter' : 'Select Range'}
-                </h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setOpen(false);
-                    setMobileStep('presets');
-                  }}
-                  className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <X className="h-4 w-4 text-gray-500" />
-                </Button>
-              </div>
-
-              {/* Content */}
-              <div
-                className="overflow-y-auto bg-white"
-                style={{ maxHeight: 'calc(85vh - 72px)' }}
-              >
-                {mobileStep === 'presets' ? (
-                  <div className="px-5 pb-5 space-y-2 bg-white">
-                    {presets.map((preset) => (
-                      <button
-                        key={preset.label}
-                        onClick={() => handlePresetSelect(preset)}
-                        className="w-full p-3 text-left rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors text-gray-900 font-medium text-base bg-white"
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
-
-                    <div className="pt-3">
-                      <button
-                        onClick={() => setMobileStep('custom')}
-                        className="w-full p-3 text-left rounded-lg hover:bg-[#DC291E]/5 active:bg-[#DC291E]/10 transition-colors text-[#DC291E] font-medium text-base bg-white"
-                      >
-                        Custom Range
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="px-5 pb-5 space-y-4 bg-white">
-                    <button
-                      onClick={() => setMobileStep('presets')}
-                      className="flex items-center gap-2 text-[#DC291E] font-medium hover:text-[#DC291E]/80 transition-colors"
-                    >
-                      ← Back
-                    </button>
-
-                    {/* Date Inputs */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Start date
-                        </label>
-                        <Input
-                          value={selectedRange?.from ? format(selectedRange.from, 'dd.MM.yyyy') : ''}
-                          placeholder="23.06.2025"
-                          readOnly
-                          className="text-center border-gray-200 rounded-lg h-10 bg-gray-50 font-medium text-gray-800"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          End date
-                        </label>
-                        <Input
-                          value={selectedRange?.to ? format(selectedRange.to, 'dd.MM.yyyy') : ''}
-                          placeholder="09.07.2025"
-                          readOnly
-                          className="text-center border-gray-200 rounded-lg h-10 bg-gray-50 font-medium text-gray-800"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Calendar */}
-                    <div className="py-2">
-                      <CalendarComponent
-                        mode="range"
-                        numberOfMonths={1}
-                        selected={selectedRange}
-                        onSelect={setSelectedRange}
-                        className="w-full border-0 p-0 pointer-events-auto bg-white"
-                        classNames={{
-                          months: "flex flex-col space-y-4",
-                          month: "space-y-4",
-                          caption: "flex justify-center pt-1 relative items-center text-base font-medium text-gray-900",
-                          nav: "hidden",
-                          table: "w-full border-collapse space-y-1",
-                          head_row: "flex",
-                          head_cell: "text-gray-600 rounded-md w-10 font-medium text-sm",
-                          row: "flex w-full mt-2",
-                          cell: "h-10 w-10 text-center text-sm p-0 relative",
-                          day: "h-10 w-10 p-0 font-medium hover:bg-gray-100 rounded-lg transition-colors text-gray-800",
-                          day_selected: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-lg",
-                          day_today: "bg-gray-100 text-gray-900 rounded-lg font-semibold",
-                          day_outside: "text-gray-400",
-                          day_disabled: "text-gray-300",
-                          day_range_middle: "bg-[#DC291E]/15 text-gray-900 rounded-none",
-                          day_range_start: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-lg",
-                          day_range_end: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-lg"
-                        }}
-                        fixedWeeks
-                        showOutsideDays={false}
-                        style={{ background: '#fff' }}
-                      />
-                    </div>
-
-                    <Button
-                      onClick={handleCustomRangeApply}
-                      disabled={!selectedRange?.from || !selectedRange?.to}
-                      className="w-full h-12 bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-lg font-medium text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Apply Range
-                    </Button>
-                  </div>
+        <AnimatePresence>
+          {open && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                className="fixed inset-0 z-40 bg-black/30"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => {
+                  setOpen(false);
+                  setMobileStep('presets');
+                }}
+              />
+              {/* Modal (Flush with bottom, no white bar glitch) */}
+              <motion.div
+                className={cn(
+                  "fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-hidden rounded-t-2xl"
                 )}
-              </div>
-            </div>
-          </>
-        )}
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-4 bg-white rounded-t-2xl">
+                  <h2 className="text-lg font-medium text-gray-900">
+                    {mobileStep === 'presets' ? 'Date Filter' : 'Select Range'}
+                  </h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setOpen(false);
+                      setMobileStep('presets');
+                    }}
+                    className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <X className="h-4 w-4 text-gray-500" />
+                  </Button>
+                </div>
+
+                {/* Content */}
+                <div
+                  className="overflow-y-auto bg-white"
+                  style={{ maxHeight: 'calc(85vh - 72px)' }}
+                >
+                  {mobileStep === 'presets' ? (
+                    <div className="px-5 pb-5 space-y-2 bg-white">
+                      {presets.map((preset) => (
+                        <button
+                          key={preset.label}
+                          onClick={() => handlePresetSelect(preset)}
+                          className="w-full p-3 text-left rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors text-gray-900 font-medium text-base bg-white"
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+
+                      <div className="pt-3">
+                        <button
+                          onClick={() => setMobileStep('custom')}
+                          className="w-full p-3 text-left rounded-lg hover:bg-[#DC291E]/5 active:bg-[#DC291E]/10 transition-colors text-[#DC291E] font-medium text-base bg-white"
+                        >
+                          Custom Range
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="px-5 pb-5 space-y-4 bg-white">
+                      <button
+                        onClick={() => setMobileStep('presets')}
+                        className="flex items-center gap-2 text-[#DC291E] font-medium hover:text-[#DC291E]/80 transition-colors"
+                      >
+                        ← Back
+                      </button>
+
+                      {/* Date Inputs */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Start date
+                          </label>
+                          <Input
+                            value={selectedRange?.from ? format(selectedRange.from, 'dd.MM.yyyy') : ''}
+                            placeholder="23.06.2025"
+                            readOnly
+                            className="text-center border-gray-200 rounded-lg h-10 bg-gray-50 font-medium text-gray-800"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            End date
+                          </label>
+                          <Input
+                            value={selectedRange?.to ? format(selectedRange.to, 'dd.MM.yyyy') : ''}
+                            placeholder="09.07.2025"
+                            readOnly
+                            className="text-center border-gray-200 rounded-lg h-10 bg-gray-50 font-medium text-gray-800"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Calendar */}
+                      <div className="py-2">
+                        <CalendarComponent
+                          mode="range"
+                          numberOfMonths={1}
+                          selected={selectedRange}
+                          onSelect={setSelectedRange}
+                          className="w-full border-0 p-0 pointer-events-auto bg-white"
+                          classNames={{
+                            months: "flex flex-col space-y-4",
+                            month: "space-y-4",
+                            caption: "flex justify-center pt-1 relative items-center text-base font-medium text-gray-900",
+                            nav: "hidden",
+                            table: "w-full border-collapse space-y-1",
+                            head_row: "flex",
+                            head_cell: "text-gray-600 rounded-md w-10 font-medium text-sm",
+                            row: "flex w-full mt-2",
+                            cell: "h-10 w-10 text-center text-sm p-0 relative",
+                            day: "h-10 w-10 p-0 font-medium hover:bg-gray-100 rounded-lg transition-colors text-gray-800",
+                            day_selected: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-lg",
+                            day_today: "bg-gray-100 text-gray-900 rounded-lg font-semibold",
+                            day_outside: "text-gray-400",
+                            day_disabled: "text-gray-300",
+                            day_range_middle: "bg-[#DC291E]/15 text-gray-900 rounded-none",
+                            day_range_start: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-lg",
+                            day_range_end: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-lg"
+                          }}
+                          fixedWeeks
+                          showOutsideDays={false}
+                          style={{ background: '#fff' }}
+                        />
+                      </div>
+
+                      <Button
+                        onClick={handleCustomRangeApply}
+                        disabled={!selectedRange?.from || !selectedRange?.to}
+                        className="w-full h-12 bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-lg font-medium text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Apply Range
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </>
     );
   }
