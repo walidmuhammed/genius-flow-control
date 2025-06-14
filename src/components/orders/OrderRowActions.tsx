@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Edit, Printer } from 'lucide-react';
 import { Order } from './OrdersTableRow';
@@ -93,7 +92,6 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
         <OrderActionsMenu
           order={order}
           onViewDetails={onViewDetails}
-          // Pass the same handler as above, so it works both from menu and icon
           onEditOrder={handleEdit}
           onPrintLabel={onPrintLabel}
           onCreateTicket={onCreateTicket}
@@ -115,7 +113,7 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
               className="bg-[#DB271E] hover:bg-[#c0211a] text-white"
               onClick={() => {
                 setShowDeleteDialog(false);
-                onDeleteOrder();
+                onDeleteOrder && onDeleteOrder();
               }}
             >
               Confirm Delete
@@ -128,4 +126,3 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
 };
 
 export default OrderRowActions;
-

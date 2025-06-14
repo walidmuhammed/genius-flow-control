@@ -17,6 +17,7 @@ import { BulkActionsBar } from '@/components/orders/BulkActionsBar';
 import { OrdersUnifiedContainer } from '@/components/orders/OrdersUnifiedContainer';
 import OrderDetailsDialog from '@/components/orders/OrderDetailsDialog';
 import cn from 'classnames';
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 
 const OrdersList: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
@@ -26,6 +27,8 @@ const OrdersList: React.FC = () => {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderWithCustomer | null>(null);
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [orderPendingDelete, setOrderPendingDelete] = useState<OrderWithCustomer | null>(null);
   const { isMobile, isTablet } = useScreenSize();
   
   // Fetch orders from the database using our hooks
@@ -155,8 +158,16 @@ const OrdersList: React.FC = () => {
   };
 
   const handleDeleteOrder = (order: OrderWithCustomer) => {
-    // Show confirmation dialog and delete
-    console.log('Delete order:', order.id);
+    setOrderPendingDelete(order);
+    setConfirmDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!orderPendingDelete) return;
+    await deleteOrderMutation.mutateAsync(orderPendingDelete.id);
+    setSelectedOrders((prev) => prev.filter(id => id !== orderPendingDelete.id));
+    setConfirmDeleteOpen(false);
+    setOrderPendingDelete(null);
   };
 
   const handleBulkActions = {
@@ -287,6 +298,12 @@ const OrdersList: React.FC = () => {
                             handleViewOrder(order.originalOrder);
                           }
                         }}
+                        onDeleteOrder={(order) => {
+                          // For mobile: pass originalOrder for correct .id
+                          if (order?.originalOrder) {
+                            handleDeleteOrder(order.originalOrder);
+                          }
+                        }}
                         showActions={true}
                       />
                     </div>
@@ -306,6 +323,11 @@ const OrdersList: React.FC = () => {
                           // Use the originalOrder property that's already included in the mapped data
                           if (order.originalOrder) {
                             handleViewOrder(order.originalOrder);
+                          }
+                        }}
+                        onDeleteOrder={(order) => {
+                          if (order?.originalOrder) {
+                            handleDeleteOrder(order.originalOrder);
                           }
                         }}
                         showActions={true}
@@ -349,6 +371,28 @@ const OrdersList: React.FC = () => {
           open={orderDetailsOpen}
           onOpenChange={setOrderDetailsOpen}
         />
+
+        {/* Deletion Confirmation Dialog */}
+        <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Archive Order?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this order? It will be archived and hidden from your list.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setConfirmDeleteOpen(false)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-[#DB271E] hover:bg-[#c0211a] text-white"
+                onClick={confirmDelete}
+                disabled={deleteOrderMutation.isPending}
+              >
+                {deleteOrderMutation.isPending ? 'Deleting...' : 'Confirm Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </MainLayout>
   );

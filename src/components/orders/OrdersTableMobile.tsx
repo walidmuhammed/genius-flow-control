@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Order } from './OrdersTableRow';
 import { OrderWithCustomer } from '@/services/orders';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,6 +8,8 @@ import { Eye, Printer, MoreVertical, Edit, Phone, MapPin, DollarSign, Calendar, 
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { motion } from 'framer-motion';
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
+
 interface OrdersTableMobileProps {
   orders: (Order & {
     originalOrder: OrderWithCustomer;
@@ -17,6 +19,7 @@ interface OrdersTableMobileProps {
   onViewDetails?: (order: Order & {
     originalOrder: OrderWithCustomer;
   }) => void;
+  onDeleteOrder?: (order: any) => void;
   showActions?: boolean;
 }
 const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
@@ -24,6 +27,7 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
   selectedOrders = [],
   toggleSelectOrder = () => {},
   onViewDetails = () => {},
+  onDeleteOrder = () => {},
   showActions = true
 }) => {
   const getStatusBadge = (status: string) => {
@@ -51,12 +55,20 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
   };
   const canEdit = (order: Order) => order.status === 'New';
   const canDelete = (order: Order) => order.status === 'New';
+  // Mobile/tablet deletion dialog state
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [orderPendingDelete, setOrderPendingDelete] = useState<any>(null);
   // Add edit handler using originalOrder (ensure fallback to order.id for safety)
   const handleEdit = (originalOrder: OrderWithCustomer, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (originalOrder && originalOrder.id) {
       window.location.href = `/create-order?edit=${originalOrder.id}`;
     }
+  };
+  const handleDelete = (order: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setOrderPendingDelete(order.originalOrder);
+    setConfirmDeleteOpen(true);
   };
   return <div className="space-y-3 pb-4">
       {orders.map((order, index) => <motion.div key={order.id} className={cn("bg-white rounded-xl border border-gray-100 transition-all duration-200 overflow-hidden cursor-pointer", "active:scale-[0.98] active:shadow-sm", selectedOrders.includes(order.id) ? "border-[#DC291E]/30 bg-[#DC291E]/5 shadow-sm" : "hover:shadow-md hover:border-gray-200")} initial={{
@@ -193,10 +205,10 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
                     </DropdownMenuItem>
                     {canEdit(order) && <>
                         <DropdownMenuSeparator className="my-1" />
-                        <DropdownMenuItem className="text-red-600 rounded-lg py-2.5 px-3 text-sm">
+                        <DropdownMenuItem className="text-red-600 rounded-lg py-2.5 px-3 text-sm" onClick={e => handleDelete(order, e)}>
                           Cancel Order
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600 rounded-lg py-2.5 px-3 text-sm">
+                        <DropdownMenuItem className="text-red-600 rounded-lg py-2.5 px-3 text-sm" onClick={e => handleDelete(order, e)}>
                           Delete Order
                         </DropdownMenuItem>
                       </>}
@@ -205,6 +217,32 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
               </div>
             </div>}
         </motion.div>)}
+      {/* Mobile/tablet deletion confirmation dialog */}
+      <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this order? It will be archived and hidden from your list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmDeleteOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-[#DB271E] hover:bg-[#c0211a] text-white"
+              onClick={() => {
+                setConfirmDeleteOpen(false);
+                if (orderPendingDelete && onDeleteOrder) {
+                  onDeleteOrder({ originalOrder: orderPendingDelete });
+                  setOrderPendingDelete(null);
+                }
+              }}
+            >
+              Confirm Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>;
 };
 export default OrdersTableMobile;
