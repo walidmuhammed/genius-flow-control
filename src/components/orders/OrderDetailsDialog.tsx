@@ -377,7 +377,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           {/* ACTUAL header UI */}
           <div className="border-b p-6 pt-4 pb-2 bg-background z-10 relative">
             <div className="flex items-center justify-between w-full flex-wrap gap-y-2">
-              <div className="flex items-center gap-2 min-w-0 flex-wrap">
+              <div className="flex items-center gap-2 min-w-0 flex-wrap flex-1">
                 <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
                 <span className="text-lg font-semibold truncate shrink-0">
                   Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
@@ -390,15 +390,17 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                     {order.reference_number}
                   </span>
                 )}
+                {/* Status and Type Badges */}
+                <div className="flex items-center gap-2 min-w-0 ml-2 flex-wrap">
+                  <StatusTypeBadges />
+                </div>
               </div>
               <div className="flex items-center gap-2 ml-auto">
                 {/* Header action buttons (Edit/Delete) */}
                 <HeaderActions />
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 mt-1">
-              <StatusTypeBadges />
-            </div>
+            {/* REMOVED badges row here */}
           </div>
           <ScrollArea className="max-h-[calc(95vh-140px)]" style={{ padding: 0 }}>
             <div className="p-6 pt-4">
@@ -425,7 +427,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         >
           <DrawerDragHandle />
           <div className="w-full flex flex-col gap-0">
-            <div className="flex items-center min-w-0 gap-2">
+            <div className="flex items-center min-w-0 gap-2 flex-wrap">
               <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
               <span className="text-lg font-semibold truncate shrink-0">
                 Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
@@ -438,13 +440,15 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                   {order.reference_number}
                 </span>
               )}
+              {/* Status and Type Badges */}
+              <div className="flex items-center gap-2 min-w-0 ml-2 flex-wrap">
+                <StatusTypeBadges />
+              </div>
               <div className="ml-auto flex items-center gap-1">
                 <HeaderActions />
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 mt-1">
-              <StatusTypeBadges />
-            </div>
+            {/* REMOVED badges row here */}
           </div>
         </DrawerHeader>
         {/* Improved: isolate scroll, no background scroll, safe for touch devices */}
