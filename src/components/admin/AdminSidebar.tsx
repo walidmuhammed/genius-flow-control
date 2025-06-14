@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Moon, Sun, Truck, Settings, LogOut } from 'lucide-react';
@@ -47,7 +46,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ className }) => {
       <div className="flex flex-col h-full">
         {/* Logo/Header */}
         <div className="flex h-16 items-center px-5 flex-shrink-0">
-          <Link to="/dashboard/admin" className="flex items-center gap-2.5 mx-auto">
+          <Link to="/dashboard/admin" className="flex items-center gap-2.5">
             <motion.div
               className="flex items-center"
               initial={{ opacity: 0 }}
