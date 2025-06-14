@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Edit, Printer, MoreHorizontal } from 'lucide-react';
+import { Edit, Printer } from 'lucide-react';
 import { Order } from './OrdersTableRow';
 import OrderActionsMenu from './OrderActionsMenu';
 import {
@@ -34,66 +34,65 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
   onCreateTicket,
   onDeleteOrder,
 }) => {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const isNewStatus = order.status === 'New';
 
-  // UI: Delete confirmation dialog (used only if Delete is selected, handled in menu)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-  // Only show icons on desktop hover (fade/slide right); always render 3-dots icon
   return (
     <div className="flex items-center justify-end min-w-[80px] gap-1 relative">
-      {/* Inline action icons: Show on desktop hover. Icons only, subtle fade/slide-in */}
-      <div className="hidden md:flex items-center gap-1 absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none">
+      {/* Desktop hover icon actions: minimalist, not floating */}
+      <div className="hidden md:flex items-center gap-1 pr-2">
         <div
-          className={`flex items-center gap-1 transition-all duration-200
-            ${isRowHovered ? 'opacity-100 translate-x-0 pointer-events-auto animate-fade-in animate-slide-in-right' : 'opacity-0 translate-x-4'}`}
+          className={`
+            flex items-center gap-1
+            transition-all duration-200
+            ${isRowHovered ? 'opacity-100 translate-x-0 animate-fade-in animate-slide-in-right pointer-events-auto'
+                          : 'opacity-0 translate-x-2 pointer-events-none'}
+          `}
         >
-          {/* Print icon -- always visible on hover */}
+          {/* Print Icon */}
           <button
             type="button"
-            className="group p-1 rounded hover:bg-muted transition-colors pointer-events-auto"
+            className="group p-1 rounded-md hover:bg-muted transition-colors"
             aria-label="Print Label"
             onClick={e => {
               e.stopPropagation();
               onPrintLabel();
             }}
             tabIndex={isRowHovered ? 0 : -1}
+            style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             <Printer className="w-4 h-4 text-gray-500 group-hover:text-gray-700" />
           </button>
-
-          {/* Edit icon — only for New orders */}
+          {/* Edit Icon (only for NEW) */}
           {isNewStatus && (
             <button
               type="button"
-              className="group p-1 rounded hover:bg-muted transition-colors pointer-events-auto"
+              className="group p-1 rounded-md hover:bg-muted transition-colors"
               aria-label="Edit Order"
               onClick={e => {
                 e.stopPropagation();
                 onEditOrder();
               }}
               tabIndex={isRowHovered ? 0 : -1}
+              style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               <Edit className="w-4 h-4 text-gray-500 group-hover:text-gray-700" />
             </button>
           )}
         </div>
       </div>
-
-      {/* Always-visible 3-dots menu; rightmost */}
-      <div className="ml-auto flex items-center z-10">
+      {/* 3-dots action menu, always visible */}
+      <div className="ml-0 flex items-center z-10">
         <OrderActionsMenu
           order={order}
           onViewDetails={onViewDetails}
           onEditOrder={onEditOrder}
           onPrintLabel={onPrintLabel}
           onCreateTicket={onCreateTicket}
-          // For delete, show alert dialog BEFORE archiving so user can confirm.
           onDeleteOrder={() => setShowDeleteDialog(true)}
         />
       </div>
-
-      {/* Delete Confirmation Dialog */}
+      {/* Delete confirmation dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -121,4 +120,3 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
 };
 
 export default OrderRowActions;
-

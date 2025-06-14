@@ -62,9 +62,10 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
 
   const handleViewDetails = () => setShowDetailsDialog(true);
   const handleEditOrder = () => {
-    if (originalOrder) {
-      window.location.href = `/create-order?edit=${originalOrder.id}`;
-    }
+    // Use actual unique DB ID for the redirect for Edit functionality to work (and autofill):
+    // Try to use originalOrder.id, fallback to order.id if needed
+    const dbId = originalOrder?.id || order.id;
+    window.location.href = `/create-order?edit=${dbId}`;
   };
   const handlePrintLabel = () => {
     console.log(`Printing label for order ${order.id}`);
@@ -76,10 +77,8 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   };
   const handleDeleteOrder = () => {
     if (originalOrder) {
-      // No prompt here — handled by confirmation dialog now
-      // Send archive request or similar logic here
-      window.confirm('Are you sure you want to delete this order?') &&
-        console.log(`Deleting order ${originalOrder.id}`);
+      // Deletion confirmation handled in dialog, here just do the action
+      console.log(`Deleting order ${originalOrder.id}`);
     }
   };
 
