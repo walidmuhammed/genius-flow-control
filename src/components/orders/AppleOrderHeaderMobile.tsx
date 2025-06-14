@@ -1,7 +1,6 @@
 
 import React from "react";
 import { Package, Edit, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -22,6 +21,7 @@ interface AppleOrderHeaderMobileProps {
   onDelete: () => void;
 }
 
+// badge bg classnames remain for convenience, might use in detailed info
 const statusColors: Record<string, string> = {
   new: "bg-blue-50 text-blue-700",
   "pending pickup": "bg-orange-50 text-orange-700",
@@ -33,7 +33,6 @@ const statusColors: Record<string, string> = {
   returned: "bg-gray-50 text-gray-700",
   paid: "bg-emerald-50 text-emerald-700",
 };
-
 const typeColors: Record<string, string> = {
   shipment: "bg-green-100 text-green-700",
   exchange: "bg-purple-100 text-purple-700",
@@ -47,9 +46,7 @@ const AppleOrderHeaderMobile: React.FC<AppleOrderHeaderMobileProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const statusBg = statusColors[order.status.toLowerCase()] || "bg-gray-100 text-gray-700";
-  const typeBg = typeColors[order.type.toLowerCase()] || "bg-gray-100 text-gray-700";
-
+  // removed badge display from here
   return (
     <div
       className="relative flex flex-col w-full z-20 border-b border-gray-100/70 dark:border-neutral-900/70"
@@ -71,9 +68,9 @@ const AppleOrderHeaderMobile: React.FC<AppleOrderHeaderMobileProps> = ({
           boxShadow: "0 1px 4px 0 rgba(0,0,0,0.08)",
         }}
       />
-      <div className="flex flex-col gap-0 px-7 pt-3 pb-4">
-        {/* Top row: icon + order id + reference */}
-        <div className="flex items-center min-w-0 gap-3 mb-4">
+      <div className="flex flex-col gap-0 px-7 pt-5 pb-5">
+        {/* Top row: icon + order id + reference + actions */}
+        <div className="flex items-center min-w-0 gap-3 mb-0" style={{ minHeight: 60 }}>
           <Package className="h-6 w-6 text-[#DB271E] flex-shrink-0" />
           <span className="text-[22px] font-bold tracking-tight text-gray-900 truncate">
             Order #{order.order_id?.toString().padStart(3, "0") || order.id.slice(0, 8)}
@@ -90,21 +87,7 @@ const AppleOrderHeaderMobile: React.FC<AppleOrderHeaderMobileProps> = ({
               {order.reference_number}
             </span>
           )}
-        </div>
-        {/* Second row: badges + action buttons */}
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center gap-3 flex-wrap min-w-0">
-            <span
-              className={`px-4 py-2 rounded-full text-sm font-semibold border ${statusBg} border-gray-200`}
-            >
-              {order.status}
-            </span>
-            <span
-              className={`px-4 py-2 rounded-full text-sm font-semibold border ${typeBg} border-gray-200`}
-            >
-              {order.type}
-            </span>
-          </div>
+          <div className="flex-1" />
           {canEditDelete && (
             <div className="flex items-center gap-3 ml-2">
               <Button
@@ -156,3 +139,4 @@ const AppleOrderHeaderMobile: React.FC<AppleOrderHeaderMobileProps> = ({
 };
 
 export default AppleOrderHeaderMobile;
+

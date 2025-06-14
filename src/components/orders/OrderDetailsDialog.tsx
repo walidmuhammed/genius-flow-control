@@ -171,172 +171,192 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         </AlertDialog>
       </div> : null;
 
-  // --- OrderContent ---
-  // Remove StatusTypeBadges from the first container ("bg-white rounded-lg border p-4")
+  // --- UPDATED OrderContent with Status and Type moved to info container ---
   const OrderContent = () => <div className="space-y-4 sm:space-y-6">
-      {/* Basic Info (timestamps, edit history only) */}
-      <div className="bg-white rounded-lg border p-4">
-        <div className="flex flex-col space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-gray-500" />
-              <span className="text-gray-600">Created: {formatDate(new Date(order.created_at))}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-gray-500" />
-              <span className="text-gray-600">Updated: {formatDate(new Date(order.updated_at))}</span>
-            </div>
+    {/* Basic Info (timestamps, edit history only) */}
+    <div className="bg-white rounded-lg border p-4">
+      <div className="flex flex-col space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-gray-500" />
+            <span className="text-gray-600">Created: {formatDate(new Date(order.created_at))}</span>
           </div>
-          {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Edit className="h-4 w-4 text-amber-600" />
-                <span className="font-medium text-amber-800">🛠 This order was edited:</span>
-              </div>
-              <div className="space-y-1 text-sm text-amber-700">
-                {order.edit_history.map((change: any, index: number) => <div key={index}>
-                    • {change.field}: "{change.oldValue}" → "{change.newValue}"
-                  </div>)}
-              </div>
-            </div>}
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-gray-500" />
+            <span className="text-gray-600">Updated: {formatDate(new Date(order.updated_at))}</span>
+          </div>
+        </div>
+        {/* NEW: Added row for Type and Status */}
+        <div className="flex flex-wrap gap-3 mt-1">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-700 font-medium">Type:</span>
+            <span
+              className={`px-4 py-2 rounded-full text-sm font-semibold border ${getTypeColor(order.type)} border-gray-200`}
+              style={{ minWidth: 80, textAlign: 'center' }}
+            >
+              {order.type}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-700 font-medium">Status:</span>
+            <span
+              className={`px-4 py-2 rounded-full text-sm font-semibold border ${getStatusColor(order.status)} border-gray-200`}
+              style={{ minWidth: 80, textAlign: 'center' }}
+            >
+              {order.status}
+            </span>
+          </div>
+        </div>
+        {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <Edit className="h-4 w-4 text-amber-600" />
+            <span className="font-medium text-amber-800">🛠 This order was edited:</span>
+          </div>
+          <div className="space-y-1 text-sm text-amber-700">
+            {order.edit_history.map((change: any, index: number) => <div key={index}>
+              • {change.field}: "{change.oldValue}" → "{change.newValue}"
+            </div>)}
+          </div>
+        </div>}
+      </div>
+    </div>
+    {/* Order Progress */}
+    <div className="bg-white rounded-lg border p-4">
+      <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
+        <Package className="h-5 w-5 text-[#DB271E]" />
+        Order Progress
+      </h3>
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <OrderProgressBar status={order.status as any} type={order.type as any} />
+      </div>
+    </div>
+
+    {/* Customer Information */}
+    <div className="bg-white rounded-lg border p-4">
+      <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
+        <User className="h-5 w-5 text-[#DB271E]" />
+        Customer Information
+      </h3>
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <User className="h-4 w-4 text-gray-500 flex-shrink-0" />
+          <div>
+            <span className="font-medium text-gray-700">Name:</span>
+            <span className="ml-2 text-gray-900">{order.customer?.name || 'N/A'}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
+          <div>
+            <span className="font-medium text-gray-700">Phone:</span>
+            <span className="ml-2 text-gray-900">{order.customer?.phone || 'N/A'}</span>
+          </div>
+        </div>
+        <div className="flex items-start gap-3">
+          <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <span className="font-medium text-gray-700">Location:</span>
+            <div className="ml-2 text-gray-900">
+              {order.customer?.city_name && order.customer?.governorate_name ? `${order.customer.city_name}, ${order.customer.governorate_name}` : 'N/A'}
+            </div>
+            {order.customer?.address && <div className="ml-2 text-sm text-gray-600 mt-1">
+                <span className="font-medium">Address:</span> {order.customer.address}
+              </div>}
+          </div>
         </div>
       </div>
-      {/* Order Progress */}
-      <div className="bg-white rounded-lg border p-4">
+    </div>
+
+    {/* Package Information */}
+    <div className="bg-white rounded-lg border p-4">
+      <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
+        <Package className="h-5 w-5 text-[#DB271E]" />
+        Package Information
+      </h3>
+      <div className="space-y-3 text-sm">
+        <div>
+          <span className="font-medium text-gray-700">Type:</span>
+          <span className="ml-2 text-gray-900">{order.package_type || 'N/A'}</span>
+        </div>
+        <div>
+          <span className="font-medium text-gray-700">Description:</span>
+          <span className="ml-2 text-gray-900">{order.package_description || 'N/A'}</span>
+        </div>
+        <div>
+          <span className="font-medium text-gray-700">Items Count:</span>
+          <span className="ml-2 text-gray-900">{order.items_count || 1}</span>
+        </div>
+        <div>
+          <span className="font-medium text-gray-700">Allow Opening:</span>
+          <span className="ml-2 text-gray-900">{order.allow_opening ? 'Yes' : 'No'}</span>
+        </div>
+      </div>
+    </div>
+
+    {/* Financial Information */}
+    <div className="bg-white rounded-lg border p-4">
+      <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
+        <DollarSign className="h-5 w-5 text-[#DB271E]" />
+        Financial Information
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="font-medium mb-3 text-gray-800">Cash Collection</h4>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">USD:</span>
+              <span className="font-medium">${order.cash_collection_usd || '0.00'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">LBP:</span>
+              <span className="font-medium">{(order.cash_collection_lbp || 0).toLocaleString()} LBP</span>
+            </div>
+            <div className="pt-1 border-t border-gray-200">
+              <span className="text-xs text-gray-500">
+                Enabled: {order.cash_collection_enabled ? 'Yes' : 'No'}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="font-medium mb-3 text-gray-800">Delivery Fees</h4>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">USD:</span>
+              <span className="font-medium">${order.delivery_fees_usd || '0.00'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">LBP:</span>
+              <span className="font-medium">{(order.delivery_fees_lbp || 0).toLocaleString()} LBP</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Courier Information */}
+    {order.courier_name && <div className="bg-white rounded-lg border p-4">
         <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-          <Package className="h-5 w-5 text-[#DB271E]" />
-          Order Progress
+          <Truck className="h-5 w-5 text-[#DB271E]" />
+          Courier Information
+        </h3>
+        <div className="text-sm">
+          <span className="font-medium text-gray-700">Assigned Courier:</span>
+          <span className="ml-2 text-gray-900">{order.courier_name}</span>
+        </div>
+      </div>}
+
+    {/* Notes */}
+    {order.note && <div className="bg-white rounded-lg border p-4">
+        <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
+          <FileText className="h-5 w-5 text-[#DB271E]" />
+          Notes
         </h3>
         <div className="bg-gray-50 p-4 rounded-lg">
-          <OrderProgressBar status={order.status as any} type={order.type as any} />
+          <p className="text-sm text-gray-700 whitespace-pre-wrap">{order.note}</p>
         </div>
-      </div>
-
-      {/* Customer Information */}
-      <div className="bg-white rounded-lg border p-4">
-        <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-          <User className="h-5 w-5 text-[#DB271E]" />
-          Customer Information
-        </h3>
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <User className="h-4 w-4 text-gray-500 flex-shrink-0" />
-            <div>
-              <span className="font-medium text-gray-700">Name:</span>
-              <span className="ml-2 text-gray-900">{order.customer?.name || 'N/A'}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
-            <div>
-              <span className="font-medium text-gray-700">Phone:</span>
-              <span className="ml-2 text-gray-900">{order.customer?.phone || 'N/A'}</span>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <span className="font-medium text-gray-700">Location:</span>
-              <div className="ml-2 text-gray-900">
-                {order.customer?.city_name && order.customer?.governorate_name ? `${order.customer.city_name}, ${order.customer.governorate_name}` : 'N/A'}
-              </div>
-              {order.customer?.address && <div className="ml-2 text-sm text-gray-600 mt-1">
-                  <span className="font-medium">Address:</span> {order.customer.address}
-                </div>}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Package Information */}
-      <div className="bg-white rounded-lg border p-4">
-        <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-          <Package className="h-5 w-5 text-[#DB271E]" />
-          Package Information
-        </h3>
-        <div className="space-y-3 text-sm">
-          <div>
-            <span className="font-medium text-gray-700">Type:</span>
-            <span className="ml-2 text-gray-900">{order.package_type || 'N/A'}</span>
-          </div>
-          <div>
-            <span className="font-medium text-gray-700">Description:</span>
-            <span className="ml-2 text-gray-900">{order.package_description || 'N/A'}</span>
-          </div>
-          <div>
-            <span className="font-medium text-gray-700">Items Count:</span>
-            <span className="ml-2 text-gray-900">{order.items_count || 1}</span>
-          </div>
-          <div>
-            <span className="font-medium text-gray-700">Allow Opening:</span>
-            <span className="ml-2 text-gray-900">{order.allow_opening ? 'Yes' : 'No'}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Financial Information */}
-      <div className="bg-white rounded-lg border p-4">
-        <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-          <DollarSign className="h-5 w-5 text-[#DB271E]" />
-          Financial Information
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium mb-3 text-gray-800">Cash Collection</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">USD:</span>
-                <span className="font-medium">${order.cash_collection_usd || '0.00'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">LBP:</span>
-                <span className="font-medium">{(order.cash_collection_lbp || 0).toLocaleString()} LBP</span>
-              </div>
-              <div className="pt-1 border-t border-gray-200">
-                <span className="text-xs text-gray-500">
-                  Enabled: {order.cash_collection_enabled ? 'Yes' : 'No'}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium mb-3 text-gray-800">Delivery Fees</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">USD:</span>
-                <span className="font-medium">${order.delivery_fees_usd || '0.00'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">LBP:</span>
-                <span className="font-medium">{(order.delivery_fees_lbp || 0).toLocaleString()} LBP</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Courier Information */}
-      {order.courier_name && <div className="bg-white rounded-lg border p-4">
-          <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-            <Truck className="h-5 w-5 text-[#DB271E]" />
-            Courier Information
-          </h3>
-          <div className="text-sm">
-            <span className="font-medium text-gray-700">Assigned Courier:</span>
-            <span className="ml-2 text-gray-900">{order.courier_name}</span>
-          </div>
-        </div>}
-
-      {/* Notes */}
-      {order.note && <div className="bg-white rounded-lg border p-4">
-          <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-            <FileText className="h-5 w-5 text-[#DB271E]" />
-            Notes
-          </h3>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">{order.note}</p>
-          </div>
-        </div>}
-    </div>;
+      </div>}
+  </div>;
 
   // DESKTOP: fix dialog constraints, add DialogDescription
   if (!isMobile) {
