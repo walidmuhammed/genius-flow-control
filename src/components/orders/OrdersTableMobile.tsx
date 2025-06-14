@@ -51,6 +51,13 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
   };
   const canEdit = (order: Order) => order.status === 'New';
   const canDelete = (order: Order) => order.status === 'New';
+  // Add edit handler using originalOrder (ensure fallback to order.id for safety)
+  const handleEdit = (originalOrder: OrderWithCustomer, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (originalOrder && originalOrder.id) {
+      window.location.href = `/create-order?edit=${originalOrder.id}`;
+    }
+  };
   return <div className="space-y-3 pb-4">
       {orders.map((order, index) => <motion.div key={order.id} className={cn("bg-white rounded-xl border border-gray-100 transition-all duration-200 overflow-hidden cursor-pointer", "active:scale-[0.98] active:shadow-sm", selectedOrders.includes(order.id) ? "border-[#DC291E]/30 bg-[#DC291E]/5 shadow-sm" : "hover:shadow-md hover:border-gray-200")} initial={{
       opacity: 0,
@@ -147,7 +154,13 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
               </Button>
               
               <div className="flex items-center gap-1">
-                {canEdit(order) && <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-white/80" onClick={e => e.stopPropagation()}>
+                {/* Fast action bar edit icon */}
+                {canEdit(order) && <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-white/80"
+                    onClick={e => handleEdit(order.originalOrder, e)}
+                  >
                     <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500" />
                   </Button>}
                 
@@ -162,10 +175,14 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-white rounded-xl border-gray-200 shadow-xl z-50 min-w-[160px]" sideOffset={4}>
-                    <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm">
+                    <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm" onClick={e => {
+                      e.stopPropagation();
+                      onViewDetails(order);
+                    }}>
                       View Order Details
                     </DropdownMenuItem>
-                    {canEdit(order) && <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm">
+                    {/* Edit menu item: handle navigation */}
+                    {canEdit(order) && <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm" onClick={e => handleEdit(order.originalOrder, e)}>
                         Edit Order
                       </DropdownMenuItem>}
                     <DropdownMenuItem className="rounded-lg py-2.5 px-3 text-sm">
