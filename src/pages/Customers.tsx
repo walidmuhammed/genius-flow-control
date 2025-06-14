@@ -14,6 +14,8 @@ import { CustomerWithLocation } from "@/services/customers";
 import { formatDate } from "@/utils/format";
 import { useOrders } from "@/hooks/use-orders";
 import { toast } from "sonner";
+import CustomerDetailsModal from "@/components/customers/CustomerDetailsModal";
+import CustomerEditForm from "@/components/customers/CustomerEditForm";
 
 interface CustomerFormProps {
   customer: CustomerWithLocation;
@@ -411,166 +413,160 @@ const Customers: React.FC = () => {
       </div>
 
       {/* Customer Detail Modal */}
-      <Dialog open={!!selectedCustomerId} onOpenChange={open => !open && closeModal()}>
-        <DialogContent className="sm:max-w-[600px] p-0">
-          <DialogHeader className="px-6 py-4 border-b flex flex-row justify-between items-center">
-            <DialogTitle className="text-xl font-semibold">Customer Details</DialogTitle>
-            <div className="flex items-center gap-2">
-              {isEditing ? (
-                <>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="h-8 px-3 py-1 text-sm" 
-                    onClick={() => setIsEditing(false)}
-                  >
-                    <X className="h-4 w-4 mr-1" /> Cancel
-                  </Button>
-                </>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="h-8 px-3 py-1 text-sm" 
-                  onClick={handleEditToggle}
-                  disabled={isLoadingCustomer}
-                >
-                  <Edit className="h-4 w-4 mr-1" /> Edit
-                </Button>
-              )}
-            </div>
-          </DialogHeader>
-          
-          {isLoadingCustomer ? (
-            <div className="p-6 flex justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-            </div>
-          ) : selectedCustomer ? (
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Customer Information</h3>
-                  
+      <CustomerDetailsModal
+        open={!!selectedCustomerId}
+        onOpenChange={(open) => {
+          if (!open) closeModal();
+        }}
+        title="Customer Details"
+      >
+        {isLoadingCustomer ? (
+          <div className="flex justify-center items-center min-h-[120px]">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          </div>
+        ) : selectedCustomer ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Customer Information</h3>
+                {isEditing ? (
+                  <CustomerEditForm
+                    customer={selectedCustomer}
+                    onUpdate={handleSaveChanges}
+                    isLoading={isUpdating}
+                    onCancel={() => setIsEditing(false)}
+                  />
+                ) : (
+                  <div className="mt-2 space-y-4">
+                    <p className="text-lg font-semibold">{selectedCustomer.name}</p>
+                    <p className="text-gray-700">{selectedCustomer.phone}</p>
+                    {selectedCustomer.secondary_phone && (
+                      <p className="text-gray-700">{selectedCustomer.secondary_phone}</p>
+                    )}
+                    <p className="text-gray-700">
+                      {selectedCustomer.city_name || selectedCustomer.governorate_name || 'No location'}
+                      {selectedCustomer.is_work_address && ' (Work Address)'}
+                    </p>
+                    <p className="text-gray-700">{selectedCustomer.address || 'No address'}</p>
+                  </div>
+                )}
+                <div className="mt-4 flex gap-2">
                   {isEditing ? (
-                    <CustomerForm 
-                      customer={selectedCustomer}
-                      onUpdate={handleSaveChanges}
-                      cities={uniqueCities}
-                      governorates={uniqueGovernorates}
-                      isLoading={isUpdating}
-                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3 py-1 text-sm"
+                      onClick={() => setIsEditing(false)}
+                    >
+                      Cancel
+                    </Button>
                   ) : (
-                    <div className="mt-2 space-y-4">
-                      <p className="text-lg font-semibold">{selectedCustomer.name}</p>
-                      <p className="text-gray-700">{selectedCustomer.phone}</p>
-                      {selectedCustomer.secondary_phone && (
-                        <p className="text-gray-700">{selectedCustomer.secondary_phone}</p>
-                      )}
-                      <p className="text-gray-700">
-                        {selectedCustomer.city_name || selectedCustomer.governorate_name || 'No location'}
-                        {selectedCustomer.is_work_address && ' (Work Address)'}
-                      </p>
-                      <p className="text-gray-700">{selectedCustomer.address || 'No address'}</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3 py-1 text-sm"
+                      onClick={handleEditToggle}
+                      disabled={isLoadingCustomer}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Order Statistics</h3>
+                <div className="mt-2 space-y-2">
+                  {(() => {
+                    const stats = calculateCustomerStats(selectedCustomer.id);
+                    return (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Total Orders:</span>
+                          <span className="font-medium">{stats.orderCount}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Total Value (USD):</span>
+                          <span className="font-medium">${stats.totalValueUSD.toFixed(2)}</span>
+                        </div>
+                        {stats.totalValueLBP !== null && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Total Value (LBP):</span>
+                            <span className="font-medium">{stats.totalValueLBP.toLocaleString()}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Last Order:</span>
+                          <span className="font-medium">{stats.lastOrderDate}</span>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-3">Recent Orders</h3>
+              {customerOrders.length === 0 ? (
+                <div className="text-sm text-gray-500 p-4 text-center border rounded-md">
+                  No orders found for this customer
+                </div>
+              ) : (
+                <div className="border rounded-md overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="text-xs">Order ID</TableHead>
+                        <TableHead className="text-xs">Date</TableHead>
+                        <TableHead className="text-xs">Amount</TableHead>
+                        <TableHead className="text-xs">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {customerOrders.slice(0, 5).map(order => (
+                        <TableRow key={order.id}>
+                          <TableCell className="font-medium">{order.reference_number || order.id.substring(0, 8)}</TableCell>
+                          <TableCell>{formatDate(new Date(order.created_at))}</TableCell>
+                          <TableCell>
+                            {order.cash_collection_usd ? `$${Number(order.cash_collection_usd).toFixed(2)}` : ''}
+                            {order.cash_collection_usd && order.cash_collection_lbp ? ' / ' : ''}
+                            {order.cash_collection_lbp ? `${Number(order.cash_collection_lbp).toLocaleString()} LBP` : ''}
+                            {!order.cash_collection_usd && !order.cash_collection_lbp ? 'N/A' : ''}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={`
+                              ${order.status === 'Successful' ? 'bg-green-100 text-green-800' : 
+                                order.status === 'Unsuccessful' ? 'bg-red-100 text-red-800' : 
+                                order.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 
+                                order.status === 'New' ? 'bg-purple-100 text-purple-800' : 
+                                order.status === 'Pending Pickup' ? 'bg-amber-100 text-amber-800' :
+                                order.status === 'Returned' ? 'bg-gray-100 text-gray-800' : 
+                                'bg-gray-100 text-gray-800'}
+                              hover:bg-opacity-80
+                            `}>
+                              {order.status || 'Unknown'}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  {customerOrders.length > 5 && (
+                    <div className="p-2 text-center border-t">
+                      <Button variant="ghost" size="sm">
+                        View all {customerOrders.length} orders
+                      </Button>
                     </div>
                   )}
                 </div>
-                
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Order Statistics</h3>
-                  <div className="mt-2 space-y-2">
-                    {(() => {
-                      const stats = calculateCustomerStats(selectedCustomer.id);
-                      return (
-                        <>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Total Orders:</span>
-                            <span className="font-medium">{stats.orderCount}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Total Value (USD):</span>
-                            <span className="font-medium">${stats.totalValueUSD.toFixed(2)}</span>
-                          </div>
-                          {stats.totalValueLBP !== null && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Total Value (LBP):</span>
-                              <span className="font-medium">{stats.totalValueLBP.toLocaleString()}</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Last Order:</span>
-                            <span className="font-medium">{stats.lastOrderDate}</span>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-6">
-                <h3 className="text-sm font-medium text-gray-500 mb-3">Recent Orders</h3>
-                {customerOrders.length === 0 ? (
-                  <div className="text-sm text-gray-500 p-4 text-center border rounded-md">
-                    No orders found for this customer
-                  </div>
-                ) : (
-                  <div className="border rounded-md overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-gray-50">
-                          <TableHead className="text-xs">Order ID</TableHead>
-                          <TableHead className="text-xs">Date</TableHead>
-                          <TableHead className="text-xs">Amount</TableHead>
-                          <TableHead className="text-xs">Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {customerOrders.slice(0, 5).map(order => (
-                          <TableRow key={order.id}>
-                            <TableCell className="font-medium">{order.reference_number || order.id.substring(0, 8)}</TableCell>
-                            <TableCell>{formatDate(new Date(order.created_at))}</TableCell>
-                            <TableCell>
-                              {order.cash_collection_usd ? `$${Number(order.cash_collection_usd).toFixed(2)}` : ''}
-                              {order.cash_collection_usd && order.cash_collection_lbp ? ' / ' : ''}
-                              {order.cash_collection_lbp ? `${Number(order.cash_collection_lbp).toLocaleString()} LBP` : ''}
-                              {!order.cash_collection_usd && !order.cash_collection_lbp ? 'N/A' : ''}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={`
-                                ${order.status === 'Successful' ? 'bg-green-100 text-green-800' : 
-                                  order.status === 'Unsuccessful' ? 'bg-red-100 text-red-800' : 
-                                  order.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 
-                                  order.status === 'New' ? 'bg-purple-100 text-purple-800' : 
-                                  order.status === 'Pending Pickup' ? 'bg-amber-100 text-amber-800' :
-                                  order.status === 'Returned' ? 'bg-gray-100 text-gray-800' : 
-                                  'bg-gray-100 text-gray-800'}
-                                hover:bg-opacity-80
-                              `}>
-                                {order.status || 'Unknown'}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                    {customerOrders.length > 5 && (
-                      <div className="p-2 text-center border-t">
-                        <Button variant="ghost" size="sm">
-                          View all {customerOrders.length} orders
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              )}
             </div>
-          ) : (
-            <div className="p-6 text-center text-gray-500">
-              Customer not found
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </>
+        ) : (
+          <div className="text-center text-gray-500 min-h-[80px] flex items-center justify-center">
+            Customer not found
+          </div>
+        )}
+      </CustomerDetailsModal>
     </MainLayout>
   );
 };
