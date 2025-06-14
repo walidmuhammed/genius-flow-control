@@ -285,7 +285,7 @@ const CreateOrder = () => {
       }
       
       const orderData: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'> = {
-        type: orderType === 'exchange' ? 'Exchange' : 'Deliver',
+        type: orderType === 'exchange' ? 'Exchange' : 'Shipment',
         customer_id: customerId,
         package_type: packageType,
         package_description: description || undefined,
