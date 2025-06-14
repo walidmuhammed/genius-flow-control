@@ -147,7 +147,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 
                 <div className="space-y-1">
-                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>New Orders</h3>
+                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>Orders</h3>
                   <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
                     {isOrdersLoading ? '--' : todayOrders.length}
                   </div>
@@ -258,8 +258,8 @@ const Dashboard: React.FC = () => {
                     isMobile ? "text-sm px-3" : "text-sm px-4"
                   )}
                 >
-                  <ShoppingCart className={cn("h-4 w-4", isMobile && "h-4 w-4")} />
-                  <span className={cn("font-medium", isMobile ? "text-sm" : "text-sm")}>New Orders</span>
+                  <Package className={cn("h-4 w-4", isMobile && "h-4 w-4")} />
+                  <span className={cn("font-medium", isMobile ? "text-sm" : "text-sm")}>Orders</span>
                 </TabsTrigger>
                 
                 <TabsTrigger 
