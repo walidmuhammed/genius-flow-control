@@ -180,6 +180,11 @@
   .status-canceled {
     @apply bg-red-50/80 text-red-700 backdrop-blur-sm;
   }
+  
+  .dashboard-stat-card {
+    @apply transition-none border border-border bg-white dark:bg-gray-900 rounded-xl p-0 m-0; /* Enforces flat, clean look */
+    box-shadow: none !important;
+  }
 }
 
 @keyframes fadeIn {
