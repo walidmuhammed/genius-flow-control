@@ -283,9 +283,16 @@ const CreateOrder = () => {
         const newCustomer = await createCustomer.mutateAsync(customerData);
         customerId = newCustomer.id;
       }
-      
+
+      // --- FIXED TYPE MAPPING BELOW ---
+      // When submitting, map orderType to backend-expected value
+      let typeForBackend: "Deliver" | "Exchange" | "Cash Collection";
+      if (orderType === "shipment") typeForBackend = "Deliver";
+      else if (orderType === "exchange") typeForBackend = "Exchange";
+      else typeForBackend = "Deliver"; // Default fallback
+
       const orderData: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at'> = {
-        type: orderType === 'exchange' ? 'Exchange' : 'Shipment',
+        type: typeForBackend,
         customer_id: customerId,
         package_type: packageType,
         package_description: description || undefined,
