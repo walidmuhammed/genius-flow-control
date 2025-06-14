@@ -1,6 +1,6 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetPortal, SheetOverlay } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -14,11 +14,13 @@ import { useNavigate } from 'react-router-dom';
 import { useDeleteOrder } from '@/hooks/use-orders';
 import { toast } from 'sonner';
 import { MapPin, Phone, User, Package, DollarSign, Clock, FileText, Truck, Edit, Trash2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 interface OrderDetailsDialogProps {
   order: OrderWithCustomer | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
 const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   order,
   open,
@@ -27,12 +29,14 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const deleteOrder = useDeleteOrder();
+
   const handleEditOrder = () => {
     if (order) {
       navigate(`/create-order?edit=${order.id}`);
       onOpenChange(false);
     }
   };
+
   const handleDeleteOrder = async () => {
     if (order) {
       try {
@@ -44,6 +48,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       }
     }
   };
+
   if (!order) {
     return isMobile ? <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="bottom" className="h-[90vh]">
@@ -65,6 +70,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         </DialogContent>
       </Dialog>;
   }
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'new':
@@ -89,6 +95,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
+
   const getTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'shipment':
@@ -106,6 +113,51 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
 
   // Check if order can be edited/deleted (only NEW orders)
   const canEditDelete = order?.status === 'New';
+
+  // --- INTERNAL: Custom DialogContent WITHOUT CLOSE BUTTON ---
+  const CustomDialogContent = React.forwardRef<
+    React.ElementRef<typeof DialogContent>,
+    React.ComponentPropsWithoutRef<typeof DialogContent>
+  >(({ className, children, ...props }, ref) => (
+    <DialogPortal>
+      <DialogOverlay />
+      <div
+        ref={ref as any}
+        className={cn(
+          "fixed left-1/2 top-1/2 z-50 grid w-full max-w-2xl translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
+          className
+        )}
+        {...props}
+      >
+        {children}
+        {/* NO CLOSE BUTTON */}
+      </div>
+    </DialogPortal>
+  ));
+  CustomDialogContent.displayName = "CustomDialogContent";
+
+  // --- INTERNAL: Custom SheetContent WITHOUT CLOSE BUTTON ---
+  const CustomSheetContent = React.forwardRef<
+    React.ElementRef<typeof SheetContent>,
+    React.ComponentPropsWithoutRef<typeof SheetContent>
+  >(({ side = "bottom", className, children, ...props }, ref) => (
+    <SheetPortal>
+      <SheetOverlay />
+      <div
+        ref={ref as any}
+        className={cn(
+          // keep same Sheet "bottom" animation/appearance
+          "fixed inset-x-0 bottom-0 z-50 border-t bg-background p-0 shadow-lg h-[90vh] transition duration-500 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom",
+          className
+        )}
+        {...props}
+      >
+        {children}
+        {/* NO CLOSE BUTTON */}
+      </div>
+    </SheetPortal>
+  ));
+  CustomSheetContent.displayName = "CustomSheetContent";
 
   // --- STATUS BADGE + TYPE BADGE (moved to header) ---
   const StatusTypeBadges = () => (
@@ -136,7 +188,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   const HeaderActions = () =>
     canEditDelete ? (
       <div className="flex items-center gap-1 ml-2">
-        {/* ... keep existing code for edit/delete buttons ... */}
         <Button onClick={handleEditOrder} variant="outline" size="sm" className="flex items-center gap-1 px-2 py-1 text-xs">
           <Edit className="h-4 w-4" />
         </Button>
@@ -181,7 +232,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               <span className="text-gray-600">Updated: {formatDate(new Date(order.updated_at))}</span>
             </div>
           </div>
-          {/* ... keep edit history section ... */}
           {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && (
             <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
@@ -199,7 +249,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           )}
         </div>
       </div>
-      {/* ... keep the rest of OrderContent the same ... */}
       {/* Order Progress */}
       <div className="bg-white rounded-lg border p-4">
         <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
@@ -339,21 +388,21 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     </div>
   );
 
-  // --- DESKTOP Dialog ---
+  // --- DESKTOP Dialog, using CustomDialogContent (NO X) ---
   if (!isMobile) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
+        <CustomDialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
           <DialogHeader>
+            {/* Header: [Package] Order #xxx [ref] [badges] ... right: actions + close */}
             <div className="flex items-center justify-between w-full flex-wrap gap-y-2">
-              {/* Header: [Package] Order #xxx [ref] [badges] ... right: actions + close */}
               <div className="flex items-center gap-2 min-w-0 flex-wrap">
                 <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
                 <EnhancedOrderHeader />
               </div>
               <div className="flex items-center gap-2 ml-auto">
                 <HeaderActions />
-                {/* Close button provided by DialogContent as before */}
+                {/* NO X/CLOSE */}
               </div>
             </div>
           </DialogHeader>
@@ -362,15 +411,15 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               <OrderContent />
             </div>
           </ScrollArea>
-        </DialogContent>
+        </CustomDialogContent>
       </Dialog>
     );
   }
 
-  // --- MOBILE Sheet ---
+  // --- MOBILE Sheet, using CustomSheetContent (NO X) ---
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[90vh] p-0">
+      <CustomSheetContent side="bottom" className="h-[90vh] p-0">
         <div className="flex flex-col h-full">
           <SheetHeader className="px-4 py-3 border-b bg-white">
             <div className="flex flex-col gap-1 w-full">
@@ -379,6 +428,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                 <EnhancedOrderHeader />
                 <div className="flex items-center gap-2 ml-auto">
                   <HeaderActions />
+                  {/* NO CLOSE */}
                 </div>
               </div>
             </div>
@@ -389,8 +439,9 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </div>
           </ScrollArea>
         </div>
-      </SheetContent>
+      </CustomSheetContent>
     </Sheet>
   );
 };
+
 export default OrderDetailsDialog;
