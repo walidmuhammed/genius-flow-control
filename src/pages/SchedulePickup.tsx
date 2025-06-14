@@ -198,8 +198,13 @@ const SchedulePickup: React.FC = () => {
                   />
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-[#DB271E] text-sm">#{order.order_id}</span>
-                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50 border-gray-200">
+                      <span className="font-semibold text-[#DB271E] text-sm">
+                        {order.order_id}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="text-xs px-1.5 py-0.5 bg-gray-50 border-gray-200"
+                      >
                         {order.shipment_type || 'Standard'}
                       </Badge>
                     </div>
@@ -246,7 +251,9 @@ const SchedulePickup: React.FC = () => {
                   <div className="flex items-center gap-1.5">
                     <MapPin className="h-3 w-3 text-gray-400" />
                     <span className="text-xs text-gray-500">
-                      {order.city?.name || 'Unknown Area'}
+                      {order.customer?.city_name ||
+                        order.customer?.governorate_name ||
+                        'Unknown Area'}
                     </span>
                   </div>
                 </div>
