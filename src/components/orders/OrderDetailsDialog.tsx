@@ -1,13 +1,19 @@
+
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { formatDate } from '@/utils/format';
 import { OrderWithCustomer } from '@/services/orders';
 import OrderProgressBar from './OrderProgressBar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useNavigate } from 'react-router-dom';
+import { useDeleteOrder } from '@/hooks/use-orders';
+import { toast } from 'sonner';
 import { 
   MapPin, 
   Phone, 
@@ -17,7 +23,8 @@ import {
   Clock,
   FileText,
   Truck,
-  X
+  Edit,
+  Trash2
 } from 'lucide-react';
 
 interface OrderDetailsDialogProps {
@@ -32,6 +39,27 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   onOpenChange
 }) => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const deleteOrder = useDeleteOrder();
+
+  const handleEditOrder = () => {
+    if (order) {
+      navigate(`/create-order?edit=${order.id}`);
+      onOpenChange(false);
+    }
+  };
+
+  const handleDeleteOrder = async () => {
+    if (order) {
+      try {
+        await deleteOrder.mutateAsync(order.id);
+        onOpenChange(false);
+        toast.success("Order archived successfully");
+      } catch (error) {
+        toast.error("Failed to archive order");
+      }
+    }
+  };
 
   if (!order) {
     return isMobile ? (
@@ -84,6 +112,9 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     }
   };
 
+  // Check if order can be edited/deleted (only NEW orders)
+  const canEditDelete = order.status === 'New';
+
   const OrderContent = () => (
     <div className="space-y-4 sm:space-y-6">
       {/* Order Status & Basic Info */}
@@ -121,6 +152,68 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               <span className="text-gray-600">Updated: {formatDate(new Date(order.updated_at))}</span>
             </div>
           </div>
+
+          {/* Edit History Section - Show if order was edited */}
+          {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && (
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Edit className="h-4 w-4 text-amber-600" />
+                <span className="font-medium text-amber-800">🛠 This order was edited:</span>
+              </div>
+              <div className="space-y-1 text-sm text-amber-700">
+                {order.edit_history.map((change: any, index: number) => (
+                  <div key={index}>
+                    • {change.field}: "{change.oldValue}" → "{change.newValue}"
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons - Only show for NEW orders */}
+          {canEditDelete && (
+            <div className="flex gap-2 pt-2 border-t border-gray-100">
+              <Button
+                onClick={handleEditOrder}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Edit Order
+              </Button>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Order
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this order? It will be archived and hidden from the list.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteOrder}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete Order
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
         </div>
       </div>
 

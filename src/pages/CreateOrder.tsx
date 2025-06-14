@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Info, Check, Plus, MapPin, Search, Phone, Package, FileText, ScrollText, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -97,12 +96,54 @@ const CreateOrder = () => {
   const createCustomer = useCreateCustomer();
   const createOrder = useCreateOrder();
   const updateOrder = useUpdateOrder();
+
+  // Load order data for edit mode
+  useEffect(() => {
+    if (isEditMode && editOrder) {
+      // Pre-fill form with existing order data
+      setOrderType(editOrder.type === 'Exchange' ? 'exchange' : 'shipment');
+      setPackageType(editOrder.package_type as 'parcel' | 'document' | 'bulky');
+      setDescription(editOrder.package_description || '');
+      setItemsCount(editOrder.items_count || 1);
+      setAllowOpening(editOrder.allow_opening || false);
+      setCashCollection(editOrder.cash_collection_enabled || false);
+      setUsdAmount(editOrder.cash_collection_usd?.toString() || '');
+      setLbpAmount(editOrder.cash_collection_lbp?.toString() || '');
+      setDeliveryNotes(editOrder.note || '');
+      setOrderReference(editOrder.reference_number || '');
+
+      // Load customer data
+      if (editOrder.customer) {
+        setPhone(editOrder.customer.phone);
+        setName(editOrder.customer.name);
+        setAddress(editOrder.customer.address || '');
+        setIsWorkAddress(editOrder.customer.is_work_address || false);
+        
+        if (editOrder.customer.secondary_phone) {
+          setSecondaryPhone(editOrder.customer.secondary_phone);
+          setIsSecondaryPhone(true);
+        }
+
+        if (editOrder.customer.governorate_id && editOrder.customer.city_id) {
+          setSelectedGovernorateId(editOrder.customer.governorate_id);
+          setSelectedCityId(editOrder.customer.city_id);
+          setSelectedGovernorateName(editOrder.customer.governorate_name || '');
+          setSelectedCityName(editOrder.customer.city_name || '');
+        }
+
+        setExistingCustomer(editOrder.customer);
+        setPhoneValid(true);
+      }
+    }
+  }, [isEditMode, editOrder]);
+
   const clearCachedFormData = () => {
     const formKeys = ['order-form-data', 'order-form-customer', 'order-form-phone', 'order-form-address', 'order-form-governorate', 'order-form-city'];
     formKeys.forEach(key => {
       localStorage.removeItem(key);
     });
   };
+
   const resetForm = () => {
     setOrderType('shipment');
     setPhone('+961');
@@ -132,20 +173,30 @@ const CreateOrder = () => {
     });
     setFormKey(getUniqueFormKey());
   };
+
   useEffect(() => {
-    resetForm();
+    // Only reset form if we're not in edit mode
+    if (!isEditMode) {
+      resetForm();
+    }
     return () => {
-      clearCachedFormData();
-      queryClient.removeQueries({
-        queryKey: ['customers', 'search']
-      });
+      if (!isEditMode) {
+        clearCachedFormData();
+        queryClient.removeQueries({
+          queryKey: ['customers', 'search']
+        });
+      }
     };
-  }, [location.pathname, queryClient]);
+  }, [location.pathname, queryClient, isEditMode]);
+
   useEffect(() => {
     if (initialRenderRef.current) {
       initialRenderRef.current = false;
       return;
     }
+    // Skip auto-fill if we're in edit mode since we manually load the data
+    if (isEditMode) return;
+    
     if (foundCustomers && foundCustomers.length > 0) {
       const customer = foundCustomers[0];
       setExistingCustomer(customer);
@@ -170,7 +221,8 @@ const CreateOrder = () => {
     } else if (phone.replace(/\D/g, '').length >= 11 && !searchingCustomers) {
       setExistingCustomer(null);
     }
-  }, [foundCustomers, searchingCustomers, phone]);
+  }, [foundCustomers, searchingCustomers, phone, isEditMode]);
+
   const validateForm = () => {
     const newErrors: {
       phone?: string;
@@ -205,6 +257,7 @@ const CreateOrder = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const handleSubmit = async (createAnother: boolean = false) => {
     if (!validateForm()) {
       toast.error("Please fix the errors in the form");
@@ -251,8 +304,37 @@ const CreateOrder = () => {
       };
       
       if (isEditMode && editOrderId) {
-        // Update existing order
-        await updateOrder.mutateAsync({ id: editOrderId, updates: orderData });
+        // Track changes for edit history
+        const changes = [];
+        if (editOrder) {
+          // Compare values and track changes
+          if (editOrder.customer?.phone !== phone) {
+            changes.push({ field: 'Phone', oldValue: editOrder.customer?.phone || '', newValue: phone });
+          }
+          if (editOrder.customer?.name !== name) {
+            changes.push({ field: 'Name', oldValue: editOrder.customer?.name || '', newValue: name });
+          }
+          if (editOrder.customer?.address !== address) {
+            changes.push({ field: 'Address', oldValue: editOrder.customer?.address || '', newValue: address });
+          }
+          if (editOrder.cash_collection_usd !== Number(usdAmount)) {
+            changes.push({ field: 'USD Amount', oldValue: editOrder.cash_collection_usd?.toString() || '0', newValue: usdAmount });
+          }
+          if (editOrder.cash_collection_lbp !== Number(lbpAmount)) {
+            changes.push({ field: 'LBP Amount', oldValue: editOrder.cash_collection_lbp?.toString() || '0', newValue: lbpAmount });
+          }
+        }
+
+        // Update existing order with edit tracking
+        const updatePayload = {
+          ...orderData,
+          ...(changes.length > 0 && {
+            edited: true,
+            edit_history: changes
+          })
+        };
+        
+        await updateOrder.mutateAsync({ id: editOrderId, updates: updatePayload });
         toast.success("Order updated successfully.");
         navigate('/orders');
       } else {
@@ -271,6 +353,7 @@ const CreateOrder = () => {
       toast.error(isEditMode ? "Failed to update the order. Please try again." : "Failed to create the order. Please try again.");
     }
   };
+
   const handleGovernorateChange = (governorateId: string, governorateName: string) => {
     setSelectedGovernorateId(governorateId);
     setSelectedGovernorateName(governorateName);
@@ -283,6 +366,7 @@ const CreateOrder = () => {
       }));
     }
   };
+
   const handleCityChange = (cityId: string, cityName: string, governorateName: string) => {
     setSelectedCityId(cityId);
     setSelectedCityName(cityName);
@@ -293,6 +377,7 @@ const CreateOrder = () => {
       }));
     }
   };
+
   const handlePhoneChange = (value: string) => {
     setPhone(value);
     if (errors.phone) {
@@ -302,6 +387,7 @@ const CreateOrder = () => {
       }));
     }
   };
+
   return <MainLayout className="bg-gray-50/30">
       <div className="min-h-screen w-full" key={formKey}>
         {/* Full width page container */}
