@@ -423,11 +423,27 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     );
   }
 
-  // MOBILE: Use Drawer (Vaul) for true swipe-down gesture with smooth animation
+  // MOBILE: Use Drawer (Vaul) for swipe-close only from the drag handle (header)
+  const DrawerDragHandle = () => (
+    <div className="flex flex-col items-center py-2">
+      <div
+        className="w-10 h-1.5 rounded-full bg-gray-300 mb-2"
+        style={{ touchAction: 'none' }}
+        aria-label="Drag to close"
+      />
+    </div>
+  );
+
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[85vh]">
-        <DrawerHeader className="px-4 py-3 border-b bg-white">
+    <Drawer
+      open={open}
+      onOpenChange={onOpenChange}
+      shouldScaleBackground={true}
+      handle={<DrawerDragHandle />}
+    >
+      <DrawerContent className="max-h-[85vh] p-0">
+        <DrawerHeader className="px-4 pt-0 pb-3 border-b bg-white">
+          <DrawerDragHandle />
           <div className="flex flex-col gap-1 w-full">
             <div className="flex items-center gap-2 min-w-0 flex-wrap">
               <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
@@ -439,7 +455,8 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             </div>
           </div>
         </DrawerHeader>
-        <ScrollArea className="flex-1">
+        {/* Give ScrollArea a height to fill below header. pb-8 for safe area on mobile */}
+        <ScrollArea className="flex-1 max-h-[calc(85vh-65px)]">
           <div className="p-4 pb-8">
             <OrderContent />
           </div>
