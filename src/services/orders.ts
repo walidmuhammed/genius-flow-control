@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerWithLocation } from "./customers";
 
@@ -28,6 +29,13 @@ export interface Order {
   updated_at: string;
   order_reference?: string;
   archived?: boolean;
+  edited?: boolean;
+  edit_history?: Array<{
+    field: string;
+    oldValue: string;
+    newValue: string;
+    timestamp: string;
+  }>;
 }
 
 export interface OrderWithCustomer extends Order {
@@ -76,6 +84,8 @@ const transformOrderData = (order: any): OrderWithCustomer => {
     type: orderType as OrderType,
     package_type: packageType as PackageType,
     status: statusType as OrderStatus,
+    edited: order.edited || false,
+    edit_history: order.edit_history || [],
     customer: {
       ...customerData,
       city_name: customerData.cities?.name,
