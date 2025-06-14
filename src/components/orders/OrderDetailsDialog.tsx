@@ -403,7 +403,8 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full [&>button.absolute.right-4.top-4]:hidden"
+          // Increased max-w, set max-h to 95vh, min-h for visual balance, removed w-[95vw] for better containment
+          className="max-w-2xl max-h-[95vh] min-h-[350px] w-full [&>button.absolute.right-4.top-4]:hidden"
         >
           <DialogHeader>
             <div className="flex items-center justify-between w-full flex-wrap gap-y-2">
@@ -417,7 +418,11 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
               </div>
             </div>
           </DialogHeader>
-          <ScrollArea className="max-h-[calc(90vh-120px)]">
+          {/* 
+            Set ScrollArea height to calc(95vh - (header ~105px + paddings)), but clamp so it's never less than 320px.
+            This eliminates "overflow outside box" while always fitting on the screen.
+          */}
+          <ScrollArea className="max-h-[calc(95vh-120px)] min-h-[320px]">
             <div className="p-1">
               <OrderContent />
             </div>

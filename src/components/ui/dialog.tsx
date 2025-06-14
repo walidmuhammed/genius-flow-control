@@ -16,8 +16,8 @@ const DialogOverlay = React.forwardRef<React.ElementRef<typeof DialogPrimitive.O
   <DialogPrimitive.Overlay 
     ref={ref} 
     className={cn(
-      // Make sure the overlay always covers the full viewport and sits on top of the sidebar
-      "fixed inset-0 z-[9999] bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0", 
+      // Lower z-index now uses z-50, not super-high
+      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0", 
       className
     )} 
     {...props} 
@@ -35,10 +35,11 @@ const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrimitive.C
     <DialogPrimitive.Content 
       ref={ref} 
       className={cn(
-        // Always center dialog relative to full viewport, place above sidebar with high z-index
-        "fixed left-1/2 top-1/2 z-[10000] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg", 
+        // z-60 (above Sheet/sidebar), default max-h-[95vh], min-h-[350px], ensures content fits
+        "fixed left-1/2 top-1/2 z-60 grid w-full max-w-lg max-h-[95vh] min-h-[350px] translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg focus-visible:outline-none", 
         className
       )} 
+      tabIndex={-1} // Don't allow accidental focus outlines
       {...props}
     >
       {children}
