@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -282,17 +281,9 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         <SheetContent side="bottom" className="h-[90vh] p-0">
           <div className="flex flex-col h-full">
             <SheetHeader className="px-4 py-3 border-b bg-white">
-              <div className="flex items-center justify-between">
-                <SheetTitle className="text-lg font-semibold text-gray-900">
-                  Order Details
-                </SheetTitle>
-                <button
-                  onClick={() => onOpenChange(false)}
-                  className="p-2 hover:bg-gray-100 rounded-full"
-                >
-                  <X className="h-5 w-5 text-gray-500" />
-                </button>
-              </div>
+              <SheetTitle className="text-lg font-semibold text-gray-900">
+                Order Details
+              </SheetTitle>
             </SheetHeader>
             <ScrollArea className="flex-1">
               <div className="p-4 pb-8">
