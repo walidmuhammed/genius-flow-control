@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +16,7 @@ import { useCities } from '@/hooks/use-cities';
 import { OrderWithCustomer, OrderType, PackageType } from '@/services/orders';
 import { Customer } from '@/services/customers';
 import { PhoneInput } from '@/components/ui/phone-input';
-import ImprovedCashCollectionFields from './ImprovedCashCollectionFields';
+import { ImprovedCashCollectionFields } from './ImprovedCashCollectionFields';
 import { toast } from 'sonner';
 
 interface CreateOrderFormProps {
