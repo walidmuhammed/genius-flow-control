@@ -311,32 +311,66 @@ const CreateOrder = () => {
       };
 
       if (isEditMode && editOrderId) {
-        // Track changes for edit history
-        const changes = [];
+        // -------- 🛠️ Enhanced Edit History Appending --------
+        let previousHistory: Array<any> = [];
+        if (editOrder?.edit_history && Array.isArray(editOrder.edit_history)) {
+          previousHistory = [...editOrder.edit_history];
+        }
+        const changes: Array<any> = [];
         if (editOrder) {
           if (editOrder.customer?.phone !== phone) {
-            changes.push({ field: 'Phone', oldValue: editOrder.customer?.phone || '', newValue: phone });
+            changes.push({
+              field: 'Phone',
+              oldValue: editOrder.customer?.phone || '',
+              newValue: phone,
+              timestamp: new Date().toISOString(),
+            });
           }
           if (editOrder.customer?.name !== name) {
-            changes.push({ field: 'Name', oldValue: editOrder.customer?.name || '', newValue: name });
+            changes.push({
+              field: 'Name',
+              oldValue: editOrder.customer?.name || '',
+              newValue: name,
+              timestamp: new Date().toISOString(),
+            });
           }
           if (editOrder.customer?.address !== address) {
-            changes.push({ field: 'Address', oldValue: editOrder.customer?.address || '', newValue: address });
+            changes.push({
+              field: 'Address',
+              oldValue: editOrder.customer?.address || '',
+              newValue: address,
+              timestamp: new Date().toISOString(),
+            });
           }
           if (editOrder.cash_collection_usd !== Number(usdAmount)) {
-            changes.push({ field: 'USD Amount', oldValue: editOrder.cash_collection_usd?.toString() || '0', newValue: usdAmount });
+            changes.push({
+              field: 'USD Amount',
+              oldValue: editOrder.cash_collection_usd?.toString() || '0',
+              newValue: usdAmount,
+              timestamp: new Date().toISOString(),
+            });
           }
           if (editOrder.cash_collection_lbp !== Number(lbpAmount)) {
-            changes.push({ field: 'LBP Amount', oldValue: editOrder.cash_collection_lbp?.toString() || '0', newValue: lbpAmount });
+            changes.push({
+              field: 'LBP Amount',
+              oldValue: editOrder.cash_collection_lbp?.toString() || '0',
+              newValue: lbpAmount,
+              timestamp: new Date().toISOString(),
+            });
           }
         }
 
-        // Update existing order with edit tracking
+        // 👇 Append new changes to previous history
+        const updatedEditHistory =
+          changes.length > 0
+            ? [...previousHistory, ...changes]
+            : previousHistory;
+
         const updatePayload = {
           ...orderPayload,
           ...(changes.length > 0 && {
             edited: true,
-            edit_history: changes
+            edit_history: updatedEditHistory
           })
         };
 
