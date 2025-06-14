@@ -483,9 +483,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    ) : (
-      <div className="ml-2 min-w-[16px]">{/* Keeps alignment if no actions */}</div>
-    );
+    ) : null;
 
   return (
     <Drawer
