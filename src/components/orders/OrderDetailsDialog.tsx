@@ -171,7 +171,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         </AlertDialog>
       </div> : null;
 
-  // --- UPDATED OrderContent with Status and Type moved to info container ---
+  // --- UPDATED OrderContent with Status removed and Type restyled ---
   const OrderContent = () => <div className="space-y-4 sm:space-y-6">
     {/* Basic Info (timestamps, edit history only) */}
     <div className="bg-white rounded-lg border p-4">
@@ -186,27 +186,17 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             <span className="text-gray-600">Updated: {formatDate(new Date(order.updated_at))}</span>
           </div>
         </div>
-        {/* NEW: Added row for Type and Status */}
-        <div className="flex flex-wrap gap-3 mt-1">
-          <div className="flex items-center gap-2">
-            <span className="text-gray-700 font-medium">Type:</span>
-            <span
-              className={`px-4 py-2 rounded-full text-sm font-semibold border ${getTypeColor(order.type)} border-gray-200`}
-              style={{ minWidth: 80, textAlign: 'center' }}
-            >
-              {order.type}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-700 font-medium">Status:</span>
-            <span
-              className={`px-4 py-2 rounded-full text-sm font-semibold border ${getStatusColor(order.status)} border-gray-200`}
-              style={{ minWidth: 80, textAlign: 'center' }}
-            >
-              {order.status}
-            </span>
-          </div>
+        {/* Only Type badge, smaller and integrated */}
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-gray-700 font-medium text-xs">Type:</span>
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-semibold border ${getTypeColor(order.type)} border-gray-200`}
+            style={{ minWidth: 64, textAlign: 'center' }}
+          >
+            {order.type}
+          </span>
         </div>
+        {/* Removed Status completely */}
         {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
             <Edit className="h-4 w-4 text-amber-600" />

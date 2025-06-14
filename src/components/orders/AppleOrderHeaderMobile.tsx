@@ -21,7 +21,7 @@ interface AppleOrderHeaderMobileProps {
   onDelete: () => void;
 }
 
-// badge bg classnames remain for convenience, might use in detailed info
+// badge classes for future use
 const statusColors: Record<string, string> = {
   new: "bg-blue-50 text-blue-700",
   "pending pickup": "bg-orange-50 text-orange-700",
@@ -46,7 +46,7 @@ const AppleOrderHeaderMobile: React.FC<AppleOrderHeaderMobileProps> = ({
   onEdit,
   onDelete,
 }) => {
-  // removed badge display from here
+  // More compact header
   return (
     <div
       className="relative flex flex-col w-full z-20 border-b border-gray-100/70 dark:border-neutral-900/70"
@@ -60,28 +60,29 @@ const AppleOrderHeaderMobile: React.FC<AppleOrderHeaderMobileProps> = ({
       }}
       data-vaul-drag-handle
     >
-      {/* iOS drag indicator */}
+      {/* Drag indicator, more compact */}
       <div
-        className="mx-auto mt-3 mb-2 h-1.5 w-12 rounded-full bg-black/15 dark:bg-white/25 opacity-90"
+        className="mx-auto mt-2 mb-1 h-1.5 w-12 rounded-full bg-black/15 dark:bg-white/25 opacity-90"
         aria-hidden="true"
         style={{
           boxShadow: "0 1px 4px 0 rgba(0,0,0,0.08)",
         }}
       />
-      <div className="flex flex-col gap-0 px-7 pt-5 pb-5">
-        {/* Top row: icon + order id + reference + actions */}
-        <div className="flex items-center min-w-0 gap-3 mb-0" style={{ minHeight: 60 }}>
+      {/* Reduced padding: px-5 pt-2 pb-2 */}
+      <div className="flex flex-col gap-0 px-5 pt-2 pb-2">
+        <div className="flex items-center min-w-0 gap-3" style={{ minHeight: 44 }}>
           <Package className="h-6 w-6 text-[#DB271E] flex-shrink-0" />
-          <span className="text-[22px] font-bold tracking-tight text-gray-900 truncate">
+          <span className="text-[19px] font-bold tracking-tight text-gray-900 truncate">
             Order #{order.order_id?.toString().padStart(3, "0") || order.id.slice(0, 8)}
           </span>
           {order.reference_number && (
             <span
-              className="ml-1 px-3 py-1 rounded-full bg-gradient-to-r from-[#F9E8EA] to-[#fceed8] border border-[#db271e25] text-[#DB271E] font-semibold tracking-wide text-[15px] shadow-inner shadow-white/10 truncate max-w-[120px] sm:max-w-none"
+              className="ml-1 px-2 py-0.5 rounded-full border border-[#db271e25] text-[#DB271E] font-semibold tracking-wide text-[14px] shadow-inner shadow-white/10 truncate max-w-[90px] sm:max-w-none"
               style={{
-                fontSize: 15,
+                fontSize: 14,
                 letterSpacing: "0.01em",
                 fontWeight: 600,
+                background: "transparent", // remove gradient
               }}
             >
               {order.reference_number}
@@ -89,27 +90,27 @@ const AppleOrderHeaderMobile: React.FC<AppleOrderHeaderMobileProps> = ({
           )}
           <div className="flex-1" />
           {canEditDelete && (
-            <div className="flex items-center gap-3 ml-2">
+            <div className="flex items-center gap-2 ml-2">
               <Button
                 onClick={onEdit}
                 variant="outline"
                 size="icon"
-                className="flex items-center justify-center h-11 w-11 rounded-full text-base"
-                style={{ minWidth: 44, minHeight: 44 }}
+                className="flex items-center justify-center h-10 w-10 rounded-full text-base"
+                style={{ minWidth: 40, minHeight: 40 }}
                 aria-label="Edit Order"
               >
-                <Edit className="h-6 w-6" />
+                <Edit className="h-5 w-5" />
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="flex items-center justify-center h-11 w-11 text-red-600 hover:text-red-700 hover:bg-red-50 border-none rounded-full text-base"
-                    style={{ minWidth: 44, minHeight: 44 }}
+                    className="flex items-center justify-center h-10 w-10 text-red-600 hover:text-red-700 hover:bg-red-50 border-none rounded-full text-base"
+                    style={{ minWidth: 40, minHeight: 40 }}
                     aria-label="Delete Order"
                   >
-                    <Trash2 className="h-6 w-6" />
+                    <Trash2 className="h-5 w-5" />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -139,4 +140,3 @@ const AppleOrderHeaderMobile: React.FC<AppleOrderHeaderMobileProps> = ({
 };
 
 export default AppleOrderHeaderMobile;
-
