@@ -25,6 +25,13 @@ import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import OrderTypeSelector from '@/components/dashboard/OrderTypeSelector';
 import { useScreenSize } from '@/hooks/useScreenSize';
+import { CustomerInfoSection } from "@/components/orders/sections/CustomerInfoSection";
+import { AddressSection } from "@/components/orders/sections/AddressSection";
+import { PackageSection } from "@/components/orders/sections/PackageSection";
+import { OrderTypeSection } from "@/components/orders/sections/OrderTypeSection";
+import { CashCollectionSection } from "@/components/orders/sections/CashCollectionSection";
+import { AdditionalInfoSection } from "@/components/orders/sections/AdditionalInfoSection";
+import { useOrderForm } from "@/hooks/useOrderForm";
 
 // Create a unique form key for forcing re-render
 const getUniqueFormKey = () => `order-form-${Date.now()}`;
@@ -45,30 +52,15 @@ const CreateOrder = () => {
   const initialRenderRef = useRef(true);
 
   // Form state
-  const [orderType, setOrderType] = useState<'shipment' | 'exchange'>('shipment');
-  const [phone, setPhone] = useState<string>('+961');
-  const [secondaryPhone, setSecondaryPhone] = useState<string>('');
-  const [isSecondaryPhone, setIsSecondaryPhone] = useState<boolean>(false);
-  const [name, setName] = useState<string>('');
-  const [isWorkAddress, setIsWorkAddress] = useState<boolean>(false);
-  const [packageType, setPackageType] = useState<'parcel' | 'document' | 'bulky'>('parcel');
-  const [selectedGovernorateId, setSelectedGovernorateId] = useState<string>('');
-  const [selectedCityId, setSelectedCityId] = useState<string>('');
-  const [selectedGovernorateName, setSelectedGovernorateName] = useState<string>('');
-  const [selectedCityName, setSelectedCityName] = useState<string>('');
-  const [cashCollection, setCashCollection] = useState<boolean>(true);
-  const [usdAmount, setUsdAmount] = useState<string>('');
-  const [lbpAmount, setLbpAmount] = useState<string>('');
-  const [phoneValid, setPhoneValid] = useState<boolean>(false);
-  const [secondaryPhoneValid, setSecondaryPhoneValid] = useState<boolean>(false);
-  const [address, setAddress] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
-  const [itemsCount, setItemsCount] = useState<number>(1);
-  const [orderReference, setOrderReference] = useState<string>('');
-  const [deliveryNotes, setDeliveryNotes] = useState<string>('');
-  const [allowOpening, setAllowOpening] = useState<boolean>(false);
-  const [existingCustomer, setExistingCustomer] = useState<CustomerWithLocation | null>(null);
-  const [guidelinesModalOpen, setGuidelinesModalOpen] = useState<boolean>(false);
+  const {
+    orderType, setOrderType, phone, setPhone, secondaryPhone, setSecondaryPhone,
+    isSecondaryPhone, setIsSecondaryPhone, name, setName, isWorkAddress, setIsWorkAddress,
+    packageType, setPackageType, selectedGovernorateId, setSelectedGovernorateId, selectedCityId, setSelectedCityId,
+    selectedGovernorateName, setSelectedGovernorateName, selectedCityName, setSelectedCityName, cashCollection, setCashCollection,
+    usdAmount, setUsdAmount, lbpAmount, setLbpAmount, phoneValid, setPhoneValid, secondaryPhoneValid, setSecondaryPhoneValid,
+    address, setAddress, description, setDescription, itemsCount, setItemsCount, orderReference, setOrderReference,
+    deliveryNotes, setDeliveryNotes, allowOpening, setAllowOpening, existingCustomer, setExistingCustomer, errors, setErrors,
+  } = useOrderForm(editOrder);
 
   // Delivery fees (calculated or fixed)
   const deliveryFees = {
@@ -440,76 +432,15 @@ const CreateOrder = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Phone and Name Side by Side */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone" className={cn("text-sm font-medium", errors.phone ? "text-red-600" : "text-gray-700")}>
-                        Phone Number
-                      </Label>
-                      <PhoneInput id="phone" value={phone} onChange={handlePhoneChange} defaultCountry="LB" onValidationChange={setPhoneValid} placeholder="Enter phone number" className={cn("h-10", errors.phone ? "border-red-300" : "border-gray-300")} />
-                      {errors.phone && <p className="text-xs text-red-600">{errors.phone}</p>}
-                      {searchingCustomers && <p className="text-xs text-blue-600 flex items-center gap-1">
-                          <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                          Searching...
-                        </p>}
-                      {existingCustomer && <p className="text-xs text-green-600 flex items-center gap-1">
-                          <Check className="h-3 w-3" />
-                          Customer found!
-                        </p>}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className={cn("text-sm font-medium", errors.name ? "text-red-600" : "text-gray-700")}>
-                        Full Name
-                      </Label>
-                      <Input id="name" placeholder="Enter customer full name" value={name} onChange={e => {
-                      setName(e.target.value);
-                      if (errors.name) {
-                        setErrors(prev => ({
-                          ...prev,
-                          name: undefined
-                        }));
-                      }
-                    }} className={cn("h-10", errors.name ? "border-red-300" : "border-gray-300")} />
-                      {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
-                    </div>
-                  </div>
-                  
-                  {/* Secondary Phone */}
-                  {!isSecondaryPhone && <Button type="button" variant="outline" size="sm" onClick={() => setIsSecondaryPhone(true)} className="text-xs h-8 mx-0 py-0 my-0">
-                      <Plus className="h-3 w-3 mr-1" />
-                      Add secondary phone
-                    </Button>}
-
-                  {isSecondaryPhone && <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <Label htmlFor="secondary-phone" className={cn("text-sm font-medium", errors.secondaryPhone ? "text-red-600" : "text-gray-700")}>
-                          Secondary Phone
-                        </Label>
-                        <Button variant="ghost" size="sm" onClick={() => {
-                      setIsSecondaryPhone(false);
-                      setSecondaryPhone('');
-                      if (errors.secondaryPhone) {
-                        setErrors(prev => ({
-                          ...prev,
-                          secondaryPhone: undefined
-                        }));
-                      }
-                    }} className="text-xs h-6 px-2">
-                          Remove
-                        </Button>
-                      </div>
-                      <PhoneInput id="secondary-phone" value={secondaryPhone} onChange={value => {
-                    setSecondaryPhone(value);
-                    if (errors.secondaryPhone) {
-                      setErrors(prev => ({
-                        ...prev,
-                        secondaryPhone: undefined
-                      }));
-                    }
-                  }} defaultCountry="LB" onValidationChange={setSecondaryPhoneValid} placeholder="Enter secondary phone" className={cn("h-10", errors.secondaryPhone ? "border-red-300" : "border-gray-300")} />
-                      {errors.secondaryPhone && <p className="text-xs text-red-600">{errors.secondaryPhone}</p>}
-                    </div>}
+                  <CustomerInfoSection
+                    phone={phone} setPhone={setPhone} phoneValid={phoneValid} setPhoneValid={setPhoneValid}
+                    name={name} setName={setName}
+                    errors={errors} setErrors={setErrors}
+                    searchingCustomers={searchingCustomers} existingCustomer={existingCustomer}
+                    isSecondaryPhone={isSecondaryPhone} setIsSecondaryPhone={setIsSecondaryPhone}
+                    secondaryPhone={secondaryPhone} setSecondaryPhone={setSecondaryPhone}
+                    secondaryPhoneValid={secondaryPhoneValid} setSecondaryPhoneValid={setSecondaryPhoneValid}
+                  />
                 </CardContent>
               </Card>
 
@@ -522,81 +453,42 @@ const CreateOrder = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Area Selection */}
-                  <div className="space-y-2">
-                    <Label className={cn("text-sm font-medium", errors.area ? "text-red-600" : "text-gray-700")}>
-                      Area (Governorate & City)
-                    </Label>
-                    <AreaSelector selectedArea={selectedCityName} selectedGovernorate={selectedGovernorateName} onAreaSelected={(governorateName, cityName, governorateId, cityId) => {
-                    if (governorateId) handleGovernorateChange(governorateId, governorateName);
-                    if (cityId) handleCityChange(cityId, cityName, governorateName);
-                  }} />
-                    {errors.area && <p className="text-xs text-red-600">{errors.area}</p>}
-                  </div>
-                  
-                  {/* Address Details */}
-                  <div className="space-y-2">
-                    <Label htmlFor="address" className={cn("text-sm font-medium", errors.address ? "text-red-600" : "text-gray-700")}>
-                      Address Details
-                    </Label>
-                    <Input id="address" placeholder="Building, street, landmark..." value={address} onChange={e => {
-                    setAddress(e.target.value);
-                    if (errors.address) {
-                      setErrors(prev => ({
-                        ...prev,
-                        address: undefined
-                      }));
-                    }
-                  }} className={cn("h-10", errors.address ? "border-red-300" : "border-gray-300")} />
-                    {errors.address && <p className="text-xs text-red-600">{errors.address}</p>}
-                  </div>
-                  
-                  {/* Work Address Checkbox */}
-                  <div className="flex items-center space-x-3">
-                    <Checkbox id="work-address" checked={isWorkAddress} onCheckedChange={checked => {
-                    if (typeof checked === 'boolean') {
-                      setIsWorkAddress(checked);
-                    }
-                  }} className="border-gray-300" />
-                    <Label htmlFor="work-address" className="text-sm text-gray-700 cursor-pointer">
-                      This is a work/business address
-                    </Label>
-                  </div>
+                  <AddressSection
+                    selectedGovernorateName={selectedGovernorateName}
+                    selectedCityName={selectedCityName}
+                    onAreaSelected={(govName, cityName, govId, cityId) => {
+                      if (govId) {
+                        setSelectedGovernorateId(govId);
+                        setSelectedGovernorateName(govName);
+                        setSelectedCityId('');
+                        setSelectedCityName('');
+                      }
+                      if (cityId) {
+                        setSelectedCityId(cityId);
+                        setSelectedCityName(cityName);
+                      }
+                      if (errors.area) setErrors((prev: any) => ({ ...prev, area: undefined }));
+                    }}
+                    errors={errors}
+                    address={address} setAddress={setAddress}
+                    isWorkAddress={isWorkAddress} setIsWorkAddress={setIsWorkAddress}
+                  />
                 </CardContent>
               </Card>
 
-              {/* Package Information */}
+              {/* Package Info */}
               <Card className="border border-gray-200 shadow-sm">
                 <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                      <Package className="h-5 w-5 text-gray-600" />
-                      Package Information
-                    </CardTitle>
-                    <Button variant="link" onClick={() => setGuidelinesModalOpen(true)} className="text-xs text-blue-600 p-0 h-auto">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Guidelines
-                    </Button>
-                  </div>
+                  {/* Handled inside PackageSection */}
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Description and Items Count Side by Side */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                        Package Description
-                        <span className="text-xs text-gray-500 ml-1">(Optional)</span>
-                      </Label>
-                      <Input id="description" placeholder="Electronics, clothes, etc." value={description} onChange={e => setDescription(e.target.value)} className="h-10 border-gray-300" />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="items-count" className="text-sm font-medium text-gray-700">
-                        Number of Items
-                      </Label>
-                      <Input id="items-count" type="number" min={1} value={itemsCount} onChange={e => setItemsCount(parseInt(e.target.value) || 1)} className="h-10 border-gray-300" />
-                    </div>
-                  </div>
+                  <PackageSection
+                    description={description} setDescription={setDescription}
+                    itemsCount={itemsCount} setItemsCount={setItemsCount}
+                    packageType={packageType} setPackageType={setPackageType}
+                    allowOpening={allowOpening} setAllowOpening={setAllowOpening}
+                    onGuidelinesClick={() => setGuidelinesModalOpen(true)}
+                  />
                 </CardContent>
               </Card>
             </div>
@@ -610,154 +502,33 @@ const CreateOrder = () => {
                   <CardTitle className="text-lg font-semibold text-gray-900">Order Type</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button variant={orderType === 'shipment' ? "default" : "outline"} onClick={() => setOrderType('shipment')} className={cn("h-10 text-sm", orderType === 'shipment' ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}>
-                      Shipment
-                    </Button>
-                    <Button variant={orderType === 'exchange' ? "default" : "outline"} onClick={() => setOrderType('exchange')} className={cn("h-10 text-sm", orderType === 'exchange' ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}>
-                      Exchange
-                    </Button>
-                  </div>
+                  <OrderTypeSection orderType={orderType} setOrderType={setOrderType} />
                 </CardContent>
               </Card>
               
               {/* Cash Collection */}
               <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-semibold text-gray-900">Cash Collection</CardTitle>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="cash-collection" checked={cashCollection} onCheckedChange={checked => {
-                      if (typeof checked === 'boolean') {
-                        setCashCollection(checked);
-                      }
-                    }} className="border-gray-300" />
-                    </div>
-                  </div>
-                </CardHeader>
-                {cashCollection && <CardContent className="space-y-4">
-                    {/* USD and LBP Side by Side with Enhanced Icons */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="usd-amount" className={cn("text-sm font-medium", errors.usdAmount ? "text-red-600" : "text-gray-700")}>
-                          USD Amount
-                        </Label>
-                        <div className="relative">
-                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 font-semibold text-sm pointer-events-none z-10">
-                            $
-                          </span>
-                          <Input id="usd-amount" type="text" value={usdAmount} onChange={e => {
-                        const value = e.target.value.replace(/[^0-9.]/g, '');
-                        const decimalParts = value.split('.');
-                        if (decimalParts.length > 1) {
-                          const wholeNumber = decimalParts[0];
-                          const decimal = decimalParts.slice(1).join('').slice(0, 2);
-                          setUsdAmount(`${wholeNumber}.${decimal}`);
-                        } else {
-                          setUsdAmount(value);
-                        }
-                        if (errors.usdAmount || errors.lbpAmount) {
-                          setErrors(prev => ({
-                            ...prev,
-                            usdAmount: undefined,
-                            lbpAmount: undefined
-                          }));
-                        }
-                      }} className={cn("h-10 pl-8 bg-white", errors.usdAmount ? "border-red-300" : "border-gray-300")} placeholder="0.00" />
-                        </div>
-                        {errors.usdAmount && <p className="text-xs text-red-600">{errors.usdAmount}</p>}
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="lbp-amount" className={cn("text-sm font-medium", errors.lbpAmount ? "text-red-600" : "text-gray-700")}>
-                          LBP Amount
-                        </Label>
-                        <div className="relative">
-                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 font-semibold text-xs pointer-events-none z-10">
-                            LBP
-                          </span>
-                          <Input id="lbp-amount" type="text" value={lbpAmount ? parseInt(lbpAmount).toLocaleString('en-US') : ''} onChange={e => {
-                        const rawValue = e.target.value.replace(/\D/g, '');
-                        setLbpAmount(rawValue);
-                        if (errors.usdAmount || errors.lbpAmount) {
-                          setErrors(prev => ({
-                            ...prev,
-                            usdAmount: undefined,
-                            lbpAmount: undefined
-                          }));
-                        }
-                      }} className={cn("h-10 pl-12 bg-white", errors.lbpAmount ? "border-red-300" : "border-gray-300")} placeholder="0" />
-                        </div>
-                        {errors.lbpAmount && <p className="text-xs text-red-600">{errors.lbpAmount}</p>}
-                      </div>
-                    </div>
-                    
-                    {/* Delivery Fees */}
-                    <div className="flex items-center justify-between mt-4 p-3 rounded-md bg-gray-50 border border-gray-100">
-                      <span className="text-sm font-medium">Delivery Fee:</span>
-                      <div className="text-sm">
-                        <span className="font-medium">${deliveryFees.usd}</span> 
-                        <span className="mx-1 text-gray-500">|</span> 
-                        <span className="font-medium">{deliveryFees.lbp.toLocaleString()} LBP</span>
-                      </div>
-                    </div>
-                  </CardContent>}
-              </Card>
-
-              {/* Package Type */}
-              <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg font-semibold text-gray-900">Package Type</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button variant={packageType === "parcel" ? "default" : "outline"} onClick={() => setPackageType("parcel")} className={cn("h-14 flex-col gap-1 text-xs", packageType === "parcel" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}>
-                      <Package className="h-4 w-4" />
-                      Parcel
-                    </Button>
-                    <Button variant={packageType === "document" ? "default" : "outline"} onClick={() => setPackageType("document")} className={cn("h-14 flex-col gap-1 text-xs", packageType === "document" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}>
-                      <FileText className="h-4 w-4" />
-                      Document
-                    </Button>
-                    <Button variant={packageType === "bulky" ? "default" : "outline"} onClick={() => setPackageType("bulky")} className={cn("h-14 flex-col gap-1 text-xs", packageType === "bulky" ? "bg-[#DC291E] hover:bg-[#c0211a]" : "border-gray-300")}>
-                      <Package className="h-4 w-4" />
-                      Bulky
-                    </Button>
-                  </div>
-                  
-                  {/* Allow Opening Checkbox */}
-                  <div className="flex items-center space-x-2 pt-2 border-t border-gray-100">
-                    <Checkbox id="allow-opening" checked={allowOpening} onCheckedChange={checked => {
-                    if (typeof checked === 'boolean') {
-                      setAllowOpening(checked);
-                    }
-                  }} className="border-gray-300" />
-                    <Label htmlFor="allow-opening" className="text-sm text-gray-700 cursor-pointer">
-                      Allow package inspection
-                    </Label>
-                  </div>
+                <CardHeader className="pb-4"></CardHeader>
+                <CardContent>
+                  <CashCollectionSection
+                    cashCollection={cashCollection} setCashCollection={setCashCollection}
+                    usdAmount={usdAmount} setUsdAmount={setUsdAmount}
+                    lbpAmount={lbpAmount} setLbpAmount={setLbpAmount}
+                    errors={errors} deliveryFees={deliveryFees}
+                  />
                 </CardContent>
               </Card>
               
-              {/* Additional Information */}
+              {/* Additional Info */}
               <Card className="border border-gray-200 shadow-sm">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold text-gray-900">Additional Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="order-reference" className="text-sm font-medium text-gray-700">
-                      Order Reference <span className="text-xs text-gray-500">(Optional)</span>
-                    </Label>
-                    <Input id="order-reference" placeholder="Your tracking reference" value={orderReference} onChange={e => setOrderReference(e.target.value)} className="h-10 border-gray-300" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="delivery-notes" className="text-sm font-medium text-gray-700">
-                      Delivery Notes <span className="text-xs text-gray-500">(Optional)</span>
-                    </Label>
-                    <Textarea id="delivery-notes" placeholder="Special delivery instructions..." rows={3} value={deliveryNotes} onChange={e => setDeliveryNotes(e.target.value)} className="resize-none border-gray-300 text-sm" />
-                  </div>
+                  <AdditionalInfoSection
+                    orderReference={orderReference} setOrderReference={setOrderReference}
+                    deliveryNotes={deliveryNotes} setDeliveryNotes={setDeliveryNotes}
+                  />
                 </CardContent>
               </Card>
             </div>
