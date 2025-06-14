@@ -75,6 +75,22 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
     }
   };
 
+  // Add Type Color helper
+  const getTypeColor = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'deliver':
+        return 'text-green-600 bg-green-50 border-green-200';
+      case 'exchange':
+        return 'text-purple-600 bg-purple-50 border-purple-200';
+      case 'cash collection':
+        return 'text-green-600 bg-green-50 border-green-200';
+      case 'return':
+        return 'text-red-600 bg-red-50 border-red-200';
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200';
+    }
+  };
+
   const canEdit = (order: OrderWithCustomer) => order.status === 'New';
   const canDelete = (order: OrderWithCustomer) => order.status === 'New';
 
@@ -164,9 +180,14 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
                 </div>
               </TableCell>
               <TableCell>
-                <Badge variant="outline" className="px-3 py-1 text-xs font-medium rounded-full border">
-                  {order.type}
-                </Badge>
+                {/* Apply getTypeColor here */}
+                <div>
+                  <span
+                    className={`inline-flex px-3 py-1 text-xs font-medium rounded-full border ${getTypeColor(order.type)}`}
+                  >
+                    {order.type}
+                  </span>
+                </div>
               </TableCell>
               <TableCell>
                 <div>
