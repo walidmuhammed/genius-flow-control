@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
 import { TableRow, TableCell } from '@/components/ui/table';
-import { cn } from '@/lib/utils';
 import OrderNoteTooltip from './OrderNoteTooltip';
 import StatusBadge from './StatusBadge';
 import ShipmentTypeBadge from './ShipmentTypeBadge';
@@ -44,7 +42,7 @@ export interface Order {
 
 interface OrdersTableRowProps {
   order: Order;
-  originalOrder?: OrderWithCustomer; // Add this to pass the original order data
+  originalOrder?: OrderWithCustomer;
   isSelected: boolean;
   onToggleSelect: (orderId: string) => void;
   onViewDetails?: (order: Order) => void;
@@ -61,13 +59,26 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
-  
-  const handleRowClick = () => {
-    setShowDetailsDialog(true);
-  };
 
-  const handleViewDetails = () => {
-    setShowDetailsDialog(true);
+  const handleViewDetails = () => setShowDetailsDialog(true);
+  const handleEditOrder = () => {
+    if (originalOrder) {
+      window.location.href = `/create-order?edit=${originalOrder.id}`;
+    }
+  };
+  const handlePrintLabel = () => {
+    console.log(`Printing label for order ${order.id}`);
+  };
+  const handleCreateTicket = () => {
+    if (originalOrder) {
+      window.location.href = `/support?order=${originalOrder.reference_number}`;
+    }
+  };
+  const handleDeleteOrder = () => {
+    if (originalOrder) {
+      window.confirm('Are you sure you want to delete this order?') &&
+        console.log(`Deleting order ${originalOrder.id}`);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -114,7 +125,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
     <>
       <TableRow 
         className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-        onClick={handleRowClick}
+        onClick={() => setShowDetailsDialog(true)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -181,10 +192,14 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
         
         {showActions && (
           <TableCell className="text-right" onClick={e => e.stopPropagation()}>
-            <OrderRowActions 
-              order={order} 
-              isHovered={isHovered} 
-              onViewDetails={handleViewDetails} 
+            <OrderRowActions
+              order={order}
+              isRowHovered={isHovered}
+              onViewDetails={handleViewDetails}
+              onEditOrder={handleEditOrder}
+              onPrintLabel={handlePrintLabel}
+              onCreateTicket={handleCreateTicket}
+              onDeleteOrder={handleDeleteOrder}
             />
           </TableCell>
         )}

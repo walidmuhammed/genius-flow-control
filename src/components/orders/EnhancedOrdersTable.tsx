@@ -15,6 +15,7 @@ import { OrderWithCustomer } from '@/services/orders';
 import { formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import OrderRowActions from './OrderRowActions';
 
 interface EnhancedOrdersTableProps {
   orders: OrderWithCustomer[];
@@ -211,57 +212,39 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
               </TableCell>
               
               <TableCell className="text-right" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center justify-end gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={() => onViewOrder(order)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  
-                  {canEdit(order) && onEditOrder && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                      onClick={() => onEditOrder(order)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  )}
-                  
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="rounded-xl border-gray-200 dark:border-gray-700 shadow-xl bg-white dark:bg-gray-800 z-50">
-                      <DropdownMenuItem className="rounded-lg">
-                        <Printer className="h-4 w-4 mr-2" />
-                        Print Label
-                      </DropdownMenuItem>
-                      {canDelete(order) && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="text-red-600 rounded-lg"
-                            onClick={() => onDeleteOrder?.(order)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete Order
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                <OrderRowActions
+                  order={{
+                    id: order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8),
+                    referenceNumber: order.reference_number || '',
+                    type: order.type,
+                    customer: {
+                      name: order.customer?.name || '',
+                      phone: order.customer?.phone || '',
+                    },
+                    location: {
+                      city: order.customer?.city_name || '',
+                      area: order.customer?.governorate_name || '',
+                      address: order.customer?.address || '',
+                    },
+                    amount: {
+                      valueLBP: Number(order.cash_collection_lbp),
+                      valueUSD: Number(order.cash_collection_usd),
+                    },
+                    deliveryCharge: {
+                      valueLBP: Number(order.delivery_fees_lbp),
+                      valueUSD: Number(order.delivery_fees_usd),
+                    },
+                    status: order.status,
+                    lastUpdate: order.updated_at,
+                    note: order.note,
+                  }}
+                  isRowHovered={hoveredRow === order.id}
+                  onViewDetails={() => onViewOrder(order)}
+                  onEditOrder={() => onEditOrder && onEditOrder(order)}
+                  onPrintLabel={() => console.log(`Printing label for order ${order.id}`)}
+                  onCreateTicket={() => window.location.href = `/support?order=${order.reference_number}`}
+                  onDeleteOrder={() => onDeleteOrder && onDeleteOrder(order)}
+                />
               </TableCell>
             </motion.tr>
           ))}
