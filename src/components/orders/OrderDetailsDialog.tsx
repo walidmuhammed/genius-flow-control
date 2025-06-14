@@ -174,19 +174,23 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   );
 
   // --- ENHANCED OrderHeaderIdRef ---
-  // - Enhanced ref number, badges beside it, next to order ID
+  // - Now: Two rows to prevent overlap on mobile
   const EnhancedOrderHeader = () => (
-    <div className="flex items-center flex-wrap gap-2 min-w-0">
-      {/* Order ID padded if present, else show first 8 chars */}
-      <span className="text-lg font-semibold truncate shrink-0">
-        Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-      </span>
-      {order.reference_number &&
-        <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10" style={{lineHeight: '1.6'}}>
-          {order.reference_number}
+    <div className="w-full">
+      <div className="flex items-center min-w-0 gap-2">
+        <span className="text-lg font-semibold truncate shrink-0">
+          Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
         </span>
-      }
-      <StatusTypeBadges />
+        {order.reference_number &&
+          <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none" style={{lineHeight: '1.6'}}>
+            {order.reference_number}
+          </span>
+        }
+        <div className="ml-auto flex items-center gap-1">{/* Only for drawer, header actions go here */}</div>
+      </div>
+      <div className="flex flex-wrap items-center gap-2 mt-1">
+        <StatusTypeBadges />
+      </div>
     </div>
   );
 
@@ -448,28 +452,35 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         <DrawerHeader
           className="px-4 pt-0 pb-3 border-b bg-white"
           data-vaul-drag-handle
-          style={{ touchAction: "pan-y" }}  // Required for Vaul for drag gesture
+          style={{ touchAction: "pan-y" }}
         >
           <DrawerDragHandle />
-          <div className="flex flex-col gap-1 w-full">
-            <div className="flex items-center gap-2 min-w-0 flex-wrap">
+          {/* Refactored: Two-row header, no overlap */}
+          <div className="w-full">
+            <div className="flex items-center min-w-0 gap-2">
               <Package className="h-5 w-5 text-[#DB271E] flex-shrink-0" />
-              <EnhancedOrderHeader />
-              <div className="flex items-center gap-2 ml-auto">
+              <span className="text-lg font-semibold truncate shrink-0">
+                Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+              </span>
+              {order.reference_number &&
+                <span className="ml-0 px-2 py-0.5 rounded bg-gradient-to-r from-[#F5E6E6] to-[#fee8e8] border border-[#DB271E]/30 text-[#DB271E] font-semibold tracking-wide text-base align-middle shadow-inner shadow-white/10 truncate max-w-[110px] sm:max-w-none" style={{lineHeight: '1.6'}}>
+                  {order.reference_number}
+                </span>
+              }
+              <div className="ml-auto flex items-center gap-1">
                 <HeaderActions />
-                {/* No close button */}
               </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <StatusTypeBadges />
             </div>
           </div>
         </DrawerHeader>
-        {/* 
-          Give ScrollArea a height to fill below header. pb-8 for safe area on mobile.
-          Prevent this area from being a drag handle: data-vaul-no-drag disables swipe-to-close.
-        */}
+        {/* Improved: isolate scroll, no background scroll, safe for touch devices */}
         <ScrollArea
-          className="flex-1 max-h-[calc(85vh-65px)]"
+          className="flex-1 max-h-[calc(85vh-65px)] overscroll-contain"
           data-vaul-no-drag
-          style={{ touchAction: "auto" }}
+          style={{ touchAction: "pan-y" }}
         >
           <div className="p-4 pb-8">
             <OrderContent />
