@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Package, Clock, AlertCircle, DollarSign, ShoppingCart, Calendar, Inbox } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { OrdersTable } from '@/components/orders/OrdersTable';
 import PickupsTable from '@/components/pickups/PickupsTable';
@@ -13,8 +15,6 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import OrdersTableMobile from '@/components/orders/OrdersTableMobile';
 import { mapOrdersToTableFormat } from '@/utils/orderMappers';
-import DashboardStatCard from '@/components/dashboard/DashboardStatCard';
-import { ShoppingCart, Calendar, Inbox } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const today = new Date();
@@ -126,41 +126,114 @@ const Dashboard: React.FC = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Modern, Consistent Stat Cards */}
-        <div
-          className={cn(
-            "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4",
-            "w-full"
-          )}
-        >
-          <DashboardStatCard
-            type="new"
-            label="New Orders"
-            value={isOrdersLoading ? undefined : todayOrders.length}
-            loading={isOrdersLoading}
-            description="New today"
-          />
-          <DashboardStatCard
-            type="progress"
-            label="In Progress"
-            value={isOrdersLoading ? undefined : inProgressOrders.length}
-            loading={isOrdersLoading}
-            description="Filtered"
-          />
-          <DashboardStatCard
-            type="awaiting"
-            label="Awaiting Action"
-            value={isOrdersLoading ? undefined : awaitingActionOrders.length}
-            loading={isOrdersLoading}
-            description="Needs attention"
-          />
-          <DashboardStatCard
-            type="cash"
-            label="Expected Cash"
-            value={isOrdersLoading ? undefined : `$${todayTotalCash.toFixed(2)}`}
-            loading={isOrdersLoading}
-            description="Total amount"
-          />
+        {/* Overview Cards - Responsive Grid */}
+        <div className={cn(
+          "grid gap-4",
+          isMobile ? "grid-cols-2" : isTablet ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+        )}>
+          {/* New Orders Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
+          >
+            <Card className="overflow-hidden border-0 shadow-lg shadow-blue-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
+              <CardContent className={cn("p-4", !isMobile && "p-6")}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500 shadow-sm">
+                    <Package className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>New Orders</h3>
+                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
+                    {isOrdersLoading ? '--' : todayOrders.length}
+                  </div>
+                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>New orders today</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+          
+          {/* In Progress Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
+          >
+            <Card className="overflow-hidden border-0 shadow-lg shadow-amber-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
+              <CardContent className={cn("p-4", !isMobile && "p-6")}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-500 shadow-sm">
+                    <Clock className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>In Progress</h3>
+                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
+                    {isOrdersLoading ? '--' : inProgressOrders.length}
+                  </div>
+                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>Orders filtered as In Progress</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+          
+          {/* Awaiting Action Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
+          >
+            <Card className="overflow-hidden border-0 shadow-lg shadow-orange-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
+              <CardContent className={cn("p-4", !isMobile && "p-6")}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 shadow-sm">
+                    <AlertCircle className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>Awaiting Action</h3>
+                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
+                    {isOrdersLoading ? '--' : awaitingActionOrders.length}
+                  </div>
+                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>Orders requiring intervention</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+          
+          {/* Expected Cash Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
+          >
+            <Card className="overflow-hidden border-0 shadow-lg shadow-emerald-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
+              <CardContent className={cn("p-4", !isMobile && "p-6")}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 shadow-sm">
+                    <DollarSign className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>Expected Cash</h3>
+                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
+                    {isOrdersLoading ? '--' : `$${todayTotalCash.toFixed(2)}`}
+                  </div>
+                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>Total amount today</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
 
         {/* Enhanced Tab Bar - Full Width, Clean, Responsive */}
