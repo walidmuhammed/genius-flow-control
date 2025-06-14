@@ -14,6 +14,7 @@ import { useScreenSize } from '@/hooks/useScreenSize';
 import OrdersTableMobile from '@/components/orders/OrdersTableMobile';
 import { mapOrdersToTableFormat } from '@/utils/orderMappers';
 import DashboardStatCard from '@/components/dashboard/DashboardStatCard';
+import { ShoppingCart, Calendar, Inbox } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const today = new Date();
