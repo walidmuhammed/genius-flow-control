@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,13 +29,16 @@ interface SelectedOrder {
 }
 const SchedulePickup: React.FC = () => {
   const navigate = useNavigate();
-  const {
-    isMobile
-  } = useScreenSize();
+  const { isMobile } = useScreenSize();
+
+  /** TIME WINDOW CONSTANTS */
+  const SLIDER_MIN = 8; // 8 AM
+  const SLIDER_MAX = 20; // 8 PM
+
   const [selectedOrders, setSelectedOrders] = useState<SelectedOrder[]>([]);
   const [showOrderSelection, setShowOrderSelection] = useState(false);
   const [pickupDate, setPickupDate] = useState<Date>();
-  const [timeRange, setTimeRange] = useState<number[]>([9, 17]); // 9 AM to 5 PM default
+  const [timeRange, setTimeRange] = useState<number[]>([SLIDER_MIN + 1, SLIDER_MAX]); // default 9am to 8pm
   const [vehicleType, setVehicleType] = useState<'small' | 'medium' | 'large'>('small');
   const [contactPerson, setContactPerson] = useState('');
   const [contactPhone, setContactPhone] = useState('');
@@ -44,6 +47,77 @@ const SchedulePickup: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tempSelectedOrderIds, setTempSelectedOrderIds] = useState<string[]>([]);
+  const [todayWindowUnavailable, setTodayWindowUnavailable] = useState(false);
+
+  // Time logic - memoize the next available hour for "today"
+  const now = new Date();
+  const isSelectedToday = useMemo(() =>
+    pickupDate &&
+    now.getFullYear() === pickupDate.getFullYear() &&
+    now.getMonth() === pickupDate.getMonth() &&
+    now.getDate() === pickupDate.getDate()
+  , [pickupDate, now]);
+
+  // Compute the earliest available hour for today (rounded up to next whole hour)
+  const nextAvailableHour = useMemo(() => {
+    if (!isSelectedToday) return SLIDER_MIN;
+    const currHour = now.getHours();
+    const currMin = now.getMinutes();
+    // Next slot is currHour + 1, but never before SLIDER_MIN or after SLIDER_MAX
+    let hour = currHour + (currMin > 0 ? 1 : 0) + 1; // force the next hour (no partials)
+    if (hour < SLIDER_MIN) hour = SLIDER_MIN;
+    if (hour > SLIDER_MAX) hour = SLIDER_MAX + 1; // triggers blocking today if > 20
+    return hour;
+  }, [isSelectedToday, now]);
+
+  // When selecting pickup date:
+  useEffect(() => {
+    if (!pickupDate) return;
+    if (isSelectedToday) {
+      if (nextAvailableHour > SLIDER_MAX) {
+        // After 8 PM, today is unavailable
+        setTodayWindowUnavailable(true);
+        // Auto-select tomorrow and reset timeRange
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        setPickupDate(tomorrow);
+        setTimeRange([SLIDER_MIN + 1, SLIDER_MAX]);
+      } else {
+        setTodayWindowUnavailable(false);
+        // Clamp timeRange if needed
+        setTimeRange(prev => [
+          Math.max(prev[0], nextAvailableHour),
+          Math.max(Math.max(prev[1], nextAvailableHour), Math.max(prev[0], nextAvailableHour))
+        ]);
+      }
+    } else {
+      setTodayWindowUnavailable(false);
+      setTimeRange(prev => [
+        Math.max(prev[0], SLIDER_MIN),
+        Math.min(prev[1], SLIDER_MAX)
+      ]);
+    }
+    // eslint-disable-next-line
+  }, [pickupDate, isSelectedToday, nextAvailableHour]);
+
+  // Helper to determine if a slider thumb value is valid for current day
+  const isValueDisabled = (val: number) => {
+    if (isSelectedToday && val < nextAvailableHour) return true;
+    return val < SLIDER_MIN || val > SLIDER_MAX;
+  };
+
+  /** SLIDER MARKS **/
+  const sliderMarks = useMemo(() => {
+    const arr = [];
+    for (let i = SLIDER_MIN; i <= SLIDER_MAX; i++) {
+      arr.push({
+        hour: i,
+        disabled: isValueDisabled(i)
+      });
+    }
+    return arr;
+  }, [isSelectedToday, nextAvailableHour]);
+
   const {
     data: newOrders,
     isLoading
@@ -228,223 +302,304 @@ const SchedulePickup: React.FC = () => {
       </div>;
   };
   return <MainLayout>
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/pickups')} className="text-gray-600 hover:text-gray-900">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Pickups
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Schedule Pickup</h1>
-            <p className="text-gray-500">Create a new pickup request for your orders</p>
-          </div>
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/pickups')} className="text-gray-600 hover:text-gray-900">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Pickups
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Schedule Pickup</h1>
+          <p className="text-gray-500">Create a new pickup request for your orders</p>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {/* Step 1: Select Orders */}
-            <Card className="border shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Package className="h-5 w-5" />
-                  Select Orders
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Dialog open={showOrderSelection} onOpenChange={open => {
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Step 1: Select Orders */}
+          <Card className="border shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Package className="h-5 w-5" />
+                Select Orders
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Dialog open={showOrderSelection} onOpenChange={open => {
                 setShowOrderSelection(open);
                 if (open) {
                   setTempSelectedOrderIds(selectedOrders.map(o => o.id));
                 }
               }}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full h-12">
-                      <Package className="h-4 w-4 mr-2" />
-                      Select Orders ({selectedOrders.length} selected)
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className={cn("overflow-hidden", isMobile ? "max-w-[95vw] max-h-[85vh] p-0" : "max-w-6xl max-h-[80vh]")}>
-                    <DialogHeader className={isMobile ? "p-4 pb-2" : ""}>
-                      <DialogTitle>Select Orders for Pickup</DialogTitle>
-                    </DialogHeader>
-                    <div className={cn("overflow-auto", isMobile ? "px-4 pb-4" : "max-h-[60vh]")}>
-                      {isLoading ? <div className="flex items-center justify-center h-32">
-                          <Package className="h-8 w-8 animate-pulse text-gray-400" />
-                        </div> : isMobile ? renderMobileOrderCards() : <OrdersTable orders={newOrders || []} onOrderSelection={handleOrderSelection} selectionMode={true} selectedOrderIds={selectedOrders.map(o => o.id)} />}
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="w-full h-12">
+                    <Package className="h-4 w-4 mr-2" />
+                    Select Orders ({selectedOrders.length} selected)
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className={cn("overflow-hidden", isMobile ? "max-w-[95vw] max-h-[85vh] p-0" : "max-w-6xl max-h-[80vh]")}>
+                  <DialogHeader className={isMobile ? "p-4 pb-2" : ""}>
+                    <DialogTitle>Select Orders for Pickup</DialogTitle>
+                  </DialogHeader>
+                  <div className={cn("overflow-auto", isMobile ? "px-4 pb-4" : "max-h-[60vh]")}>
+                    {isLoading ? <div className="flex items-center justify-center h-32">
+                        <Package className="h-8 w-8 animate-pulse text-gray-400" />
+                      </div> : isMobile ? renderMobileOrderCards() : <OrdersTable orders={newOrders || []} onOrderSelection={handleOrderSelection} selectionMode={true} selectedOrderIds={selectedOrders.map(o => o.id)} />}
+                  </div>
+                </DialogContent>
+              </Dialog>
 
-                {selectedOrders.length > 0 && <div className="space-y-2">
-                    <Label className="text-sm font-medium">Selected Orders:</Label>
-                    <div className="grid gap-2 max-h-40 overflow-y-auto">
-                      {selectedOrders.map(order => <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => removeOrder(order.id)}>
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{order.referenceNumber}</p>
-                            <p className="text-xs text-gray-600">{order.customer} • {order.amount}</p>
-                          </div>
-                          <Button variant="ghost" size="sm" onClick={e => {
+              {selectedOrders.length > 0 && <div className="space-y-2">
+                  <Label className="text-sm font-medium">Selected Orders:</Label>
+                  <div className="grid gap-2 max-h-40 overflow-y-auto">
+                    {selectedOrders.map(order => <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => removeOrder(order.id)}>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{order.referenceNumber}</p>
+                          <p className="text-xs text-gray-600">{order.customer} • {order.amount}</p>
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={e => {
                       e.stopPropagation();
                       removeOrder(order.id);
                     }} className="text-red-600 hover:text-red-800 hover:bg-red-50">
-                            Remove
-                          </Button>
-                        </div>)}
-                    </div>
+                          Remove
+                        </Button>
+                      </div>)}
                   </div>}
-              </CardContent>
-            </Card>
+            </CardContent>
+          </Card>
 
-            {/* Step 2: Date & Time */}
-            <Card className="border shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <CalendarIcon className="h-5 w-5" />
-                  Pickup Schedule
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label>Pickup Date *</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-12", !pickupDate && "text-muted-foreground")}>
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {pickupDate ? format(pickupDate, "PPP") : "Select date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={pickupDate} onSelect={setPickupDate} disabled={date => date < new Date()} initialFocus />
-                    </PopoverContent>
-                  </Popover>
+          {/* Step 2: Date & Time */}
+          <Card className="border shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <CalendarIcon className="h-5 w-5" />
+                Pickup Schedule
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+
+              <div className="space-y-2">
+                <Label>Pickup Date *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline"
+                      className={cn("w-full justify-start text-left font-normal h-12", !pickupDate && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {pickupDate ? format(pickupDate, "PPP") : "Select date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={pickupDate}
+                      onSelect={date => {
+                        setPickupDate(date);
+                      }}
+                      disabled={date => {
+                        // Disable today if passed
+                        const isToday =
+                          date &&
+                          date.getFullYear() === now.getFullYear() &&
+                          date.getMonth() === now.getMonth() &&
+                          date.getDate() === now.getDate();
+                        // If after 8PM, today is not selectable
+                        if (isToday && now.getHours() >= SLIDER_MAX) return true;
+                        return date < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                      }}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              {todayWindowUnavailable && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded p-4 flex items-center gap-2 text-yellow-700 text-sm">
+                  <Clock className="h-4 w-4 text-yellow-500" />
+                  <span>
+                    Today’s window has passed. Please select a future date.
+                  </span>
                 </div>
-                
-                <div className="space-y-4">
-                  <Label>Pickup Time Window *</Label>
-                  <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-                    <div className="flex items-center justify-between text-sm font-medium">
-                      <span>{formatTime(timeRange[0])}</span>
-                      <span>to</span>
-                      <span>{formatTime(timeRange[1])}</span>
+              )}
+
+              <div className="space-y-4">
+                <Label>Pickup Time Window *</Label>
+                <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                  {/* Time range display */}
+                  <div className="flex items-center justify-between text-sm font-medium">
+                    <span>{formatTime(timeRange[0])}</span>
+                    <span>to</span>
+                    <span>{formatTime(timeRange[1])}</span>
+                  </div>
+                  {/* Slider and disabled handling */}
+                  <div className="flex flex-col gap-2">
+                    <Slider
+                      value={timeRange}
+                      min={SLIDER_MIN}
+                      max={SLIDER_MAX}
+                      step={1}
+                      onValueChange={vals => {
+                        // Restrict value to allowed slots only
+                        let [from, to] = vals;
+                        if (isSelectedToday) {
+                          if (from < nextAvailableHour) from = nextAvailableHour;
+                          if (to < nextAvailableHour) to = nextAvailableHour;
+                        }
+                        if (from > to) from = to;
+                        setTimeRange([from, to]);
+                      }}
+                      className="w-full"
+                    />
+                    {/* Custom tick/label track, showing disabled hours */}
+                    <div className="relative flex w-full h-5 mt-2">
+                      {sliderMarks.map(mark => (
+                        <div
+                          key={mark.hour}
+                          className={cn(
+                            "flex-1 text-center text-xs",
+                            mark.disabled
+                              ? "text-gray-400"
+                              : "text-gray-700"
+                          )}
+                          style={{ pointerEvents: 'none' }}
+                        >
+                          <div
+                            className={cn(
+                              "w-1 h-1 mx-auto rounded-full mb-0.5",
+                              mark.disabled
+                                ? "bg-gray-300"
+                                : "bg-primary"
+                            )}
+                          ></div>
+                          <span>
+                            {mark.hour < 12
+                              ? `${mark.hour}:00`
+                              : mark.hour === 12
+                                ? '12:00'
+                                : `${mark.hour - 12}:00`}
+                            {mark.hour < 12 ? ' AM' : ' PM'}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                    <Slider value={timeRange} onValueChange={setTimeRange} min={6} max={22} step={1} className="w-full" />
-                    
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Step 3: Vehicle Type */}
-            <Card className="border shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Truck className="h-5 w-5" />
-                  Vehicle Type
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {vehicleOptions.map(option => {
+          {/* Step 3: Vehicle Type */}
+          <Card className="border shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Truck className="h-5 w-5" />
+                Vehicle Type
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {vehicleOptions.map(option => {
                   const IconComponent = option.icon;
                   return <Button key={option.value} variant={vehicleType === option.value ? "default" : "outline"} className={cn("h-20 p-4 flex flex-col items-center gap-2 border-2 transition-all", vehicleType === option.value ? "bg-[#DB271E] hover:bg-[#c0211a] text-white border-[#DB271E]" : "hover:border-gray-300")} onClick={() => setVehicleType(option.value as any)}>
-                        <IconComponent className="h-6 w-6" />
-                        <div className="text-center">
-                          <p className="font-medium text-sm">{option.label}</p>
-                          <p className="text-xs opacity-70">{option.description}</p>
-                        </div>
-                      </Button>;
+                    <IconComponent className="h-6 w-6" />
+                    <div className="text-center">
+                      <p className="font-medium text-sm">{option.label}</p>
+                      <p className="text-xs opacity-70">{option.description}</p>
+                    </div>
+                  </Button>;
                 })}
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Step 4: Notes */}
-            <Card className="border shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <FileText className="h-5 w-5" />
-                  Additional Notes (Optional)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Textarea placeholder="Any special instructions for the pickup..." value={notes} onChange={e => setNotes(e.target.value)} className="min-h-[80px]" />
-              </CardContent>
-            </Card>
-          </div>
+          {/* Step 4: Notes */}
+          <Card className="border shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileText className="h-5 w-5" />
+                Additional Notes (Optional)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea placeholder="Any special instructions for the pickup..." value={notes} onChange={e => setNotes(e.target.value)} className="min-h-[80px]" />
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Right Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Pickup Details */}
-            <Card className="border shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <MapPin className="h-5 w-5" />
-                  Pickup Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="location">Business/Store Name *</Label>
-                  <Input id="location" placeholder="Enter your business name" value={location} onChange={e => setLocation(e.target.value)} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address">Full Address *</Label>
-                  <Textarea id="address" placeholder="Enter complete pickup address" value={address} onChange={e => setAddress(e.target.value)} required rows={3} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contactPerson">Contact Name *</Label>
-                  <Input id="contactPerson" placeholder="Contact person name" value={contactPerson} onChange={e => setContactPerson(e.target.value)} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contactPhone">Phone Number *</Label>
-                  <Input id="contactPhone" placeholder="+961 XX XXX XXX" value={contactPhone} onChange={e => setContactPhone(e.target.value)} required />
-                </div>
-              </CardContent>
-            </Card>
+        {/* Right Sidebar */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Pickup Details */}
+          <Card className="border shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <MapPin className="h-5 w-5" />
+                Pickup Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="location">Business/Store Name *</Label>
+                <Input id="location" placeholder="Enter your business name" value={location} onChange={e => setLocation(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Full Address *</Label>
+                <Textarea id="address" placeholder="Enter complete pickup address" value={address} onChange={e => setAddress(e.target.value)} required rows={3} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contactPerson">Contact Name *</Label>
+                <Input id="contactPerson" placeholder="Contact person name" value={contactPerson} onChange={e => setContactPerson(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contactPhone">Phone Number *</Label>
+                <Input id="contactPhone" placeholder="+961 XX XXX XXX" value={contactPhone} onChange={e => setContactPhone(e.target.value)} required />
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Summary Card */}
-            <Card className="sticky top-6 border shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Pickup Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4 text-sm">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Package className="h-4 w-4 text-gray-500" />
-                    <span className="font-medium">{selectedOrders.length} orders selected</span>
-                  </div>
-                  
-                  {pickupDate && <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <CalendarIcon className="h-4 w-4 text-gray-500" />
-                      <span>{format(pickupDate, "MMM dd, yyyy")}</span>
-                    </div>}
-                  
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <span>{formatTime(timeRange[0])} - {formatTime(timeRange[1])}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Truck className="h-4 w-4 text-gray-500" />
-                    <span className="capitalize">{vehicleType} vehicle</span>
-                  </div>
-                  
-                  {location && <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <MapPin className="h-4 w-4 text-gray-500" />
-                      <span className="truncate">{location}</span>
-                    </div>}
+          {/* Summary Card */}
+          <Card className="sticky top-6 border shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg">Pickup Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4 text-sm">
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <Package className="h-4 w-4 text-gray-500" />
+                  <span className="font-medium">{selectedOrders.length} orders selected</span>
                 </div>
+                
+                {pickupDate && <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <CalendarIcon className="h-4 w-4 text-gray-500" />
+                    <span>{format(pickupDate, "MMM dd, yyyy")}</span>
+                  </div>}
+                
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <Clock className="h-4 w-4 text-gray-500" />
+                  <span>{formatTime(timeRange[0])} - {formatTime(timeRange[1])}</span>
+                </div>
+                
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <Truck className="h-4 w-4 text-gray-500" />
+                  <span className="capitalize">{vehicleType} vehicle</span>
+                </div>
+                
+                {location && <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <MapPin className="h-4 w-4 text-gray-500" />
+                    <span className="truncate">{location}</span>
+                  </div>}
+              </div>
 
-                <Button onClick={handleSubmit} disabled={!canSubmit || isSubmitting} className="w-full bg-[#DB271E] hover:bg-[#c0211a] text-white h-12" size="lg">
-                  <Check className="h-4 w-4 mr-2" />
-                  {isSubmitting ? 'Scheduling...' : 'Confirm Pickup'}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+              <Button onClick={handleSubmit} disabled={!canSubmit || isSubmitting} className="w-full bg-[#DB271E] hover:bg-[#c0211a] text-white h-12" size="lg">
+                <Check className="h-4 w-4 mr-2" />
+                {isSubmitting ? 'Scheduling...' : 'Confirm Pickup'}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </MainLayout>;
-};
+    </div>
+  </MainLayout>;
+}
+
 export default SchedulePickup;
