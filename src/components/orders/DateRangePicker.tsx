@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
 import { Calendar, X } from 'lucide-react';
@@ -139,8 +138,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           <>
             {/* Backdrop */}
             <div
-              className="fixed inset-0 z-[100000] bg-black opacity-100 pointer-events-auto"
-              style={{ background: "rgba(0,0,0,0.85)" }}
+              className="fixed inset-0 z-[100000] bg-black opacity-100 backdrop-blur-sm pointer-events-auto"
               aria-hidden="true"
               onClick={() => {
                 setOpen(false);
