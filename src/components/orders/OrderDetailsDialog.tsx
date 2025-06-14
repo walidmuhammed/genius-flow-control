@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle as AlertDialogTitlePrimitive, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { formatDate } from '@/utils/format';
 import { OrderWithCustomer } from '@/services/orders';
 import OrderProgressBar from './OrderProgressBar';
@@ -129,23 +129,73 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   // Check if order can be edited/deleted (only NEW orders)
   const canEditDelete = order.status === 'New';
 
+  // -- RENDER HEADER ACTIONS as a separate fragment for DRY
+  const HeaderActions = () => (
+    canEditDelete ? (
+      <div className="flex items-center gap-1 ml-2">
+        <Button
+          onClick={handleEditOrder}
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1 px-2 py-1 text-xs"
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-none px-2 py-1 text-xs"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitlePrimitive>Are you sure?</AlertDialogTitlePrimitive>
+              <AlertDialogDescription>
+                Are you sure you want to delete this order? It will be archived and hidden from the list.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteOrder}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete Order
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    ) : null
+  );
+
   const OrderContent = () => (
     <div className="space-y-4 sm:space-y-6">
       {/* Order Status & Basic Info */}
       <div className="bg-white rounded-lg border p-4">
         <div className="flex flex-col space-y-3">
+          {/* BEGIN: Header Row, moved buttons and badge up */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Package className="h-5 w-5 text-[#DB271E]" />
               <span className="font-semibold text-lg">
                 Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
               </span>
+              {/* Edit/Delete buttons here for clear desktop section */}
+              <HeaderActions />
+              <Badge className={`px-3 py-1 text-sm font-medium ml-2 ${getStatusColor(order.status)}`}>
+                {order.status}
+              </Badge>
             </div>
-            <Badge className={`px-3 py-1 text-sm font-medium ${getStatusColor(order.status)}`}>
-              {order.status}
-            </Badge>
           </div>
-          
+          {/* END: Header Row */}
+
+          {/* -- Removed: Action Buttons here, now empty/handled above -- */}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2">
               <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border border-transparent ${getTypeColor(order.type)}`}>
@@ -182,51 +232,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Action Buttons - Only show for NEW orders */}
-          {canEditDelete && (
-            <div className="flex gap-2 pt-2 border-t border-gray-100">
-              <Button
-                onClick={handleEditOrder}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <Edit className="h-4 w-4" />
-                Edit Order
-              </Button>
-              
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Delete Order
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete this order? It will be archived and hidden from the list.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteOrder}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      Delete Order
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             </div>
           )}
         </div>
@@ -383,44 +388,63 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     </div>
   );
 
-  if (isMobile) {
+  // --- DESKTOP Dialog ---
+  if (!isMobile) {
     return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="h-[90vh] p-0">
-          <div className="flex flex-col h-full">
-            <SheetHeader className="px-4 py-3 border-b bg-white">
-              <SheetTitle className="text-lg font-semibold text-gray-900">
-                Order Details
-              </SheetTitle>
-            </SheetHeader>
-            <ScrollArea className="flex-1">
-              <div className="p-4 pb-8">
-                <OrderContent />
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
+          <DialogHeader>
+            <div className="flex items-center justify-between w-full">
+              {/* Title + buttons + status */}
+              <div className="flex items-center gap-2 truncate">
+                <Package className="h-5 w-5 text-[#DB271E]" />
+                <span className="text-lg font-semibold truncate">
+                  Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+                </span>
+                <HeaderActions />
+                <Badge className={`px-3 py-1 text-sm font-medium ml-2 ${getStatusColor(order.status)}`}>
+                  {order.status}
+                </Badge>
               </div>
-            </ScrollArea>
-          </div>
-        </SheetContent>
-      </Sheet>
+            </div>
+          </DialogHeader>
+          <ScrollArea className="max-h-[calc(90vh-120px)]">
+            <div className="p-1">
+              <OrderContent />
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     );
   }
 
+  // --- MOBILE Sheet ---
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] w-[95vw] sm:w-full">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-[#DB271E]" />
-            Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-          </DialogTitle>
-        </DialogHeader>
-        
-        <ScrollArea className="max-h-[calc(90vh-120px)]">
-          <div className="p-1">
-            <OrderContent />
-          </div>
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="h-[90vh] p-0">
+        <div className="flex flex-col h-full">
+          <SheetHeader className="px-4 py-3 border-b bg-white">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2 truncate">
+                <Package className="h-5 w-5 text-[#DB271E]" />
+                <span className="text-lg font-semibold truncate">
+                  Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+                </span>
+                <HeaderActions />
+                <Badge className={`px-3 py-1 text-sm font-medium ml-2 ${getStatusColor(order.status)}`}>
+                  {order.status}
+                </Badge>
+              </div>
+            </div>
+          </SheetHeader>
+          <ScrollArea className="flex-1">
+            <div className="p-4 pb-8">
+              <OrderContent />
+            </div>
+          </ScrollArea>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 
