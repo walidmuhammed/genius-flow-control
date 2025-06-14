@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,7 +71,7 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ initialOrder, isEditi
   // Hooks
   const { data: searchResults = [] } = useSearchCustomersByPhone(customerPhone);
   const { data: governorates = [] } = useGovernorates();
-  const { data: cities = [] } = useCities(selectedGovernorate);
+  const { data: cities = [] } = useCities();
   const createCustomerMutation = useCreateCustomer();
 
   const showCustomerSearch = customerPhone.length >= 8 && !selectedCustomer;
@@ -250,9 +249,17 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ initialOrder, isEditi
               id="phone"
               value={customerPhone}
               onChange={setCustomerPhone}
-              onClear={resetCustomerForm}
               className="w-full"
             />
+            {customerPhone.length >= 8 && selectedCustomer && (
+              <button
+                type="button"
+                onClick={resetCustomerForm}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Clear and search again
+              </button>
+            )}
           </div>
 
           {showCustomerSearch && searchResults.length > 0 && (
@@ -324,7 +331,7 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ initialOrder, isEditi
                       <SelectValue placeholder="Select city" />
                     </SelectTrigger>
                     <SelectContent>
-                      {cities.map((city) => (
+                      {cities.filter(city => city.governorate_id === selectedGovernorate).map((city) => (
                         <SelectItem key={city.id} value={city.id}>
                           {city.name}
                         </SelectItem>
@@ -338,7 +345,7 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ initialOrder, isEditi
                 <Checkbox
                   id="work-address"
                   checked={isWorkAddress}
-                  onCheckedChange={setIsWorkAddress}
+                  onCheckedChange={(checked) => setIsWorkAddress(checked === true)}
                 />
                 <Label htmlFor="work-address">This is a work address</Label>
               </div>
@@ -409,7 +416,7 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ initialOrder, isEditi
             <Checkbox
               id="allow-opening"
               checked={allowOpening}
-              onCheckedChange={setAllowOpening}
+              onCheckedChange={(checked) => setAllowOpening(checked === true)}
             />
             <Label htmlFor="allow-opening">Allow opening package for inspection</Label>
           </div>
@@ -428,16 +435,16 @@ const CreateOrderForm: React.FC<CreateOrderFormProps> = ({ initialOrder, isEditi
 
       {/* Cash Collection */}
       <ImprovedCashCollectionFields
-        cashCollectionEnabled={cashCollectionEnabled}
-        setCashCollectionEnabled={setCashCollectionEnabled}
-        cashCollectionUSD={cashCollectionUSD}
-        setCashCollectionUSD={setCashCollectionUSD}
-        cashCollectionLBP={cashCollectionLBP}
-        setCashCollectionLBP={setCashCollectionLBP}
-        deliveryFeesUSD={deliveryFeesUSD}
-        setDeliveryFeesUSD={setDeliveryFeesUSD}
-        deliveryFeesLBP={deliveryFeesLBP}
-        setDeliveryFeesLBP={setDeliveryFeesLBP}
+        enabled={cashCollectionEnabled}
+        onEnabledChange={setCashCollectionEnabled}
+        usdAmount={cashCollectionUSD.toString()}
+        lbpAmount={cashCollectionLBP.toString()}
+        onUsdAmountChange={(amount) => setCashCollectionUSD(parseFloat(amount) || 0)}
+        onLbpAmountChange={(amount) => setCashCollectionLBP(parseInt(amount) || 0)}
+        deliveryFees={{
+          usd: deliveryFeesUSD,
+          lbp: deliveryFeesLBP
+        }}
       />
 
       {/* Submit Button */}

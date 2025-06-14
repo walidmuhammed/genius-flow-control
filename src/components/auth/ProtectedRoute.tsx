@@ -25,11 +25,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   }
 
   if (!user || !profile) {
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+    return <Navigate to="/auth/client/sign-in" state={{ from: location }} replace />;
   }
 
   if (requiredRole && profile.user_type !== requiredRole) {
-    const redirectPath = profile.user_type === 'admin' ? '/dashboard/admin' : '/dashboard/client';
+    const redirectPath = profile.user_type === 'admin' ? '/admin' : '/dashboard';
     return <Navigate to={redirectPath} replace />;
   }
 
