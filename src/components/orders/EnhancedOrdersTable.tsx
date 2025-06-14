@@ -78,7 +78,7 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
   // Add Type Color helper
   const getTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
-      case 'deliver':
+      case 'shipment':
         return 'text-green-600 bg-green-50 border-green-200';
       case 'exchange':
         return 'text-purple-600 bg-purple-50 border-purple-200';

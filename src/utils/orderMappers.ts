@@ -6,10 +6,12 @@ import { Order as TableOrder } from '@/components/orders/OrdersTableRow';
  * Maps an order from the API format to the format expected by OrdersTableRow
  */
 export function mapOrderToTableFormat(order: OrderWithCustomer): TableOrder & { originalOrder: OrderWithCustomer } {
+  let type: OrderType = order.type as OrderType;
+  if (type === 'Deliver' || type === 'Shipment') type = 'Shipment';
   return {
     id: order.order_id.toString().padStart(3, '0'), // Use sequential order_id, properly formatted
-    referenceNumber: order.reference_number || '', // Don't show anything if no reference provided
-    type: order.type as OrderType,
+    referenceNumber: order.reference_number || '',
+    type,
     customer: {
       name: order.customer.name,
       phone: order.customer.phone
@@ -30,7 +32,7 @@ export function mapOrderToTableFormat(order: OrderWithCustomer): TableOrder & { 
     status: order.status as OrderStatus,
     lastUpdate: order.updated_at,
     note: order.note,
-    originalOrder: order // Include the original order data
+    originalOrder: order
   };
 }
 

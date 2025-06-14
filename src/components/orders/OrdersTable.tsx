@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -89,7 +88,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
 
   const getTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
-      case 'deliver':
+      case 'shipment':
         // Update to green
         return 'text-green-600 bg-green-50 border-green-200';
       case 'exchange':

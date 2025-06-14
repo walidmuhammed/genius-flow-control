@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -112,6 +111,21 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     }
   };
 
+  const getTypeColor = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'shipment':
+        return 'bg-green-100 text-green-700';
+      case 'exchange':
+        return 'bg-purple-100 text-purple-700';
+      case 'cash collection':
+        return 'bg-emerald-100 text-emerald-700';
+      case 'return':
+        return 'bg-amber-100 text-amber-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
   // Check if order can be edited/deleted (only NEW orders)
   const canEditDelete = order.status === 'New';
 
@@ -133,9 +147,10 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div>
-              <span className="font-medium text-gray-700">Type:</span>
-              <span className="ml-2 text-gray-900">{order.type}</span>
+            <div className="flex items-center gap-2">
+              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border border-transparent ${getTypeColor(order.type)}`}>
+                {order.type}
+              </span>
             </div>
             {order.reference_number && (
               <div>

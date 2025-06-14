@@ -14,7 +14,7 @@ import { formatDate } from '@/utils/format';
 import { OrderWithCustomer } from '@/services/orders';
 
 export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid' | 'Awaiting Action';
-export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection' | 'Return';
+export type OrderType = 'Shipment' | 'Exchange' | 'Cash Collection' | 'Return';
 
 export interface Order {
   id: string;
@@ -97,7 +97,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
 
   const getTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
-      case 'deliver':
+      case 'shipment':
         return 'text-green-600 bg-green-50';
       case 'exchange':
         return 'text-purple-600 bg-purple-50';

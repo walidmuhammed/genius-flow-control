@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CustomerWithLocation } from "./customers";
 
 export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid';
-export type OrderType = 'Deliver' | 'Exchange' | 'Cash Collection';
+export type OrderType = 'Shipment' | 'Exchange' | 'Cash Collection' | 'Return';
 export type PackageType = 'parcel' | 'document' | 'bulky';
 
 export interface Order {
@@ -51,10 +51,18 @@ const getCurrentUserId = async () => {
 const transformOrderData = (order: any): OrderWithCustomer => {
   const customerData = order.customer as any;
   
-  // Ensure type is correctly cast to one of the allowed types
+  // Ensure type is correctly cast to one of the allowed types, map Deliver -> Shipment
   let orderType = order.type;
-  if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
-    orderType = 'Deliver';
+  if (orderType === 'Deliver') {
+    orderType = 'Shipment';
+  }
+  if (
+    orderType !== 'Shipment' &&
+    orderType !== 'Exchange' &&
+    orderType !== 'Cash Collection' &&
+    orderType !== 'Return'
+  ) {
+    orderType = 'Shipment';
   }
 
   // Ensure package_type is correctly cast to one of the allowed types

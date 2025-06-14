@@ -3,7 +3,7 @@ import React from 'react';
 import { Package, ArrowLeftRight, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type OrderType = 'deliver' | 'exchange' | 'return' | 'cash-collection';
+export type OrderType = 'shipment' | 'exchange' | 'return' | 'cash-collection';
 
 interface OrderTypeOption {
   value: OrderType;
@@ -21,9 +21,9 @@ interface OrderTypeSelectorProps {
 const OrderTypeSelector: React.FC<OrderTypeSelectorProps> = ({ value, onChange, className }) => {
   const options: OrderTypeOption[] = [
     {
-      value: 'deliver',
-      label: 'Deliver',
-      description: 'Deliver a package to your customer.',
+      value: 'shipment',
+      label: 'Shipment',
+      description: 'Send a shipment to your customer.',
       icon: <Package className="h-5 w-5 text-primary" />
     },
     {
