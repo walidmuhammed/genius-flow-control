@@ -61,11 +61,13 @@ function App() {
                 <Route path="/dashboard" element={<ProtectedRoute requiredRole="client"><Dashboard /></ProtectedRoute>} />
                 <Route path="/orders" element={<ProtectedRoute requiredRole="client"><OrdersList /></ProtectedRoute>} />
                 <Route path="/orders/new" element={<ProtectedRoute requiredRole="client"><CreateOrder /></ProtectedRoute>} />
+                <Route path="/create-order" element={<ProtectedRoute requiredRole="client"><CreateOrder /></ProtectedRoute>} />
                 <Route path="/orders/:id/edit" element={<ProtectedRoute requiredRole="client"><EditOrder /></ProtectedRoute>} />
                 <Route path="/customers" element={<ProtectedRoute requiredRole="client"><Customers /></ProtectedRoute>} />
                 <Route path="/analytics" element={<ProtectedRoute requiredRole="client"><Analytics /></ProtectedRoute>} />
                 <Route path="/pickups" element={<ProtectedRoute requiredRole="client"><Pickups /></ProtectedRoute>} />
                 <Route path="/pickups/schedule" element={<ProtectedRoute requiredRole="client"><SchedulePickup /></ProtectedRoute>} />
+                <Route path="/schedule-pickup" element={<ProtectedRoute requiredRole="client"><SchedulePickup /></ProtectedRoute>} />
                 <Route path="/wallet" element={<ProtectedRoute requiredRole="client"><Wallet /></ProtectedRoute>} />
                 <Route path="/support" element={<ProtectedRoute requiredRole="client"><Support /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute requiredRole="client"><Settings /></ProtectedRoute>} />
