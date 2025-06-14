@@ -47,7 +47,6 @@ const AppleOrderHeaderMobile: React.FC<AppleOrderHeaderMobileProps> = ({
   onEdit,
   onDelete,
 }) => {
-  // Badges
   const statusBg = statusColors[order.status.toLowerCase()] || "bg-gray-100 text-gray-700";
   const typeBg = typeColors[order.type.toLowerCase()] || "bg-gray-100 text-gray-700";
 
@@ -74,7 +73,7 @@ const AppleOrderHeaderMobile: React.FC<AppleOrderHeaderMobileProps> = ({
       />
       <div className="flex flex-col gap-0 px-7 pt-3 pb-4">
         {/* Top row: icon + order id + reference */}
-        <div className="flex items-center min-w-0 gap-3 mb-2">
+        <div className="flex items-center min-w-0 gap-3 mb-4">
           <Package className="h-6 w-6 text-[#DB271E] flex-shrink-0" />
           <span className="text-[22px] font-bold tracking-tight text-gray-900 truncate">
             Order #{order.order_id?.toString().padStart(3, "0") || order.id.slice(0, 8)}
@@ -93,15 +92,15 @@ const AppleOrderHeaderMobile: React.FC<AppleOrderHeaderMobileProps> = ({
           )}
         </div>
         {/* Second row: badges + action buttons */}
-        <div className="flex items-center justify-between mt-1">
-          <div className="flex items-center gap-2 flex-wrap min-w-0">
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center gap-3 flex-wrap min-w-0">
             <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusBg} border-gray-200`}
+              className={`px-4 py-2 rounded-full text-sm font-semibold border ${statusBg} border-gray-200`}
             >
               {order.status}
             </span>
             <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold border ${typeBg} border-gray-200`}
+              className={`px-4 py-2 rounded-full text-sm font-semibold border ${typeBg} border-gray-200`}
             >
               {order.type}
             </span>
