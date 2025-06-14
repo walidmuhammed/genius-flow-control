@@ -51,7 +51,10 @@ const CreateOrder = () => {
   const [formKey, setFormKey] = useState(getUniqueFormKey());
   const initialRenderRef = useRef(true);
 
-  // Form state
+  // ---- FIX: Add guidelines modal state ----
+  const [guidelinesModalOpen, setGuidelinesModalOpen] = useState(false);
+
+  // Form state from hook
   const {
     orderType, setOrderType, phone, setPhone, secondaryPhone, setSecondaryPhone,
     isSecondaryPhone, setIsSecondaryPhone, name, setName, isWorkAddress, setIsWorkAddress,
@@ -68,16 +71,16 @@ const CreateOrder = () => {
     lbp: 150000
   };
 
-  // Form validation
-  const [errors, setErrors] = useState<{
-    phone?: string;
-    secondaryPhone?: string;
-    name?: string;
-    area?: string;
-    address?: string;
-    usdAmount?: string;
-    lbpAmount?: string;
-  }>({});
+  // Remove duplicated errors state (FIXED)
+  // const [errors, setErrors] = useState<{
+  //   phone?: string;
+  //   secondaryPhone?: string;
+  //   name?: string;
+  //   area?: string;
+  //   address?: string;
+  //   usdAmount?: string;
+  //   lbpAmount?: string;
+  // }>({});
 
   // Supabase Integration - phone search only triggers when number is complete
   const {
@@ -127,7 +130,7 @@ const CreateOrder = () => {
         setPhoneValid(true);
       }
     }
-  }, [isEditMode, editOrder]);
+  }, [isEditMode, editOrder, setOrderType, setPackageType, setDescription, setItemsCount, setAllowOpening, setCashCollection, setUsdAmount, setLbpAmount, setDeliveryNotes, setOrderReference, setPhone, setName, setAddress, setIsWorkAddress, setSecondaryPhone, setIsSecondaryPhone, setSelectedGovernorateId, setSelectedCityId, setSelectedGovernorateName, setSelectedCityName, setExistingCustomer, setPhoneValid]);
 
   const clearCachedFormData = () => {
     const formKeys = ['order-form-data', 'order-form-customer', 'order-form-phone', 'order-form-address', 'order-form-governorate', 'order-form-city'];
@@ -179,7 +182,7 @@ const CreateOrder = () => {
         });
       }
     };
-  }, [location.pathname, queryClient, isEditMode]);
+  }, [location.pathname, queryClient, isEditMode, resetForm]);
 
   useEffect(() => {
     if (initialRenderRef.current) {
@@ -213,7 +216,7 @@ const CreateOrder = () => {
     } else if (phone.replace(/\D/g, '').length >= 11 && !searchingCustomers) {
       setExistingCustomer(null);
     }
-  }, [foundCustomers, searchingCustomers, phone, isEditMode]);
+  }, [foundCustomers, searchingCustomers, phone, isEditMode, setName, setAddress, setIsWorkAddress, setSelectedGovernorateId, setSelectedCityId, setSelectedGovernorateName, setSelectedCityName, setSecondaryPhone, setIsSecondaryPhone, setExistingCustomer]);
 
   const validateForm = () => {
     const newErrors: {
