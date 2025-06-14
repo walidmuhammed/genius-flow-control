@@ -478,7 +478,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         </DrawerHeader>
         {/* Improved: isolate scroll, no background scroll, safe for touch devices */}
         <ScrollArea
-          className="flex-1 max-h-[calc(85vh-65px)] overscroll-contain"
+          className="flex-1 max-h-[calc(85vh-65px)] overflow-y-auto overscroll-y-contain scroll-touch isolate"
           data-vaul-no-drag
           style={{ touchAction: "pan-y" }}
         >
