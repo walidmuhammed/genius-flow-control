@@ -359,7 +359,7 @@ const CreateOrder = () => {
                   </div>
                   
                   {/* Secondary Phone */}
-                  {!isSecondaryPhone && <Button type="button" variant="outline" size="sm" onClick={() => setIsSecondaryPhone(true)} className="text-xs h-8 mx-0 py-0 my-[30px]">
+                  {!isSecondaryPhone && <Button type="button" variant="outline" size="sm" onClick={() => setIsSecondaryPhone(true)} className="text-xs h-8 mx-0 py-0 my-0">
                       <Plus className="h-3 w-3 mr-1" />
                       Add secondary phone
                     </Button>}
