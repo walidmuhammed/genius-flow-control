@@ -126,7 +126,7 @@ const Dashboard: React.FC = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Overview Cards - Responsive Grid */}
+        {/* Overview Cards - Fixed Size Grid */}
         <div className={cn(
           "grid gap-4",
           isMobile ? "grid-cols-2" : isTablet ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
@@ -136,22 +136,21 @@ const Dashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
-            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
           >
-            <Card className="overflow-hidden border-0 shadow-lg shadow-blue-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
-              <CardContent className={cn("p-4", !isMobile && "p-6")}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500 shadow-sm">
-                    <Package className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
+            <Card className="h-32 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl">
+              <CardContent className="p-4 h-full flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                    <Package className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
                 
                 <div className="space-y-1">
-                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>New Orders</h3>
-                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">New Orders</h3>
+                  <div className="text-2xl font-bold text-gray-800 dark:text-white">
                     {isOrdersLoading ? '--' : todayOrders.length}
                   </div>
-                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>New orders today</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">New orders today</p>
                 </div>
               </CardContent>
             </Card>
@@ -162,22 +161,21 @@ const Dashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
           >
-            <Card className="overflow-hidden border-0 shadow-lg shadow-amber-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
-              <CardContent className={cn("p-4", !isMobile && "p-6")}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-500 shadow-sm">
-                    <Clock className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
+            <Card className="h-32 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl">
+              <CardContent className="p-4 h-full flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                    <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                   </div>
                 </div>
                 
                 <div className="space-y-1">
-                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>In Progress</h3>
-                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">In Progress</h3>
+                  <div className="text-2xl font-bold text-gray-800 dark:text-white">
                     {isOrdersLoading ? '--' : inProgressOrders.length}
                   </div>
-                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>Orders filtered as In Progress</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Orders filtered as In Progress</p>
                 </div>
               </CardContent>
             </Card>
@@ -188,22 +186,21 @@ const Dashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
           >
-            <Card className="overflow-hidden border-0 shadow-lg shadow-orange-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
-              <CardContent className={cn("p-4", !isMobile && "p-6")}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 shadow-sm">
-                    <AlertCircle className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
+            <Card className="h-32 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl">
+              <CardContent className="p-4 h-full flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-900/20">
+                    <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                   </div>
                 </div>
                 
                 <div className="space-y-1">
-                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>Awaiting Action</h3>
-                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Awaiting Action</h3>
+                  <div className="text-2xl font-bold text-gray-800 dark:text-white">
                     {isOrdersLoading ? '--' : awaitingActionOrders.length}
                   </div>
-                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>Orders requiring intervention</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Orders requiring intervention</p>
                 </div>
               </CardContent>
             </Card>
@@ -214,22 +211,21 @@ const Dashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            whileHover={!isMobile ? { y: -4, transition: { duration: 0.2 } } : {}}
           >
-            <Card className="overflow-hidden border-0 shadow-lg shadow-emerald-500/5 backdrop-blur-lg bg-gradient-to-br from-white dark:from-gray-800/80 to-white/90 dark:to-gray-800/60 rounded-2xl border-t border-white/20 dark:border-white/5">
-              <CardContent className={cn("p-4", !isMobile && "p-6")}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 shadow-sm">
-                    <DollarSign className={cn("h-4 w-4", !isMobile && "h-5 w-5")} />
+            <Card className="h-32 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-xl">
+              <CardContent className="p-4 h-full flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
+                    <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                 </div>
                 
                 <div className="space-y-1">
-                  <h3 className={cn("font-medium text-gray-500 dark:text-gray-400", isMobile ? "text-xs" : "text-sm")}>Expected Cash</h3>
-                  <div className={cn("font-bold text-gray-800 dark:text-white", isMobile ? "text-xl" : "text-2xl")}>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Expected Cash</h3>
+                  <div className="text-2xl font-bold text-gray-800 dark:text-white">
                     {isOrdersLoading ? '--' : `$${todayTotalCash.toFixed(2)}`}
                   </div>
-                  <p className={cn("text-gray-500 dark:text-gray-400 mt-1", isMobile ? "text-xs" : "text-xs")}>Total amount today</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Total amount today</p>
                 </div>
               </CardContent>
             </Card>
