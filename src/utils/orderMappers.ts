@@ -6,8 +6,10 @@ import { Order as TableOrder } from '@/components/orders/OrdersTableRow';
  * Maps an order from the API format to the format expected by OrdersTableRow
  */
 export function mapOrderToTableFormat(order: OrderWithCustomer): TableOrder & { originalOrder: OrderWithCustomer } {
-  // Accept 'Deliver' from backend and always present as 'Shipment'
-  let type: OrderType = (order.type === 'Deliver' || order.type === 'Shipment') ? 'Shipment' : (order.type as OrderType);
+  // Accept 'Deliver' from backend (legacy) and always present as 'Shipment'
+  const rawType = (order as any).type as string;
+  let type: OrderType = (rawType === 'Deliver' || rawType === 'Shipment') ? 'Shipment' : (rawType as OrderType);
+
   return {
     id: order.order_id.toString().padStart(3, '0'), // Use sequential order_id, properly formatted
     referenceNumber: order.reference_number || '',
