@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerWithLocation } from "./customers";
 
@@ -149,32 +148,7 @@ export async function getOrdersByStatus(status: OrderStatus) {
     throw error;
   }
   
-  const transformedData: OrderWithCustomer[] = data.map(order => {
-    const customerData = order.customer as any;
-    
-    let orderType = order.type;
-    if (orderType !== 'Deliver' && orderType !== 'Exchange' && orderType !== 'Cash Collection') {
-      orderType = 'Deliver';
-    }
-    
-    let packageType = order.package_type;
-    if (packageType !== 'parcel' && packageType !== 'document' && packageType !== 'bulky') {
-      packageType = 'parcel';
-    }
-    
-    return {
-      ...order,
-      order_id: order.order_id,
-      type: orderType as OrderType,
-      package_type: packageType as PackageType,
-      status: status,
-      customer: {
-        ...customerData,
-        city_name: customerData.cities?.name,
-        governorate_name: customerData.governorates?.name
-      }
-    };
-  });
+  const transformedData: OrderWithCustomer[] = data.map(transformOrderData);
   
   return transformedData;
 }
