@@ -101,15 +101,18 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     return "Select date range";
   };
 
-  // Fix: Add overflow-hidden to <body> when the modal is open on mobile
+  // Fix: Add overflow-hidden to <body> and html when the modal is open on mobile
   React.useEffect(() => {
     if (open && isMobile) {
       document.body.classList.add("overflow-hidden");
+      document.documentElement.classList.add("overflow-hidden");
     } else {
       document.body.classList.remove("overflow-hidden");
+      document.documentElement.classList.remove("overflow-hidden");
     }
     return () => {
       document.body.classList.remove("overflow-hidden");
+      document.documentElement.classList.remove("overflow-hidden");
     };
   }, [open, isMobile]);
 
@@ -133,22 +136,26 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
         {open && (
           <>
-            {/* Backdrop - now FULLY opaque and higher z-index */}
+            {/* Backdrop - FULLY opaque, highest z-index, fixed on entire viewport */}
             <div
-              className="fixed inset-0 z-[99999] bg-black/80 transition-opacity duration-300"
+              className="fixed inset-0 z-[100000] bg-black opacity-100 pointer-events-auto"
+              style={{ background: "rgba(0,0,0,0.85)" }}
+              aria-hidden="true"
               onClick={() => {
                 setOpen(false);
                 setMobileStep('presets');
               }}
             />
 
-            {/* Bottom Sheet Container - seamless white background with matching z-index */}
+            {/* Bottom Sheet Container - highest z-index, covers bottom half, no shadow/gaps */}
             <div
               className={cn(
-                "fixed inset-x-0 bottom-0 z-[100000] bg-white rounded-t-xl max-h-[85vh] overflow-hidden",
+                "fixed inset-x-0 bottom-0 z-[100001] bg-white rounded-t-xl max-h-[85vh] overflow-hidden",
                 "transform transition-all duration-300 ease-out",
-                open ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
+                open ? "translate-y-0 opacity-100" : "translate-y-full opacity-0",
+                "shadow-none border-none"
               )}
+              style={{ boxShadow: 'none', border: 'none', background: '#fff' }}
             >
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-4 bg-white">
@@ -168,10 +175,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 </Button>
               </div>
 
-              {/* Content - continuous white bg, no overlap */}
+              {/* Content */}
               <div
                 className="overflow-y-auto bg-white"
-                style={{ maxHeight: 'calc(85vh - 72px)' }}
+                style={{ maxHeight: 'calc(85vh - 72px)', background: '#fff' }}
               >
                 {mobileStep === 'presets' ? (
                   <div className="px-5 pb-5 space-y-2 bg-white">
@@ -229,7 +236,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                       </div>
                     </div>
 
-                    {/* Calendar - seamless white bg, pointer-events-auto */}
+                    {/* Calendar - pointer-events-auto, no shadow */}
                     <div className="py-2">
                       <CalendarComponent
                         mode="range"
@@ -258,6 +265,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                         }}
                         fixedWeeks
                         showOutsideDays={false}
+                        style={{ background: '#fff' }}
                       />
                     </div>
 
