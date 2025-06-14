@@ -41,6 +41,9 @@ const OrdersList: React.FC = () => {
   const { data: returnedOrders } = useOrdersByStatus('Returned');
   const { data: paidOrders } = useOrdersByStatus('Paid');
   
+  // FIX: Call useDeleteOrder
+  const deleteOrderMutation = useDeleteOrder();
+  
   // Show toast notification if there's an error loading orders
   React.useEffect(() => {
     if (ordersError) {
