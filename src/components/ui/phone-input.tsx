@@ -229,9 +229,7 @@ export function PhoneInput({
       </div>
       
       {error && (
-        <p
-          className="text-xs text-red-500 font-medium relative z-20 mb-2"
-        >
+        <p className="text-xs text-red-500 font-medium mb-2 transition-all duration-300">
           {error}
         </p>
       )}
