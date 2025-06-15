@@ -368,7 +368,7 @@ const Customers: React.FC = () => {
                 <DrawerContent>
                   <DrawerHeader>
                     {/* Touch indicator bar for mobile */}
-                    <div className="w-14 h-1.5 rounded-full bg-gray-300 mb-4 cursor-pointer" />
+                    <div className="w-14 h-1.5 rounded-full bg-gray-300 mb-4 cursor-pointer mx-auto" />
                     <h2 className="text-lg font-semibold mb-2">Filter by Region</h2>
                   </DrawerHeader>
                   <div className="w-full max-w-md mx-auto px-2 flex flex-col items-stretch gap-2 pb-6">
