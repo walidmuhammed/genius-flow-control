@@ -293,7 +293,7 @@ const Customers: React.FC = () => {
             <div className="p-3 flex flex-col sm:flex-row items-stretch border-b gap-3">
               {/* Search bar: full width until filters */}
               <div className="flex w-full">
-                <div className="flex-1">
+                <div className="flex-1 relative">
                   <input
                     type="text"
                     placeholder="Search customers by name, phone, or location..."
@@ -301,7 +301,7 @@ const Customers: React.FC = () => {
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                   />
-                  <Search className="absolute left-3 top-[1.375rem] transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" style={{ position: 'absolute' }} />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
                 </div>
                 {/* On desktop, filter button on far right */}
                 {!isMobile && (
@@ -335,12 +335,11 @@ const Customers: React.FC = () => {
             {/* Desktop/Tablet: Region Filter Modal */}
             {!isMobile && (
               <Dialog open={isRegionDialogOpen} onOpenChange={setIsRegionDialogOpen}>
-                <DialogContent className="max-w-sm p-0">
-                  <DialogHeader>
-                    {/* Only show the indicator bar on mobile, not here */}
-                    <h2 className="text-lg font-semibold mb-2 w-full text-center">Filter by Region</h2>
+                <DialogContent className="max-w-lg p-0">
+                  <DialogHeader className="pt-6 pb-3 px-6">
+                    <h2 className="text-lg font-semibold mb-1 w-full text-center">Filter by Region</h2>
                   </DialogHeader>
-                  <div className="w-full max-w-md mx-auto px-4 flex flex-col items-stretch gap-2 pb-6">
+                  <div className="w-full max-w-lg mx-auto px-6 flex flex-col items-stretch gap-3 pb-8">
                     {[{ name: "All Governorates", value: "all" }, ...GOVERNORATES.map(g => ({ name: g, value: g }))].map(opt => (
                       <Button
                         key={opt.value}
