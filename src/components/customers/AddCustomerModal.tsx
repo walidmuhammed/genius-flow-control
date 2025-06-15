@@ -187,11 +187,18 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={v => { if (!v) resetForm(); onOpenChange(v); }} shouldScaleBackground>
-        <DrawerContent className="rounded-t-2xl p-0 bg-background max-h-[96vh] overflow-y-auto">
+        <DrawerContent className="rounded-t-2xl p-0 bg-background overflow-auto" style={{height: "100dvh", maxHeight: "100dvh"}}>
           <DrawerHeader className="px-6 pb-0 pt-4">
             <DrawerTitle className="text-xl font-semibold">Add Customer</DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 pt-2 pb-2">{content}</div>
+          <div
+            className="px-4 pt-2 pb-[env(safe-area-inset-bottom,56px)]"
+            style={{
+              minHeight: "calc(100dvh - 70px)",
+              overflowY: "auto"
+            }}>
+            {content}
+          </div>
         </DrawerContent>
       </Drawer>
     );
