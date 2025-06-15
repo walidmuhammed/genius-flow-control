@@ -68,6 +68,27 @@ export type Database = {
           },
         ]
       }
+      couriers: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
@@ -229,19 +250,23 @@ export type Database = {
           cash_collection_lbp: number | null
           cash_collection_usd: number | null
           client_id: string | null
+          courier_id: string | null
           courier_name: string | null
           created_at: string
+          created_by: string | null
           customer_id: string
           delivery_fees_lbp: number | null
           delivery_fees_usd: number | null
           edit_history: Json | null
           edited: boolean | null
           id: string
+          invoice_id: string | null
           items_count: number | null
           note: string | null
           order_id: number
           package_description: string | null
           package_type: string | null
+          reason_unsuccessful: string | null
           reference_number: string | null
           status: string | null
           type: string
@@ -254,19 +279,23 @@ export type Database = {
           cash_collection_lbp?: number | null
           cash_collection_usd?: number | null
           client_id?: string | null
+          courier_id?: string | null
           courier_name?: string | null
           created_at?: string
+          created_by?: string | null
           customer_id: string
           delivery_fees_lbp?: number | null
           delivery_fees_usd?: number | null
           edit_history?: Json | null
           edited?: boolean | null
           id?: string
+          invoice_id?: string | null
           items_count?: number | null
           note?: string | null
           order_id?: number
           package_description?: string | null
           package_type?: string | null
+          reason_unsuccessful?: string | null
           reference_number?: string | null
           status?: string | null
           type: string
@@ -279,19 +308,23 @@ export type Database = {
           cash_collection_lbp?: number | null
           cash_collection_usd?: number | null
           client_id?: string | null
+          courier_id?: string | null
           courier_name?: string | null
           created_at?: string
+          created_by?: string | null
           customer_id?: string
           delivery_fees_lbp?: number | null
           delivery_fees_usd?: number | null
           edit_history?: Json | null
           edited?: boolean | null
           id?: string
+          invoice_id?: string | null
           items_count?: number | null
           note?: string | null
           order_id?: number
           package_description?: string | null
           package_type?: string | null
+          reason_unsuccessful?: string | null
           reference_number?: string | null
           status?: string | null
           type?: string
@@ -299,10 +332,31 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "orders_courier_id_fk"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_created_by_fk"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "orders_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_invoice_id_fk"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
         ]
