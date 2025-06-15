@@ -19,14 +19,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
   const { sidebarOpen, closeSidebar } = useLayoutStore();
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       {/* Desktop Sidebar */}
       {!isMobile && !isTablet && <Sidebar />}
       
       {/* Mobile/Tablet Sidebar as Sheet */}
       {(isMobile || isTablet) && (
         <Sheet open={sidebarOpen} onOpenChange={closeSidebar}>
-          <SheetContent side="left" className="p-0 w-[280px] rounded-r-2xl border-0 shadow-2xl">
+          <SheetContent side="left" className="p-0 w-[280px] rounded-r-2xl border-0 shadow-2xl backdrop-blur-md">
             <Sidebar />
           </SheetContent>
         </Sheet>
@@ -40,23 +40,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
       >
         <TopBar />
         <main className={cn(
-          "flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-all",
-          isMobile ? "p-3 pb-6" : isTablet ? "p-4 pb-6" : "p-6",
+          "flex-1 overflow-y-auto transition-all",
+          isMobile ? "p-4 pb-6" : isTablet ? "p-5 pb-6" : "p-8",
           className
         )}>
           <motion.div 
             className={cn(
-              "w-full mx-auto space-y-4",
+              "w-full mx-auto space-y-6",
               !isMobile && !isTablet && "max-w-[1600px] md:space-y-8"
             )}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
-              duration: 0.3,
+              duration: 0.4,
               ease: [0.4, 0.0, 0.2, 1]
             }}
           >
-            {children}
+            <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200/40 dark:border-gray-800/40 p-6">
+              {children}
+            </div>
           </motion.div>
         </main>
       </div>
@@ -66,9 +68,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
         toastOptions={{
           classNames: {
             toast: cn(
-              "group border-border shadow-lg rounded-xl",
+              "group border-border shadow-lg rounded-xl backdrop-blur-md",
               isMobile ? "mx-3 max-w-[calc(100vw-24px)]" : "",
-              "bg-white dark:bg-gray-900"
+              "bg-white/90 dark:bg-gray-900/90"
             ),
             title: "font-medium text-foreground",
             description: "text-muted-foreground text-sm",
