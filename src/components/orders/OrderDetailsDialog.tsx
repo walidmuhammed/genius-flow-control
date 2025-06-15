@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogPortal, DialogOverlay, DialogDescription } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
@@ -15,7 +14,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
 import { useDeleteOrder } from '@/hooks/use-orders';
 import { toast } from 'sonner';
-import { MapPin, Phone, User, Package, DollarSign, Clock, FileText, Truck, Edit, Trash2, History, Map, Building } from 'lucide-react';
+import { MapPin, Phone, User, Package, DollarSign, Clock, FileText, Truck, Edit, Trash2, History, Map, Building, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AppleOrderHeaderMobile from './AppleOrderHeaderMobile';
 import CurrencyDisplay from './CurrencyDisplay';
@@ -202,17 +201,17 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       switch ((order.status || '').toLowerCase()) {
         case 'new':
           return (
-            <div className="flex items-center text-sm text-gray-700 mt-4 p-3 bg-blue-50 rounded-lg">
-              <Clock className="h-4 w-4 mr-2 text-blue-600" />
+            <div className="flex items-center text-base text-gray-700 mt-6 p-4 bg-blue-50 rounded-lg">
+              <Clock className="h-5 w-5 mr-3 text-blue-600" />
               <span>Created: <span className="font-medium">{formatDateShort(order.created_at)}</span></span>
-              <span className="mx-2">•</span>
+              <span className="mx-3">•</span>
               <span>by <span className="font-medium text-gray-900">{getCreatorName(order)}</span></span>
             </div>
           );
         case 'pending pickup':
           return (
-            <div className="flex items-center text-sm text-gray-700 mt-4 p-3 bg-orange-50 rounded-lg">
-              <Truck className="h-4 w-4 mr-2 text-orange-600" />
+            <div className="flex items-center text-base text-gray-700 mt-6 p-4 bg-orange-50 rounded-lg">
+              <Truck className="h-5 w-5 mr-3 text-orange-600" />
               {getPickupCourierName(order) ? (
                 <span>
                   Courier assigned for pickup: <span className="font-medium text-gray-900">{getPickupCourierName(order)}</span>
@@ -224,8 +223,8 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           );
         case 'in progress':
           return (
-            <div className="flex items-center text-sm text-gray-700 mt-4 p-3 bg-yellow-50 rounded-lg">
-              <Truck className="h-4 w-4 mr-2 text-yellow-600" />
+            <div className="flex items-center text-base text-gray-700 mt-6 p-4 bg-yellow-50 rounded-lg">
+              <Truck className="h-5 w-5 mr-3 text-yellow-600" />
               {getCourierName(order) ? (
                 <span>
                   Courier <span className="font-medium text-gray-900">{getCourierName(order)}</span> is heading to customer
@@ -237,15 +236,15 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           );
         case 'successful':
           return (
-            <div className="flex items-center text-sm text-green-700 mt-4 p-3 bg-green-50 rounded-lg">
-              <Package className="h-4 w-4 mr-2 text-green-600" />
+            <div className="flex items-center text-base text-green-700 mt-6 p-4 bg-green-50 rounded-lg">
+              <Package className="h-5 w-5 mr-3 text-green-600" />
               Order has been <span className="font-semibold ml-1">Successfully delivered</span> and will get paid soon
             </div>
           );
         case 'unsuccessful':
           return (
-            <div className="flex items-center text-sm text-red-700 mt-4 p-3 bg-red-50 rounded-lg">
-              <AlertDialog className="h-4 w-4 mr-2 text-red-600" />
+            <div className="flex items-center text-base text-red-700 mt-6 p-4 bg-red-50 rounded-lg">
+              <AlertTriangle className="h-5 w-5 mr-3 text-red-600" />
               Not Successful
               {getReasonUnsuccessful(order) ? (
                 <span className="ml-2">• Reason: <span className="font-medium">{getReasonUnsuccessful(order)}</span></span>
@@ -254,22 +253,22 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           );
         case 'returned':
           return (
-            <div className="flex items-center text-sm text-sky-700 mt-4 p-3 bg-sky-50 rounded-lg">
-              <Package className="h-4 w-4 mr-2 text-sky-600" />
+            <div className="flex items-center text-base text-sky-700 mt-6 p-4 bg-sky-50 rounded-lg">
+              <Package className="h-5 w-5 mr-3 text-sky-600" />
               Package has been <span className="font-semibold ml-1">Returned to your warehouse</span>
             </div>
           );
         case 'awaiting action':
           return (
-            <div className="flex items-center text-sm text-amber-700 mt-4 p-3 bg-amber-50 rounded-lg">
-              <Clock className="h-4 w-4 mr-2 text-amber-600" />
+            <div className="flex items-center text-base text-amber-700 mt-6 p-4 bg-amber-50 rounded-lg">
+              <Clock className="h-5 w-5 mr-3 text-amber-600" />
               This order needs to be reviewed by you
             </div>
           );
         case 'paid':
           return (
-            <div className="flex items-center text-sm text-indigo-700 mt-4 p-3 bg-indigo-50 rounded-lg">
-              <DollarSign className="h-4 w-4 mr-2 text-indigo-600" />
+            <div className="flex items-center text-base text-indigo-700 mt-6 p-4 bg-indigo-50 rounded-lg">
+              <DollarSign className="h-5 w-5 mr-3 text-indigo-600" />
               Order has been paid
               {getInvoiceId(order) ? (
                 <span className="ml-1">in Invoice ID: <span className="font-semibold">{getInvoiceId(order)}</span></span>
@@ -287,10 +286,10 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         <Card className="shadow-sm backdrop-blur-lg border border-gray-200/50">
           <CardHeader className="pb-4 flex-row items-center gap-3">
             <Package className="h-6 w-6 text-primary" />
-            <CardTitle className="text-lg font-semibold pl-1 flex-1">
+            <CardTitle className="text-xl font-semibold pl-1 flex-1">
               Order Progress
             </CardTitle>
-            <span className="text-sm text-muted-foreground ml-auto">
+            <span className="text-base text-muted-foreground ml-auto">
               Updated: {formatDateShort(order.updated_at)}
             </span>
           </CardHeader>
@@ -305,26 +304,26 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           <Card className="shadow-sm backdrop-blur-lg border border-gray-200/50">
             <CardHeader className="pb-4 flex-row items-center gap-3">
               <History className="h-6 w-6 text-primary" />
-              <CardTitle className="text-lg font-semibold pl-1 flex-1">
+              <CardTitle className="text-xl font-semibold pl-1 flex-1">
                 Edit History
               </CardTitle>
-              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-sm px-3 py-1">
                 {order.edit_history.length} {order.edit_history.length === 1 ? 'Change' : 'Changes'}
               </Badge>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {order.edit_history.map((change, index) => (
-                  <div key={index} className="border-l-2 border-blue-200 pl-4 py-2 bg-blue-50/30 rounded-r-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-sm text-gray-900 capitalize">
+                  <div key={index} className="border-l-2 border-blue-200 pl-5 py-3 bg-blue-50/30 rounded-r-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-medium text-base text-gray-900 capitalize">
                         {change.field.replace('_', ' ')}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-sm text-gray-500">
                         {formatDateShort(change.timestamp)}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-700">
+                    <div className="text-base text-gray-700">
                       <span className="text-red-600 line-through">{change.oldValue}</span>
                       {' → '}
                       <span className="text-green-600 font-medium">{change.newValue}</span>
@@ -340,63 +339,63 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         <Card className="shadow-sm backdrop-blur-lg border border-gray-200/50">
           <CardHeader className="pb-4 flex-row items-center gap-3">
             <User className="h-6 w-6 text-primary" />
-            <CardTitle className="text-lg font-semibold pl-1 flex-1">
+            <CardTitle className="text-xl font-semibold pl-1 flex-1">
               Customer Information
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <div className="space-y-4">
+            <div className="space-y-5">
               {/* Customer Name */}
               <div>
-                <span className="font-semibold text-base text-gray-900">{order.customer?.name}</span>
+                <span className="font-semibold text-lg text-gray-900">{order.customer?.name}</span>
               </div>
               
               {/* Contact Information */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {order.customer?.phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-700">{order.customer.phone}</span>
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-gray-500" />
+                    <span className="text-base text-gray-700">{order.customer.phone}</span>
                   </div>
                 )}
                 {order.customer?.secondary_phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">{order.customer.secondary_phone}</span>
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-gray-400" />
+                    <span className="text-base text-gray-600">{order.customer.secondary_phone}</span>
                   </div>
                 )}
               </div>
 
               {/* Location Information */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {order.customer?.address && (
-                  <div className="flex items-start gap-2">
-                    <MapPin className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                  <div className="flex items-start gap-3">
+                    <MapPin className="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-700 mb-1">Address</div>
-                      <p className="text-sm text-gray-600 leading-relaxed break-words">
+                      <div className="text-sm font-medium text-gray-700 mb-2">Address</div>
+                      <div className="text-base text-gray-600 leading-relaxed break-words max-h-20 overflow-y-auto p-3 bg-gray-50 rounded-lg">
                         {order.customer.address}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 )}
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {order.customer?.city_name && (
-                    <div className="flex items-center gap-2">
-                      <Building className="h-4 w-4 text-gray-500" />
+                    <div className="flex items-center gap-3">
+                      <Building className="h-5 w-5 text-gray-500" />
                       <div>
-                        <div className="text-xs text-gray-500">City</div>
-                        <span className="text-sm font-medium text-gray-700">{order.customer.city_name}</span>
+                        <div className="text-sm text-gray-500">City</div>
+                        <span className="text-base font-medium text-gray-700">{order.customer.city_name}</span>
                       </div>
                     </div>
                   )}
                   {order.customer?.governorate_name && (
-                    <div className="flex items-center gap-2">
-                      <Map className="h-4 w-4 text-gray-500" />
+                    <div className="flex items-center gap-3">
+                      <Map className="h-5 w-5 text-gray-500" />
                       <div>
-                        <div className="text-xs text-gray-500">Governorate</div>
-                        <span className="text-sm font-medium text-gray-700">{order.customer.governorate_name}</span>
+                        <div className="text-sm text-gray-500">Governorate</div>
+                        <span className="text-base font-medium text-gray-700">{order.customer.governorate_name}</span>
                       </div>
                     </div>
                   )}
@@ -413,35 +412,35 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             <CardHeader className="pb-4 flex-row items-center justify-between">
               <div className="flex items-center gap-3">
                 <Package className="h-6 w-6 text-primary" />
-                <CardTitle className="text-lg font-semibold pl-1">Package</CardTitle>
+                <CardTitle className="text-xl font-semibold pl-1">Package</CardTitle>
               </div>
-              <Badge className={`px-3 py-1.5 text-sm font-medium ${getTypeColor(order.type)}`}>
+              <Badge className={`px-4 py-2 text-base font-medium ${getTypeColor(order.type)}`}>
                 {order.type}
               </Badge>
             </CardHeader>
-            <CardContent className="pt-0 space-y-4">
+            <CardContent className="pt-0 space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-xs text-gray-500 mb-1">Type</div>
-                  <span className="text-sm font-medium text-gray-900">{order.package_type}</span>
+                  <div className="text-sm text-gray-500 mb-2">Type</div>
+                  <span className="text-base font-medium text-gray-900">{order.package_type}</span>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500 mb-1">Items</div>
-                  <span className="text-sm font-medium text-gray-900">{order.items_count}</span>
+                  <div className="text-sm text-gray-500 mb-2">Items</div>
+                  <span className="text-base font-medium text-gray-900">{order.items_count}</span>
                 </div>
               </div>
               
               <div>
-                <div className="text-xs text-gray-500 mb-1">Allow Opening</div>
-                <Badge variant={order.allow_opening ? "default" : "secondary"} className="text-xs">
+                <div className="text-sm text-gray-500 mb-2">Allow Opening</div>
+                <Badge variant={order.allow_opening ? "default" : "secondary"} className="text-sm px-3 py-1">
                   {order.allow_opening ? "Yes" : "No"}
                 </Badge>
               </div>
 
               {order.package_description && (
                 <div>
-                  <div className="text-xs text-gray-500 mb-2">Description</div>
-                  <div className="text-sm text-gray-700 leading-relaxed p-3 bg-gray-50 rounded-lg break-words">
+                  <div className="text-sm text-gray-500 mb-3">Description</div>
+                  <div className="text-base text-gray-700 leading-relaxed p-4 bg-gray-50 rounded-lg break-words max-h-24 overflow-y-auto">
                     {order.package_description}
                   </div>
                 </div>
@@ -453,40 +452,40 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           <Card className="shadow-sm backdrop-blur-lg border border-gray-200/50">
             <CardHeader className="pb-4 flex-row items-center gap-3">
               <DollarSign className="h-6 w-6 text-primary" />
-              <CardTitle className="text-lg font-semibold pl-1 flex-1">Financials</CardTitle>
+              <CardTitle className="text-xl font-semibold pl-1 flex-1">Financials</CardTitle>
             </CardHeader>
-            <CardContent className="pt-0 space-y-4">
-              <div className="space-y-4">
-                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                  <div className="text-xs text-green-600 font-medium mb-2">Cash Collection</div>
-                  <div className="space-y-1">
+            <CardContent className="pt-0 space-y-5">
+              <div className="space-y-5">
+                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="text-sm text-green-600 font-medium mb-3">Cash Collection</div>
+                  <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">USD</span>
-                      <span className="text-base font-semibold text-gray-900">
+                      <span className="text-base text-gray-600">USD</span>
+                      <span className="text-xl font-bold text-gray-900">
                         ${order.cash_collection_usd?.toLocaleString() || '0'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">LBP</span>
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="text-base text-gray-600">LBP</span>
+                      <span className="text-base font-semibold text-gray-700">
                         {order.cash_collection_lbp?.toLocaleString() || '0'} LBP
                       </span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="text-xs text-blue-600 font-medium mb-2">Delivery Fee</div>
-                  <div className="space-y-1">
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="text-sm text-blue-600 font-medium mb-3">Delivery Fee</div>
+                  <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">USD</span>
-                      <span className="text-base font-semibold text-gray-900">
+                      <span className="text-base text-gray-600">USD</span>
+                      <span className="text-xl font-bold text-gray-900">
                         ${order.delivery_fees_usd?.toLocaleString() || '0'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">LBP</span>
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="text-base text-gray-600">LBP</span>
+                      <span className="text-base font-semibold text-gray-700">
                         {order.delivery_fees_lbp?.toLocaleString() || '0'} LBP
                       </span>
                     </div>
@@ -502,19 +501,19 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           <Card className="shadow-sm backdrop-blur-lg border border-gray-200/50">
             <CardHeader className="pb-4 flex-row items-center gap-3">
               <Truck className="h-6 w-6 text-primary" />
-              <CardTitle className="text-lg font-semibold pl-1 flex-1">Courier</CardTitle>
+              <CardTitle className="text-xl font-semibold pl-1 flex-1">Courier</CardTitle>
             </CardHeader>
-            <CardContent className="pt-0 space-y-3">
+            <CardContent className="pt-0 space-y-4">
               {order.courier_name && (
                 <div>
-                  <span className="text-sm text-gray-500">Name: </span>
-                  <span className="text-sm font-medium text-gray-900">{order.courier_name}</span>
+                  <span className="text-base text-gray-500">Name: </span>
+                  <span className="text-base font-medium text-gray-900">{order.courier_name}</span>
                 </div>
               )}
               {order.courier_id && (
                 <div>
-                  <span className="text-sm text-gray-500">ID: </span>
-                  <span className="text-sm font-medium text-gray-900">{order.courier_id}</span>
+                  <span className="text-base text-gray-500">ID: </span>
+                  <span className="text-base font-medium text-gray-900">{order.courier_id}</span>
                 </div>
               )}
             </CardContent>
@@ -526,11 +525,11 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           <Card className="shadow-sm backdrop-blur-lg border border-gray-200/50">
             <CardHeader className="pb-4 flex-row items-center gap-3">
               <FileText className="h-6 w-6 text-primary" />
-              <CardTitle className="text-lg font-semibold pl-1 flex-1">Notes</CardTitle>
+              <CardTitle className="text-xl font-semibold pl-1 flex-1">Notes</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="max-h-32 overflow-y-auto">
-                <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line break-words p-3 bg-gray-50 rounded-lg">
+              <div className="max-h-40 overflow-y-auto">
+                <div className="text-base text-gray-700 leading-relaxed whitespace-pre-line break-words p-4 bg-gray-50 rounded-lg">
                   {order.note}
                 </div>
               </div>
