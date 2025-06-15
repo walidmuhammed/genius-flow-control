@@ -1,7 +1,7 @@
 
 import React from "react";
 import { CustomerWithLocation } from "@/services/customers";
-import { User, Phone, MapPin, Hash, DollarSign, Calendar } from "lucide-react";
+import { User, Phone, MapPin } from "lucide-react";
 
 interface CustomersTableMobileProps {
   customers: CustomerWithLocation[];
@@ -28,72 +28,74 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 px-2 py-2 bg-transparent">
+    <div className="grid gap-5 sm:grid-cols-2 px-2 py-2 bg-transparent">
       {customers.map((customer) => {
         const stats = calculateCustomerStats(customer.id);
 
         return (
           <button
             key={customer.id}
-            className="w-full text-left rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2 focus:outline-none hover:border-[#db271e] transition duration-150"
+            className="relative w-full text-left rounded-xl border border-gray-200 bg-transparent px-5 py-5 flex flex-col gap-3 focus:outline-none hover:border-[#db271e] transition duration-150"
             onClick={() => onCardClick(customer)}
             tabIndex={0}
             aria-label={`View customer ${customer.name}`}
             role="button"
-            style={{ background: "transparent", boxShadow: "none" }}
+            style={{ boxShadow: "none" }}
           >
-            {/* Name & Phone Row */}
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center bg-[#DB271E]/10 text-[#DB271E] rounded-full h-9 w-9">
-                <User size={20} />
+            {/* Top row: Name and order count badge */}
+            <div className="flex items-center justify-between w-full mb-1">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="flex items-center justify-center bg-[#DB271E]/10 text-[#DB271E] rounded-full h-9 w-9 flex-shrink-0">
+                  <User size={20} />
+                </span>
+                <span className="font-semibold text-base truncate">{customer.name}</span>
+              </div>
+              {/* Order count in blue circle */}
+              <span className="ml-2 flex items-center">
+                <span className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-600 text-white font-bold text-base shadow-sm text-center">
+                  {stats.orderCount}
+                </span>
               </span>
-              <span className="font-semibold text-base truncate">{customer.name}</span>
-            </div>
-            <div className="flex items-center gap-2 ml-1 text-gray-600 text-sm whitespace-nowrap truncate">
-              <Phone size={16} className="text-gray-400" />
-              <span>{customer.phone}</span>
             </div>
 
-            {/* Location */}
-            <div className="flex items-center gap-2 ml-1 text-gray-500 text-sm">
-              <MapPin size={16} className="text-gray-400" />
-              <span>
-                {((customer.governorate_name || "") +
-                  (customer.city_name ? ` - ${customer.city_name}` : "")) || "No location"}
-              </span>
+            {/* Phone and location */}
+            <div className="flex flex-col gap-1 ml-1">
+              <div className="flex items-center gap-1 text-gray-600 text-sm min-w-0 truncate">
+                <Phone size={15} className="text-gray-400 shrink-0" />
+                <span className="truncate">{customer.phone}</span>
+              </div>
+              <div className="flex items-center gap-1 text-gray-500 text-sm min-w-0">
+                <MapPin size={15} className="text-gray-400 shrink-0" />
+                <span className="truncate">
+                  {((customer.governorate_name || "") +
+                    (customer.city_name ? ` - ${customer.city_name}` : "")) || "No location"}
+                </span>
+              </div>
             </div>
 
             {/* Divider */}
             <div className="border-t border-gray-100 my-2" />
 
-            {/* Money row (first line) */}
-            <div className="flex items-center gap-4 text-base font-medium text-gray-900 ml-1">
-              {/* USD always shown */}
-              <div className="flex items-center gap-1">
-                <DollarSign size={16} className="text-emerald-500" />
-                <span>${stats.totalValueUSD.toFixed(2)}</span>
-                <span className="text-xs text-gray-500 ml-1">USD</span>
-              </div>
-              {/* LBP beside if it exists */}
-              {stats.totalValueLBP !== null && (
-                <div className="flex items-center gap-1">
-                  <DollarSign size={16} className="text-yellow-600 opacity-90" />
-                  <span>{stats.totalValueLBP.toLocaleString()}</span>
-                  <span className="text-xs text-gray-500 ml-1">LBP</span>
+            {/* USD/LBP section (left side, stacked) and Date at right bottom */}
+            <div className="flex flex-row w-full mt-1">
+              {/* Money stacked on left */}
+              <div className="flex flex-col flex-1 min-w-0">
+                <div className="text-base font-semibold text-gray-900">
+                  ${stats.totalValueUSD.toFixed(2)}{" "}
+                  <span className="text-xs text-gray-500 ml-1">USD</span>
                 </div>
-              )}
-            </div>
-
-            {/* Stats row (second line) */}
-            <div className="flex items-center gap-6 text-sm text-gray-700 ml-1 mt-1">
-              <div className="flex items-center gap-1">
-                <Hash size={15} className="text-blue-500" />
-                <span>{stats.orderCount}</span>
-                <span className="text-xs text-gray-500 ml-1">Orders</span>
+                {stats.totalValueLBP !== null && (
+                  <div className="text-base font-semibold text-gray-900">
+                    {stats.totalValueLBP.toLocaleString()}{" "}
+                    <span className="text-xs text-gray-500 ml-1">LBP</span>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-1">
-                <Calendar size={15} className="text-gray-400" />
-                <span className="text-xs text-gray-500">{stats.lastOrderDate}</span>
+              {/* Date at the bottom right */}
+              <div className="flex flex-col justify-end items-end flex-1 min-w-0">
+                <span className="text-xs text-gray-500 font-medium mt-auto mb-0">
+                  {stats.lastOrderDate}
+                </span>
               </div>
             </div>
           </button>
