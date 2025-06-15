@@ -36,6 +36,11 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
   onDeleteOrder
 }) => {
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+  // Custom: show selection column logic
+  const [isTableHovered, setIsTableHovered] = useState(false);
+
+  // Evaluate when to show selection
+  const showSelection = isTableHovered || selectedOrderIds.length > 0;
 
   const handleSelectAll = (checked: boolean) => {
     onOrderSelection(checked ? orders.map(order => order.id) : []);
@@ -97,23 +102,30 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
   const canDelete = (order: OrderWithCustomer) => order.status === 'New';
 
   return (
-    <div className="overflow-x-auto">
+    <div
+      className="overflow-x-auto"
+      // mouse events for showing selection 
+      onMouseEnter={() => setIsTableHovered(true)}
+      onMouseLeave={() => setIsTableHovered(false)}
+    >
       <Table>
         <TableHeader>
           <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-            <TableHead className="w-12 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider pl-6">
-              <Checkbox
-                checked={isAllSelected}
-                ref={(el) => {
-                  if (el) {
-                    const input = el.querySelector('input') as HTMLInputElement;
-                    if (input) input.indeterminate = isPartiallySelected;
-                  }
-                }}
-                onCheckedChange={handleSelectAll}
-                className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md"
-              />
-            </TableHead>
+            {showSelection && (
+              <TableHead className="w-12 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider pl-6 transition-all duration-150">
+                <Checkbox
+                  checked={isAllSelected}
+                  ref={(el) => {
+                    if (el) {
+                      const input = el.querySelector('input') as HTMLInputElement;
+                      if (input) input.indeterminate = isPartiallySelected;
+                    }
+                  }}
+                  onCheckedChange={handleSelectAll}
+                  className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md transition-all duration-150"
+                />
+              </TableHead>
+            )}
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">ORDER ID</TableHead>
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">REFERENCE</TableHead>
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">CUSTOMER</TableHead>
@@ -143,29 +155,29 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
               onMouseLeave={() => setHoveredRow(null)}
               onClick={() => onViewOrder(order)}
             >
-              <TableCell className="pl-6" onClick={e => e.stopPropagation()}>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{
-                    opacity: hoveredRow === order.id || selectedOrderIds.includes(order.id) ? 1 : 0.6,
-                    scale: 1
-                  }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Checkbox
-                    checked={selectedOrderIds.includes(order.id)}
-                    onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
-                    className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md"
-                  />
-                </motion.div>
-              </TableCell>
+              {showSelection && (
+                <TableCell className="pl-6 transition-all duration-150" onClick={e => e.stopPropagation()}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{
+                      opacity: hoveredRow === order.id || selectedOrderIds.includes(order.id) ? 1 : 0.6,
+                      scale: 1
+                    }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Checkbox
+                      checked={selectedOrderIds.includes(order.id)}
+                      onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+                      className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md transition-all duration-150"
+                    />
+                  </motion.div>
+                </TableCell>
+              )}
               <TableCell className="font-semibold text-[#DB271E]">
                 <div className="flex items-center gap-2">
-                  {/* Order number */}
                   <span>
                     #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
                   </span>
-                  {/* Show icon only if the order has a note */}
                   {order.note && order.note.trim() !== "" && (
                     <OrderNoteTooltip note={order.note} />
                   )}
@@ -191,7 +203,6 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
                 </div>
               </TableCell>
               <TableCell>
-                {/* Apply getTypeColor here */}
                 <div>
                   <span
                     className={`inline-flex px-3 py-1 text-xs font-medium rounded-full border ${getTypeColor(order.type)}`}
