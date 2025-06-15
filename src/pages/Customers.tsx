@@ -581,8 +581,8 @@ const Customers: React.FC = () => {
                   )}
                 </div>
               </div>
-              {/* Hide statistics and orders when editing on desktop */}
-              {!isEditing || isMobile ? (
+              {/* Hide statistics and orders when editing on ANY device */}
+              {!isEditing ? (
                 <>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Order Statistics</h3>
@@ -617,8 +617,8 @@ const Customers: React.FC = () => {
                 </>
               ) : null}
             </div>
-            {/* Recent Orders - hide when editing on desktop */}
-            {(!isEditing || isMobile) && (
+            {/* Recent Orders - hide when editing on ANY device */}
+            {!isEditing && (
               <div className="mt-6">
                 <h3 className="text-sm font-medium text-gray-500 mb-3">Recent Orders</h3>
                 {customerOrders.length === 0 ? (
