@@ -294,7 +294,6 @@ const Customers: React.FC = () => {
             <div className="p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b gap-3">
               {/* Search and Filter */}
               <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:gap-3">
-                {/* Search Field: unchanged */}
                 <div className="relative w-full sm:w-[280px]">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
                   <input
@@ -305,19 +304,16 @@ const Customers: React.FC = () => {
                     onChange={e => setSearchQuery(e.target.value)}
                   />
                 </div>
-                {/* FILTER BUTTON -- styles unified to match reference */}
+                {/* Redesigned filter button */}
                 <div className="flex w-full sm:w-[220px]">
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-10 rounded-lg px-4 border border-gray-200 bg-white flex items-center justify-start font-semibold text-base text-gray-900 gap-2 shadow-none transition focus-visible:ring-2 hover:bg-gray-50"
+                    className="w-full h-10 justify-start font-bold text-gray-700 bg-white border-gray-200"
                     onClick={() => setIsDrawerOpen(true)}
-                    style={{
-                      boxShadow: "none",
-                    }}
                   >
-                    <Filter className="h-5 w-5 mr-2 text-[#dc291e]" />
-                    <span className="font-semibold text-sm tracking-tight">Filter by Region</span>
+                    <Filter className="h-4 w-4 mr-2 text-[#dc291e]" />
+                    Filter by Region
                   </Button>
                 </div>
               </div>
@@ -331,29 +327,24 @@ const Customers: React.FC = () => {
                   {/* Curvy handle */}
                   <div className="w-full flex flex-col items-center">
                     <div className="w-14 h-1.5 rounded-full bg-gray-300 mb-4 cursor-pointer" />
-                    <div className="flex items-center justify-center gap-2">
-                      <Filter className="h-5 w-5 text-[#dc291e]" />
-                      <h2 className="text-lg font-semibold">Filter by Region</h2>
-                    </div>
+                    <h2 className="text-lg font-semibold mb-2">Filter by Region</h2>
                   </div>
                 </DrawerHeader>
                 <div className="w-full max-w-md mx-auto px-2 flex flex-col items-stretch gap-2 pb-6">
-                  {/* Governorate filter options, match the compact pill style */}
                   {[{ name: "All Governorates", value: "all" }, ...GOVERNORATES.map(g => ({ name: g, value: g }))].map(opt => (
                     <Button
                       key={opt.value}
                       variant={governorateFilter === opt.value ? "default" : "outline"}
-                      className={`w-full flex items-center gap-2 h-10 px-4 rounded-lg font-semibold text-base transition ${
+                      className={`w-full text-left justify-start capitalize font-medium ${
                         governorateFilter === opt.value
                           ? "border-[#dc291e] bg-[#dc291e] text-white"
-                          : "bg-white text-gray-900 border-gray-200 hover:bg-gray-50"
+                          : "bg-white text-gray-800"
                       }`}
                       onClick={() => {
                         setGovernorateFilter(opt.value);
                         setIsDrawerOpen(false);
                       }}
                     >
-                      <Filter className="h-4 w-4 text-[#dc291e] mr-2" />
                       {opt.name}
                     </Button>
                   ))}
