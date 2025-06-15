@@ -28,19 +28,19 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
   }
 
   return (
-    <div className="grid gap-5 sm:grid-cols-2">
+    <div className="grid gap-6 sm:grid-cols-2 px-2 py-2 bg-transparent">
       {customers.map((customer) => {
         const stats = calculateCustomerStats(customer.id);
 
         return (
           <button
             key={customer.id}
-            className="w-full text-left rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2 focus:outline-none hover:border-[#db271e] transition"
+            className="w-full text-left rounded-xl border border-transparent px-4 py-4 flex flex-col gap-2 focus:outline-none hover:border-[#db271e] transition duration-150"
             onClick={() => onCardClick(customer)}
             tabIndex={0}
             aria-label={`View customer ${customer.name}`}
             role="button"
-            style={{ background: "transparent" }} // background is transparent
+            style={{ background: "transparent", boxShadow: "none" }}
           >
             {/* Name & Phone Row */}
             <div className="flex items-center gap-3">
