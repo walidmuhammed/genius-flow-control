@@ -29,7 +29,9 @@ interface SelectedOrder {
 }
 const SchedulePickup: React.FC = () => {
   const navigate = useNavigate();
-  const { isMobile } = useScreenSize();
+  const {
+    isMobile
+  } = useScreenSize();
 
   /** TIME WINDOW CONSTANTS */
   const SLIDER_MIN = 8; // 8 AM
@@ -51,12 +53,7 @@ const SchedulePickup: React.FC = () => {
 
   // Time logic - memoize the next available hour for "today"
   const now = new Date();
-  const isSelectedToday = useMemo(() =>
-    pickupDate &&
-    now.getFullYear() === pickupDate.getFullYear() &&
-    now.getMonth() === pickupDate.getMonth() &&
-    now.getDate() === pickupDate.getDate()
-  , [pickupDate, now]);
+  const isSelectedToday = useMemo(() => pickupDate && now.getFullYear() === pickupDate.getFullYear() && now.getMonth() === pickupDate.getMonth() && now.getDate() === pickupDate.getDate(), [pickupDate, now]);
 
   // Compute the earliest available hour for today (rounded up to next whole hour)
   const nextAvailableHour = useMemo(() => {
@@ -85,17 +82,11 @@ const SchedulePickup: React.FC = () => {
       } else {
         setTodayWindowUnavailable(false);
         // Clamp timeRange if needed
-        setTimeRange(prev => [
-          Math.max(prev[0], nextAvailableHour),
-          Math.max(Math.max(prev[1], nextAvailableHour), Math.max(prev[0], nextAvailableHour))
-        ]);
+        setTimeRange(prev => [Math.max(prev[0], nextAvailableHour), Math.max(Math.max(prev[1], nextAvailableHour), Math.max(prev[0], nextAvailableHour))]);
       }
     } else {
       setTodayWindowUnavailable(false);
-      setTimeRange(prev => [
-        Math.max(prev[0], SLIDER_MIN),
-        Math.min(prev[1], SLIDER_MAX)
-      ]);
+      setTimeRange(prev => [Math.max(prev[0], SLIDER_MIN), Math.min(prev[1], SLIDER_MAX)]);
     }
     // eslint-disable-next-line
   }, [pickupDate, isSelectedToday, nextAvailableHour]);
@@ -117,7 +108,6 @@ const SchedulePickup: React.FC = () => {
     }
     return arr;
   }, [isSelectedToday, nextAvailableHour]);
-
   const {
     data: newOrders,
     isLoading
@@ -301,26 +291,19 @@ const SchedulePickup: React.FC = () => {
           </div>}
       </div>;
   };
-  return (
-    <MainLayout>
+  return <MainLayout>
       {/* Simple modern header as per user screenshot */}
       <div className="max-w-7xl mx-auto px-4 pt-8 pb-6">
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/pickups')}
-            className="text-[#DB271E] rounded-full"
-            aria-label="Back"
-          >
+          <Button variant="ghost" size="icon" onClick={() => navigate('/pickups')} aria-label="Back" className="text-[#DB271E] rounded-full font-thin">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <Truck className="h-7 w-7 text-[#DB271E]" />
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
+          <h1 className="text-2xl tracking-tight text-foreground md:text-xl font-bold">
             Schedule Pickup
           </h1>
         </div>
-        <p className="text-muted-foreground text-lg mt-3">
+        <p className="text-muted-foreground mt-3 text-sm">
           Create a new pickup request for your orders
         </p>
       </div>
@@ -336,9 +319,9 @@ const SchedulePickup: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <Dialog open={showOrderSelection} onOpenChange={open => {
-              setShowOrderSelection(open);
-              if (open) setTempSelectedOrderIds(selectedOrders.map(o => o.id));
-            }}>
+            setShowOrderSelection(open);
+            if (open) setTempSelectedOrderIds(selectedOrders.map(o => o.id));
+          }}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="w-full h-12">
                   <Package className="h-4 w-4 mr-2" />
@@ -350,49 +333,29 @@ const SchedulePickup: React.FC = () => {
                   <DialogTitle>Select Orders for Pickup</DialogTitle>
                 </DialogHeader>
                 <div className={cn("overflow-auto", isMobile ? "px-4 pb-4" : "max-h-[60vh]")}>
-                  {isLoading
-                    ? (
-                        <div className="flex items-center justify-center h-32">
+                  {isLoading ? <div className="flex items-center justify-center h-32">
                           <Package className="h-8 w-8 animate-pulse text-gray-400" />
-                        </div>
-                      )
-                    : isMobile
-                        ? renderMobileOrderCards()
-                        : <OrdersTable orders={newOrders || []} onOrderSelection={handleOrderSelection} selectionMode={true} selectedOrderIds={selectedOrders.map(o => o.id)} />
-                  }
+                        </div> : isMobile ? renderMobileOrderCards() : <OrdersTable orders={newOrders || []} onOrderSelection={handleOrderSelection} selectionMode={true} selectedOrderIds={selectedOrders.map(o => o.id)} />}
                 </div>
               </DialogContent>
             </Dialog>
-            {selectedOrders.length > 0 && (
-              <div className="space-y-2">
+            {selectedOrders.length > 0 && <div className="space-y-2">
                 <Label className="text-sm font-medium">Selected Orders:</Label>
                 <div className="grid gap-2 max-h-40 overflow-y-auto">
-                  {selectedOrders.map(order => (
-                    <div
-                      key={order.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors"
-                      onClick={() => removeOrder(order.id)}
-                    >
+                  {selectedOrders.map(order => <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => removeOrder(order.id)}>
                       <div className="flex-1">
                         <p className="font-medium text-sm">{order.referenceNumber}</p>
                         <p className="text-xs text-gray-600">{order.customer} • {order.amount}</p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={e => {
-                          e.stopPropagation();
-                          removeOrder(order.id);
-                        }}
-                        className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                      >
+                      <Button variant="ghost" size="sm" onClick={e => {
+                  e.stopPropagation();
+                  removeOrder(order.id);
+                }} className="text-red-600 hover:text-red-800 hover:bg-red-50">
                         Remove
                       </Button>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
-              </div>
-            )}
+              </div>}
           </CardContent>
         </Card>
 
@@ -409,44 +372,26 @@ const SchedulePickup: React.FC = () => {
               <Label>Pickup Date *</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn("w-full justify-start text-left font-normal h-12", !pickupDate && "text-muted-foreground")}
-                  >
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-12", !pickupDate && "text-muted-foreground")}>
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {pickupDate ? format(pickupDate, "PPP") : "Select date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={pickupDate}
-                    onSelect={date => setPickupDate(date)}
-                    disabled={date => {
-                      const isToday =
-                        date &&
-                        date.getFullYear() === now.getFullYear() &&
-                        date.getMonth() === now.getMonth() &&
-                        date.getDate() === now.getDate();
-                      if (isToday && now.getHours() >= SLIDER_MAX) return true;
-                      return (
-                        date < new Date(now.getFullYear(), now.getMonth(), now.getDate())
-                      );
-                    }}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
+                  <Calendar mode="single" selected={pickupDate} onSelect={date => setPickupDate(date)} disabled={date => {
+                  const isToday = date && date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+                  if (isToday && now.getHours() >= SLIDER_MAX) return true;
+                  return date < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                }} initialFocus className={cn("p-3 pointer-events-auto")} />
                 </PopoverContent>
               </Popover>
             </div>
-            {todayWindowUnavailable && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded p-4 flex items-center gap-2 text-yellow-700 text-sm">
+            {todayWindowUnavailable && <div className="bg-yellow-50 border border-yellow-200 rounded p-4 flex items-center gap-2 text-yellow-700 text-sm">
                 <Clock className="h-4 w-4 text-yellow-500" />
                 <span>
                   Today’s window has passed. Please select a future date.
                 </span>
-              </div>
-            )}
+              </div>}
             <div className="space-y-4">
               <Label>Pickup Time Window *</Label>
               <div className="bg-gray-50 p-4 rounded-lg space-y-4">
@@ -458,22 +403,15 @@ const SchedulePickup: React.FC = () => {
                 </div>
                 {/* Slider */}
                 <div className="flex flex-col gap-2">
-                  <Slider
-                    value={timeRange}
-                    min={SLIDER_MIN}
-                    max={SLIDER_MAX}
-                    step={1}
-                    onValueChange={vals => {
-                      let [from, to] = vals;
-                      if (isSelectedToday) {
-                        if (from < nextAvailableHour) from = nextAvailableHour;
-                        if (to < nextAvailableHour) to = nextAvailableHour;
-                      }
-                      if (from > to) from = to;
-                      setTimeRange([from, to]);
-                    }}
-                    className="w-full"
-                  />
+                  <Slider value={timeRange} min={SLIDER_MIN} max={SLIDER_MAX} step={1} onValueChange={vals => {
+                  let [from, to] = vals;
+                  if (isSelectedToday) {
+                    if (from < nextAvailableHour) from = nextAvailableHour;
+                    if (to < nextAvailableHour) to = nextAvailableHour;
+                  }
+                  if (from > to) from = to;
+                  setTimeRange([from, to]);
+                }} className="w-full" />
                 </div>
               </div>
             </div>
@@ -491,15 +429,15 @@ const SchedulePickup: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {vehicleOptions.map(option => {
-                const IconComponent = option.icon;
-                return <Button key={option.value} variant={vehicleType === option.value ? "default" : "outline"} className={cn("h-20 p-4 flex flex-col items-center gap-2 border-2 transition-all", vehicleType === option.value ? "bg-[#DB271E] hover:bg-[#c0211a] text-white border-[#DB271E]" : "hover:border-gray-300")} onClick={() => setVehicleType(option.value as any)}>
+              const IconComponent = option.icon;
+              return <Button key={option.value} variant={vehicleType === option.value ? "default" : "outline"} className={cn("h-20 p-4 flex flex-col items-center gap-2 border-2 transition-all", vehicleType === option.value ? "bg-[#DB271E] hover:bg-[#c0211a] text-white border-[#DB271E]" : "hover:border-gray-300")} onClick={() => setVehicleType(option.value as any)}>
                   <IconComponent className="h-6 w-6" />
                   <div className="text-center">
                     <p className="font-medium text-sm">{option.label}</p>
                     <p className="text-xs opacity-70">{option.description}</p>
                   </div>
                 </Button>;
-              })}
+            })}
             </div>
           </CardContent>
         </Card>
@@ -587,8 +525,6 @@ const SchedulePickup: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default SchedulePickup;
