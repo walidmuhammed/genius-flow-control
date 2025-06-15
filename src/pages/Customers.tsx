@@ -252,12 +252,15 @@ const Customers: React.FC = () => {
   };
 
   // Responsive edit mode check (for conditional rendering)
-  const { isMobile, isTablet } = useScreenSize();
+  const { isMobile, isTablet, isDesktop } = useScreenSize();
+
+  // Open/close region filter modal/drawer
+  const [isRegionDialogOpen, setIsRegionDialogOpen] = useState(false);
 
   return (
     <MainLayout>
       <div className="space-y-4">
-        {/* Header with reduced margin for tighter design */}
+        {/* Header */}
         <div className="flex flex-col gap-2 pb-1 border-b border-gray-100 mb-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
             <div>
@@ -286,12 +289,11 @@ const Customers: React.FC = () => {
 
         <Card>
           <CardContent className="p-0">
-            {/* LESS SPACE under the button */}
-            <div className="p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b gap-3">
-              {/* Search and Filter */}
-              <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:gap-3">
-                <div className="relative w-full sm:w-[280px]">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            {/* Filter/Search Bar Row */}
+            <div className="p-3 flex flex-col sm:flex-row items-stretch border-b gap-3">
+              {/* Search bar: full width until filters */}
+              <div className="flex w-full">
+                <div className="flex-1">
                   <input
                     type="text"
                     placeholder="Search customers by name, phone, or location..."
@@ -299,54 +301,102 @@ const Customers: React.FC = () => {
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                   />
+                  <Search className="absolute left-3 top-[1.375rem] transform -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" style={{ position: 'absolute' }} />
                 </div>
-                {/* Redesigned filter button */}
-                <div className="flex w-full sm:w-[220px]">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full h-10 justify-start font-medium text-gray-700 bg-white border-gray-200"
-                    onClick={() => setIsDrawerOpen(true)}
-                  >
-                    <Filter className="h-4 w-4 mr-2 text-[#dc291e]" />
-                    Filter by Region
-                  </Button>
-                </div>
+                {/* On desktop, filter button on far right */}
+                {!isMobile && (
+                  <div className="ml-3 flex-shrink-0 flex items-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-10 font-medium text-gray-700 bg-white border-gray-200 whitespace-nowrap"
+                      onClick={() => setIsRegionDialogOpen(true)}
+                    >
+                      <Filter className="h-4 w-4 mr-2 text-[#dc291e]" />
+                      Filter by Region
+                    </Button>
+                  </div>
+                )}
               </div>
-              {/* Export Button removed */}
+              {/* On mobile, stack the filter button below search */}
+              {isMobile && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-10 mt-2 sm:mt-0 justify-start font-medium text-gray-700 bg-white border-gray-200"
+                  onClick={() => setIsDrawerOpen(true)}
+                >
+                  <Filter className="h-4 w-4 mr-2 text-[#dc291e]" />
+                  Filter by Region
+                </Button>
+              )}
             </div>
 
-            {/* Replace Sheet with Drawer for swipe down to close */}
-            <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-              <DrawerContent>
-                <DrawerHeader>
-                  {/* Curvy handle */}
-                  <div className="w-full flex flex-col items-center">
-                    <div className="w-14 h-1.5 rounded-full bg-gray-300 mb-4 cursor-pointer" />
-                    <h2 className="text-lg font-semibold mb-2">Filter by Region</h2>
+            {/* Desktop/Tablet: Region Filter Modal */}
+            {!isMobile && (
+              <Dialog open={isRegionDialogOpen} onOpenChange={setIsRegionDialogOpen}>
+                <DialogContent className="max-w-sm p-0">
+                  <DialogHeader>
+                    <div className="w-full flex flex-col items-center">
+                      <div className="w-14 h-1.5 rounded-full bg-gray-300 mb-4 cursor-pointer" />
+                      <h2 className="text-lg font-semibold mb-2">Filter by Region</h2>
+                    </div>
+                  </DialogHeader>
+                  <div className="w-full max-w-md mx-auto px-4 flex flex-col items-stretch gap-2 pb-6">
+                    {[{ name: "All Governorates", value: "all" }, ...GOVERNORATES.map(g => ({ name: g, value: g }))].map(opt => (
+                      <Button
+                        key={opt.value}
+                        variant={governorateFilter === opt.value ? "default" : "outline"}
+                        className={`w-full text-left justify-start capitalize font-medium ${
+                          governorateFilter === opt.value
+                            ? "border-[#dc291e] bg-[#dc291e] text-white"
+                            : "bg-white text-gray-800"
+                        }`}
+                        onClick={() => {
+                          setGovernorateFilter(opt.value);
+                          setIsRegionDialogOpen(false);
+                        }}
+                      >
+                        {opt.name}
+                      </Button>
+                    ))}
                   </div>
-                </DrawerHeader>
-                <div className="w-full max-w-md mx-auto px-2 flex flex-col items-stretch gap-2 pb-6">
-                  {[{ name: "All Governorates", value: "all" }, ...GOVERNORATES.map(g => ({ name: g, value: g }))].map(opt => (
-                    <Button
-                      key={opt.value}
-                      variant={governorateFilter === opt.value ? "default" : "outline"}
-                      className={`w-full text-left justify-start capitalize font-medium ${
-                        governorateFilter === opt.value
-                          ? "border-[#dc291e] bg-[#dc291e] text-white"
-                          : "bg-white text-gray-800"
-                      }`}
-                      onClick={() => {
-                        setGovernorateFilter(opt.value);
-                        setIsDrawerOpen(false);
-                      }}
-                    >
-                      {opt.name}
-                    </Button>
-                  ))}
-                </div>
-              </DrawerContent>
-            </Drawer>
+                </DialogContent>
+              </Dialog>
+            )}
+
+            {/* Mobile: Region Filter Drawer */}
+            {isMobile && (
+              <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+                <DrawerContent>
+                  <DrawerHeader>
+                    <div className="w-full flex flex-col items-center">
+                      <div className="w-14 h-1.5 rounded-full bg-gray-300 mb-4 cursor-pointer" />
+                      <h2 className="text-lg font-semibold mb-2">Filter by Region</h2>
+                    </div>
+                  </DrawerHeader>
+                  <div className="w-full max-w-md mx-auto px-2 flex flex-col items-stretch gap-2 pb-6">
+                    {[{ name: "All Governorates", value: "all" }, ...GOVERNORATES.map(g => ({ name: g, value: g }))].map(opt => (
+                      <Button
+                        key={opt.value}
+                        variant={governorateFilter === opt.value ? "default" : "outline"}
+                        className={`w-full text-left justify-start capitalize font-medium ${
+                          governorateFilter === opt.value
+                            ? "border-[#dc291e] bg-[#dc291e] text-white"
+                            : "bg-white text-gray-800"
+                        }`}
+                        onClick={() => {
+                          setGovernorateFilter(opt.value);
+                          setIsDrawerOpen(false);
+                        }}
+                      >
+                        {opt.name}
+                      </Button>
+                    ))}
+                  </div>
+                </DrawerContent>
+              </Drawer>
+            )}
 
             {/* Main data table logic */}
             <div className="overflow-x-auto">
