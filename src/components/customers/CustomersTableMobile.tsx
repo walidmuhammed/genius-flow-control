@@ -28,14 +28,14 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
   }
 
   return (
-    <div className="grid gap-5 sm:grid-cols-2 px-2 py-2 bg-transparent">
+    <div className="grid gap-7 px-4 py-5 bg-transparent">
       {customers.map((customer) => {
         const stats = calculateCustomerStats(customer.id);
 
         return (
           <button
             key={customer.id}
-            className="relative w-full text-left rounded-xl border border-gray-200 bg-transparent px-5 py-5 flex flex-col gap-3 focus:outline-none hover:border-[#db271e] transition duration-150"
+            className="relative w-full text-left rounded-xl border border-gray-200 bg-white px-5 py-5 flex flex-col gap-3 focus:outline-none hover:border-[#db271e] transition duration-150 shadow-sm"
             onClick={() => onCardClick(customer)}
             tabIndex={0}
             aria-label={`View customer ${customer.name}`}
@@ -50,9 +50,14 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
                 </span>
                 <span className="font-semibold text-base truncate">{customer.name}</span>
               </div>
-              {/* Order count in blue circle */}
               <span className="ml-2 flex items-center">
-                <span className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-600 text-white font-bold text-base shadow-sm text-center">
+                <span
+                  className="flex items-center justify-center h-7 min-w-[28px] px-0.5 rounded-full bg-sky-400 text-white font-bold text-sm shadow-sm text-center"
+                  style={{
+                    fontVariantNumeric: "tabular-nums",
+                    letterSpacing: '0.01em'
+                  }}
+                >
                   {stats.orderCount}
                 </span>
               </span>
@@ -77,7 +82,7 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
             <div className="border-t border-gray-100 my-2" />
 
             {/* USD/LBP section (left side, stacked) and Date at right bottom */}
-            <div className="flex flex-row w-full mt-1">
+            <div className="flex flex-row w-full mt-1 items-end">
               {/* Money stacked on left */}
               <div className="flex flex-col flex-1 min-w-0">
                 <div className="text-base font-semibold text-gray-900">
@@ -106,3 +111,4 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
 };
 
 export default CustomersTableMobile;
+
