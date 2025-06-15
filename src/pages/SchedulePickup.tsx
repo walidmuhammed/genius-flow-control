@@ -291,7 +291,8 @@ const SchedulePickup: React.FC = () => {
           </div>}
       </div>;
   };
-  return <MainLayout>
+  return (
+    <MainLayout>
       {/* Simple modern header as per user screenshot */}
       <div className="max-w-7xl mx-auto px-4 pt-8 pb-6">
         <div className="flex items-center gap-3">
@@ -307,224 +308,231 @@ const SchedulePickup: React.FC = () => {
           Create a new pickup request for your orders
         </p>
       </div>
-      {/* Main page content */}
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Step 1: Select Orders */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Package className="h-5 w-5" />
-              Select Orders
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Dialog open={showOrderSelection} onOpenChange={open => {
-            setShowOrderSelection(open);
-            if (open) setTempSelectedOrderIds(selectedOrders.map(o => o.id));
-          }}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="w-full h-12">
-                  <Package className="h-4 w-4 mr-2" />
-                  Select Orders ({selectedOrders.length} selected)
-                </Button>
-              </DialogTrigger>
-              <DialogContent className={cn("overflow-hidden", isMobile ? "max-w-[95vw] max-h-[85vh] p-0" : "max-w-6xl max-h-[80vh]")}>
-                <DialogHeader className={isMobile ? "p-4 pb-2" : ""}>
-                  <DialogTitle>Select Orders for Pickup</DialogTitle>
-                </DialogHeader>
-                <div className={cn("overflow-auto", isMobile ? "px-4 pb-4" : "max-h-[60vh]")}>
-                  {isLoading ? <div className="flex items-center justify-center h-32">
-                          <Package className="h-8 w-8 animate-pulse text-gray-400" />
-                        </div> : isMobile ? renderMobileOrderCards() : <OrdersTable orders={newOrders || []} onOrderSelection={handleOrderSelection} selectionMode={true} selectedOrderIds={selectedOrders.map(o => o.id)} />}
-                </div>
-              </DialogContent>
-            </Dialog>
-            {selectedOrders.length > 0 && <div className="space-y-2">
-                <Label className="text-sm font-medium">Selected Orders:</Label>
-                <div className="grid gap-2 max-h-40 overflow-y-auto">
-                  {selectedOrders.map(order => <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => removeOrder(order.id)}>
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{order.referenceNumber}</p>
-                        <p className="text-xs text-gray-600">{order.customer} • {order.amount}</p>
-                      </div>
-                      <Button variant="ghost" size="sm" onClick={e => {
-                  e.stopPropagation();
-                  removeOrder(order.id);
-                }} className="text-red-600 hover:text-red-800 hover:bg-red-50">
-                        Remove
+      {/* Two-column main grid layout */}
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          {/* LEFT COLUMN */}
+          <div className="space-y-6">
+            {/* Step 1: Select Orders */}
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Package className="h-5 w-5" />
+                  Select Orders
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Dialog open={showOrderSelection} onOpenChange={open => {
+                  setShowOrderSelection(open);
+                  if (open) setTempSelectedOrderIds(selectedOrders.map(o => o.id));
+                }}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full h-12">
+                      <Package className="h-4 w-4 mr-2" />
+                      Select Orders ({selectedOrders.length} selected)
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className={cn("overflow-hidden", isMobile ? "max-w-[95vw] max-h-[85vh] p-0" : "max-w-6xl max-h-[80vh]")}>
+                    <DialogHeader className={isMobile ? "p-4 pb-2" : ""}>
+                      <DialogTitle>Select Orders for Pickup</DialogTitle>
+                    </DialogHeader>
+                    <div className={cn("overflow-auto", isMobile ? "px-4 pb-4" : "max-h-[60vh]")}>
+                      {isLoading ? <div className="flex items-center justify-center h-32">
+                              <Package className="h-8 w-8 animate-pulse text-gray-400" />
+                            </div> : isMobile ? renderMobileOrderCards() : <OrdersTable orders={newOrders || []} onOrderSelection={handleOrderSelection} selectionMode={true} selectedOrderIds={selectedOrders.map(o => o.id)} />}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                {selectedOrders.length > 0 && <div className="space-y-2">
+                    <Label className="text-sm font-medium">Selected Orders:</Label>
+                    <div className="grid gap-2 max-h-40 overflow-y-auto">
+                      {selectedOrders.map(order => <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => removeOrder(order.id)}>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{order.referenceNumber}</p>
+                            <p className="text-xs text-gray-600">{order.customer} • {order.amount}</p>
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={e => {
+                      e.stopPropagation();
+                      removeOrder(order.id);
+                    }} className="text-red-600 hover:text-red-800 hover:bg-red-50">
+                            Remove
+                          </Button>
+                        </div>)}
+                    </div>
+                  </div>}
+              </CardContent>
+            </Card>
+
+            {/* Step 2: Date & Time */}
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <CalendarIcon className="h-5 w-5" />
+                  Pickup Schedule
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label>Pickup Date *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-12", !pickupDate && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {pickupDate ? format(pickupDate, "PPP") : "Select date"}
                       </Button>
-                    </div>)}
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={pickupDate} onSelect={date => setPickupDate(date)} disabled={date => {
+                      const isToday = date && date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+                      if (isToday && now.getHours() >= SLIDER_MAX) return true;
+                      return date < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    }} initialFocus className={cn("p-3 pointer-events-auto")} />
+                    </PopoverContent>
+                  </Popover>
                 </div>
-              </div>}
-          </CardContent>
-        </Card>
-
-        {/* Step 2: Date & Time */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <CalendarIcon className="h-5 w-5" />
-              Pickup Schedule
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label>Pickup Date *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-12", !pickupDate && "text-muted-foreground")}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {pickupDate ? format(pickupDate, "PPP") : "Select date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={pickupDate} onSelect={date => setPickupDate(date)} disabled={date => {
-                  const isToday = date && date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
-                  if (isToday && now.getHours() >= SLIDER_MAX) return true;
-                  return date < new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                }} initialFocus className={cn("p-3 pointer-events-auto")} />
-                </PopoverContent>
-              </Popover>
-            </div>
-            {todayWindowUnavailable && <div className="bg-yellow-50 border border-yellow-200 rounded p-4 flex items-center gap-2 text-yellow-700 text-sm">
-                <Clock className="h-4 w-4 text-yellow-500" />
-                <span>
-                  Today’s window has passed. Please select a future date.
-                </span>
-              </div>}
-            <div className="space-y-4">
-              <Label>Pickup Time Window *</Label>
-              <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-                {/* Time range display */}
-                <div className="flex items-center justify-between text-sm font-medium">
-                  <span>{formatTime(timeRange[0])}</span>
-                  <span>to</span>
-                  <span>{formatTime(timeRange[1])}</span>
-                </div>
-                {/* Slider */}
-                <div className="flex flex-col gap-2">
-                  <Slider value={timeRange} min={SLIDER_MIN} max={SLIDER_MAX} step={1} onValueChange={vals => {
-                  let [from, to] = vals;
-                  if (isSelectedToday) {
-                    if (from < nextAvailableHour) from = nextAvailableHour;
-                    if (to < nextAvailableHour) to = nextAvailableHour;
-                  }
-                  if (from > to) from = to;
-                  setTimeRange([from, to]);
-                }} className="w-full" />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Step 3: Vehicle Type */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Truck className="h-5 w-5" />
-              Vehicle Type
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {vehicleOptions.map(option => {
-              const IconComponent = option.icon;
-              return <Button key={option.value} variant={vehicleType === option.value ? "default" : "outline"} className={cn("h-20 p-4 flex flex-col items-center gap-2 border-2 transition-all", vehicleType === option.value ? "bg-[#DB271E] hover:bg-[#c0211a] text-white border-[#DB271E]" : "hover:border-gray-300")} onClick={() => setVehicleType(option.value as any)}>
-                  <IconComponent className="h-6 w-6" />
-                  <div className="text-center">
-                    <p className="font-medium text-sm">{option.label}</p>
-                    <p className="text-xs opacity-70">{option.description}</p>
+                {todayWindowUnavailable && <div className="bg-yellow-50 border border-yellow-200 rounded p-4 flex items-center gap-2 text-yellow-700 text-sm">
+                    <Clock className="h-4 w-4 text-yellow-500" />
+                    <span>
+                      Today’s window has passed. Please select a future date.
+                    </span>
+                  </div>}
+                <div className="space-y-4">
+                  <Label>Pickup Time Window *</Label>
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                    {/* Time range display */}
+                    <div className="flex items-center justify-between text-sm font-medium">
+                      <span>{formatTime(timeRange[0])}</span>
+                      <span>to</span>
+                      <span>{formatTime(timeRange[1])}</span>
+                    </div>
+                    {/* Slider */}
+                    <div className="flex flex-col gap-2">
+                      <Slider value={timeRange} min={SLIDER_MIN} max={SLIDER_MAX} step={1} onValueChange={vals => {
+                      let [from, to] = vals;
+                      if (isSelectedToday) {
+                        if (from < nextAvailableHour) from = nextAvailableHour;
+                        if (to < nextAvailableHour) to = nextAvailableHour;
+                      }
+                      if (from > to) from = to;
+                      setTimeRange([from, to]);
+                    }} className="w-full" />
+                    </div>
                   </div>
-                </Button>;
-            })}
-            </div>
-          </CardContent>
-        </Card>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Step 4: Notes */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <FileText className="h-5 w-5" />
-              Additional Notes (Optional)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea placeholder="Any special instructions for the pickup..." value={notes} onChange={e => setNotes(e.target.value)} className="min-h-[80px]" />
-          </CardContent>
-        </Card>
+            {/* Step 3: Vehicle Type */}
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Truck className="h-5 w-5" />
+                  Vehicle Type
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {vehicleOptions.map(option => {
+                  const IconComponent = option.icon;
+                  return <Button key={option.value} variant={vehicleType === option.value ? "default" : "outline"} className={cn("h-20 p-4 flex flex-col items-center gap-2 border-2 transition-all", vehicleType === option.value ? "bg-[#DB271E] hover:bg-[#c0211a] text-white border-[#DB271E]" : "hover:border-gray-300")} onClick={() => setVehicleType(option.value as any)}>
+                      <IconComponent className="h-6 w-6" />
+                      <div className="text-center">
+                        <p className="font-medium text-sm">{option.label}</p>
+                        <p className="text-xs opacity-70">{option.description}</p>
+                      </div>
+                    </Button>;
+                })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          {/* RIGHT COLUMN */}
+          <div className="space-y-6">
+            {/* Step 4: Notes */}
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <FileText className="h-5 w-5" />
+                  Additional Notes (Optional)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea placeholder="Any special instructions for the pickup..." value={notes} onChange={e => setNotes(e.target.value)} className="min-h-[80px]" />
+              </CardContent>
+            </Card>
+
+            {/* Pickup Details */}
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <MapPin className="h-5 w-5" />
+                  Pickup Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="location">Business/Store Name *</Label>
+                  <Input id="location" placeholder="Enter your business name" value={location} onChange={e => setLocation(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Full Address *</Label>
+                  <Textarea id="address" placeholder="Enter complete pickup address" value={address} onChange={e => setAddress(e.target.value)} required rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contactPerson">Contact Name *</Label>
+                  <Input id="contactPerson" placeholder="Contact person name" value={contactPerson} onChange={e => setContactPerson(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contactPhone">Phone Number *</Label>
+                  <Input id="contactPhone" placeholder="+961 XX XXX XXX" value={contactPhone} onChange={e => setContactPhone(e.target.value)} required />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Summary Card */}
+            <Card className="sticky top-6 border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg">Pickup Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4 text-sm">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Package className="h-4 w-4 text-gray-500" />
+                    <span className="font-medium">{selectedOrders.length} orders selected</span>
+                  </div>
+                  
+                  {pickupDate && <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <CalendarIcon className="h-4 w-4 text-gray-500" />
+                      <span>{format(pickupDate, "MMM dd, yyyy")}</span>
+                    </div>}
+                  
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    <span>{formatTime(timeRange[0])} - {formatTime(timeRange[1])}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Truck className="h-4 w-4 text-gray-500" />
+                    <span className="capitalize">{vehicleType} vehicle</span>
+                  </div>
+                  
+                  {location && <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <MapPin className="h-4 w-4 text-gray-500" />
+                      <span className="truncate">{location}</span>
+                    </div>}
+                </div>
+
+                <Button onClick={handleSubmit} disabled={!canSubmit || isSubmitting} className="w-full bg-[#DB271E] hover:bg-[#c0211a] text-white h-12" size="lg">
+                  <Check className="h-4 w-4 mr-2" />
+                  {isSubmitting ? 'Scheduling...' : 'Confirm Pickup'}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
-      {/* Right Sidebar */}
-      <div className="lg:col-span-1 space-y-6">
-        {/* Pickup Details */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <MapPin className="h-5 w-5" />
-              Pickup Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="location">Business/Store Name *</Label>
-              <Input id="location" placeholder="Enter your business name" value={location} onChange={e => setLocation(e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Full Address *</Label>
-              <Textarea id="address" placeholder="Enter complete pickup address" value={address} onChange={e => setAddress(e.target.value)} required rows={3} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="contactPerson">Contact Name *</Label>
-              <Input id="contactPerson" placeholder="Contact person name" value={contactPerson} onChange={e => setContactPerson(e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="contactPhone">Phone Number *</Label>
-              <Input id="contactPhone" placeholder="+961 XX XXX XXX" value={contactPhone} onChange={e => setContactPhone(e.target.value)} required />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Summary Card */}
-        <Card className="sticky top-6 border shadow-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Pickup Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4 text-sm">
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <Package className="h-4 w-4 text-gray-500" />
-                <span className="font-medium">{selectedOrders.length} orders selected</span>
-              </div>
-              
-              {pickupDate && <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <CalendarIcon className="h-4 w-4 text-gray-500" />
-                  <span>{format(pickupDate, "MMM dd, yyyy")}</span>
-                </div>}
-              
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <Clock className="h-4 w-4 text-gray-500" />
-                <span>{formatTime(timeRange[0])} - {formatTime(timeRange[1])}</span>
-              </div>
-              
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <Truck className="h-4 w-4 text-gray-500" />
-                <span className="capitalize">{vehicleType} vehicle</span>
-              </div>
-              
-              {location && <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <MapPin className="h-4 w-4 text-gray-500" />
-                  <span className="truncate">{location}</span>
-                </div>}
-            </div>
-
-            <Button onClick={handleSubmit} disabled={!canSubmit || isSubmitting} className="w-full bg-[#DB271E] hover:bg-[#c0211a] text-white h-12" size="lg">
-              <Check className="h-4 w-4 mr-2" />
-              {isSubmitting ? 'Scheduling...' : 'Confirm Pickup'}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </MainLayout>;
+    </MainLayout>
+  );
 };
+
 export default SchedulePickup;
