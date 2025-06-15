@@ -621,12 +621,73 @@ const Customers: React.FC = () => {
               </div>
               {/* Hide statistics and orders when editing on ANY device */}
               {!isEditing ? (
-                // ... keep existing code (Order Statistics) ...
+                <>
+                  <div className="md:border-l md:border-gray-200 md:pl-6">
+                    <h3 className="text-sm font-medium text-gray-500">Order Statistics</h3>
+                    <dl className="mt-2 space-y-4">
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Total Orders:</dt>
+                        <dd className="font-medium text-gray-900">{customerOrders.length}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Total Value (USD):</dt>
+                        <dd className="font-medium text-gray-900">
+                          ${customerOrders.reduce((total, order) => {
+                            return total + (Number(order.cash_collection_usd) || 0);
+                          }, 0).toFixed(2)}
+                        </dd>
+                      </div>
+                      {/* Add total value in LBP if applicable */}
+                      {customerOrders.some(order => order.cash_collection_lbp) && (
+                        <div className="flex justify-between">
+                          <dt className="text-gray-500">Total Value (LBP):</dt>
+                          <dd className="font-medium text-gray-900">
+                            {customerOrders.reduce((total, order) => {
+                              return total + (Number(order.cash_collection_lbp) || 0);
+                            }, 0).toLocaleString()}
+                          </dd>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Last Order Date:</dt>
+                        <dd className="font-medium text-gray-900">
+                          {customerOrders.length > 0 ? formatDate(new Date(Math.max(...customerOrders.map(o => new Date(o.created_at).getTime())))) : 'N/A'}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                </>
               ) : null}
             </div>
             {/* Recent Orders - hide when editing on ANY device */}
             {!isEditing && (
-              // ... keep existing code (Recent Orders) ...
+              <>
+                <div className="border-t border-gray-200 mt-4 pt-4">
+                  <h3 className="text-sm font-medium text-gray-500">Recent Orders</h3>
+                  {customerOrders.length > 0 ? (
+                    <div className="mt-3 divide-y divide-gray-200">
+                      {customerOrders.slice(0, 5).map(order => (
+                        <div key={order.id} className="py-3 flex items-center justify-between">
+                          <div>
+                            <p className="text-gray-700">Order ID: {order.id}</p>
+                            <p className="text-gray-500 text-sm">Created at: {formatDate(new Date(order.created_at))}</p>
+                          </div>
+                          <Badge className="bg-gray-100 text-gray-700 font-medium">
+                            ${Number(order.cash_collection_usd).toFixed(2)}
+                          </Badge>
+                        </div>
+                      ))}
+                      {customerOrders.length > 5 && (
+                        <div className="mt-2 text-center">
+                          <Button variant="link">View All Orders</Button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 mt-3">No recent orders</div>
+                  )}
+                </div>
+              </>
             )}
           </>
         ) : (
