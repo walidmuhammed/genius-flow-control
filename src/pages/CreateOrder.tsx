@@ -476,36 +476,59 @@ const CreateOrder = () => {
                 <CardContent className="space-y-4">
                   {/* Phone and Name Side by Side */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone" className={cn("text-sm font-medium", errors.phone ? "text-red-600" : "text-gray-700")}>
-                        Phone Number
-                      </Label>
-                      <PhoneInput id="phone" value={phone} onChange={handlePhoneChange} defaultCountry="LB" onValidationChange={setPhoneValid} placeholder="Enter phone number" className={cn("h-10", errors.phone ? "border-red-300" : "border-gray-300")} />
-                      {errors.phone && <p className="text-xs text-red-600">{errors.phone}</p>}
-                      {searchingCustomers && <p className="text-xs text-blue-600 flex items-center gap-1">
-                          <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                          Searching...
-                        </p>}
-                      {existingCustomer && <p className="text-xs text-green-600 flex items-center gap-1">
-                          <Check className="h-3 w-3" />
-                          Customer found!
-                        </p>}
-                    </div>
-                    
+                    {/* Full Name field first (left) */}
                     <div className="space-y-2">
                       <Label htmlFor="name" className={cn("text-sm font-medium", errors.name ? "text-red-600" : "text-gray-700")}>
                         Full Name
                       </Label>
-                      <Input id="name" placeholder="Enter customer full name" value={name} onChange={e => {
-                      setName(e.target.value);
-                      if (errors.name) {
-                        setErrors(prev => ({
-                          ...prev,
-                          name: undefined
-                        }));
-                      }
-                    }} className={cn("h-10", errors.name ? "border-red-300" : "border-gray-300")} />
-                      {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
+                      <Input
+                        id="name"
+                        placeholder="Enter customer full name"
+                        value={name}
+                        onChange={e => {
+                          setName(e.target.value);
+                          if (errors.name) {
+                            setErrors(prev => ({
+                              ...prev,
+                              name: undefined
+                            }));
+                          }
+                        }}
+                        className={cn("h-10", errors.name ? "border-red-300" : "border-gray-300")}
+                      />
+                      {errors.name && (
+                        <p className="text-xs text-red-600">{errors.name}</p>
+                      )}
+                    </div>
+                    {/* Phone Number field second (right) */}
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className={cn("text-sm font-medium", errors.phone ? "text-red-600" : "text-gray-700")}>
+                        Phone Number
+                      </Label>
+                      <PhoneInput
+                        id="phone"
+                        value={phone}
+                        onChange={handlePhoneChange}
+                        defaultCountry="LB"
+                        onValidationChange={setPhoneValid}
+                        placeholder="Enter phone number"
+                        className={cn("h-10", errors.phone ? "border-red-300" : "border-gray-300")}
+                      />
+                      {errors.phone && (
+                        <p className="text-xs text-red-600">{errors.phone}</p>
+                      )}
+                      {searchingCustomers && (
+                        <p className="text-xs text-blue-600 flex items-center gap-1">
+                          <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                          Searching...
+                        </p>
+                      )}
+                      {existingCustomer && (
+                        <p className="text-xs text-green-600 flex items-center gap-1">
+                          <Check className="h-3 w-3" />
+                          Customer found!
+                        </p>
+                      )}
                     </div>
                   </div>
                   
