@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogPortal, DialogOverlay, DialogDescription } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
@@ -17,6 +18,8 @@ import { toast } from 'sonner';
 import { MapPin, Phone, User, Package, DollarSign, Clock, FileText, Truck, Edit, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import AppleOrderHeaderMobile from './AppleOrderHeaderMobile';
+import CurrencyDisplay from './CurrencyDisplay';
+import CustomerInfo from './CustomerInfo';
 
 interface OrderDetailsDialogProps {
   order: OrderWithCustomer | null;
@@ -173,28 +176,22 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
 
   // --- helper for extracting user and courier names ---
   const getCreatorName = (order: OrderWithCustomer) => {
-    // If we have attached profile info on the customer object (in future), use it. For now, fallback to phone, else N/A.
-    // TODO: When you later enrich with created_by profile join, change here.
     return order.customer?.name || 'N/A';
   };
 
   const getCourierName = (order: OrderWithCustomer) => {
-    // Future: If real courier objects are joined, use them. For now, depends on courier_name string.
     return order.courier_name || '';
   };
 
   const getPickupCourierName = (order: OrderWithCustomer) => {
-    // Placeholder for future enhancement.
     return order.courier_name || '';
   };
 
   const getReasonUnsuccessful = (order: OrderWithCustomer) => {
-    // Uses new column (string)
     return order.reason_unsuccessful || '';
   };
 
   const getInvoiceId = (order: OrderWithCustomer) => {
-    // Uses invoice_id, expect future join for proper invoice code
     return order.invoice_id || '';
   };
 
@@ -204,9 +201,9 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   };
 
-  // UPDATED OrderContent with Progress section and status-specific messaging
+  // --- NEW: Restored OrderContent (all cards restored) ---
   const OrderContent = () => {
-    // Helper to get status message for the bar
+    // Status message for below the progress bar
     const getStatusMessage = () => {
       switch ((order.status || '').toLowerCase()) {
         case 'new':
@@ -284,7 +281,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
 
     return (
       <div className="space-y-4 sm:space-y-6">
-        {/* Order Progress (NEW: updated time in bar header, status-specific message under bar) */}
+        {/* Progress section */}
         <div className="bg-white rounded-lg border p-4">
           <div className="flex justify-between items-center mb-1">
             <h3 className="font-semibold text-lg flex items-center gap-2">
@@ -297,7 +294,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
             <OrderProgressBar status={order.status as any} type={order.type as any} />
-            {/* NEW: status-dependent message below bar */}
             <div className="mt-3">{getStatusMessage()}</div>
           </div>
         </div>
@@ -305,7 +301,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
         {/* Basic Info (timestamps removed, only edit history remains) */}
         <div className="bg-white rounded-lg border p-4">
           <div className="flex flex-col space-y-3">
-            {/* Only Type badge, smaller and integrated */}
             <div className="flex items-center gap-2 mt-1">
               <span className="text-gray-700 font-medium text-xs">Type:</span>
               <span
@@ -315,7 +310,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                 {order.type}
               </span>
             </div>
-            {/* Removed Status completely */}
             {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && (
               <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
@@ -333,9 +327,111 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             )}
           </div>
         </div>
-        {/* ... keep existing code (rest of OrderContent unchanged) ... */}
-        {/* Customer, Package, Financial, Courier, Notes sections, etc. remain the same */}
-        {/* ... keep existing code ... */}
+
+        {/* Customer Details Card */}
+        <div className="bg-white rounded-lg border p-4 flex flex-col gap-3">
+          <div className="flex items-center gap-2 mb-2">
+            <User className="h-5 w-5 text-gray-500" />
+            <span className="font-semibold text-base text-gray-900">Customer Info</span>
+          </div>
+          <CustomerInfo
+            name={order.customer?.name || ''}
+            phone={order.customer?.phone || ''}
+            address={order.customer?.address}
+            secondaryPhone={order.customer?.secondary_phone}
+          />
+          <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2">
+            {order.customer?.city_name && (
+              <span className="inline-flex items-center gap-1 text-xs text-gray-600">
+                <MapPin className="h-4 w-4" /> {order.customer.city_name}
+              </span>
+            )}
+            {order.customer?.governorate_name && (
+              <span className="inline-flex items-center gap-1 text-xs text-gray-600">
+                <MapPin className="h-4 w-4" /> {order.customer.governorate_name}
+              </span>
+            )}
+            {order.customer?.address && (
+              <span className="inline-flex items-center gap-1 text-xs text-gray-600">
+                <MapPin className="h-4 w-4" /> {order.customer.address}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Package Details Card */}
+        <div className="bg-white rounded-lg border p-4 flex flex-col gap-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Package className="h-5 w-5 text-gray-500" />
+            <span className="font-semibold text-base text-gray-900">Package Info</span>
+          </div>
+          <div className="flex flex-wrap gap-x-8 gap-y-2">
+            <span className="text-xs text-gray-600">Type: <span className="font-medium">{order.package_type}</span></span>
+            <span className="text-xs text-gray-600">Items: <span className="font-medium">{order.items_count}</span></span>
+            <span className="text-xs text-gray-600">Allow Opening: <span className="font-medium">{order.allow_opening ? "Yes" : "No"}</span></span>
+          </div>
+          {order.package_description && (
+            <div className="mt-1 text-xs text-gray-700">
+              <span className="font-medium">Description: </span>
+              {order.package_description}
+            </div>
+          )}
+        </div>
+
+        {/* Financial Info */}
+        <div className="bg-white rounded-lg border p-4 flex flex-col gap-3">
+          <div className="flex items-center gap-2 mb-2">
+            <DollarSign className="h-5 w-5 text-gray-500" />
+            <span className="font-semibold text-base text-gray-900">Financials</span>
+          </div>
+          <div className="flex flex-wrap gap-x-8 gap-y-2">
+            <div className="flex flex-col text-xs">
+              <span className="text-gray-600">Cash Collection:</span>
+              <CurrencyDisplay valueUSD={order.cash_collection_usd} valueLBP={order.cash_collection_lbp} />
+            </div>
+            <div className="flex flex-col text-xs">
+              <span className="text-gray-600">Delivery Fee:</span>
+              <CurrencyDisplay valueUSD={order.delivery_fees_usd} valueLBP={order.delivery_fees_lbp} />
+            </div>
+          </div>
+        </div>
+
+        {/* Courier Info */}
+        {(order.courier_name || order.courier_id) && (
+          <div className="bg-white rounded-lg border p-4 flex flex-col gap-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Truck className="h-5 w-5 text-gray-500" />
+              <span className="font-semibold text-base text-gray-900">Courier</span>
+            </div>
+            <div className="text-xs text-gray-700">
+              {order.courier_name && (
+                <div>
+                  <span className="font-medium">Name: </span>
+                  {order.courier_name}
+                </div>
+              )}
+              {order.courier_id && (
+                <div>
+                  <span className="font-medium">ID: </span>
+                  {order.courier_id}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Notes Section */}
+        {order.note && (
+          <div className="bg-white rounded-lg border p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <FileText className="h-5 w-5 text-gray-500" />
+              <span className="font-semibold text-base text-gray-900">Notes</span>
+            </div>
+            <div className="text-sm text-gray-700 whitespace-pre-line">
+              {order.note}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -420,3 +516,4 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   );
 };
 export default OrderDetailsDialog;
+
