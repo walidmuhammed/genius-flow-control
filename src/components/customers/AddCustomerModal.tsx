@@ -119,8 +119,27 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
 
   // Improved styles: rounded soft section, subtle modern divider, vertical space
 
-  const fieldSection = (children: React.ReactNode) => (
-    <div className="rounded-xl bg-gray-50/85 border border-gray-100 px-4 py-4 sm:px-6 mb-2">{children}</div>
+  // The Remove Secondary Phone Button (icon-only, tightly aligned)
+  const RemoveSecondaryPhoneButton = (
+    <button
+      type="button"
+      aria-label="Remove secondary phone"
+      className={`
+        absolute right-0 top-0
+        bg-white text-gray-500 border border-gray-200 rounded-full
+        p-1 mt-0.5 mr-0
+        transition hover:bg-red-50 hover:text-red-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-100
+        w-6 h-6 flex items-center justify-center
+      `}
+      style={{
+        // Ensures it hugs the upper right edge of label/input container
+        zIndex: 10
+      }}
+      onClick={() => setShowSecondaryPhone(false)}
+      tabIndex={0}
+    >
+      <Trash2 className="h-3.5 w-3.5" />
+    </button>
   );
 
   // "+ Add Secondary Phone" modern button
@@ -135,24 +154,6 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
       <Plus className="h-4 w-4" />
       Add Secondary Phone
     </Button>
-  );
-
-  // Updated Remove Secondary Phone Button (icon-only, top-right)
-  const RemoveSecondaryPhoneButton = (
-    <button
-      type="button"
-      aria-label="Remove secondary phone"
-      className={`
-        absolute right-2 top-2 z-10
-        bg-white text-gray-500 border border-gray-200 rounded-full
-        p-1 transition hover:bg-red-50 hover:text-red-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-100
-        w-7 h-7 flex items-center justify-center
-      `}
-      onClick={() => setShowSecondaryPhone(false)}
-      tabIndex={0}
-    >
-      <Trash2 className="h-4 w-4" />
-    </button>
   );
 
   // Modernized Checkbox styling
@@ -212,7 +213,7 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
           className="text-base md:text-sm bg-white"
         />
       </div>
-      {/* Phone (and Secondary Phone) */}
+      {/* Phone (and Secondary Phone), no container for secondary */}
       <div className="space-y-2 relative">
         <div>
           <label htmlFor="customer-phone" className="block text-[15px] text-gray-700 font-semibold mb-2">
@@ -230,15 +231,20 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
           />
         </div>
         {showSecondaryPhone ? (
-          <div className="mt-1 relative bg-white rounded-lg border border-gray-200 pt-2 pb-3 px-3">
+          // Direct field, NO CONTAINER, delete icon perfectly aligned top-right
+          <div className="relative">
             <label
               htmlFor="customer-secondary-phone"
-              className="block text-[15px] text-gray-700 font-medium mb-2 pr-10"
-              style={{ position: "relative" }}
+              className="block text-[15px] text-gray-700 font-medium mb-2 pr-10 relative"
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
             >
-              Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
+              <span>
+                Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
+              </span>
+              <span className="relative" style={{ minWidth: 24, height: 24 }}>
+                {RemoveSecondaryPhoneButton}
+              </span>
             </label>
-            {RemoveSecondaryPhoneButton}
             <PhoneInput
               id="customer-secondary-phone"
               value={form.secondary_phone}
@@ -253,35 +259,32 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
           <div className="mt-1">{AddSecondaryPhoneButton}</div>
         )}
       </div>
-      {/* Sectioned Area/Address */}
-      {fieldSection(
-        <>
-          <div className="mb-4">
-            <label className="block text-[15px] text-gray-700 font-semibold mb-2">
-              Area (Governorate & City)
-            </label>
-            <AreaSelector
-              selectedGovernorate={form.governorate}
-              selectedArea={form.city}
-              onAreaSelected={handleAreaSelected}
-            />
-          </div>
-          <div>
-            <label htmlFor="customer-address" className="block text-[15px] text-gray-700 font-semibold mb-2">
-              Address Details
-            </label>
-            <Input
-              id="customer-address"
-              value={form.address}
-              onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-              placeholder="Building, street, landmark ..."
-              className="text-base md:text-sm bg-white"
-              autoComplete="off"
-            />
-          </div>
-        </>
-      )}
-      {/* Modernized work address switch/checkbox */}
+
+      {/* Area/Address fields now align with layout, no visual container */}
+      <div>
+        <label className="block text-[15px] text-gray-700 font-semibold mb-2">
+          Area (Governorate & City)
+        </label>
+        <AreaSelector
+          selectedGovernorate={form.governorate}
+          selectedArea={form.city}
+          onAreaSelected={handleAreaSelected}
+        />
+      </div>
+      <div>
+        <label htmlFor="customer-address" className="block text-[15px] text-gray-700 font-semibold mb-2">
+          Address Details
+        </label>
+        <Input
+          id="customer-address"
+          value={form.address}
+          onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+          placeholder="Building, street, landmark ..."
+          className="text-base md:text-sm bg-white"
+          autoComplete="off"
+        />
+      </div>
+      {/* Work address switch */}
       <div className="pt-1">
         <ModernCheckbox
           checked={form.is_work_address}
@@ -357,17 +360,19 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
                 inputClassName="text-base md:text-sm bg-white"
               />
             </div>
-            {/* Secondary Phone Option */}
+            {/* Secondary Phone Option, no extra container */}
             {showSecondaryPhone ? (
-              <div className="mt-1 relative bg-white rounded-lg border border-gray-200 pt-2 pb-3 px-3">
+              <div className="relative">
                 <label
                   htmlFor="customer-secondary-phone"
-                  className="block text-[15px] text-gray-700 font-medium mb-2 pr-10"
-                  style={{ position: "relative" }}
+                  className="block text-[15px] text-gray-700 font-medium mb-2 pr-10 relative"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
                 >
-                  Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
+                  <span>
+                    Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
+                  </span>
+                  <span className="relative" style={{ minWidth: 24, height: 24 }}>{RemoveSecondaryPhoneButton}</span>
                 </label>
-                {RemoveSecondaryPhoneButton}
                 <PhoneInput
                   id="customer-secondary-phone"
                   value={form.secondary_phone}
@@ -380,31 +385,27 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
             ) : (
               <div className="mt-1">{AddSecondaryPhoneButton}</div>
             )}
-            {/* Area selector & address are grouped in a soft panel */}
-            {fieldSection(
-              <>
-                <div className="mb-4">
-                  <label className="block text-[15px] text-gray-700 font-semibold mb-2">Area (Governorate & City)</label>
-                  <AreaSelector
-                    selectedGovernorate={form.governorate}
-                    selectedArea={form.city}
-                    onAreaSelected={handleAreaSelected}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="customer-address" className="block text-[15px] text-gray-700 font-semibold mb-2">
-                    Address Details
-                  </label>
-                  <Input
-                    id="customer-address"
-                    value={form.address}
-                    onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                    placeholder="Building, street, landmark ..."
-                    className="text-base md:text-sm bg-white"
-                  />
-                </div>
-              </>
-            )}
+            {/* Area selector, now aligned */}
+            <div>
+              <label className="block text-[15px] text-gray-700 font-semibold mb-2">Area (Governorate & City)</label>
+              <AreaSelector
+                selectedGovernorate={form.governorate}
+                selectedArea={form.city}
+                onAreaSelected={handleAreaSelected}
+              />
+            </div>
+            <div>
+              <label htmlFor="customer-address" className="block text-[15px] text-gray-700 font-semibold mb-2">
+                Address Details
+              </label>
+              <Input
+                id="customer-address"
+                value={form.address}
+                onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+                placeholder="Building, street, landmark ..."
+                className="text-base md:text-sm bg-white"
+              />
+            </div>
             <div className="pt-1">
               <ModernCheckbox
                 checked={form.is_work_address}
