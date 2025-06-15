@@ -21,6 +21,7 @@ import CustomersTableMobile from "@/components/customers/CustomersTableMobile";
 import AddCustomerModal from "@/components/customers/AddCustomerModal";
 import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
 import { Filter } from "lucide-react";
+import { Drawer, DrawerContent, DrawerHeader } from "@/components/ui/drawer";
 
 interface CustomerFormProps {
   customer: CustomerWithLocation;
@@ -174,7 +175,7 @@ const Customers: React.FC = () => {
   const [governorateFilter, setGovernorateFilter] = useState<string>("all");
   const [isEditing, setIsEditing] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Fetch data
   const { data: customers = [], isLoading: isLoadingCustomers, error: customersError } = useCustomers();
@@ -303,13 +304,13 @@ const Customers: React.FC = () => {
                     onChange={e => setSearchQuery(e.target.value)}
                   />
                 </div>
-                {/* FILTER BUTTON (no label, full width, filter icon, opens sheet) */}
+                {/* Redesigned filter button */}
                 <div className="flex w-full sm:w-[220px]">
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-10 justify-start font-normal text-gray-700 bg-white border-gray-200"
-                    onClick={() => setIsSheetOpen(true)}
+                    className="w-full h-10 justify-start font-bold text-gray-700 bg-white border-gray-200"
+                    onClick={() => setIsDrawerOpen(true)}
                   >
                     <Filter className="h-4 w-4 mr-2 text-[#dc291e]" />
                     Filter by Region
@@ -319,42 +320,37 @@ const Customers: React.FC = () => {
               {/* Export Button removed */}
             </div>
 
-            {/* FILTER SHEET: swipeable from bottom, with govs list */}
-            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-              <SheetContent
-                side="bottom"
-                className="rounded-t-2xl pt-4 max-w-full w-full flex flex-col items-center pb-6"
-                style={{ minHeight: "340px" }}
-              >
-                {/* Curvy Handle Header to allow swipe down */}
-                <SheetHeader>
+            {/* Replace Sheet with Drawer for swipe down to close */}
+            <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+              <DrawerContent>
+                <DrawerHeader>
+                  {/* Curvy handle */}
                   <div className="w-full flex flex-col items-center">
                     <div className="w-14 h-1.5 rounded-full bg-gray-300 mb-4 cursor-pointer" />
                     <h2 className="text-lg font-semibold mb-2">Filter by Region</h2>
                   </div>
-                </SheetHeader>
-                <div className="w-full max-w-md mx-auto px-2 flex flex-col items-stretch gap-2">
-                  {/* Governorate Choices (All at top) */}
+                </DrawerHeader>
+                <div className="w-full max-w-md mx-auto px-2 flex flex-col items-stretch gap-2 pb-6">
                   {[{ name: "All Governorates", value: "all" }, ...GOVERNORATES.map(g => ({ name: g, value: g }))].map(opt => (
                     <Button
                       key={opt.value}
                       variant={governorateFilter === opt.value ? "default" : "outline"}
-                      className={`w-full text-left justify-start capitalize ${
+                      className={`w-full text-left justify-start capitalize font-medium ${
                         governorateFilter === opt.value
-                          ? "border-[#dc291e] bg-[#dc291e]/90 text-white"
+                          ? "border-[#dc291e] bg-[#dc291e] text-white"
                           : "bg-white text-gray-800"
                       }`}
                       onClick={() => {
                         setGovernorateFilter(opt.value);
-                        setIsSheetOpen(false);
+                        setIsDrawerOpen(false);
                       }}
                     >
                       {opt.name}
                     </Button>
                   ))}
                 </div>
-              </SheetContent>
-            </Sheet>
+              </DrawerContent>
+            </Drawer>
 
             {/* Main data table logic */}
             <div className="overflow-x-auto">
