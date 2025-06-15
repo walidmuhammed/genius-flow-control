@@ -19,6 +19,8 @@ import CustomerEditForm from "@/components/customers/CustomerEditForm";
 import { useScreenSize } from "@/hooks/useScreenSize";
 import CustomersTableMobile from "@/components/customers/CustomersTableMobile";
 import AddCustomerModal from "@/components/customers/AddCustomerModal";
+import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
+import { Filter } from "lucide-react";
 
 interface CustomerFormProps {
   customer: CustomerWithLocation;
@@ -172,6 +174,7 @@ const Customers: React.FC = () => {
   const [governorateFilter, setGovernorateFilter] = useState<string>("all");
   const [isEditing, setIsEditing] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Fetch data
   const { data: customers = [], isLoading: isLoadingCustomers, error: customersError } = useCustomers();
@@ -257,9 +260,9 @@ const Customers: React.FC = () => {
   return (
     <MainLayout>
       <div className="space-y-4">
-        {/* Redesigned Header */}
-        <div className="flex flex-col gap-2 pb-3 border-b border-gray-100 mb-0">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        {/* Header with reduced margin for tighter design */}
+        <div className="flex flex-col gap-2 pb-1 border-b border-gray-100 mb-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-snug">
                 Customers
@@ -286,10 +289,11 @@ const Customers: React.FC = () => {
 
         <Card>
           <CardContent className="p-0">
-            <div className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b gap-4">
-              {/* Search + Governorate filter */}
-              <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:gap-4">
-                <div className="relative w-full sm:w-[300px]">
+            {/* LESS SPACE under the button */}
+            <div className="p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b gap-3">
+              {/* Search and Filter */}
+              <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:gap-3">
+                <div className="relative w-full sm:w-[280px]">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
                   <input
                     type="text"
@@ -299,25 +303,60 @@ const Customers: React.FC = () => {
                     onChange={e => setSearchQuery(e.target.value)}
                   />
                 </div>
-                {/* Governorate Filter */}
-                <div className="flex items-center gap-2 w-full sm:w-[220px]">
-                  <span className="text-xs text-gray-500 font-medium">Filter</span>
-                  <Select value={governorateFilter} onValueChange={setGovernorateFilter}>
-                    <SelectTrigger className="h-10 w-full border-input bg-white">
-                      <SelectValue placeholder="Governorate" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Governorates</SelectItem>
-                      {GOVERNORATES.map(gov => (
-                        <SelectItem key={gov} value={gov}>{gov}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/* FILTER BUTTON (no label, full width, filter icon, opens sheet) */}
+                <div className="flex w-full sm:w-[220px]">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-10 justify-start font-normal text-gray-700 bg-white border-gray-200"
+                    onClick={() => setIsSheetOpen(true)}
+                  >
+                    <Filter className="h-4 w-4 mr-2 text-[#dc291e]" />
+                    Filter by Region
+                  </Button>
                 </div>
               </div>
               {/* Export Button removed */}
             </div>
 
+            {/* FILTER SHEET: swipeable from bottom, with govs list */}
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetContent
+                side="bottom"
+                className="rounded-t-2xl pt-4 max-w-full w-full flex flex-col items-center pb-6"
+                style={{ minHeight: "340px" }}
+              >
+                {/* Curvy Handle Header to allow swipe down */}
+                <SheetHeader>
+                  <div className="w-full flex flex-col items-center">
+                    <div className="w-14 h-1.5 rounded-full bg-gray-300 mb-4 cursor-pointer" />
+                    <h2 className="text-lg font-semibold mb-2">Filter by Region</h2>
+                  </div>
+                </SheetHeader>
+                <div className="w-full max-w-md mx-auto px-2 flex flex-col items-stretch gap-2">
+                  {/* Governorate Choices (All at top) */}
+                  {[{ name: "All Governorates", value: "all" }, ...GOVERNORATES.map(g => ({ name: g, value: g }))].map(opt => (
+                    <Button
+                      key={opt.value}
+                      variant={governorateFilter === opt.value ? "default" : "outline"}
+                      className={`w-full text-left justify-start capitalize ${
+                        governorateFilter === opt.value
+                          ? "border-[#dc291e] bg-[#dc291e]/90 text-white"
+                          : "bg-white text-gray-800"
+                      }`}
+                      onClick={() => {
+                        setGovernorateFilter(opt.value);
+                        setIsSheetOpen(false);
+                      }}
+                    >
+                      {opt.name}
+                    </Button>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            {/* Main data table logic */}
             <div className="overflow-x-auto">
               {(isMobile || isTablet) ? (
                 <CustomersTableMobile
