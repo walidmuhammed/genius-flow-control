@@ -20,6 +20,7 @@ import AppleOrderHeaderMobile from './AppleOrderHeaderMobile';
 import CurrencyDisplay from './CurrencyDisplay';
 import CustomerInfo from './CustomerInfo';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 
 interface OrderDetailsDialogProps {
   order: OrderWithCustomer | null;
@@ -196,92 +197,77 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
 
   // ENHANCED OrderContent with all improvements
   const OrderContent = () => {
-    // Status message for below the progress bar - IMPROVED SPACING AND SIZE
-    const getStatusMessage = () => {
-      switch ((order.status || '').toLowerCase()) {
-        case 'new':
-          return (
-            <div className="flex items-center text-base text-gray-700 mt-6 p-4 bg-blue-50 rounded-lg">
-              <Clock className="h-5 w-5 mr-3 text-blue-600" />
-              <span>Created: <span className="font-medium">{formatDateShort(order.created_at)}</span></span>
-              <span className="mx-3">•</span>
-              <span>by <span className="font-medium text-gray-900">{getCreatorName(order)}</span></span>
-            </div>
-          );
-        case 'pending pickup':
-          return (
-            <div className="flex items-center text-base text-gray-700 mt-6 p-4 bg-orange-50 rounded-lg">
-              <Truck className="h-5 w-5 mr-3 text-orange-600" />
-              {getPickupCourierName(order) ? (
-                <span>
-                  Courier assigned for pickup: <span className="font-medium text-gray-900">{getPickupCourierName(order)}</span>
-                </span>
-              ) : (
-                <span>No pickup courier assigned yet</span>
-              )}
-            </div>
-          );
-        case 'in progress':
-          return (
-            <div className="flex items-center text-base text-gray-700 mt-6 p-4 bg-yellow-50 rounded-lg">
-              <Truck className="h-5 w-5 mr-3 text-yellow-600" />
-              {getCourierName(order) ? (
-                <span>
-                  Courier <span className="font-medium text-gray-900">{getCourierName(order)}</span> is heading to customer
-                </span>
-              ) : (
-                <span>Order is being processed and will be delivered soon</span>
-              )}
-            </div>
-          );
-        case 'successful':
-          return (
-            <div className="flex items-center text-base text-green-700 mt-6 p-4 bg-green-50 rounded-lg">
-              <Package className="h-5 w-5 mr-3 text-green-600" />
-              Order has been <span className="font-semibold ml-1">Successfully delivered</span> and will get paid soon
-            </div>
-          );
-        case 'unsuccessful':
-          return (
-            <div className="flex items-center text-base text-red-700 mt-6 p-4 bg-red-50 rounded-lg">
-              <AlertTriangle className="h-5 w-5 mr-3 text-red-600" />
-              Not Successful
-              {getReasonUnsuccessful(order) ? (
-                <span className="ml-2">• Reason: <span className="font-medium">{getReasonUnsuccessful(order)}</span></span>
-              ) : null}
-            </div>
-          );
-        case 'returned':
-          return (
-            <div className="flex items-center text-base text-sky-700 mt-6 p-4 bg-sky-50 rounded-lg">
-              <Package className="h-5 w-5 mr-3 text-sky-600" />
-              Package has been <span className="font-semibold ml-1">Returned to your warehouse</span>
-            </div>
-          );
-        case 'awaiting action':
-          return (
-            <div className="flex items-center text-base text-amber-700 mt-6 p-4 bg-amber-50 rounded-lg">
-              <Clock className="h-5 w-5 mr-3 text-amber-600" />
-              This order needs to be reviewed by you
-            </div>
-          );
-        case 'paid':
-          return (
-            <div className="flex items-center text-base text-indigo-700 mt-6 p-4 bg-indigo-50 rounded-lg">
-              <DollarSign className="h-5 w-5 mr-3 text-indigo-600" />
-              Order has been paid
-              {getInvoiceId(order) ? (
-                <span className="ml-1">in Invoice ID: <span className="font-semibold">{getInvoiceId(order)}</span></span>
-              ) : null}
-            </div>
-          );
-        default:
-          return null;
+    // Collapse state for edit history
+    const [editHistoryOpen, setEditHistoryOpen] = React.useState(false);
+
+    // Edit History Collapsible Card (new, replaces previous card)
+    const EditHistoryCollapsibleCard = () => {
+      if (!order.edited || !order.edit_history || order.edit_history.length === 0) {
+        return null;
       }
+      return (
+        <Card className="shadow-sm backdrop-blur-lg border border-gray-200/50 mb-4">
+          <Collapsible open={editHistoryOpen} onOpenChange={setEditHistoryOpen}>
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="w-full flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition rounded-t-xl group focus:outline-none"
+                aria-expanded={editHistoryOpen}
+              >
+                <History className="h-6 w-6 text-primary" />
+                <span className="text-xl font-semibold flex-1 text-left pl-1">Edit History</span>
+                <Badge
+                  variant="outline"
+                  className="bg-yellow-50 text-yellow-700 border-yellow-200 text-sm px-3 py-1"
+                >
+                  {order.edit_history.length} {order.edit_history.length === 1 ? 'Change' : 'Changes'}
+                </Badge>
+                <span
+                  className={`transition-transform duration-200 ml-3 ${
+                    editHistoryOpen ? 'rotate-180' : 'rotate-0'
+                  }`}
+                >
+                  {/* Chevron icon (down) */}
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-gray-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="space-y-4 mt-2">
+                  {order.edit_history.map((change, index) => (
+                    <div key={index} className="border-l-2 border-blue-200 pl-5 py-3 bg-blue-50/30 rounded-r-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-medium text-base text-gray-900 capitalize">
+                          {change.field.replace('_', ' ')}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {formatDateShort(change.timestamp)}
+                        </span>
+                      </div>
+                      <div className="text-base text-gray-700">
+                        <span className="text-red-600 line-through">{change.oldValue}</span>
+                        {' → '}
+                        <span className="text-green-600 font-medium">{change.newValue}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
+      );
     };
 
+    // Reorder: Edit History first, then Progress, then the rest.
     return (
       <div className="space-y-6">
+        {/* Edit History Collapsible Card (at the top now) */}
+        <EditHistoryCollapsibleCard />
+
         {/* Progress section - IMPROVED */}
         <Card className="shadow-sm backdrop-blur-lg border border-gray-200/50">
           <CardHeader className="pb-4 flex-row items-center gap-3">
@@ -298,42 +284,6 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             {getStatusMessage()}
           </CardContent>
         </Card>
-
-        {/* Edit History Section - RESTORED */}
-        {order.edited && order.edit_history && order.edit_history.length > 0 && (
-          <Card className="shadow-sm backdrop-blur-lg border border-gray-200/50">
-            <CardHeader className="pb-4 flex-row items-center gap-3">
-              <History className="h-6 w-6 text-primary" />
-              <CardTitle className="text-xl font-semibold pl-1 flex-1">
-                Edit History
-              </CardTitle>
-              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-sm px-3 py-1">
-                {order.edit_history.length} {order.edit_history.length === 1 ? 'Change' : 'Changes'}
-              </Badge>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-4">
-                {order.edit_history.map((change, index) => (
-                  <div key={index} className="border-l-2 border-blue-200 pl-5 py-3 bg-blue-50/30 rounded-r-lg">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="font-medium text-base text-gray-900 capitalize">
-                        {change.field.replace('_', ' ')}
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        {formatDateShort(change.timestamp)}
-                      </span>
-                    </div>
-                    <div className="text-base text-gray-700">
-                      <span className="text-red-600 line-through">{change.oldValue}</span>
-                      {' → '}
-                      <span className="text-green-600 font-medium">{change.newValue}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Customer Details Card - IMPROVED WITH ALL DATA */}
         <Card className="shadow-sm backdrop-blur-lg border border-gray-200/50">
