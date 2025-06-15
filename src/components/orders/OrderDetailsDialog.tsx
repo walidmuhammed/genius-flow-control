@@ -195,6 +195,38 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   };
 
+  // Add this function to provide context-dependent status messages
+  const getStatusMessage = () => {
+    if (!order) return null;
+
+    switch (order.status.toLowerCase()) {
+      case 'unsuccessful':
+        return (
+          <div className="mt-4 flex items-center gap-2 text-sm text-[#DB271E] bg-red-50 border border-red-200 px-4 py-3 rounded-lg">
+            <span>
+              {order.reason_unsuccessful
+                ? `Unsuccessful: ${order.reason_unsuccessful}`
+                : "Delivery was unsuccessful."}
+            </span>
+          </div>
+        );
+      case 'returned':
+        return (
+          <div className="mt-4 flex items-center gap-2 text-sm text-sky-700 bg-sky-50 border border-sky-200 px-4 py-3 rounded-lg">
+            <span>This order was returned to sender.</span>
+          </div>
+        );
+      case 'successful':
+        return (
+          <div className="mt-4 flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-3 rounded-lg">
+            <span>Delivered successfully to customer.</span>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   // ENHANCED OrderContent with all improvements
   const OrderContent = () => {
     // Collapse state for edit history
