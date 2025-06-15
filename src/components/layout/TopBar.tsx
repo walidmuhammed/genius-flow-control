@@ -17,12 +17,14 @@ const TopBar: React.FC = () => {
   return (
     <motion.header 
       className={cn(
-        "bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 h-16 flex items-center justify-between sticky top-0 z-40",
-        isMobile ? "px-3" : "px-4 md:px-6"
+        // New glass effect and shadow, extra padding!
+        "bg-white/80 dark:bg-gray-900/70 backdrop-blur-lg border-b border-gray-100/60 dark:border-gray-800/60 h-[72px] flex items-center justify-between sticky top-0 z-40 shadow-md shadow-black/5",
+        isMobile ? "px-3" : "px-8 md:px-11"
       )}
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
+      style={{ minHeight: 64 }}
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {(isMobile || isTablet) && (
@@ -30,32 +32,30 @@ const TopBar: React.FC = () => {
             variant="ghost" 
             size="icon" 
             onClick={toggleSidebar}
-            className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0"
+            className="rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0 shadow-none"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-6 w-6" />
           </Button>
         )}
         
         {!isMobile && (
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <div className="relative flex-1 max-w-lg">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input 
               placeholder="Search orders, customers..." 
-              className="pl-10 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-[#DC291E] focus:border-[#DC291E]" 
+              className="pl-12 border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-[#DC291E] focus:border-[#DC291E] text-base h-12 bg-gray-50/60 dark:bg-gray-800/70"
             />
           </div>
         )}
 
         {isMobile && (
           <div className="flex-1 text-center">
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
-              Topspeed
-            </h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 truncate font-sans">Topspeed</h1>
           </div>
         )}
       </div>
       
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-3 shrink-0">
         {/* Create Button - only show on desktop */}
         {!isMobile && <CreateButton />}
         
@@ -65,15 +65,26 @@ const TopBar: React.FC = () => {
           </Button>
         )}
         
-        <Button variant="ghost" size="icon" className="relative rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
-          <Bell className="h-5 w-5" />
-          <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 bg-[#DC291E] hover:bg-[#DC291E] text-xs flex items-center justify-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "relative rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 shadow-none transition-all",
+            "group"
+          )}
+        >
+          <Bell className="h-6 w-6" />
+          <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 bg-[#DC291E] hover:bg-[#DC291E] text-xs flex items-center justify-center shadow-md shadow-[#DC291E]/15 group-hover:scale-110 transition-transform">
             3
           </Badge>
         </Button>
         
-        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
-          <User className="h-5 w-5" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 shadow-none"
+        >
+          <User className="h-6 w-6" />
         </Button>
       </div>
       
@@ -84,3 +95,4 @@ const TopBar: React.FC = () => {
 };
 
 export default TopBar;
+

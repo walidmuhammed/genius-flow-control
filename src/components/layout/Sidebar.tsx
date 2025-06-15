@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Moon, Sun, Truck, Settings, LogOut } from 'lucide-react';
@@ -35,7 +36,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <motion.aside
       className={cn(
-        "fixed top-0 left-0 flex flex-col h-screen w-[260px] min-w-[260px] bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-30",
+        // Modern glassy styled sidebar
+        "fixed top-0 left-0 flex flex-col h-screen w-[264px] min-w-[264px] bg-white/75 dark:bg-gray-900/80 border-r border-gray-200 dark:border-gray-800 z-30 shadow-xl backdrop-blur-[8px] rounded-tr-2xl rounded-br-xl",
+        "transition-all duration-300",
         className
       )}
       layout
@@ -47,18 +50,18 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Main flex column: logo at top, menu in middle, actions at bottom */}
       <div className="flex flex-col h-full">
         {/* Logo/Header */}
-        <div className="flex h-16 items-center px-5 flex-shrink-0">
-          <Link to="/" className="flex items-center gap-2.5">
+        <div className="flex h-[78px] items-center px-6 pt-2 flex-shrink-0 border-b border-transparent mb-2">
+          <Link to="/" className="flex items-center gap-3">
             <motion.div
               className="flex items-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="bg-[#DC291E] h-9 w-9 rounded-lg flex items-center justify-center">
-                <Truck className="h-5 w-5 text-white" />
+              <div className="bg-[#DC291E] h-10 w-10 rounded-xl flex items-center justify-center shadow-lg shadow-[#dc291e]/10 border border-white/50 ring-1 ring-[#dc291e]/10">
+                <Truck className="h-6 w-6 text-white" />
               </div>
-              <span className="tracking-tight text-gray-900 dark:text-gray-100 font-bold text-xl px-2">
+              <span className="tracking-tight text-gray-900 dark:text-gray-100 font-extrabold text-2xl px-2 font-sans drop-shadow-sm select-none">
                 Topspeed
               </span>
             </motion.div>
@@ -66,59 +69,59 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
         
         {/* Scrollable Menu */}
-        <div className="flex-1 min-h-0 overflow-y-auto py-6 px-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+        <div className="flex-1 min-h-0 overflow-y-auto py-5 px-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
           <SidebarMenu collapsed={false} />
         </div>
 
         {/* Footer: Settings, Dark Mode, Sign Out - always at bottom */}
-        <div className="flex flex-col gap-3 border-t border-gray-200 dark:border-gray-800 px-5 py-5 flex-shrink-0">
+        <div className="flex flex-col gap-3 border-t border-transparent px-6 py-6 flex-shrink-0">
           <Link to="/settings">
             <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
               className={cn(
-                "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium",
-                "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200",
+                "flex items-center gap-4 w-full p-3 rounded-xl text-base font-semibold shadow-none",
+                "hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-200",
                 location.pathname === '/settings'
-                  ? "bg-gray-200 dark:bg-gray-800 text-[#DC291E] dark:text-[#DC291E]"
+                  ? "bg-[#f4eded] dark:bg-[#251010] text-[#DC291E] dark:text-[#DC291E]"
                   : "text-gray-700 dark:text-gray-200"
               )}
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-5 w-5" />
               <span>Settings</span>
             </motion.div>
           </Link>
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
             onClick={toggleDarkMode}
             className={cn(
-              "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium",
-              "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-gray-700 dark:text-gray-200"
+              "flex items-center gap-4 w-full p-3 rounded-xl text-base font-semibold shadow-none",
+              "hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-200 text-gray-700 dark:text-gray-200"
             )}
           >
             {darkMode ? (
               <>
-                <Sun className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                <Sun className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                 <span>Light Mode</span>
               </>
             ) : (
               <>
-                <Moon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                 <span>Dark Mode</span>
               </>
             )}
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
             onClick={handleSignOut}
             className={cn(
-              "flex items-center gap-3 w-full p-3 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200",
-              "hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+              "flex items-center gap-4 w-full p-3 rounded-xl text-base font-semibold text-red-600 dark:text-red-400 border border-transparent hover:border-red-100 dark:hover:border-red-800/40",
+              "hover:bg-red-50/60 dark:hover:bg-red-900/20 transition-all duration-200"
             )}
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-5 w-5" />
             <span>Sign Out</span>
           </motion.button>
         </div>
@@ -128,3 +131,4 @@ const Sidebar: React.FC<SidebarProps> = ({
 };
 
 export default Sidebar;
+
