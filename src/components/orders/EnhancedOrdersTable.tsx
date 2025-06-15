@@ -16,6 +16,7 @@ import { formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import OrderRowActions from './OrderRowActions';
+import OrderNoteTooltip from './OrderNoteTooltip';
 
 interface EnhancedOrdersTableProps {
   orders: OrderWithCustomer[];
@@ -145,9 +146,9 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
               <TableCell className="pl-6" onClick={e => e.stopPropagation()}>
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ 
+                  animate={{
                     opacity: hoveredRow === order.id || selectedOrderIds.includes(order.id) ? 1 : 0.6,
-                    scale: 1 
+                    scale: 1
                   }}
                   transition={{ duration: 0.2 }}
                 >
@@ -159,7 +160,16 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
                 </motion.div>
               </TableCell>
               <TableCell className="font-semibold text-[#DB271E]">
-                #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+                <div className="flex items-center gap-2">
+                  {/* Order number */}
+                  <span>
+                    #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+                  </span>
+                  {/* Show icon only if the order has a note */}
+                  {order.note && order.note.trim() !== "" && (
+                    <OrderNoteTooltip note={order.note} />
+                  )}
+                </div>
               </TableCell>
               <TableCell>
                 {order.reference_number ? (
@@ -210,7 +220,6 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
                   {formatDate(new Date(order.created_at))}
                 </div>
               </TableCell>
-              
               <TableCell className="text-right" onClick={e => e.stopPropagation()}>
                 <OrderRowActions
                   order={{
