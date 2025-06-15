@@ -1,10 +1,7 @@
 
 import React from "react";
 import { CustomerWithLocation } from "@/services/customers";
-import { formatDate } from "@/utils/format";
 import { User, Phone, MapPin, Hash, DollarSign, Calendar } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 interface CustomersTableMobileProps {
   customers: CustomerWithLocation[];
@@ -29,68 +26,76 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
       </div>
     );
   }
-  
+
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {customers.map((customer) => {
         const stats = calculateCustomerStats(customer.id);
         return (
-          <div
+          <button
             key={customer.id}
-            className="bg-white rounded-xl shadow-md px-5 py-4 flex flex-col gap-2 cursor-pointer transition hover:shadow-lg hover:scale-[1.01] animate-fade-in"
+            className="w-full text-left border rounded-lg bg-white px-4 py-4 flex flex-col gap-3 focus:outline-none hover:shadow-sm transition group"
             onClick={() => onCardClick(customer)}
             tabIndex={0}
             aria-label={`View customer ${customer.name}`}
             role="button"
+            style={{ boxShadow: 'none' }}
           >
-            {/* Header: Name & Phone */}
+            {/* Name & Phone Row */}
             <div className="flex items-center gap-3">
-              <User size={22} className="text-[#DB271E]" />
-              <span className="font-semibold text-lg">{customer.name}</span>
+              <span className="flex items-center justify-center bg-[#DB271E]/10 text-[#DB271E] rounded-full h-9 w-9">
+                <User size={20} />
+              </span>
+              <span className="font-semibold text-base truncate">{customer.name}</span>
             </div>
-            <div className="flex items-center gap-2 text-gray-600 text-sm ml-1">
+            <div className="flex items-center gap-2 ml-1 text-gray-600 text-sm whitespace-nowrap truncate">
               <Phone size={16} className="text-gray-400" />
               <span>{customer.phone}</span>
             </div>
-            
+
             {/* Location */}
-            <div className="flex items-center gap-2 text-gray-500 text-sm ml-1 mt-1">
+            <div className="flex items-center gap-2 ml-1 text-gray-500 text-sm">
               <MapPin size={16} className="text-gray-400" />
               <span>
-                {(customer.governorate_name || "") +
-                  (customer.city_name ? ` - ${customer.city_name}` : "") || "No location"}
+                {((customer.governorate_name || "") +
+                  (customer.city_name ? ` - ${customer.city_name}` : "")) || "No location"}
               </span>
             </div>
-            
+
             {/* Divider */}
-            <div className="my-2 h-[1px] bg-gray-100" />
-            
-            {/* Order info row */}
-            <div className="flex flex-wrap items-center justify-between text-sm">
+            <div className="border-t border-gray-100 my-1" />
+
+            {/* Stats Row (Orders + Money) */}
+            <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <Hash size={16} className="text-blue-500" />
-                <span className="font-medium">{stats.orderCount} Orders</span>
+                <span className="font-medium text-gray-900">{stats.orderCount}</span>
+                <span className="text-xs text-gray-500 ml-1">Orders</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mt-1">
                 <DollarSign size={16} className="text-emerald-500" />
-                <span className="font-medium">
-                  {stats.totalValueUSD > 0
-                    ? `$${stats.totalValueUSD.toFixed(2)}`
-                    : "$0.00"}
-                  {stats.totalValueLBP !== null &&
-                    ` / ${stats.totalValueLBP.toLocaleString()} LBP`}
+                <span className="font-medium text-gray-900">
+                  ${stats.totalValueUSD.toFixed(2)}
                 </span>
+                <span className="text-xs text-gray-500 ml-1">USD</span>
               </div>
+              {/* LBP in a separate line */}
+              {stats.totalValueLBP !== null && (
+                <div className="flex items-center gap-2 mt-1 ml-[28px]">
+                  <DollarSign size={16} className="text-yellow-600 opacity-80" />
+                  <span className="font-medium text-gray-900">{stats.totalValueLBP.toLocaleString()}</span>
+                  <span className="text-xs text-gray-500 ml-1">LBP</span>
+                </div>
+              )}
             </div>
-            
-            {/* Last Order Date */}
-            <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+
+            <div className="flex items-center gap-2 mt-2 ml-1 text-xs text-gray-500">
               <Calendar size={16} className="text-gray-400" />
               <span>
                 {stats.lastOrderDate}
               </span>
             </div>
-          </div>
+          </button>
         );
       })}
     </div>
