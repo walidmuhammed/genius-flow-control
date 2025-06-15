@@ -309,7 +309,7 @@ const Customers: React.FC = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-10 justify-start font-bold text-gray-700 bg-white border-gray-200"
+                    className="w-full h-10 justify-start font-medium text-gray-700 bg-white border-gray-200"
                     onClick={() => setIsDrawerOpen(true)}
                   >
                     <Filter className="h-4 w-4 mr-2 text-[#dc291e]" />
