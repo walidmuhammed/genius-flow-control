@@ -107,9 +107,8 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
         <PhoneInput
           id="customer-phone"
           value={form.phone}
-          country="LB"
           defaultCountry="LB"
-          onValueChange={val => setForm(f => ({ ...f, phone: val || "" }))}
+          onChange={val => setForm(f => ({ ...f, phone: val || "" }))}
           placeholder="03 123 456"
           required
         />
@@ -124,9 +123,8 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
             <PhoneInput
               id="customer-secondary-phone"
               value={form.secondary_phone}
-              country="LB"
               defaultCountry="LB"
-              onValueChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
+              onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
               placeholder="70 123 456"
             />
           </div>
