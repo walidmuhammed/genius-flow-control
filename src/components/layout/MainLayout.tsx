@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
@@ -20,7 +19,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
   const { sidebarOpen, closeSidebar } = useLayoutStore();
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-tr from-gray-50/95 to-[#f5f2f0] dark:from-gray-900/95 dark:to-gray-800/90">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Desktop Sidebar */}
       {!isMobile && !isTablet && <Sidebar />}
       
@@ -35,20 +34,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
       
       <div
         className={cn(
-          !isMobile && !isTablet ? "flex-1 flex flex-col min-w-0 ml-[264px]" : "flex-1 flex flex-col min-w-0",
+          // Add left margin for the sidebar only on desktop
+          !isMobile && !isTablet ? "flex-1 flex flex-col min-w-0 ml-[260px]" : "flex-1 flex flex-col min-w-0",
         )}
       >
         <TopBar />
         <main className={cn(
-          "flex-1 overflow-y-auto bg-transparent transition-all",
-          isMobile ? "p-3 pb-6" : isTablet ? "p-4 pb-6" : "p-8",
+          "flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-all",
+          isMobile ? "p-3 pb-6" : isTablet ? "p-4 pb-6" : "p-6",
           className
         )}>
-          {/* Card-glass containers */}
           <motion.div 
             className={cn(
-              "w-full mx-auto space-y-7",
-              !isMobile && !isTablet && "max-w-[1600px] md:space-y-12"
+              "w-full mx-auto space-y-4",
+              !isMobile && !isTablet && "max-w-[1600px] md:space-y-8"
             )}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -67,12 +66,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
         toastOptions={{
           classNames: {
             toast: cn(
-              "group border-border shadow-lg rounded-2xl",
+              "group border-border shadow-lg rounded-xl",
               isMobile ? "mx-3 max-w-[calc(100vw-24px)]" : "",
-              "bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg"
+              "bg-white dark:bg-gray-900"
             ),
-            title: "font-bold text-foreground",
-            description: "text-muted-foreground text-base",
+            title: "font-medium text-foreground",
+            description: "text-muted-foreground text-sm",
             actionButton: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-lg",
             cancelButton: "text-muted-foreground",
             error: "border-l-4 border-l-[#DC291E]",
@@ -87,4 +86,3 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
 };
 
 export default MainLayout;
-
