@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogPortal, DialogOverlay, DialogDescription } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
@@ -20,6 +19,7 @@ import { cn } from '@/lib/utils';
 import AppleOrderHeaderMobile from './AppleOrderHeaderMobile';
 import CurrencyDisplay from './CurrencyDisplay';
 import CustomerInfo from './CustomerInfo';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 
 interface OrderDetailsDialogProps {
   order: OrderWithCustomer | null;
@@ -201,7 +201,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   };
 
-  // --- NEW: Restored OrderContent (all cards restored) ---
+  // --- MODERNIZED OrderContent ---
   const OrderContent = () => {
     // Status message for below the progress bar
     const getStatusMessage = () => {
@@ -280,157 +280,128 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     };
 
     return (
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-5">
         {/* Progress section */}
-        <div className="bg-white rounded-lg border p-4">
-          <div className="flex justify-between items-center mb-1">
-            <h3 className="font-semibold text-lg flex items-center gap-2">
-              <Package className="h-5 w-5 text-[#DB271E]" />
+        <Card className="shadow-sm backdrop-blur-lg">
+          <CardHeader className="pb-3 flex-row items-center gap-2">
+            <Package className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base font-semibold pl-1 flex-1">
               Order Progress
-            </h3>
-            <span className="text-xs text-gray-500 font-medium">
-              Updated: {formatDateShort(order.updated_at)}
-            </span>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
+            </CardTitle>
+            <span className="text-xs text-muted-foreground ml-auto">Updated: {formatDateShort(order.updated_at)}</span>
+          </CardHeader>
+          <CardContent>
             <OrderProgressBar status={order.status as any} type={order.type as any} />
-            <div className="mt-3">{getStatusMessage()}</div>
-          </div>
-        </div>
-
-        {/* Basic Info (timestamps removed, only edit history remains) */}
-        <div className="bg-white rounded-lg border p-4">
-          <div className="flex flex-col space-y-3">
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-gray-700 font-medium text-xs">Type:</span>
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-semibold border ${getTypeColor(order.type)} border-gray-200`}
-                style={{ minWidth: 64, textAlign: 'center' }}
-              >
-                {order.type}
-              </span>
-            </div>
-            {order.edited && order.edit_history && Array.isArray(order.edit_history) && order.edit_history.length > 0 && (
-              <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Edit className="h-4 w-4 text-amber-600" />
-                  <span className="font-medium text-amber-800">🛠 This order was edited:</span>
-                </div>
-                <div className="space-y-1 text-sm text-amber-700">
-                  {order.edit_history.map((change: any, index: number) => (
-                    <div key={index}>
-                      • {change.field}: "{change.oldValue}" → "{change.newValue}"
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+            <div className="mt-2">{getStatusMessage()}</div>
+          </CardContent>
+        </Card>
 
         {/* Customer Details Card */}
-        <div className="bg-white rounded-lg border p-4 flex flex-col gap-3">
-          <div className="flex items-center gap-2 mb-2">
-            <User className="h-5 w-5 text-gray-500" />
-            <span className="font-semibold text-base text-gray-900">Customer Info</span>
-          </div>
-          <CustomerInfo
-            name={order.customer?.name || ''}
-            phone={order.customer?.phone || ''}
-            address={order.customer?.address}
-            secondaryPhone={order.customer?.secondary_phone}
-          />
-          <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2">
-            {order.customer?.city_name && (
-              <span className="inline-flex items-center gap-1 text-xs text-gray-600">
-                <MapPin className="h-4 w-4" /> {order.customer.city_name}
-              </span>
-            )}
-            {order.customer?.governorate_name && (
-              <span className="inline-flex items-center gap-1 text-xs text-gray-600">
-                <MapPin className="h-4 w-4" /> {order.customer.governorate_name}
-              </span>
-            )}
-            {order.customer?.address && (
-              <span className="inline-flex items-center gap-1 text-xs text-gray-600">
-                <MapPin className="h-4 w-4" /> {order.customer.address}
-              </span>
-            )}
-          </div>
-        </div>
+        <Card className="shadow-sm backdrop-blur-lg">
+          <CardHeader className="pb-2 flex-row items-center gap-2">
+            <User className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base font-semibold pl-1 flex-1">
+              Customer
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-2">
+              <span className="font-medium text-gray-900 text-sm">{order.customer?.name}</span>
+              <div className="flex gap-2 text-xs text-muted-foreground items-center flex-wrap">
+                {order.customer?.phone && (
+                  <span className="flex items-center gap-1"><Phone className="h-4 w-4 opacity-70" />{order.customer.phone}</span>
+                )}
+                {order.customer?.secondary_phone && (
+                  <span className="flex items-center gap-1 ml-2"><Phone className="h-4 w-4 opacity-60" />{order.customer.secondary_phone}</span>
+                )}
+              </div>
+              <div className="flex gap-2 text-xs text-muted-foreground items-center flex-wrap">
+                {order.customer?.address && (
+                  <span className="flex items-center gap-1"><MapPin className="h-4 w-4 opacity-70" />{order.customer.address}</span>
+                )}
+                {order.customer?.city_name && (
+                  <span className="flex items-center gap-1"><MapPin className="h-4 w-4 opacity-60" />{order.customer.city_name}</span>
+                )}
+                {order.customer?.governorate_name && (
+                  <span className="flex items-center gap-1"><MapPin className="h-4 w-4 opacity-60" />{order.customer.governorate_name}</span>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Package Details Card */}
-        <div className="bg-white rounded-lg border p-4 flex flex-col gap-3">
-          <div className="flex items-center gap-2 mb-2">
-            <Package className="h-5 w-5 text-gray-500" />
-            <span className="font-semibold text-base text-gray-900">Package Info</span>
-          </div>
-          <div className="flex flex-wrap gap-x-8 gap-y-2">
-            <span className="text-xs text-gray-600">Type: <span className="font-medium">{order.package_type}</span></span>
-            <span className="text-xs text-gray-600">Items: <span className="font-medium">{order.items_count}</span></span>
-            <span className="text-xs text-gray-600">Allow Opening: <span className="font-medium">{order.allow_opening ? "Yes" : "No"}</span></span>
-          </div>
-          {order.package_description && (
-            <div className="mt-1 text-xs text-gray-700">
-              <span className="font-medium">Description: </span>
-              {order.package_description}
-            </div>
-          )}
-        </div>
-
-        {/* Financial Info */}
-        <div className="bg-white rounded-lg border p-4 flex flex-col gap-3">
-          <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="h-5 w-5 text-gray-500" />
-            <span className="font-semibold text-base text-gray-900">Financials</span>
-          </div>
-          <div className="flex flex-wrap gap-x-8 gap-y-2">
-            <div className="flex flex-col text-xs">
-              <span className="text-gray-600">Cash Collection:</span>
-              <CurrencyDisplay valueUSD={order.cash_collection_usd} valueLBP={order.cash_collection_lbp} />
-            </div>
-            <div className="flex flex-col text-xs">
-              <span className="text-gray-600">Delivery Fee:</span>
-              <CurrencyDisplay valueUSD={order.delivery_fees_usd} valueLBP={order.delivery_fees_lbp} />
-            </div>
-          </div>
-        </div>
-
-        {/* Courier Info */}
-        {(order.courier_name || order.courier_id) && (
-          <div className="bg-white rounded-lg border p-4 flex flex-col gap-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Truck className="h-5 w-5 text-gray-500" />
-              <span className="font-semibold text-base text-gray-900">Courier</span>
-            </div>
-            <div className="text-xs text-gray-700">
-              {order.courier_name && (
-                <div>
-                  <span className="font-medium">Name: </span>
-                  {order.courier_name}
+        {/* Package & Financial Info in two columns on desktop, stacked on mobile */}
+        <div className="flex flex-col sm:flex-row gap-5">
+          {/* Package Details */}
+          <Card className="flex-1 shadow-sm backdrop-blur-lg">
+            <CardHeader className="pb-2 flex-row items-center gap-2">
+              <Package className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base font-semibold pl-1 flex-1">Package</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              <div className="flex gap-4 text-xs text-muted-foreground flex-wrap mb-1">
+                <span>Type: <span className="font-medium text-gray-900">{order.package_type}</span></span>
+                <span>Items: <span className="font-medium text-gray-900">{order.items_count}</span></span>
+                <span>Allow Opening: <span className="font-medium text-gray-900">{order.allow_opening ? "Yes" : "No"}</span></span>
+              </div>
+              {order.package_description && (
+                <div className="text-xs text-gray-800 leading-normal pt-1">
+                  <span className="font-semibold">Description: </span>
+                  {order.package_description}
                 </div>
+              )}
+            </CardContent>
+          </Card>
+          {/* Financial Info */}
+          <Card className="flex-1 shadow-sm backdrop-blur-lg">
+            <CardHeader className="pb-2 flex-row items-center gap-2">
+              <DollarSign className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base font-semibold pl-1 flex-1">Financials</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-x-8 gap-y-2 flex-wrap text-xs">
+                <div>
+                  <div className="text-muted-foreground">Cash Collection:</div>
+                  <CurrencyDisplay valueUSD={order.cash_collection_usd} valueLBP={order.cash_collection_lbp} />
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Delivery Fee:</div>
+                  <CurrencyDisplay valueUSD={order.delivery_fees_usd} valueLBP={order.delivery_fees_lbp} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Courier Info (if present) */}
+        {(order.courier_name || order.courier_id) && (
+          <Card className="shadow-sm backdrop-blur-lg">
+            <CardHeader className="pb-2 flex-row items-center gap-2">
+              <Truck className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base font-semibold pl-1 flex-1">Courier</CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs flex flex-col gap-1 text-gray-800">
+              {order.courier_name && (
+                <div><span className="font-semibold">Name:</span> {order.courier_name}</div>
               )}
               {order.courier_id && (
-                <div>
-                  <span className="font-medium">ID: </span>
-                  {order.courier_id}
-                </div>
+                <div><span className="font-semibold">ID:</span> {order.courier_id}</div>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Notes Section */}
         {order.note && (
-          <div className="bg-white rounded-lg border p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <FileText className="h-5 w-5 text-gray-500" />
-              <span className="font-semibold text-base text-gray-900">Notes</span>
-            </div>
-            <div className="text-sm text-gray-700 whitespace-pre-line">
-              {order.note}
-            </div>
-          </div>
+          <Card className="shadow-sm backdrop-blur-lg">
+            <CardHeader className="pb-2 flex-row items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base font-semibold pl-1 flex-1">Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-gray-700 whitespace-pre-line">{order.note}</div>
+            </CardContent>
+          </Card>
         )}
       </div>
     );
@@ -516,4 +487,3 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   );
 };
 export default OrderDetailsDialog;
-
