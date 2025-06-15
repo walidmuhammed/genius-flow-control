@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Filter, Download, Plus, Edit, Check, X, Loader2 } from "lucide-react";
+import { Search, Plus, Edit, Check, X, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -155,23 +155,33 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   );
 };
 
+const GOVERNORATES = [
+  "Akkar",
+  "Baalbek-Hermel",
+  "Beirut",
+  "Beqaa",
+  "Mount Lebanon",
+  "North Lebanon",
+  "South Lebanon"
+];
+
 const Customers: React.FC = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [cityFilter, setCityFilter] = useState<string>("all");
+  const [governorateFilter, setGovernorateFilter] = useState<string>("all");
   const [isEditing, setIsEditing] = useState(false);
-  
+
   // Fetch data
   const { data: customers = [], isLoading: isLoadingCustomers, error: customersError } = useCustomers();
   const { data: selectedCustomer, isLoading: isLoadingCustomer } = useCustomer(selectedCustomerId || undefined);
   const { data: allOrders = [] } = useOrders();
   const { mutate: updateCustomer, isPending: isUpdating } = useUpdateCustomer();
-  
+
   // Get customer orders
   const customerOrders = selectedCustomer ? allOrders.filter(
     order => order.customer_id === selectedCustomer.id
   ) : [];
-  
+
   // Filter customers
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = 
@@ -180,42 +190,26 @@ const Customers: React.FC = () => {
       (customer.city_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (customer.governorate_name || '').toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesCity = cityFilter === "all" || customer.city_id === cityFilter;
-    return matchesSearch && matchesCity;
+    const matchesGovernorate = governorateFilter === "all"
+      || (customer.governorate_name === governorateFilter);
+
+    return matchesSearch && matchesGovernorate;
   });
 
-  // Get unique cities for the filter
-  const uniqueCities = Array.from(
-    new Set(
-      customers
-        .filter(c => c.city_id && c.city_name)
-        .map(c => JSON.stringify({ id: c.city_id, name: c.city_name }))
-    )
-  ).map(str => JSON.parse(str));
-
-  // Get governorates
-  const uniqueGovernorates = Array.from(
-    new Set(
-      customers
-        .filter(c => c.governorate_id && c.governorate_name)
-        .map(c => JSON.stringify({ id: c.governorate_id, name: c.governorate_name }))
-    )
-  ).map(str => JSON.parse(str));
-  
   const handleRowClick = (customer: CustomerWithLocation) => {
     setSelectedCustomerId(customer.id);
     setIsEditing(false);
   };
-  
+
   const closeModal = () => {
     setSelectedCustomerId(null);
     setIsEditing(false);
   };
-  
+
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
   };
-  
+
   const handleSaveChanges = (updates: Partial<CustomerWithLocation>) => {
     if (selectedCustomerId) {
       updateCustomer(
@@ -238,15 +232,15 @@ const Customers: React.FC = () => {
     const totalValueUSD = customerOrders.reduce((total, order) => {
       return total + (Number(order.cash_collection_usd) || 0);
     }, 0);
-    
+
     const totalValueLBP = customerOrders.reduce((total, order) => {
       return total + (Number(order.cash_collection_lbp) || 0);
     }, 0);
-    
+
     const lastOrderDate = customerOrders.length > 0 
       ? new Date(Math.max(...customerOrders.map(o => new Date(o.created_at).getTime())))
       : null;
-    
+
     return {
       orderCount,
       totalValueUSD,
@@ -261,15 +255,22 @@ const Customers: React.FC = () => {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Customers</h1>
-            <p className="text-gray-500">View and manage your customer relationships</p>
+        {/* Redesigned Header */}
+        <div className="flex flex-col gap-2 pb-3 border-b border-gray-100 mb-1">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-snug">
+                Customers
+              </h1>
+              <p className="text-gray-500 text-sm mt-1">
+                View and manage your customer relationships
+              </p>
+            </div>
+            <Button className="bg-[#dc291e] w-full sm:w-auto mt-2 sm:mt-0">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Customer
+            </Button>
           </div>
-          <Button className="bg-[#dc291e]">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Customer
-          </Button>
         </div>
 
         {customersError && (
@@ -281,29 +282,35 @@ const Customers: React.FC = () => {
         <Card>
           <CardContent className="p-0">
             <div className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b gap-4">
-              <div className="relative w-full sm:w-auto">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                <input type="text" placeholder="Search customers..." className="pl-9 h-10 w-full sm:w-[300px] rounded-md border border-input px-3 py-2 text-sm ring-offset-background" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-              </div>
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                <div className="relative w-full sm:w-[200px]">
-                  <Select value={cityFilter} onValueChange={setCityFilter}>
-                    <SelectTrigger className="h-10 w-full border-input">
-                      <SelectValue placeholder="Filter by city" />
+              {/* Search + Governorate filter */}
+              <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:gap-4">
+                <div className="relative w-full sm:w-[300px]">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                  <input
+                    type="text"
+                    placeholder="Search customers..."
+                    className="pl-9 h-10 w-full rounded-md border border-input px-3 py-2 text-sm ring-offset-background"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                {/* Governorate Filter */}
+                <div className="flex items-center gap-2 w-full sm:w-[220px]">
+                  <span className="text-xs text-gray-500 font-medium">Filter</span>
+                  <Select value={governorateFilter} onValueChange={setGovernorateFilter}>
+                    <SelectTrigger className="h-10 w-full border-input bg-white">
+                      <SelectValue placeholder="Governorate" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Cities</SelectItem>
-                      {uniqueCities.map(city => (
-                        <SelectItem key={city.id} value={city.id}>{city.name}</SelectItem>
+                      <SelectItem value="all">All Governorates</SelectItem>
+                      {GOVERNORATES.map(gov => (
+                        <SelectItem key={gov} value={gov}>{gov}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <Download className="h-4 w-4" />
-                  <span>Export</span>
-                </Button>
               </div>
+              {/* Export Button removed */}
             </div>
 
             <div className="overflow-x-auto">
@@ -412,7 +419,6 @@ const Customers: React.FC = () => {
                 <span className="font-medium text-gray-700">{filteredCustomers.length}</span> of{" "}
                 <span className="font-medium text-gray-700">{filteredCustomers.length}</span> customers
               </span>
-              
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" disabled>Previous</Button>
                 <Button variant="outline" size="sm" disabled>Next</Button>

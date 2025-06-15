@@ -50,10 +50,15 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
                 </span>
                 <span className="font-semibold text-base truncate">{customer.name}</span>
               </div>
+              {/* Order count in blue circle */}
               <span className="ml-2 flex items-center">
                 <span
-                  className="flex items-center justify-center h-7 min-w-[28px] px-0.5 rounded-full bg-sky-400 text-white font-bold text-sm shadow-sm text-center"
+                  className="flex items-center justify-center h-7 min-w-[32px] px-1 rounded-full"
                   style={{
+                    background: "#EFF6FF",
+                    color: "#1D4EDC",
+                    fontWeight: 700,
+                    fontSize: '0.95rem',
                     fontVariantNumeric: "tabular-nums",
                     letterSpacing: '0.01em'
                   }}
@@ -111,4 +116,3 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
 };
 
 export default CustomersTableMobile;
-
