@@ -187,7 +187,7 @@ const Customers: React.FC = () => {
     new Set(
       customers
         .filter(c => c.city_id && c.city_name)
-        .map(c => JSON.stringify({ id: c.city_id, name: c.city_name, governorate_id: c.governorate_id }))
+        .map(c => JSON.stringify({ id: c.city_id, name: c.city_name }))
     )
   ).map(str => JSON.parse(str));
 
@@ -422,33 +422,33 @@ const Customers: React.FC = () => {
           if (!open) closeModal();
         }}
         title="Customer Details"
-        isEditing={isEditing && !isMobile}
       >
         {isLoadingCustomer ? (
           <div className="flex justify-center items-center min-h-[120px]">
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : selectedCustomer ? (
+          // Switch grid layout in edit mode on desktop, and hide stats/orders on mobile edit
           <>
-            <div
-              className={
-                isEditing && !isMobile
-                  ? "grid grid-cols-2 gap-10 mb-6"
-                  : "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
-              }
-            >
+            <div className={
+              isEditing && !isMobile
+                ? "grid grid-cols-2 gap-8 mb-6"
+                : "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
+            }>
               <div className={isEditing && !isMobile ? "col-span-2" : ""}>
                 <h3 className="text-sm font-medium text-gray-500">Customer Information</h3>
                 {isEditing ? (
-                  <div className={isMobile ? "mt-2" : "mt-2 grid grid-cols-2 gap-8"}>
+                  // Fill available space horizontally, desktop: grid, mobile: vertical
+                  <div className={isMobile
+                    ? "mt-2"
+                    : "mt-2 grid grid-cols-2 gap-4"}
+                  >
                     <CustomerEditForm
                       customer={selectedCustomer}
                       onUpdate={handleSaveChanges}
                       isLoading={isUpdating}
                       onCancel={() => setIsEditing(false)}
                       isHorizontalLayout={!isMobile}
-                      cities={uniqueCities}
-                      governorates={uniqueGovernorates}
                     />
                   </div>
                 ) : (
@@ -459,10 +459,10 @@ const Customers: React.FC = () => {
                       <p className="text-gray-700">{selectedCustomer.secondary_phone}</p>
                     )}
                     <p className="text-gray-700">
-                      {selectedCustomer.city_name || selectedCustomer.governorate_name || "No location"}
-                      {selectedCustomer.is_work_address && " (Work Address)"}
+                      {selectedCustomer.city_name || selectedCustomer.governorate_name || 'No location'}
+                      {selectedCustomer.is_work_address && ' (Work Address)'}
                     </p>
-                    <p className="text-gray-700">{selectedCustomer.address || "No address"}</p>
+                    <p className="text-gray-700">{selectedCustomer.address || 'No address'}</p>
                   </div>
                 )}
                 <div className="mt-4 flex gap-2">
@@ -509,9 +509,7 @@ const Customers: React.FC = () => {
                             {stats.totalValueLBP !== null && (
                               <div className="flex justify-between">
                                 <span className="text-gray-600">Total Value (LBP):</span>
-                                <span className="font-medium">
-                                  {stats.totalValueLBP.toLocaleString()}
-                                </span>
+                                <span className="font-medium">{stats.totalValueLBP.toLocaleString()}</span>
                               </div>
                             )}
                             <div className="flex justify-between">

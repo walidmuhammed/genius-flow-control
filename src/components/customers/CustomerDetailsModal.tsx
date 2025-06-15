@@ -9,21 +9,17 @@ interface CustomerDetailsModalProps {
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
   title: string;
-  isEditing?: boolean;
 }
 
 export default function CustomerDetailsModal({
   open,
   onOpenChange,
   children,
-  title,
-  isEditing = false
+  title
 }: CustomerDetailsModalProps) {
   const { isMobile } = useScreenSize();
 
-  // Wide modal if editing, normal width otherwise
-  const dialogWidth = isEditing ? "sm:max-w-5xl" : "sm:max-w-[600px]";
-
+  // Use Drawer for mobile, Dialog for desktop/tablet
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange} shouldScaleBackground>
@@ -38,7 +34,7 @@ export default function CustomerDetailsModal({
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`${dialogWidth} p-0 rounded-xl`}>
+      <DialogContent className="sm:max-w-[600px] p-0 rounded-xl">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
         </DialogHeader>

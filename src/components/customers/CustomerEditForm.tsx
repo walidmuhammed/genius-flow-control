@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ImprovedAreaSelector } from "@/components/orders/ImprovedAreaSelector";
 import { CustomerWithLocation } from "@/services/customers";
 
 interface CustomerEditFormProps {
@@ -11,9 +10,7 @@ interface CustomerEditFormProps {
   onUpdate: (updates: Partial<CustomerWithLocation>) => void;
   isLoading: boolean;
   onCancel: () => void;
-  isHorizontalLayout?: boolean;
-  cities: { id: string; name: string; governorate_id: string }[];
-  governorates: { id: string; name: string }[];
+  isHorizontalLayout?: boolean; // Added for layout control
 }
 
 export default function CustomerEditForm({
@@ -22,28 +19,41 @@ export default function CustomerEditForm({
   isLoading,
   onCancel,
   isHorizontalLayout = false,
-  cities,
-  governorates,
 }: CustomerEditFormProps) {
+  // Fields: only enable editing for: secondary_phone if not present, address, is_work_address, city/governorate
   const [secondaryPhone, setSecondaryPhone] = useState(customer.secondary_phone || "");
   const [address, setAddress] = useState(customer.address || "");
   const [isWorkAddress, setIsWorkAddress] = useState(!!customer.is_work_address);
   const [governorateId, setGovernorateId] = useState(customer.governorate_id || "");
+  const [governorateName, setGovernorateName] = useState(customer.governorate_name || "");
   const [cityId, setCityId] = useState(customer.city_id || "");
+  const [cityName, setCityName] = useState(customer.city_name || "");
   const canEditSecondaryPhone = !customer.secondary_phone;
 
+  // Keep area selector in sync if city/governorate prop changes (when changing customer)
   useEffect(() => {
     setGovernorateId(customer.governorate_id || "");
+    setGovernorateName(customer.governorate_name || "");
     setCityId(customer.city_id || "");
-  }, [customer.governorate_id, customer.city_id]);
+    setCityName(customer.city_name || "");
+  }, [customer.governorate_id, customer.governorate_name, customer.city_id, customer.city_name]);
 
-  // When changing governorate, reset city!
-  useEffect(() => {
+  function handleAreaSelect(governorateId: string, governorateName: string) {
+    setGovernorateId(governorateId);
+    setGovernorateName(governorateName);
     setCityId("");
-  }, [governorateId]);
+    setCityName("");
+  }
+  function handleCitySelect(cityId: string, cityName: string, govName: string) {
+    setGovernorateId(customer.governorate_id !== governorateId ? governorateId : customer.governorate_id || "");
+    setGovernorateName(govName);
+    setCityId(cityId);
+    setCityName(cityName);
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Only allow updating allowed fields (as per the plan)
     onUpdate({
       ...(canEditSecondaryPhone ? { secondary_phone: secondaryPhone || null } : {}),
       address: address || null,
@@ -53,10 +63,12 @@ export default function CustomerEditForm({
     });
   };
 
+  // Responsive layout: horizontal grid on desktop, vertical stack on mobile
   const mainWrapperClass = isHorizontalLayout
-    ? "grid grid-cols-2 gap-8 items-start"
-    : "space-y-6";
+    ? "grid grid-cols-2 gap-4 items-start"
+    : "space-y-5";
 
+  // Render fields in grid as columns if isHorizontalLayout
   return (
     <form onSubmit={handleSubmit} className={mainWrapperClass}>
       <div className="space-y-5 col-span-1">
@@ -79,9 +91,7 @@ export default function CustomerEditForm({
             placeholder="Enter secondary phone"
           />
           {!canEditSecondaryPhone && (
-            <div className="text-xs text-muted-foreground mt-1">
-              Secondary phone already registered; cannot edit.
-            </div>
+            <div className="text-xs text-muted-foreground mt-1">Secondary phone already registered; cannot edit.</div>
           )}
         </div>
         <div className="flex items-center gap-2 mt-2">
@@ -99,48 +109,18 @@ export default function CustomerEditForm({
       </div>
       <div className="space-y-5 col-span-1">
         <div>
-          <div className="font-semibold text-gray-700 mb-0.5">Governorate</div>
-          <Select value={governorateId} onValueChange={setGovernorateId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select governorate" />
-            </SelectTrigger>
-            <SelectContent>
-              {governorates.map(gov => (
-                <SelectItem key={gov.id} value={gov.id}>
-                  {gov.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <div className="font-semibold text-gray-700 mb-0.5">City</div>
-          <Select
-            value={cityId}
-            onValueChange={setCityId}
-            disabled={!governorateId}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select city" />
-            </SelectTrigger>
-            <SelectContent>
-              {cities
-                .filter(city => city.governorate_id === governorateId)
-                .map(city => (
-                  <SelectItem key={city.id} value={city.id}>
-                    {city.name}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
+          <div className="font-semibold text-gray-700 mb-0.5">Area</div>
+          <ImprovedAreaSelector
+            selectedGovernorateId={governorateId}
+            selectedCityId={cityId}
+            onGovernorateChange={handleAreaSelect}
+            onCityChange={handleCitySelect}
+            error={undefined}
+          />
         </div>
         <div>
           <div className="font-semibold text-gray-700 mb-0.5">Address</div>
-          <Input
-            value={address}
-            onChange={e => setAddress(e.target.value)}
-            placeholder="Address"
-          />
+          <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Address" />
         </div>
         <div className="flex justify-end gap-2 mt-2">
           <Button type="button" variant="outline" onClick={onCancel}>
