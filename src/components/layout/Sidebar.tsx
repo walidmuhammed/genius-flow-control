@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Moon, Sun, Truck, Settings, LogOut } from 'lucide-react';
@@ -36,8 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <motion.aside
       className={cn(
-        // Fixed width (260px) on all screen sizes - let parent handle overlay
-        "fixed top-0 left-0 flex flex-col h-screen w-[260px] min-w-[260px] bg-gray-50 dark:bg-gray-900 z-30", // removed border-r border-gray-200 dark:border-gray-800
+        "fixed top-0 left-0 flex flex-col h-screen w-[260px] min-w-[260px] bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-30",
         className
       )}
       layout
@@ -130,4 +128,3 @@ const Sidebar: React.FC<SidebarProps> = ({
 };
 
 export default Sidebar;
-
