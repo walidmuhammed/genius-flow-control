@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -138,18 +137,22 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
     </Button>
   );
 
-  // Remove button with trash icon, compact
+  // Updated Remove Secondary Phone Button (icon-only, top-right)
   const RemoveSecondaryPhoneButton = (
-    <Button
+    <button
       type="button"
-      variant="ghost"
-      className="ml-2 mt-5 px-2 py-1 text-gray-600 flex gap-1 hover:text-red-600 rounded-lg"
+      aria-label="Remove secondary phone"
+      className={`
+        absolute right-2 top-2 z-10
+        bg-white text-gray-500 border border-gray-200 rounded-full
+        p-1 transition hover:bg-red-50 hover:text-red-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-100
+        w-7 h-7 flex items-center justify-center
+      `}
       onClick={() => setShowSecondaryPhone(false)}
       tabIndex={0}
     >
       <Trash2 className="h-4 w-4" />
-      Remove
-    </Button>
+    </button>
   );
 
   // Modernized Checkbox styling
@@ -190,12 +193,11 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className="space-y-5 mt-1"
+      className="space-y-6 mt-1"
       style={{ paddingBottom: 138, minHeight: "100%" }}
       autoComplete="off"
     >
       <h2 className="text-[1.42rem] font-bold text-gray-900 mb-2 tracking-tight">Add Customer</h2>
-
       <div>
         <label htmlFor="customer-name" className="block text-[15px] text-gray-700 font-semibold mb-2">
           Full Name
@@ -210,9 +212,8 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
           className="text-base md:text-sm bg-white"
         />
       </div>
-
       {/* Phone (and Secondary Phone) */}
-      <div className="space-y-2">
+      <div className="space-y-2 relative">
         <div>
           <label htmlFor="customer-phone" className="block text-[15px] text-gray-700 font-semibold mb-2">
             Phone Number
@@ -229,28 +230,29 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
           />
         </div>
         {showSecondaryPhone ? (
-          <div className="flex items-start gap-2 mt-2">
-            <div className="flex-1">
-              <label htmlFor="customer-secondary-phone" className="block text-[15px] text-gray-700 font-medium mb-1">
-                Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
-              </label>
-              <PhoneInput
-                id="customer-secondary-phone"
-                value={form.secondary_phone}
-                defaultCountry="LB"
-                onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
-                placeholder="70 123 456"
-                inputClassName="text-base md:text-sm bg-white"
-                autoComplete="off"
-              />
-            </div>
+          <div className="mt-1 relative bg-white rounded-lg border border-gray-200 pt-2 pb-3 px-3">
+            <label
+              htmlFor="customer-secondary-phone"
+              className="block text-[15px] text-gray-700 font-medium mb-2 pr-10"
+              style={{ position: "relative" }}
+            >
+              Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
+            </label>
             {RemoveSecondaryPhoneButton}
+            <PhoneInput
+              id="customer-secondary-phone"
+              value={form.secondary_phone}
+              defaultCountry="LB"
+              onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
+              placeholder="70 123 456"
+              inputClassName="text-base md:text-sm bg-white"
+              autoComplete="off"
+            />
           </div>
         ) : (
           <div className="mt-1">{AddSecondaryPhoneButton}</div>
         )}
       </div>
-
       {/* Sectioned Area/Address */}
       {fieldSection(
         <>
@@ -264,7 +266,6 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
               onAreaSelected={handleAreaSelected}
             />
           </div>
-
           <div>
             <label htmlFor="customer-address" className="block text-[15px] text-gray-700 font-semibold mb-2">
               Address Details
@@ -280,7 +281,6 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
           </div>
         </>
       )}
-
       {/* Modernized work address switch/checkbox */}
       <div className="pt-1">
         <ModernCheckbox
@@ -359,21 +359,23 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
             </div>
             {/* Secondary Phone Option */}
             {showSecondaryPhone ? (
-              <div className="flex items-start gap-2 mt-2">
-                <div className="flex-1">
-                  <label htmlFor="customer-secondary-phone" className="block text-[15px] text-gray-700 font-medium mb-1">
-                    Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
-                  </label>
-                  <PhoneInput
-                    id="customer-secondary-phone"
-                    value={form.secondary_phone}
-                    defaultCountry="LB"
-                    onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
-                    placeholder="70 123 456"
-                    inputClassName="text-base md:text-sm bg-white"
-                  />
-                </div>
+              <div className="mt-1 relative bg-white rounded-lg border border-gray-200 pt-2 pb-3 px-3">
+                <label
+                  htmlFor="customer-secondary-phone"
+                  className="block text-[15px] text-gray-700 font-medium mb-2 pr-10"
+                  style={{ position: "relative" }}
+                >
+                  Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
+                </label>
                 {RemoveSecondaryPhoneButton}
+                <PhoneInput
+                  id="customer-secondary-phone"
+                  value={form.secondary_phone}
+                  defaultCountry="LB"
+                  onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
+                  placeholder="70 123 456"
+                  inputClassName="text-base md:text-sm bg-white"
+                />
               </div>
             ) : (
               <div className="mt-1">{AddSecondaryPhoneButton}</div>
