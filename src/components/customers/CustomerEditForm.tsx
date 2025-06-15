@@ -1,6 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { ImprovedAreaSelector } from "@/components/orders/ImprovedAreaSelector";
 import { CustomerWithLocation } from "@/services/customers";
 
@@ -9,7 +10,7 @@ interface CustomerEditFormProps {
   onUpdate: (updates: Partial<CustomerWithLocation>) => void;
   isLoading: boolean;
   onCancel: () => void;
-  isHorizontalLayout?: boolean;
+  isHorizontalLayout?: boolean; // Added for layout control
 }
 
 export default function CustomerEditForm({
@@ -29,6 +30,7 @@ export default function CustomerEditForm({
   const [cityName, setCityName] = useState(customer.city_name || "");
   const canEditSecondaryPhone = !customer.secondary_phone;
 
+  // Keep area selector in sync if city/governorate prop changes (when changing customer)
   useEffect(() => {
     setGovernorateId(customer.governorate_id || "");
     setGovernorateName(customer.governorate_name || "");
@@ -51,6 +53,7 @@ export default function CustomerEditForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Only allow updating allowed fields (as per the plan)
     onUpdate({
       ...(canEditSecondaryPhone ? { secondary_phone: secondaryPhone || null } : {}),
       address: address || null,
@@ -60,6 +63,7 @@ export default function CustomerEditForm({
     });
   };
 
+  // Responsive layout: horizontal grid on desktop, vertical stack on mobile
   const mainWrapperClass = isHorizontalLayout
     ? "grid grid-cols-2 gap-4 items-start"
     : "space-y-5";
@@ -118,7 +122,15 @@ export default function CustomerEditForm({
           <div className="font-semibold text-gray-700 mb-0.5">Address</div>
           <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Address" />
         </div>
-        {/* Removed Save/Cancel buttons from here, now handled by modal header */}
+        <div className="flex justify-end gap-2 mt-2">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit" className="bg-[#dc291e]" disabled={isLoading}>
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            Save
+          </Button>
+        </div>
       </div>
     </form>
   );

@@ -257,31 +257,6 @@ const Customers: React.FC = () => {
   // Open/close region filter modal/drawer
   const [isRegionDialogOpen, setIsRegionDialogOpen] = useState(false);
 
-  // Save/Cancel buttons for use in edit mode (modal header)
-  const renderEditHeaderActions = (onSave: (() => void) | null, onCancel: (() => void) | null, loading: boolean) => (
-    <div className="flex gap-2">
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="h-8 px-3 py-1 text-sm"
-        onClick={onCancel || undefined}
-        disabled={loading}
-      >
-        Cancel
-      </Button>
-      <Button
-        type="submit"
-        className="bg-[#dc291e] h-8 px-3 py-1 text-sm text-white"
-        disabled={loading}
-        form="customer-edit-form"
-      >
-        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-        Save
-      </Button>
-    </div>
-  );
-
   return (
     <MainLayout>
       <div className="space-y-4">
@@ -543,38 +518,6 @@ const Customers: React.FC = () => {
         }}
         title="Customer Details"
         isEditing={isEditing && !isMobile}
-        headerActions={
-          isEditing
-            ? (
-              // On edit: pass the Save+Cancel buttons to header
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-8 px-3 py-1 text-sm"
-                  onClick={() => setIsEditing(false)}
-                  disabled={isUpdating}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-[#dc291e] h-8 px-3 py-1 text-sm text-white"
-                  disabled={isUpdating}
-                  onClick={() => {
-                    // submit the customer-edit-form from the header
-                    const form = document.getElementById('customer-edit-form') as HTMLFormElement | null;
-                    if (form) form.requestSubmit();
-                  }}
-                >
-                  {isUpdating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Save
-                </Button>
-              </div>
-            )
-            : null
-        }
       >
         {isLoadingCustomer ? (
           <div className="flex justify-center items-center min-h-[120px]">
@@ -599,8 +542,6 @@ const Customers: React.FC = () => {
                       isLoading={isUpdating}
                       onCancel={() => setIsEditing(false)}
                       isHorizontalLayout={!isMobile}
-                      // Add id for submit-from-header support
-                      id="customer-edit-form"
                     />
                   </div>
                 ) : (
@@ -617,77 +558,123 @@ const Customers: React.FC = () => {
                     <p className="text-gray-700">{selectedCustomer.address || 'No address'}</p>
                   </div>
                 )}
-                {/* Removed lower cancel/save button area in favor of header actions */}
+                <div className="mt-4 flex gap-2">
+                  {isEditing ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3 py-1 text-sm"
+                      onClick={() => setIsEditing(false)}
+                    >
+                      Cancel
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3 py-1 text-sm"
+                      onClick={handleEditToggle}
+                      disabled={isLoadingCustomer}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                </div>
               </div>
               {/* Hide statistics and orders when editing on ANY device */}
               {!isEditing ? (
                 <>
-                  <div className="md:border-l md:border-gray-200 md:pl-6">
+                  <div>
                     <h3 className="text-sm font-medium text-gray-500">Order Statistics</h3>
-                    <dl className="mt-2 space-y-4">
-                      <div className="flex justify-between">
-                        <dt className="text-gray-500">Total Orders:</dt>
-                        <dd className="font-medium text-gray-900">{customerOrders.length}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-gray-500">Total Value (USD):</dt>
-                        <dd className="font-medium text-gray-900">
-                          ${customerOrders.reduce((total, order) => {
-                            return total + (Number(order.cash_collection_usd) || 0);
-                          }, 0).toFixed(2)}
-                        </dd>
-                      </div>
-                      {/* Add total value in LBP if applicable */}
-                      {customerOrders.some(order => order.cash_collection_lbp) && (
-                        <div className="flex justify-between">
-                          <dt className="text-gray-500">Total Value (LBP):</dt>
-                          <dd className="font-medium text-gray-900">
-                            {customerOrders.reduce((total, order) => {
-                              return total + (Number(order.cash_collection_lbp) || 0);
-                            }, 0).toLocaleString()}
-                          </dd>
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <dt className="text-gray-500">Last Order Date:</dt>
-                        <dd className="font-medium text-gray-900">
-                          {customerOrders.length > 0 ? formatDate(new Date(Math.max(...customerOrders.map(o => new Date(o.created_at).getTime())))) : 'N/A'}
-                        </dd>
-                      </div>
-                    </dl>
+                    <div className="mt-2 space-y-2">
+                      {(() => {
+                        const stats = calculateCustomerStats(selectedCustomer.id);
+                        return (
+                          <>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Total Orders:</span>
+                              <span className="font-medium">{stats.orderCount}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Total Value (USD):</span>
+                              <span className="font-medium">${stats.totalValueUSD.toFixed(2)}</span>
+                            </div>
+                            {stats.totalValueLBP !== null && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Total Value (LBP):</span>
+                                <span className="font-medium">{stats.totalValueLBP.toLocaleString()}</span>
+                              </div>
+                            )}
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Last Order:</span>
+                              <span className="font-medium">{stats.lastOrderDate}</span>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
                   </div>
                 </>
               ) : null}
             </div>
             {/* Recent Orders - hide when editing on ANY device */}
             {!isEditing && (
-              <>
-                <div className="border-t border-gray-200 mt-4 pt-4">
-                  <h3 className="text-sm font-medium text-gray-500">Recent Orders</h3>
-                  {customerOrders.length > 0 ? (
-                    <div className="mt-3 divide-y divide-gray-200">
-                      {customerOrders.slice(0, 5).map(order => (
-                        <div key={order.id} className="py-3 flex items-center justify-between">
-                          <div>
-                            <p className="text-gray-700">Order ID: {order.id}</p>
-                            <p className="text-gray-500 text-sm">Created at: {formatDate(new Date(order.created_at))}</p>
-                          </div>
-                          <Badge className="bg-gray-100 text-gray-700 font-medium">
-                            ${Number(order.cash_collection_usd).toFixed(2)}
-                          </Badge>
-                        </div>
-                      ))}
-                      {customerOrders.length > 5 && (
-                        <div className="mt-2 text-center">
-                          <Button variant="link">View All Orders</Button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-gray-500 mt-3">No recent orders</div>
-                  )}
-                </div>
-              </>
+              <div className="mt-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-3">Recent Orders</h3>
+                {customerOrders.length === 0 ? (
+                  <div className="text-sm text-gray-500 p-4 text-center border rounded-md">
+                    No orders found for this customer
+                  </div>
+                ) : (
+                  <div className="border rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50">
+                          <TableHead className="text-xs">Order ID</TableHead>
+                          <TableHead className="text-xs">Date</TableHead>
+                          <TableHead className="text-xs">Amount</TableHead>
+                          <TableHead className="text-xs">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {customerOrders.slice(0, 5).map(order => (
+                          <TableRow key={order.id}>
+                            <TableCell className="font-medium">{order.reference_number || order.id.substring(0, 8)}</TableCell>
+                            <TableCell>{formatDate(new Date(order.created_at))}</TableCell>
+                            <TableCell>
+                              {order.cash_collection_usd ? `$${Number(order.cash_collection_usd).toFixed(2)}` : ''}
+                              {order.cash_collection_usd && order.cash_collection_lbp ? ' / ' : ''}
+                              {order.cash_collection_lbp ? `${Number(order.cash_collection_lbp).toLocaleString()} LBP` : ''}
+                              {!order.cash_collection_usd && !order.cash_collection_lbp ? 'N/A' : ''}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={`
+                                ${order.status === 'Successful' ? 'bg-green-100 text-green-800' : 
+                                  order.status === 'Unsuccessful' ? 'bg-red-100 text-red-800' : 
+                                  order.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 
+                                  order.status === 'New' ? 'bg-purple-100 text-purple-800' : 
+                                  order.status === 'Pending Pickup' ? 'bg-amber-100 text-amber-800' :
+                                  order.status === 'Returned' ? 'bg-gray-100 text-gray-800' : 
+                                  'bg-gray-100 text-gray-800'}
+                                hover:bg-opacity-80
+                              `}>
+                                {order.status || 'Unknown'}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    {customerOrders.length > 5 && (
+                      <div className="p-2 text-center border-t">
+                        <Button variant="ghost" size="sm">
+                          View all {customerOrders.length} orders
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </>
         ) : (
