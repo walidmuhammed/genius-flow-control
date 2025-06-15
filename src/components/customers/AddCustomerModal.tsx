@@ -231,29 +231,41 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
           />
         </div>
         {showSecondaryPhone ? (
-          // Direct field, NO CONTAINER, delete icon perfectly aligned top-right
           <div className="relative">
             <label
               htmlFor="customer-secondary-phone"
-              className="block text-[15px] text-gray-700 font-medium mb-2 pr-10 relative"
+              className="block text-[15px] text-gray-700 font-medium mb-2"
               style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
             >
               <span>
                 Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
               </span>
-              <span className="relative" style={{ minWidth: 24, height: 24 }}>
-                {RemoveSecondaryPhoneButton}
-              </span>
             </label>
-            <PhoneInput
-              id="customer-secondary-phone"
-              value={form.secondary_phone}
-              defaultCountry="LB"
-              onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
-              placeholder="70 123 456"
-              inputClassName="text-base md:text-sm bg-white"
-              autoComplete="off"
-            />
+            <div className="relative">
+              <PhoneInput
+                id="customer-secondary-phone"
+                value={form.secondary_phone}
+                defaultCountry="LB"
+                onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
+                placeholder="70 123 456"
+                inputClassName="text-base md:text-sm bg-white pr-10"
+              />
+              {/* Remove button aligned with the end of the input */}
+              <button
+                type="button"
+                aria-label="Remove secondary phone"
+                className={`
+                  absolute top-1/2 -translate-y-1/2 right-2
+                  bg-white text-gray-500 border border-gray-200 rounded-full
+                  p-1 transition hover:bg-red-50 hover:text-red-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-100
+                  w-6 h-6 flex items-center justify-center z-20
+                `}
+                onClick={() => setShowSecondaryPhone(false)}
+                tabIndex={0}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         ) : (
           <div className="mt-1">{AddSecondaryPhoneButton}</div>
@@ -362,25 +374,41 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
             </div>
             {/* Secondary Phone Option, no extra container */}
             {showSecondaryPhone ? (
-              <div className="relative">
+              <div>
                 <label
                   htmlFor="customer-secondary-phone"
-                  className="block text-[15px] text-gray-700 font-medium mb-2 pr-10 relative"
+                  className="block text-[15px] text-gray-700 font-medium mb-2"
                   style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
                 >
                   <span>
                     Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
                   </span>
-                  <span className="relative" style={{ minWidth: 24, height: 24 }}>{RemoveSecondaryPhoneButton}</span>
                 </label>
-                <PhoneInput
-                  id="customer-secondary-phone"
-                  value={form.secondary_phone}
-                  defaultCountry="LB"
-                  onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
-                  placeholder="70 123 456"
-                  inputClassName="text-base md:text-sm bg-white"
-                />
+                <div className="relative">
+                  <PhoneInput
+                    id="customer-secondary-phone"
+                    value={form.secondary_phone}
+                    defaultCountry="LB"
+                    onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
+                    placeholder="70 123 456"
+                    inputClassName="text-base md:text-sm bg-white pr-10"
+                  />
+                  {/* Remove button aligned with the end of the input */}
+                  <button
+                    type="button"
+                    aria-label="Remove secondary phone"
+                    className={`
+                      absolute top-1/2 -translate-y-1/2 right-2
+                      bg-white text-gray-500 border border-gray-200 rounded-full
+                      p-1 transition hover:bg-red-50 hover:text-red-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-100
+                      w-6 h-6 flex items-center justify-center z-20
+                    `}
+                    onClick={() => setShowSecondaryPhone(false)}
+                    tabIndex={0}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="mt-1">{AddSecondaryPhoneButton}</div>
