@@ -422,27 +422,25 @@ const Customers: React.FC = () => {
           if (!open) closeModal();
         }}
         title="Customer Details"
+        isEditing={isEditing && !isMobile}
       >
         {isLoadingCustomer ? (
           <div className="flex justify-center items-center min-h-[120px]">
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : selectedCustomer ? (
-          // Switch grid layout in edit mode on desktop, and hide stats/orders on mobile edit
           <>
-            <div className={
-              isEditing && !isMobile
-                ? "grid grid-cols-2 gap-8 mb-6"
-                : "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
-            }>
-              <div className={isEditing && !isMobile ? "col-span-2" : ""}>
+            <div
+              className={`${
+                isEditing && !isMobile
+                  ? "flex justify-center items-start"
+                  : "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
+              }`}
+            >
+              <div className={isEditing && !isMobile ? "w-full" : ""}>
                 <h3 className="text-sm font-medium text-gray-500">Customer Information</h3>
                 {isEditing ? (
-                  // Fill available space horizontally, desktop: grid, mobile: vertical
-                  <div className={isMobile
-                    ? "mt-2"
-                    : "mt-2 grid grid-cols-2 gap-4"}
-                  >
+                  <div className={isMobile ? "mt-2" : "mt-2"}>
                     <CustomerEditForm
                       customer={selectedCustomer}
                       onUpdate={handleSaveChanges}
@@ -488,8 +486,8 @@ const Customers: React.FC = () => {
                   )}
                 </div>
               </div>
-              {/* Hide statistics and orders when editing on mobile */}
-              {(!isEditing || !isMobile) && (
+              {/* Hide statistics and orders when editing on desktop */}
+              {!isEditing || isMobile ? (
                 <>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Order Statistics</h3>
@@ -522,10 +520,10 @@ const Customers: React.FC = () => {
                     </div>
                   </div>
                 </>
-              )}
+              ) : null}
             </div>
-            {/* Recent Orders */}
-            {(!isEditing || !isMobile) && (
+            {/* Recent Orders - hide when editing on desktop */}
+            {(!isEditing || isMobile) && (
               <div className="mt-6">
                 <h3 className="text-sm font-medium text-gray-500 mb-3">Recent Orders</h3>
                 {customerOrders.length === 0 ? (

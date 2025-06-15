@@ -9,13 +9,15 @@ interface CustomerDetailsModalProps {
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
   title: string;
+  isEditing?: boolean;
 }
 
 export default function CustomerDetailsModal({
   open,
   onOpenChange,
   children,
-  title
+  title,
+  isEditing = false,
 }: CustomerDetailsModalProps) {
   const { isMobile } = useScreenSize();
 
@@ -34,11 +36,15 @@ export default function CustomerDetailsModal({
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] p-0 rounded-xl">
+      <DialogContent
+        className={`${
+          isEditing ? "max-w-4xl" : "sm:max-w-[600px]"
+        } p-0 rounded-xl w-full`}
+      >
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
         </DialogHeader>
-        <div className="p-6">{children}</div>
+        <div className={isEditing ? "p-8 bg-white" : "p-6"}>{children}</div>
       </DialogContent>
     </Dialog>
   );
