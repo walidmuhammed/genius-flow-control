@@ -26,7 +26,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
       {/* Mobile/Tablet Sidebar as Sheet */}
       {(isMobile || isTablet) && (
         <Sheet open={sidebarOpen} onOpenChange={closeSidebar}>
-          <SheetContent side="left" className="p-0 w-[280px] rounded-r-2xl border-0 shadow-2xl">
+          <SheetContent side="left" className="p-0 w-[260px] border-0">
             <Sidebar />
           </SheetContent>
         </Sheet>
@@ -86,3 +86,4 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, className }) => {
 };
 
 export default MainLayout;
+

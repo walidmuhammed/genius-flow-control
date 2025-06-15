@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Moon, Sun, Truck, Settings, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -6,6 +7,7 @@ import SidebarMenu from './SidebarMenu';
 import { motion } from 'framer-motion';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import { useAuth } from '@/hooks/useAuth';
+import useLayoutStore from '@/stores/layoutStore';
 
 interface SidebarProps {
   className?: string;
@@ -15,9 +17,15 @@ const Sidebar: React.FC<SidebarProps> = ({
   className
 }) => {
   const [darkMode, setDarkMode] = useState(false);
-  const { isMobile } = useScreenSize();
+  const { isMobile, isTablet } = useScreenSize();
   const { signOut } = useAuth();
   const location = useLocation();
+  const { closeSidebar } = useLayoutStore();
+
+  // Memoize closeSidebar to avoid extra renders
+  const handleMenuClick = useCallback(() => {
+    if (isMobile || isTablet) closeSidebar();
+  }, [isMobile, isTablet, closeSidebar]);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -30,7 +38,13 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const handleSignOut = () => {
     signOut();
+    if (isMobile || isTablet) closeSidebar();
   };
+
+  // Footer border only on desktop
+  const footerBorder = !isMobile && !isTablet
+    ? "border-t border-gray-200 dark:border-gray-800"
+    : "";
 
   return (
     <motion.aside
@@ -48,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="flex flex-col h-full">
         {/* Logo/Header */}
         <div className="flex h-16 items-center px-5 flex-shrink-0">
-          <Link to="/" className="flex items-center gap-2.5">
+          <Link to="/" className="flex items-center gap-2.5" onClick={handleMenuClick}>
             <motion.div
               className="flex items-center"
               initial={{ opacity: 0 }}
@@ -67,12 +81,15 @@ const Sidebar: React.FC<SidebarProps> = ({
         
         {/* Scrollable Menu */}
         <div className="flex-1 min-h-0 overflow-y-auto py-6 px-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
-          <SidebarMenu collapsed={false} />
+          <SidebarMenu collapsed={false} onNavigate={handleMenuClick} />
         </div>
 
         {/* Footer: Settings, Dark Mode, Sign Out - always at bottom */}
-        <div className="flex flex-col gap-3 border-t border-gray-200 dark:border-gray-800 px-5 py-5 flex-shrink-0">
-          <Link to="/settings">
+        <div className={cn(
+          "flex flex-col gap-3 px-5 py-5 flex-shrink-0",
+          footerBorder
+        )}>
+          <Link to="/settings" onClick={handleMenuClick}>
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -128,3 +145,4 @@ const Sidebar: React.FC<SidebarProps> = ({
 };
 
 export default Sidebar;
+

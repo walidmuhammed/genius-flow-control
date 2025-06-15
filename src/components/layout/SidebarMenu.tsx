@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 
 interface SidebarMenuProps {
   collapsed: boolean;
+  onNavigate?: () => void; // Added for mobile sidebar close
 }
 
 interface MenuItem {
@@ -15,7 +16,7 @@ interface MenuItem {
   path: string;
 }
 
-const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed }) => {
+const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onNavigate }) => {
   const location = useLocation();
   
   const mainMenuItems: MenuItem[] = [
@@ -70,7 +71,8 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed }) => {
             key={item.path} 
             collapsed={collapsed} 
             item={item} 
-            isActive={location.pathname === item.path} 
+            isActive={location.pathname === item.path}
+            onNavigate={onNavigate}
           />
         ))}
       </div>
@@ -82,11 +84,12 @@ interface MenuItemProps {
   item: MenuItem;
   isActive: boolean;
   collapsed: boolean;
+  onNavigate?: () => void;
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, collapsed }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, collapsed, onNavigate }) => {
   return (
-    <Link to={item.path}>
+    <Link to={item.path} onClick={onNavigate}>
       <motion.div 
         className={cn(
           "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium mb-1 transition-all duration-200", 
@@ -123,3 +126,4 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, collapsed }) => {
 };
 
 export default SidebarMenu;
+
