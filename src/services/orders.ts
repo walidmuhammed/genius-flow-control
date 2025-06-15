@@ -35,6 +35,10 @@ export interface Order {
     newValue: string;
     timestamp: string;
   }>;
+  reason_unsuccessful?: string | null;
+  courier_id?: string | null;
+  created_by?: string | null;
+  invoice_id?: string | null;
 }
 
 export interface OrderWithCustomer extends Order {
@@ -85,6 +89,28 @@ const transformOrderData = (order: any): OrderWithCustomer => {
     statusType = 'New';
   }
   
+  // Ensure edit_history is always an array of changes (from JSONB or null in DB)
+  let normalizedEditHistory: Array<{
+    field: string;
+    oldValue: string;
+    newValue: string;
+    timestamp: string;
+  }> = [];
+  if (order.edit_history && Array.isArray(order.edit_history)) {
+    normalizedEditHistory = order.edit_history;
+  } else if (order.edit_history && typeof order.edit_history === "string") {
+    // Try to parse if sent as stringified JSON (rare)
+    try {
+      const parsed = JSON.parse(order.edit_history);
+      if (Array.isArray(parsed)) {
+        normalizedEditHistory = parsed;
+      }
+    } catch (e) {}
+  } else if (order.edit_history) {
+    // Try to cover parsed JSON object as well
+    normalizedEditHistory = order.edit_history as typeof normalizedEditHistory;
+  }
+
   return {
     ...order,
     order_id: order.order_id,
@@ -92,7 +118,11 @@ const transformOrderData = (order: any): OrderWithCustomer => {
     package_type: packageType as PackageType,
     status: statusType as OrderStatus,
     edited: order.edited || false,
-    edit_history: order.edit_history || [],
+    edit_history: normalizedEditHistory,
+    reason_unsuccessful: order.reason_unsuccessful || null,
+    courier_id: order.courier_id || null,
+    created_by: order.created_by || null,
+    invoice_id: order.invoice_id || null,
     customer: {
       ...customerData,
       city_name: customerData.cities?.name,
