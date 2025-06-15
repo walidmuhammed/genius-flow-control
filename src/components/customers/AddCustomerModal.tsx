@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -9,7 +8,7 @@ import { toast } from "sonner";
 import { AreaSelector } from "@/components/orders/AreaSelector";
 import { useScreenSize } from "@/hooks/useScreenSize";
 import { useCreateCustomer } from "@/hooks/use-customers";
-import PhoneInput from "@/components/ui/phone-input";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 interface AddCustomerModalProps {
   open: boolean;
