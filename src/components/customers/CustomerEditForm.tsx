@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { ImprovedAreaSelector } from "@/components/orders/ImprovedAreaSelector";
 import { CustomerWithLocation } from "@/services/customers";
+import { CustomerAreaSelector } from "./CustomerAreaSelector";
 
 interface CustomerEditFormProps {
   customer: CustomerWithLocation;
@@ -18,51 +18,41 @@ export default function CustomerEditForm({
   isLoading,
   onCancel,
 }: CustomerEditFormProps) {
-  // Fields: only enable editing for: secondary_phone if not present, address, is_work_address, city/governorate
+  // Only enable editing for: secondary_phone (if not present), address, is_work_address, city/governorate
   const [secondaryPhone, setSecondaryPhone] = useState(customer.secondary_phone || "");
   const [address, setAddress] = useState(customer.address || "");
   const [isWorkAddress, setIsWorkAddress] = useState(!!customer.is_work_address);
-  const [governorateId, setGovernorateId] = useState(customer.governorate_id || "");
-  const [governorateName, setGovernorateName] = useState(customer.governorate_name || "");
-  const [cityId, setCityId] = useState(customer.city_id || "");
-  const [cityName, setCityName] = useState(customer.city_name || "");
+  const [area, setArea] = useState({
+    governorateId: customer.governorate_id ?? "",
+    governorateName: customer.governorate_name ?? "",
+    cityId: customer.city_id ?? "",
+    cityName: customer.city_name ?? "",
+  });
   const canEditSecondaryPhone = !customer.secondary_phone;
 
   // Keep area selector in sync if city/governorate prop changes (when changing customer)
   useEffect(() => {
-    setGovernorateId(customer.governorate_id || "");
-    setGovernorateName(customer.governorate_name || "");
-    setCityId(customer.city_id || "");
-    setCityName(customer.city_name || "");
+    setArea({
+      governorateId: customer.governorate_id ?? "",
+      governorateName: customer.governorate_name ?? "",
+      cityId: customer.city_id ?? "",
+      cityName: customer.city_name ?? "",
+    });
   }, [customer.governorate_id, customer.governorate_name, customer.city_id, customer.city_name]);
-
-  function handleAreaSelect(governorateId: string, governorateName: string) {
-    setGovernorateId(governorateId);
-    setGovernorateName(governorateName);
-    setCityId("");
-    setCityName("");
-  }
-  function handleCitySelect(cityId: string, cityName: string, govName: string) {
-    setGovernorateId(customer.governorate_id !== governorateId ? governorateId : customer.governorate_id || "");
-    setGovernorateName(govName);
-    setCityId(cityId);
-    setCityName(cityName);
-  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Only allow updating allowed fields (as per the plan)
     onUpdate({
       ...(canEditSecondaryPhone ? { secondary_phone: secondaryPhone || null } : {}),
       address: address || null,
       is_work_address: isWorkAddress,
-      city_id: cityId || null,
-      governorate_id: governorateId || null,
+      city_id: area.cityId || null,
+      governorate_id: area.governorateId || null,
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5 pt-1">
       <div>
         <div className="font-semibold text-gray-700 mb-0.5">Name</div>
         <Input value={customer.name} disabled readOnly className="bg-gray-100" />
@@ -87,12 +77,9 @@ export default function CustomerEditForm({
       </div>
       <div>
         <div className="font-semibold text-gray-700 mb-0.5">Area</div>
-        <ImprovedAreaSelector
-          selectedGovernorateId={governorateId}
-          selectedCityId={cityId}
-          onGovernorateChange={handleAreaSelect}
-          onCityChange={handleCitySelect}
-          error={undefined}
+        <CustomerAreaSelector
+          value={area}
+          onChange={setArea}
         />
       </div>
       <div>
