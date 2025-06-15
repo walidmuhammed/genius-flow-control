@@ -27,7 +27,7 @@ export async function getPickups() {
   const { data, error } = await supabase
     .from('pickups')
     .select('*')
-    .order('pickup_date', { ascending: true });
+    .order('created_at', { ascending: false }); // NEWEST FIRST
   
   if (error) {
     console.error('Error fetching pickups:', error);
@@ -42,7 +42,7 @@ export async function getPickupsByStatus(status: Pickup['status']) {
     .from('pickups')
     .select('*')
     .eq('status', status)
-    .order('pickup_date', { ascending: true });
+    .order('created_at', { ascending: false }); // NEWEST FIRST
   
   if (error) {
     console.error(`Error fetching pickups with status ${status}:`, error);
