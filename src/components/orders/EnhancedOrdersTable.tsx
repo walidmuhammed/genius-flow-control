@@ -15,7 +15,7 @@ import {
 import { OrderWithCustomer } from '@/services/orders';
 import { formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import OrderRowActions from './OrderRowActions';
 import OrderNoteTooltip from './OrderNoteTooltip';
 
@@ -36,11 +36,7 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
   onEditOrder,
   onDeleteOrder
 }) => {
-  // Track for each row whether it's hovered. 
-  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
-
-  // Only show the bulk (header) selection if there is at least one selected row or we're hovering on any row.
-  const showHeaderSelection = hoveredRow !== null || selectedOrderIds.length > 0;
+  // Removed all hover logic for selection cell display.
 
   const handleSelectAll = (checked: boolean) => {
     onOrderSelection(checked ? orders.map(order => order.id) : []);
@@ -48,7 +44,7 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
 
   const handleSelectOrder = (orderId: string, checked: boolean) => {
     onOrderSelection(
-      checked 
+      checked
         ? [...selectedOrderIds, orderId]
         : selectedOrderIds.filter(id => id !== orderId)
     );
@@ -56,6 +52,7 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
 
   const isAllSelected = selectedOrderIds.length === orders.length && orders.length > 0;
   const isPartiallySelected = selectedOrderIds.length > 0 && selectedOrderIds.length < orders.length;
+  const anySelected = selectedOrderIds.length > 0;
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -82,7 +79,6 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
     }
   };
 
-  // Add Type Color helper
   const getTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'shipment':
@@ -106,30 +102,33 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-            <AnimatePresence>
-            {showHeaderSelection && (
-              <motion.th
-                className="w-12 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider pl-6 transition-all duration-500 overflow-hidden"
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: '3rem', minWidth: '3rem' }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.35, ease: [0.4, 0.0, 0.2, 1] }}
-                style={{ position: 'relative' }}
-              >
-                <Checkbox
-                  checked={isAllSelected}
-                  ref={el => {
-                    if (el) {
-                      const input = el.querySelector('input') as HTMLInputElement;
-                      if (input) input.indeterminate = isPartiallySelected;
-                    }
-                  }}
-                  onCheckedChange={handleSelectAll}
-                  className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md transition-all duration-300"
-                />
-              </motion.th>
-            )}
-            </AnimatePresence>
+            {/* FIXED selection column, always present */}
+            <TableHead
+              className="w-12 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider pl-6 transition-all duration-500 overflow-hidden"
+              style={{
+                width: '3rem',
+                minWidth: '3rem',
+                maxWidth: '3rem'
+              }}
+            >
+              {/* Checkbox is only visible (opacity) if anySelected */}
+              <Checkbox
+                checked={isAllSelected}
+                ref={el => {
+                  if (el) {
+                    const input = el.querySelector('input') as HTMLInputElement;
+                    if (input) input.indeterminate = isPartiallySelected;
+                  }
+                }}
+                onCheckedChange={handleSelectAll}
+                className={cn(
+                  "data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md transition-opacity duration-300",
+                  anySelected ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                )}
+                tabIndex={anySelected ? 0 : -1}
+                aria-hidden={!anySelected}
+              />
+            </TableHead>
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">ORDER ID</TableHead>
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">REFERENCE</TableHead>
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">CUSTOMER</TableHead>
@@ -144,10 +143,6 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
         <TableBody>
           {orders.map((order, index) => {
             const isRowSelected = selectedOrderIds.includes(order.id);
-            const isRowHovered = hoveredRow === order.id;
-
-            // Only show selection cell if hovered or selected!!
-            const showSelectionCell = isRowSelected || isRowHovered;
 
             return (
               <motion.tr
@@ -156,35 +151,37 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
                   "border-b border-gray-100/50 dark:border-gray-700/30 transition-all duration-200 cursor-pointer",
                   isRowSelected 
                     ? "bg-[#DB271E]/5 border-[#DB271E]/20" 
-                    : "hover:bg-gray-50/30 dark:hover:bg-gray-800/30",
-                  isRowHovered && "shadow-sm"
+                    : "hover:bg-gray-50/30 dark:hover:bg-gray-800/30"
                 )}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, delay: index * 0.07, ease: [0.4, 0.0, 0.2, 1] }}
-                onMouseEnter={() => setHoveredRow(order.id)}
-                onMouseLeave={() => setHoveredRow(null)}
+                // No more onMouseEnter/onMouseLeave since hover no longer toggles checkbox visibility
                 onClick={() => onViewOrder(order)}
               >
-                <AnimatePresence>
-                  {showSelectionCell && (
-                    <motion.td
-                      className="pl-6 transition-all duration-500 animate-fade-in"
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: '3rem', minWidth: '3rem' }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.35, ease: [0.4, 0.0, 0.2, 1] }}
-                      style={{ overflow: "hidden", position: "relative" }}
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <Checkbox
-                        checked={isRowSelected}
-                        onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
-                        className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md transition-all duration-300"
-                      />
-                    </motion.td>
-                  )}
-                </AnimatePresence>
+                {/* Selection cell: always present, but checkbox only visible if anySelected */}
+                <TableCell
+                  className="pl-6 transition-all duration-500"
+                  style={{
+                    width: '3rem',
+                    minWidth: '3rem',
+                    maxWidth: '3rem',
+                    overflow: "hidden",
+                    position: "relative"
+                  }}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <Checkbox
+                    checked={isRowSelected}
+                    onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
+                    className={cn(
+                      "data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md transition-opacity duration-300",
+                      anySelected ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                    )}
+                    tabIndex={anySelected ? 0 : -1}
+                    aria-hidden={!anySelected}
+                  />
+                </TableCell>
                 <TableCell className="font-semibold text-[#DB271E]">
                   <div className="flex items-center gap-2">
                     <span>
@@ -271,7 +268,7 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
                       note: order.note,
                     }}
                     originalOrder={order}
-                    isRowHovered={hoveredRow === order.id}
+                    isRowHovered={false}
                     onViewDetails={() => onViewOrder(order)}
                     onEditOrder={() => onEditOrder && onEditOrder(order)}
                     onPrintLabel={() => console.log(`Printing label for order ${order.id}`)}
