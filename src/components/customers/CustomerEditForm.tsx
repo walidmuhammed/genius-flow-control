@@ -70,7 +70,7 @@ export default function CustomerEditForm({
 
   // Render fields in grid as columns if isHorizontalLayout
   return (
-    <form onSubmit={handleSubmit} className={mainWrapperClass}>
+    <form onSubmit={handleSubmit} className={mainWrapperClass} id="customer-edit-form">
       <div className="space-y-5 col-span-1">
         <div>
           <div className="font-semibold text-gray-700 mb-0.5">Name</div>
@@ -121,15 +121,6 @@ export default function CustomerEditForm({
         <div>
           <div className="font-semibold text-gray-700 mb-0.5">Address</div>
           <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Address" />
-        </div>
-        <div className="flex justify-end gap-2 mt-2">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button type="submit" className="bg-[#dc291e]" disabled={isLoading}>
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Save
-          </Button>
         </div>
       </div>
     </form>

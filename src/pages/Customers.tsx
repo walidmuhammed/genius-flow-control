@@ -257,6 +257,29 @@ const Customers: React.FC = () => {
   // Open/close region filter modal/drawer
   const [isRegionDialogOpen, setIsRegionDialogOpen] = useState(false);
 
+  // For header actions in edit mode
+  const getHeaderActions = () =>
+    isEditing ? (
+      <>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 px-4 py-1 text-sm"
+          onClick={() => setIsEditing(false)}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          className="bg-[#dc291e] h-8 px-4 py-1 text-sm text-white"
+          form="customer-edit-form"
+        >
+          Save
+        </Button>
+      </>
+    ) : null;
+
   return (
     <MainLayout>
       <div className="space-y-4">
@@ -518,6 +541,7 @@ const Customers: React.FC = () => {
         }}
         title="Customer Details"
         isEditing={isEditing && !isMobile}
+        headerActions={getHeaderActions()}
       >
         {isLoadingCustomer ? (
           <div className="flex justify-center items-center min-h-[120px]">
@@ -558,17 +582,9 @@ const Customers: React.FC = () => {
                     <p className="text-gray-700">{selectedCustomer.address || 'No address'}</p>
                   </div>
                 )}
-                <div className="mt-4 flex gap-2">
-                  {isEditing ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 px-3 py-1 text-sm"
-                      onClick={() => setIsEditing(false)}
-                    >
-                      Cancel
-                    </Button>
-                  ) : (
+                {/* Remove the bottom cancel button, only show edit when not editing */}
+                {!isEditing && (
+                  <div className="mt-4 flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -578,8 +594,8 @@ const Customers: React.FC = () => {
                     >
                       Edit
                     </Button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
               {/* Hide statistics and orders when editing on ANY device */}
               {!isEditing ? (

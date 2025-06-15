@@ -10,6 +10,7 @@ interface CustomerDetailsModalProps {
   children: React.ReactNode;
   title: string;
   isEditing?: boolean;
+  headerActions?: React.ReactNode; // NEW
 }
 
 export default function CustomerDetailsModal({
@@ -18,6 +19,7 @@ export default function CustomerDetailsModal({
   children,
   title,
   isEditing = false,
+  headerActions,  // NEW
 }: CustomerDetailsModalProps) {
   const { isMobile } = useScreenSize();
 
@@ -26,8 +28,9 @@ export default function CustomerDetailsModal({
     return (
       <Drawer open={open} onOpenChange={onOpenChange} shouldScaleBackground>
         <DrawerContent className="rounded-t-2xl p-0 bg-background animate-slide-in-right !sm:max-w-full">
-          <DrawerHeader className="px-6 pb-0 pt-4">
+          <DrawerHeader className="px-6 pb-0 pt-4 flex flex-row items-center justify-between">
             <DrawerTitle className="text-xl font-semibold">{title}</DrawerTitle>
+            {headerActions && <div className="flex items-center gap-2">{headerActions}</div>}
           </DrawerHeader>
           <div className="px-4 pt-1 pb-4">{children}</div>
         </DrawerContent>
@@ -41,8 +44,9 @@ export default function CustomerDetailsModal({
           isEditing ? "max-w-4xl" : "sm:max-w-[600px]"
         } p-0 rounded-xl w-full`}
       >
-        <DialogHeader className="px-6 py-4 border-b">
+        <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between">
           <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
+          {headerActions && <div className="flex items-center gap-2">{headerActions}</div>}
         </DialogHeader>
         <div className={isEditing ? "p-8 bg-white" : "p-6"}>{children}</div>
       </DialogContent>
