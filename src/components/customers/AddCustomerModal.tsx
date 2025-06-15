@@ -90,82 +90,154 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
     );
   }
 
-  const formFields = (
-    <form onSubmit={handleSubmit} className="space-y-5 mt-1 h-full flex flex-col justify-between">
+  // ========== Apple-style swipe/drag handle for modal =============
+  // We'll use a bigger, centered, touch-friendly handle bar always visible at the top
+  const DrawerHandleBar = () => (
+    <div className="w-full flex justify-center items-center py-2">
+      <div className="w-12 h-2 rounded-full bg-gray-300" style={{ opacity: 0.9 }} />
+    </div>
+  );
+
+  // ========== FIX: Remove justify-between & add grouped spacing =============
+  // We'll group fields, avoid justify-between, space sections with gaps and dividers on mobile
+
+  // ========== FIX: Clean footer sticky logic/height padding ============
+  // Properly stick the footer, padding bottom so last input is never hidden
+
+  const mobileStickyFooter = (
+    <div
+      className="fixed left-0 right-0 bottom-0 z-40 bg-white border-t px-4 py-3 flex items-center"
+      style={{
+        paddingBottom: "max(env(safe-area-inset-bottom, 12px), 12px)",
+        boxShadow: "0px -2px 14px 0px rgba(0,0,0,0.06)"
+      }}
+    >
+      <Button
+        type="submit"
+        className="w-full bg-[#dc291e] text-white text-base font-semibold py-3 rounded-xl"
+        disabled={loading}
+        style={{ height: 50 }}
+        tabIndex={0}
+      >
+        {loading ? "Adding..." : "Add Customer"}
+      </Button>
+    </div>
+  );
+
+  // ========== FIX: Refined Mobile Form Layout ==============
+  // Remove justified flex, group form fields, space with gaps
+
+  const mobileFormFields = (
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-5 mt-1"
+      style={{ paddingBottom: 138, minHeight: "100%" }}
+      autoComplete="off"
+    >
+      {/* Full Name */}
       <div>
-        <label htmlFor="customer-name" className="block text-[15px] font-medium text-gray-800 mb-1">Full Name</label>
+        <label htmlFor="customer-name" className="block text-[15px] font-medium text-gray-800 mb-1">
+          Full Name
+        </label>
         <Input
           id="customer-name"
           value={form.name}
           onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
           placeholder="Enter customer's full name"
           required
+          autoComplete="off"
           className="text-base md:text-sm"
         />
       </div>
-      <div>
-        <label htmlFor="customer-phone" className="block text-[15px] font-medium text-gray-800 mb-1">Phone Number</label>
-        <PhoneInput
-          id="customer-phone"
-          value={form.phone}
-          defaultCountry="LB"
-          onChange={val => setForm(f => ({ ...f, phone: val || "" }))}
-          placeholder="03 123 456"
-          required
-          inputClassName="text-base md:text-sm"
-        />
-      </div>
-      {/* Secondary Phone Option */}
-      {showSecondaryPhone ? (
-        <div className="flex items-center space-x-2">
-          <div className="flex-1">
-            <label htmlFor="customer-secondary-phone" className="block text-[15px] font-medium text-gray-800 mb-1">
-              Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
-            </label>
-            <PhoneInput
-              id="customer-secondary-phone"
-              value={form.secondary_phone}
-              defaultCountry="LB"
-              onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
-              placeholder="70 123 456"
-              inputClassName="text-base md:text-sm"
-            />
-          </div>
-          <Button type="button" variant="ghost" className="mt-6 text-xs px-2" onClick={() => setShowSecondaryPhone(false)}>
-            Remove
-          </Button>
+
+      {/* Phone(s) - grouped for visual clarity */}
+      <div className="space-y-2">
+        <div>
+          <label htmlFor="customer-phone" className="block text-[15px] font-medium text-gray-800 mb-1">
+            Phone Number
+          </label>
+          <PhoneInput
+            id="customer-phone"
+            value={form.phone}
+            defaultCountry="LB"
+            onChange={val => setForm(f => ({ ...f, phone: val || "" }))}
+            placeholder="03 123 456"
+            required
+            inputClassName="text-base md:text-sm"
+            autoComplete="off"
+          />
         </div>
-      ) : (
-        <Button
-          type="button"
-          variant="ghost"
-          className="pl-0 text-[#db271e] underline text-sm hover:bg-transparent"
-          onClick={() => setShowSecondaryPhone(true)}
-        >
-          + Add Secondary Phone
-        </Button>
-      )}
-      {/* Area Selector */}
+        {showSecondaryPhone ? (
+          <div className="flex items-center space-x-2">
+            <div className="flex-1">
+              <label htmlFor="customer-secondary-phone" className="block text-[15px] font-medium text-gray-800 mb-1">
+                Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
+              </label>
+              <PhoneInput
+                id="customer-secondary-phone"
+                value={form.secondary_phone}
+                defaultCountry="LB"
+                onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
+                placeholder="70 123 456"
+                inputClassName="text-base md:text-sm"
+                autoComplete="off"
+              />
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              className="mt-6 text-xs px-2"
+              onClick={() => setShowSecondaryPhone(false)}
+              tabIndex={0}
+            >
+              Remove
+            </Button>
+          </div>
+        ) : (
+          <Button
+            type="button"
+            variant="ghost"
+            className="pl-0 text-[#db271e] underline text-sm hover:bg-transparent"
+            onClick={() => setShowSecondaryPhone(true)}
+            tabIndex={0}
+          >
+            + Add Secondary Phone
+          </Button>
+        )}
+      </div>
+
+      {/* Divider */}
+      <div className="border-t my-4" />
+
+      {/* Area Selector - visually grouped */}
       <div>
-        <label className="block text-[15px] font-medium text-gray-800 mb-1">Area (Governorate & City)</label>
+        <label className="block text-[15px] font-medium text-gray-800 mb-1">
+          Area (Governorate & City)
+        </label>
         <AreaSelector
           selectedGovernorate={form.governorate}
           selectedArea={form.city}
           onAreaSelected={handleAreaSelected}
         />
       </div>
-      {/* Address Details */}
+
+      {/* Address */}
       <div>
-        <label htmlFor="customer-address" className="block text-[15px] font-medium text-gray-800 mb-1">Address Details</label>
+        <label htmlFor="customer-address" className="block text-[15px] font-medium text-gray-800 mb-1">
+          Address Details
+        </label>
         <Input
           id="customer-address"
           value={form.address}
           onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
           placeholder="Building, street, landmark ..."
           className="text-base md:text-sm"
+          autoComplete="off"
         />
       </div>
-      <div className="flex items-center mt-1">
+
+      {/* Work Checkbox - visually spaced, no negative margin */}
+      <div className="flex items-center pt-1">
         <Checkbox
           id="is-work-address"
           checked={form.is_work_address}
@@ -179,40 +251,29 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
     </form>
   );
 
-  const mobileStickyFooter = (
-    <div className="fixed left-0 right-0 bottom-0 z-40 bg-white border-t px-4 py-3 flex items-center"
-      style={{
-        paddingBottom: "env(safe-area-inset-bottom, 12px)",
-        boxShadow: "0px -2px 14px 0px rgba(0,0,0,0.06)"
-      }}
-    >
-      <Button type="submit" className="w-full bg-[#dc291e] text-white" disabled={loading}>
-        {loading ? "Adding..." : "Add Customer"}
-      </Button>
-    </div>
-  );
 
-  const DrawerHandleBar = () => (
-    <div className="w-full flex justify-center items-center mt-2 mb-2">
-      <div className="w-12 h-1.5 rounded-full bg-gray-300" />
-    </div>
-  );
-
+  // ========== Mobile Drawer Render ==============
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={v => { if (!v) resetForm(); onOpenChange(v); }} shouldScaleBackground>
-        <DrawerContent className="rounded-t-2xl p-0 bg-background flex flex-col h-dvh max-h-none overflow-y-auto shadow-xl">
+      <Drawer
+        open={open}
+        onOpenChange={v => { if (!v) resetForm(); onOpenChange(v); }}
+        shouldScaleBackground
+      >
+        <DrawerContent className="rounded-t-2xl p-0 bg-background flex flex-col h-dvh max-h-none overflow-hidden shadow-xl">
           <DrawerHandleBar />
           <DrawerHeader className="px-6 pb-0 pt-0">
             <DrawerTitle className="text-xl font-semibold">Add Customer</DrawerTitle>
           </DrawerHeader>
           <div
-            className="flex-1 flex flex-col overflow-y-auto px-4 pt-2 pb-[124px] min-h-0"
+            className="flex-1 flex flex-col overflow-y-auto px-4 pt-2 min-h-0"
             style={{
-              minHeight: "0px"
+              minHeight: "0px",
+              maxHeight: "calc(100dvh - 48px)",
+              marginBottom: 0 // prevent unintentional scroll gaps
             }}
           >
-            {formFields}
+            {mobileFormFields}
           </div>
           {mobileStickyFooter}
         </DrawerContent>
