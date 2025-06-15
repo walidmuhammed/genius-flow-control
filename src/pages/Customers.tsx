@@ -253,6 +253,9 @@ const Customers: React.FC = () => {
     };
   };
 
+  // Responsive edit mode check (for conditional rendering)
+  const isMobile = typeof window !== "undefined" ? window.innerWidth < 768 : false;
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -425,17 +428,29 @@ const Customers: React.FC = () => {
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         ) : selectedCustomer ? (
+          // Switch grid layout in edit mode on desktop, and hide stats/orders on mobile edit
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
+            <div className={
+              isEditing && !isMobile
+                ? "grid grid-cols-2 gap-8 mb-6"
+                : "grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
+            }>
+              <div className={isEditing && !isMobile ? "col-span-2" : ""}>
                 <h3 className="text-sm font-medium text-gray-500">Customer Information</h3>
                 {isEditing ? (
-                  <CustomerEditForm
-                    customer={selectedCustomer}
-                    onUpdate={handleSaveChanges}
-                    isLoading={isUpdating}
-                    onCancel={() => setIsEditing(false)}
-                  />
+                  // Fill available space horizontally, desktop: grid, mobile: vertical
+                  <div className={isMobile
+                    ? "mt-2"
+                    : "mt-2 grid grid-cols-2 gap-4"}
+                  >
+                    <CustomerEditForm
+                      customer={selectedCustomer}
+                      onUpdate={handleSaveChanges}
+                      isLoading={isUpdating}
+                      onCancel={() => setIsEditing(false)}
+                      isHorizontalLayout={!isMobile}
+                    />
+                  </div>
                 ) : (
                   <div className="mt-2 space-y-4">
                     <p className="text-lg font-semibold">{selectedCustomer.name}</p>
@@ -473,93 +488,101 @@ const Customers: React.FC = () => {
                   )}
                 </div>
               </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Order Statistics</h3>
-                <div className="mt-2 space-y-2">
-                  {(() => {
-                    const stats = calculateCustomerStats(selectedCustomer.id);
-                    return (
-                      <>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Total Orders:</span>
-                          <span className="font-medium">{stats.orderCount}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Total Value (USD):</span>
-                          <span className="font-medium">${stats.totalValueUSD.toFixed(2)}</span>
-                        </div>
-                        {stats.totalValueLBP !== null && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Total Value (LBP):</span>
-                            <span className="font-medium">{stats.totalValueLBP.toLocaleString()}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Last Order:</span>
-                          <span className="font-medium">{stats.lastOrderDate}</span>
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
-            <div className="mt-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-3">Recent Orders</h3>
-              {customerOrders.length === 0 ? (
-                <div className="text-sm text-gray-500 p-4 text-center border rounded-md">
-                  No orders found for this customer
-                </div>
-              ) : (
-                <div className="border rounded-md overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-gray-50">
-                        <TableHead className="text-xs">Order ID</TableHead>
-                        <TableHead className="text-xs">Date</TableHead>
-                        <TableHead className="text-xs">Amount</TableHead>
-                        <TableHead className="text-xs">Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {customerOrders.slice(0, 5).map(order => (
-                        <TableRow key={order.id}>
-                          <TableCell className="font-medium">{order.reference_number || order.id.substring(0, 8)}</TableCell>
-                          <TableCell>{formatDate(new Date(order.created_at))}</TableCell>
-                          <TableCell>
-                            {order.cash_collection_usd ? `$${Number(order.cash_collection_usd).toFixed(2)}` : ''}
-                            {order.cash_collection_usd && order.cash_collection_lbp ? ' / ' : ''}
-                            {order.cash_collection_lbp ? `${Number(order.cash_collection_lbp).toLocaleString()} LBP` : ''}
-                            {!order.cash_collection_usd && !order.cash_collection_lbp ? 'N/A' : ''}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={`
-                              ${order.status === 'Successful' ? 'bg-green-100 text-green-800' : 
-                                order.status === 'Unsuccessful' ? 'bg-red-100 text-red-800' : 
-                                order.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 
-                                order.status === 'New' ? 'bg-purple-100 text-purple-800' : 
-                                order.status === 'Pending Pickup' ? 'bg-amber-100 text-amber-800' :
-                                order.status === 'Returned' ? 'bg-gray-100 text-gray-800' : 
-                                'bg-gray-100 text-gray-800'}
-                              hover:bg-opacity-80
-                            `}>
-                              {order.status || 'Unknown'}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                  {customerOrders.length > 5 && (
-                    <div className="p-2 text-center border-t">
-                      <Button variant="ghost" size="sm">
-                        View all {customerOrders.length} orders
-                      </Button>
+              {/* Hide statistics and orders when editing on mobile */}
+              {(!isEditing || !isMobile) && (
+                <>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Order Statistics</h3>
+                    <div className="mt-2 space-y-2">
+                      {(() => {
+                        const stats = calculateCustomerStats(selectedCustomer.id);
+                        return (
+                          <>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Total Orders:</span>
+                              <span className="font-medium">{stats.orderCount}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Total Value (USD):</span>
+                              <span className="font-medium">${stats.totalValueUSD.toFixed(2)}</span>
+                            </div>
+                            {stats.totalValueLBP !== null && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Total Value (LBP):</span>
+                                <span className="font-medium">{stats.totalValueLBP.toLocaleString()}</span>
+                              </div>
+                            )}
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Last Order:</span>
+                              <span className="font-medium">{stats.lastOrderDate}</span>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
-                  )}
-                </div>
+                  </div>
+                </>
               )}
             </div>
+            {/* Recent Orders */}
+            {(!isEditing || !isMobile) && (
+              <div className="mt-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-3">Recent Orders</h3>
+                {customerOrders.length === 0 ? (
+                  <div className="text-sm text-gray-500 p-4 text-center border rounded-md">
+                    No orders found for this customer
+                  </div>
+                ) : (
+                  <div className="border rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50">
+                          <TableHead className="text-xs">Order ID</TableHead>
+                          <TableHead className="text-xs">Date</TableHead>
+                          <TableHead className="text-xs">Amount</TableHead>
+                          <TableHead className="text-xs">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {customerOrders.slice(0, 5).map(order => (
+                          <TableRow key={order.id}>
+                            <TableCell className="font-medium">{order.reference_number || order.id.substring(0, 8)}</TableCell>
+                            <TableCell>{formatDate(new Date(order.created_at))}</TableCell>
+                            <TableCell>
+                              {order.cash_collection_usd ? `$${Number(order.cash_collection_usd).toFixed(2)}` : ''}
+                              {order.cash_collection_usd && order.cash_collection_lbp ? ' / ' : ''}
+                              {order.cash_collection_lbp ? `${Number(order.cash_collection_lbp).toLocaleString()} LBP` : ''}
+                              {!order.cash_collection_usd && !order.cash_collection_lbp ? 'N/A' : ''}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={`
+                                ${order.status === 'Successful' ? 'bg-green-100 text-green-800' : 
+                                  order.status === 'Unsuccessful' ? 'bg-red-100 text-red-800' : 
+                                  order.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 
+                                  order.status === 'New' ? 'bg-purple-100 text-purple-800' : 
+                                  order.status === 'Pending Pickup' ? 'bg-amber-100 text-amber-800' :
+                                  order.status === 'Returned' ? 'bg-gray-100 text-gray-800' : 
+                                  'bg-gray-100 text-gray-800'}
+                                hover:bg-opacity-80
+                              `}>
+                                {order.status || 'Unknown'}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    {customerOrders.length > 5 && (
+                      <div className="p-2 text-center border-t">
+                        <Button variant="ghost" size="sm">
+                          View all {customerOrders.length} orders
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         ) : (
           <div className="text-center text-gray-500 min-h-[80px] flex items-center justify-center">
