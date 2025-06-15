@@ -58,10 +58,10 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed }) => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="space-y-2">
-        <div className="mb-4">
-          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 px-3 uppercase tracking-wider">
-            Main Menu
+      <div className="space-y-1">
+        <div className="mb-2">
+          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 px-4">
+            Main
           </h3>
         </div>
         
@@ -89,19 +89,19 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, collapsed }) => {
     <Link to={item.path}>
       <motion.div 
         className={cn(
-          "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group", 
+          "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium mb-1 transition-all duration-200", 
           isActive 
-            ? "bg-gradient-to-r from-[#DC291E]/10 to-[#DC291E]/5 text-[#DC291E] dark:text-[#DC291E] border border-[#DC291E]/20 shadow-sm" 
-            : "text-gray-700 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-gray-800/40 hover:text-gray-900 dark:hover:text-white hover:shadow-sm"
+            ? "bg-gray-200 dark:bg-gray-800 text-[#DC291E] dark:text-[#DC291E]" 
+            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
         )} 
         whileHover={{ 
-          x: isActive ? 0 : 4,
+          x: 4,
           transition: { duration: 0.2 }
         }}
         whileTap={{ scale: 0.98 }}
       >
         <span className={cn(
-          "flex items-center justify-center transition-all duration-200 group-hover:scale-110", 
+          "flex items-center justify-center transition-all duration-200", 
           isActive 
             ? "text-[#DC291E]" 
             : "text-gray-600 dark:text-gray-400"
@@ -112,20 +112,11 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, collapsed }) => {
         <span className={cn(
           "transition-all duration-200",
           isActive 
-            ? "font-semibold" 
+            ? "font-medium" 
             : ""
         )}>
           {item.label}
         </span>
-
-        {isActive && (
-          <motion.div
-            className="w-2 h-2 bg-[#DC291E] rounded-full ml-auto"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.2 }}
-          />
-        )}
       </motion.div>
     </Link>
   );
