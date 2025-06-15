@@ -1,4 +1,3 @@
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   getCustomers, 
@@ -9,6 +8,7 @@ import {
   Customer 
 } from "@/services/customers";
 import { toast } from "sonner";
+import { isValidLebaneseMobileNumber } from "@/utils/customerSearch";
 
 export function useCustomers() {
   return useQuery({
@@ -62,17 +62,22 @@ export function useUpdateCustomer() {
 export function useSearchCustomersByPhone(phone: string) {
   // Clean the phone number for validation
   const cleanPhone = phone.replace(/\D/g, '');
-  
+
+  // Enhanced completeness logic for Lebanese mobile prefixes
+  const lebanesePrefixes = ["3", "70", "71", "76", "78", "79", "81", "82"];
+  const validLebanese = isValidLebaneseMobileNumber(phone);
+
   // Only search if phone number is complete:
-  // Lebanese numbers: +961 followed by 8 digits (total 11 digits with country code)
-  // Or local format: starting with 03, 70, 71, 76, 78, 79, 81 (8 digits total)
-  const isCompleteNumber = cleanPhone.length >= 8 && (
+  // For Lebanon: valid Lebanese mobile number (per new utility)
+  // Else: (keep old fallback if needed for intl)
+  const isCompleteNumber = validLebanese || (
+    cleanPhone.length >= 8 &&
     // Full international format: +961 + 8 digits
     (cleanPhone.startsWith('961') && cleanPhone.length === 11) ||
-    // Local format: 8 digits starting with valid prefixes
-    (cleanPhone.length === 8 && /^(03|70|71|76|78|79|81)/.test(cleanPhone))
+    // For non-Lebanese: 8 digits or more (as fallback)
+    (cleanPhone.length === 8 && lebanesePrefixes.some(prefix => cleanPhone.startsWith(prefix)))
   );
-  
+
   return useQuery({
     queryKey: ['customers', 'search', phone],
     queryFn: () => isCompleteNumber ? searchCustomersByPhone(phone) : Promise.resolve([]),

@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { Input } from "./input";
 import { FlagIcon } from "./flag-icon";
+import { isValidLebaneseMobileNumber } from "@/utils/customerSearch";
 
 // Get supported countries from metadata
 const allCountries = Object.keys(flags.countries).map((code) => ({
@@ -89,14 +90,19 @@ export function PhoneInput({
     
     try {
       const parsed = parsePhoneNumber(value, selectedCountry);
-      
-      // Country-specific validations
-      if (selectedCountry === "LB" && parsed.nationalNumber.length !== 8) {
-        setError("Lebanese numbers must be 8 digits after +961");
-        if (onValidationChange) onValidationChange(false);
-        return;
+
+      // Lebanese phone validation improvements:
+      if (selectedCountry === "LB") {
+        // Confirm: Remove leading zero and country code, then match requirements
+        if (!isValidLebaneseMobileNumber(value)) {
+          setError(
+            "Must be a valid Lebanese mobile (03, 70, 71, 76, 78, 79, 81, 82) with 8 digits after country code or 0"
+          );
+          if (onValidationChange) onValidationChange(false);
+          return;
+        }
       }
-      
+
       const isValid = parsed.isValid();
       if (!isValid) {
         setError("Invalid phone number");

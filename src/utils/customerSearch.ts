@@ -1,4 +1,3 @@
-
 import { CustomerWithLocation } from "@/services/customers";
 
 // Normalize phone number: remove country code, spaces, special chars, leading zeros
@@ -18,6 +17,20 @@ export function fuzzyMatch(value: string, query: string): number {
   const cleanValue = value.normalize("NFD").replace(/[\u064B-\u0652\u0640]/g, '').toLowerCase();
   const cleanQuery = query.normalize("NFD").replace(/[\u064B-\u0652\u0640]/g, '').toLowerCase();
   return cleanValue.indexOf(cleanQuery);
+}
+
+// Checks if a phone string (with or without country code) is a valid Lebanese mobile number
+export function isValidLebaneseMobileNumber(phone: string): boolean {
+  // Normalize: remove spaces, plus, hyphens, parentheses, etc
+  let num = phone.replace(/[^0-9]/g, '');
+
+  // Remove country code if present
+  if (num.startsWith('961')) num = num.slice(3);
+  if (num.startsWith('0')) num = num.slice(1);
+
+  // Match any of the mobile prefixes (03, 70, 71, 76, 78, 79, 81, 82)
+  // and must be 8 digits
+  return /^(3|70|71|76|78|79|81|82)\d{6}$/.test(num);
 }
 
 // Advanced filter for customers
