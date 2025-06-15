@@ -22,6 +22,7 @@ import AddCustomerModal from "@/components/customers/AddCustomerModal";
 import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
 import { Filter } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader } from "@/components/ui/drawer";
+import { filterCustomers } from "@/utils/customerSearch";
 
 interface CustomerFormProps {
   customer: CustomerWithLocation;
@@ -189,18 +190,13 @@ const Customers: React.FC = () => {
   ) : [];
 
   // Filter customers
-  const filteredCustomers = customers.filter(customer => {
-    const matchesSearch = 
-      customer.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      customer.phone.includes(searchQuery) || 
-      (customer.city_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (customer.governorate_name || '').toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesGovernorate = governorateFilter === "all"
-      || (customer.governorate_name === governorateFilter);
-
-    return matchesSearch && matchesGovernorate;
-  });
+  const advancedFilteredCustomers = filterCustomers(
+    customers.filter(customer => {
+      // Still filter by governorate
+      return governorateFilter === "all" || (customer.governorate_name === governorateFilter);
+    }),
+    searchQuery
+  );
 
   const handleRowClick = (customer: CustomerWithLocation) => {
     setSelectedCustomerId(customer.id);
@@ -298,7 +294,7 @@ const Customers: React.FC = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
                   <input
                     type="text"
-                    placeholder="Search customers..."
+                    placeholder="Search customers by name, phone, or location..."
                     className="pl-9 h-10 w-full rounded-md border border-input px-3 py-2 text-sm ring-offset-background"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
@@ -356,13 +352,13 @@ const Customers: React.FC = () => {
             <div className="overflow-x-auto">
               {(isMobile || isTablet) ? (
                 <CustomersTableMobile
-                  customers={filteredCustomers}
+                  customers={advancedFilteredCustomers}
                   onCardClick={handleRowClick}
                   calculateCustomerStats={calculateCustomerStats}
                 />
               ) : (
                 // Existing desktop table
-                filteredCustomers.length === 0 ? (
+                advancedFilteredCustomers.length === 0 ? (
                   <div className="p-8 text-center">
                     <p className="text-gray-500">No customers found</p>
                   </div>
@@ -391,7 +387,7 @@ const Customers: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredCustomers.map(customer => {
+                      {advancedFilteredCustomers.map(customer => {
                         const stats = calculateCustomerStats(customer.id);
                         return (
                           <TableRow 
@@ -455,9 +451,9 @@ const Customers: React.FC = () => {
             
             <div className="bg-white border-t border-gray-200 px-6 py-4 flex justify-between items-center">
               <span className="text-sm text-gray-500">
-                Showing <span className="font-medium text-gray-700">1</span> to{" "}
-                <span className="font-medium text-gray-700">{filteredCustomers.length}</span> of{" "}
-                <span className="font-medium text-gray-700">{filteredCustomers.length}</span> customers
+                Showing <span className="font-medium text-gray-700">{advancedFilteredCustomers.length > 0 ? 1 : 0}</span> to{" "}
+                <span className="font-medium text-gray-700">{advancedFilteredCustomers.length}</span> of{" "}
+                <span className="font-medium text-gray-700">{advancedFilteredCustomers.length}</span> customers
               </span>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" disabled>Previous</Button>
