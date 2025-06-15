@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -36,7 +35,8 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
   onEditOrder,
   onDeleteOrder
 }) => {
-  // Removed all hover logic for selection cell display.
+  // ---- New local state for hovering ----
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const handleSelectAll = (checked: boolean) => {
     onOrderSelection(checked ? orders.map(order => order.id) : []);
@@ -143,6 +143,11 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
         <TableBody>
           {orders.map((order, index) => {
             const isRowSelected = selectedOrderIds.includes(order.id);
+            // Only show checkbox for this row if:
+            // - this row is hovered
+            // - OR it's selected
+            // - OR anySelected (i.e. once multi-selection has started)
+            const showCheckbox = hoveredIndex === index || isRowSelected || anySelected;
 
             return (
               <motion.tr
@@ -158,6 +163,8 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
                 transition={{ duration: 0.35, delay: index * 0.07, ease: [0.4, 0.0, 0.2, 1] }}
                 // No more onMouseEnter/onMouseLeave since hover no longer toggles checkbox visibility
                 onClick={() => onViewOrder(order)}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex((prev) => prev === index ? null : prev)}
               >
                 {/* Selection cell: always present, but checkbox only visible if anySelected */}
                 <TableCell
@@ -176,10 +183,10 @@ export const EnhancedOrdersTable: React.FC<EnhancedOrdersTableProps> = ({
                     onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
                     className={cn(
                       "data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E] rounded-md transition-opacity duration-300",
-                      anySelected ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                      showCheckbox ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
                     )}
-                    tabIndex={anySelected ? 0 : -1}
-                    aria-hidden={!anySelected}
+                    tabIndex={showCheckbox ? 0 : -1}
+                    aria-hidden={!showCheckbox}
                   />
                 </TableCell>
                 <TableCell className="font-semibold text-[#DB271E]">
