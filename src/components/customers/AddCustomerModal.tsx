@@ -100,6 +100,7 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
           onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
           placeholder="Enter customer's full name"
           required
+          className="text-base md:text-sm" // force 16px on mobile to prevent zoom
         />
       </div>
       <div>
@@ -111,6 +112,7 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
           onChange={val => setForm(f => ({ ...f, phone: val || "" }))}
           placeholder="03 123 456"
           required
+          inputClassName="text-base md:text-sm" // force 16px on mobile for input
         />
       </div>
       {/* Secondary Phone Option */}
@@ -126,6 +128,7 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
               defaultCountry="LB"
               onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
               placeholder="70 123 456"
+              inputClassName="text-base md:text-sm"
             />
           </div>
           <Button type="button" variant="ghost" className="mt-6 text-xs px-2" onClick={() => setShowSecondaryPhone(false)}>
@@ -159,6 +162,7 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
           value={form.address}
           onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
           placeholder="Building, street, landmark ..."
+          className="text-base md:text-sm"
         />
       </div>
       <div className="flex items-center mt-1">
