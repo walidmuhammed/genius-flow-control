@@ -16,6 +16,8 @@ import { useOrders } from "@/hooks/use-orders";
 import { toast } from "sonner";
 import CustomerDetailsModal from "@/components/customers/CustomerDetailsModal";
 import CustomerEditForm from "@/components/customers/CustomerEditForm";
+import { useScreenSize } from "@/hooks/useScreenSize";
+import CustomersTableMobile from "@/components/customers/CustomersTableMobile";
 
 interface CustomerFormProps {
   customer: CustomerWithLocation;
@@ -254,7 +256,7 @@ const Customers: React.FC = () => {
   };
 
   // Responsive edit mode check (for conditional rendering)
-  const isMobile = typeof window !== "undefined" ? window.innerWidth < 768 : false;
+  const { isMobile, isTablet } = useScreenSize();
 
   return (
     <MainLayout>
@@ -305,97 +307,102 @@ const Customers: React.FC = () => {
             </div>
 
             <div className="overflow-x-auto">
-              {isLoadingCustomers ? (
-                <div className="flex justify-center items-center p-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-                </div>
-              ) : filteredCustomers.length === 0 ? (
-                <div className="p-8 text-center">
-                  <p className="text-gray-500">No customers found</p>
-                </div>
+              {(isMobile || isTablet) ? (
+                <CustomersTableMobile
+                  customers={filteredCustomers}
+                  onCardClick={handleRowClick}
+                  calculateCustomerStats={calculateCustomerStats}
+                />
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50 hover:bg-gray-50">
-                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                        Customer Name
-                      </TableHead>
-                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                        Phone Number
-                      </TableHead>
-                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                        Location
-                      </TableHead>
-                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider text-center">
-                        Orders
-                      </TableHead>
-                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider text-right">
-                        Total Value
-                      </TableHead>
-                      <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
-                        Last Order Date
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredCustomers.map(customer => {
-                      const stats = calculateCustomerStats(customer.id);
-                      return (
-                        <TableRow 
-                          key={customer.id} 
-                          className="hover:bg-gray-50 transition-colors cursor-pointer" 
-                          onClick={() => handleRowClick(customer)}
-                        >
-                          <TableCell className="font-medium">
-                            {customer.name}
-                          </TableCell>
-                          <TableCell>
-                            {customer.phone}
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              {customer.governorate_name && (
-                                <div className="font-medium text-gray-900">{customer.governorate_name}</div>
+                // Existing desktop table
+                filteredCustomers.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <p className="text-gray-500">No customers found</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50 hover:bg-gray-50">
+                        <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
+                          Customer Name
+                        </TableHead>
+                        <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
+                          Phone Number
+                        </TableHead>
+                        <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
+                          Location
+                        </TableHead>
+                        <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider text-center">
+                          Orders
+                        </TableHead>
+                        <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider text-right">
+                          Total Value
+                        </TableHead>
+                        <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">
+                          Last Order Date
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredCustomers.map(customer => {
+                        const stats = calculateCustomerStats(customer.id);
+                        return (
+                          <TableRow 
+                            key={customer.id} 
+                            className="hover:bg-gray-50 transition-colors cursor-pointer" 
+                            onClick={() => handleRowClick(customer)}
+                          >
+                            <TableCell className="font-medium">
+                              {customer.name}
+                            </TableCell>
+                            <TableCell>
+                              {customer.phone}
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                {customer.governorate_name && (
+                                  <div className="font-medium text-gray-900">{customer.governorate_name}</div>
+                                )}
+                                {customer.city_name && (
+                                  <div className="text-xs text-gray-500 mt-0.5">{customer.city_name}</div>
+                                )}
+                                {!customer.governorate_name && !customer.city_name && (
+                                  <div className="text-gray-500">No location</div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {stats.orderCount}
+                            </TableCell>
+                            <TableCell className="text-right font-medium">
+                              {stats.totalValueUSD > 0 ? (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger className="cursor-help">
+                                      <span>${stats.totalValueUSD.toFixed(2)}</span>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="p-2">
+                                      <div className="text-xs">
+                                        <div className="font-semibold">Total Value:</div>
+                                        <div>${stats.totalValueUSD.toFixed(2)} USD</div>
+                                        {stats.totalValueLBP !== null && <div>{stats.totalValueLBP.toLocaleString()} LBP</div>}
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              ) : (
+                                <span>$0.00</span>
                               )}
-                              {customer.city_name && (
-                                <div className="text-xs text-gray-500 mt-0.5">{customer.city_name}</div>
-                              )}
-                              {!customer.governorate_name && !customer.city_name && (
-                                <div className="text-gray-500">No location</div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {stats.orderCount}
-                          </TableCell>
-                          <TableCell className="text-right font-medium">
-                            {stats.totalValueUSD > 0 ? (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger className="cursor-help">
-                                    <span>${stats.totalValueUSD.toFixed(2)}</span>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="p-2">
-                                    <div className="text-xs">
-                                      <div className="font-semibold">Total Value:</div>
-                                      <div>${stats.totalValueUSD.toFixed(2)} USD</div>
-                                      {stats.totalValueLBP !== null && <div>{stats.totalValueLBP.toLocaleString()} LBP</div>}
-                                    </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            ) : (
-                              <span>$0.00</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-gray-700">{stats.lastOrderDate}</span>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-gray-700">{stats.lastOrderDate}</span>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                )
               )}
             </div>
             
