@@ -23,10 +23,10 @@ const AreaSelector: React.FC<AreaSelectorProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [activeGovernorate, setActiveGovernorate] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const { data: governorates, isLoading: governoratesLoading, error: governoratesError } = useGovernorates();
   const { data: cities, isLoading: citiesLoading, error: citiesError } = useCitiesByGovernorate(activeGovernorate || undefined);
-  
+
   // Lebanese governorates to show
   const lebanonGovernorates = [
     "Beirut", 
@@ -35,28 +35,29 @@ const AreaSelector: React.FC<AreaSelectorProps> = ({
     "Akkar", 
     "Beqaa", 
     "Baalbek-Hermel", 
-    "South Lebanon"
+    "South Lebanon",
+    "Nabatieh" // <-- Newly added
   ];
-  
+
   useEffect(() => {
     if (governoratesError) {
       toast.error("Failed to load governorates");
       console.error(governoratesError);
     }
   }, [governoratesError]);
-  
+
   useEffect(() => {
     if (citiesError) {
       toast.error("Failed to load cities");
       console.error(citiesError);
     }
   }, [citiesError]);
-  
+
   const handleSelectArea = (governorate: string, area: string, governorateId?: string, areaId?: string) => {
     onAreaSelected(governorate, area, governorateId, areaId);
     setIsOpen(false);
   };
-  
+
   const filteredGovernorates = searchQuery 
     ? governorates?.filter(g => 
         g.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
@@ -67,7 +68,7 @@ const AreaSelector: React.FC<AreaSelectorProps> = ({
   const filteredCities = searchQuery && cities
     ? cities.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     : cities || [];
-  
+
   return (
     <>
       <div 
