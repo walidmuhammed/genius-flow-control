@@ -50,7 +50,7 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
                 </span>
                 <span className="font-semibold text-base truncate">{customer.name}</span>
               </div>
-              {/* Order count in blue circle */}
+              {/* Order count in correct blue circle */}
               <span className="ml-2 flex items-center">
                 <span
                   className="flex items-center justify-center h-7 min-w-[32px] px-1 rounded-full"

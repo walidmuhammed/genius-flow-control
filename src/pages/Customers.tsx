@@ -18,6 +18,7 @@ import CustomerDetailsModal from "@/components/customers/CustomerDetailsModal";
 import CustomerEditForm from "@/components/customers/CustomerEditForm";
 import { useScreenSize } from "@/hooks/useScreenSize";
 import CustomersTableMobile from "@/components/customers/CustomersTableMobile";
+import AddCustomerModal from "@/components/customers/AddCustomerModal";
 
 interface CustomerFormProps {
   customer: CustomerWithLocation;
@@ -170,6 +171,7 @@ const Customers: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [governorateFilter, setGovernorateFilter] = useState<string>("all");
   const [isEditing, setIsEditing] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Fetch data
   const { data: customers = [], isLoading: isLoadingCustomers, error: customersError } = useCustomers();
@@ -254,9 +256,9 @@ const Customers: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Redesigned Header */}
-        <div className="flex flex-col gap-2 pb-3 border-b border-gray-100 mb-1">
+        <div className="flex flex-col gap-2 pb-3 border-b border-gray-100 mb-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-snug">
@@ -266,7 +268,10 @@ const Customers: React.FC = () => {
                 View and manage your customer relationships
               </p>
             </div>
-            <Button className="bg-[#dc291e] w-full sm:w-auto mt-2 sm:mt-0">
+            <Button
+              className="bg-[#dc291e] w-full sm:w-auto mt-2 sm:mt-0"
+              onClick={() => setIsAddModalOpen(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Customer
             </Button>
@@ -601,6 +606,12 @@ const Customers: React.FC = () => {
           </div>
         )}
       </CustomerDetailsModal>
+
+      {/* Add Customer Modal */}
+      <AddCustomerModal
+        open={isAddModalOpen}
+        onOpenChange={setIsAddModalOpen}
+      />
     </MainLayout>
   );
 };
