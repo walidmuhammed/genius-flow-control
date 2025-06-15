@@ -28,18 +28,19 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-5 sm:grid-cols-2">
       {customers.map((customer) => {
         const stats = calculateCustomerStats(customer.id);
+
         return (
           <button
             key={customer.id}
-            className="w-full text-left border rounded-lg bg-white px-4 py-4 flex flex-col gap-3 focus:outline-none hover:shadow-sm transition group"
+            className="w-full text-left rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2 focus:outline-none hover:border-[#db271e] transition"
             onClick={() => onCardClick(customer)}
             tabIndex={0}
             aria-label={`View customer ${customer.name}`}
             role="button"
-            style={{ boxShadow: 'none' }}
+            style={{ background: "transparent" }} // background is transparent
           >
             {/* Name & Phone Row */}
             <div className="flex items-center gap-3">
@@ -63,37 +64,37 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
             </div>
 
             {/* Divider */}
-            <div className="border-t border-gray-100 my-1" />
+            <div className="border-t border-gray-100 my-2" />
 
-            {/* Stats Row (Orders + Money) */}
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <Hash size={16} className="text-blue-500" />
-                <span className="font-medium text-gray-900">{stats.orderCount}</span>
-                <span className="text-xs text-gray-500 ml-1">Orders</span>
-              </div>
-              <div className="flex items-center gap-2 mt-1">
+            {/* Money row (first line) */}
+            <div className="flex items-center gap-4 text-base font-medium text-gray-900 ml-1">
+              {/* USD always shown */}
+              <div className="flex items-center gap-1">
                 <DollarSign size={16} className="text-emerald-500" />
-                <span className="font-medium text-gray-900">
-                  ${stats.totalValueUSD.toFixed(2)}
-                </span>
+                <span>${stats.totalValueUSD.toFixed(2)}</span>
                 <span className="text-xs text-gray-500 ml-1">USD</span>
               </div>
-              {/* LBP in a separate line */}
+              {/* LBP beside if it exists */}
               {stats.totalValueLBP !== null && (
-                <div className="flex items-center gap-2 mt-1 ml-[28px]">
-                  <DollarSign size={16} className="text-yellow-600 opacity-80" />
-                  <span className="font-medium text-gray-900">{stats.totalValueLBP.toLocaleString()}</span>
+                <div className="flex items-center gap-1">
+                  <DollarSign size={16} className="text-yellow-600 opacity-90" />
+                  <span>{stats.totalValueLBP.toLocaleString()}</span>
                   <span className="text-xs text-gray-500 ml-1">LBP</span>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center gap-2 mt-2 ml-1 text-xs text-gray-500">
-              <Calendar size={16} className="text-gray-400" />
-              <span>
-                {stats.lastOrderDate}
-              </span>
+            {/* Stats row (second line) */}
+            <div className="flex items-center gap-6 text-sm text-gray-700 ml-1 mt-1">
+              <div className="flex items-center gap-1">
+                <Hash size={15} className="text-blue-500" />
+                <span>{stats.orderCount}</span>
+                <span className="text-xs text-gray-500 ml-1">Orders</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Calendar size={15} className="text-gray-400" />
+                <span className="text-xs text-gray-500">{stats.lastOrderDate}</span>
+              </div>
             </div>
           </button>
         );
@@ -103,4 +104,3 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
 };
 
 export default CustomersTableMobile;
-
