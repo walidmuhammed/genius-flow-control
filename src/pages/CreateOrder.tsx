@@ -480,52 +480,16 @@ const CreateOrder = () => {
                       <Label htmlFor="phone" className={cn("text-sm font-medium", errors.phone ? "text-red-600" : "text-gray-700")}>
                         Phone Number
                       </Label>
-                      <PhoneInput
-                        id="phone"
-                        value={phone}
-                        onChange={handlePhoneChange}
-                        defaultCountry="LB"
-                        onValidationChange={setPhoneValid}
-                        placeholder="Enter phone number"
-                        className={cn("h-10", errors.phone ? "border-red-300" : "border-gray-300")}
-                      />
-                      {errors.phone && (
-                        <p className="text-xs text-red-600 transition-all font-medium mb-2">
-                          {errors.phone}
-                        </p>
-                      )}
-                      {searchingCustomers && (
-                        <p className="text-xs text-blue-600 flex items-center gap-1">
+                      <PhoneInput id="phone" value={phone} onChange={handlePhoneChange} defaultCountry="LB" onValidationChange={setPhoneValid} placeholder="Enter phone number" className={cn("h-10", errors.phone ? "border-red-300" : "border-gray-300")} />
+                      {errors.phone && <p className="text-xs text-red-600">{errors.phone}</p>}
+                      {searchingCustomers && <p className="text-xs text-blue-600 flex items-center gap-1">
                           <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                           Searching...
-                        </p>
-                      )}
-                      {existingCustomer && (
-                        <p className="text-xs text-green-600 flex items-center gap-1">
+                        </p>}
+                      {existingCustomer && <p className="text-xs text-green-600 flex items-center gap-1">
                           <Check className="h-3 w-3" />
                           Customer found!
-                        </p>
-                      )}
-                      {/* Animate "Add secondary phone" when error appears */}
-                      <div
-                        className={cn(
-                          "transition-all duration-300",
-                          errors.phone ? "mt-6" : "mt-2"
-                        )}
-                      >
-                        {!isSecondaryPhone && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsSecondaryPhone(true)}
-                            className="text-xs h-8 mx-0 py-0 my-0"
-                          >
-                            <Plus className="h-3 w-3 mr-1" />
-                            Add secondary phone
-                          </Button>
-                        )}
-                      </div>
+                        </p>}
                     </div>
                     
                     <div className="space-y-2">
@@ -533,63 +497,53 @@ const CreateOrder = () => {
                         Full Name
                       </Label>
                       <Input id="name" placeholder="Enter customer full name" value={name} onChange={e => {
-                        setName(e.target.value);
-                        if (errors.name) {
-                          setErrors(prev => ({
-                            ...prev,
-                            name: undefined
-                          }));
-                        }
-                      }} className={cn("h-10", errors.name ? "border-red-300" : "border-gray-300")} />
+                      setName(e.target.value);
+                      if (errors.name) {
+                        setErrors(prev => ({
+                          ...prev,
+                          name: undefined
+                        }));
+                      }
+                    }} className={cn("h-10", errors.name ? "border-red-300" : "border-gray-300")} />
                       {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
                     </div>
                   </div>
                   
                   {/* Secondary Phone */}
-                  {isSecondaryPhone && (
-                    <div className={cn(
-                      "space-y-2 transition-all duration-300",
-                      errors.secondaryPhone ? "mt-6" : "mt-2"
-                    )}>
+                  {!isSecondaryPhone && <Button type="button" variant="outline" size="sm" onClick={() => setIsSecondaryPhone(true)} className="text-xs h-8 mx-0 py-0 my-0">
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add secondary phone
+                    </Button>}
+
+                  {isSecondaryPhone && <div className="space-y-2">
                       <div className="flex justify-between items-center">
                         <Label htmlFor="secondary-phone" className={cn("text-sm font-medium", errors.secondaryPhone ? "text-red-600" : "text-gray-700")}>
                           Secondary Phone
                         </Label>
                         <Button variant="ghost" size="sm" onClick={() => {
-                          setIsSecondaryPhone(false);
-                          setSecondaryPhone('');
-                          if (errors.secondaryPhone) {
-                            setErrors(prev => ({
-                              ...prev,
-                              secondaryPhone: undefined
-                            }));
-                          }
-                        }} className="text-xs h-6 px-2">
+                      setIsSecondaryPhone(false);
+                      setSecondaryPhone('');
+                      if (errors.secondaryPhone) {
+                        setErrors(prev => ({
+                          ...prev,
+                          secondaryPhone: undefined
+                        }));
+                      }
+                    }} className="text-xs h-6 px-2">
                           Remove
                         </Button>
                       </div>
-                      <PhoneInput
-                        id="secondary-phone"
-                        value={secondaryPhone}
-                        onChange={value => {
-                          setSecondaryPhone(value);
-                          if (errors.secondaryPhone) {
-                            setErrors(prev => ({
-                              ...prev,
-                              secondaryPhone: undefined
-                            }));
-                          }
-                        }}
-                        defaultCountry="LB"
-                        onValidationChange={setSecondaryPhoneValid}
-                        placeholder="Enter secondary phone"
-                        className={cn("h-10", errors.secondaryPhone ? "border-red-300" : "border-gray-300")}
-                      />
-                      {errors.secondaryPhone && (
-                        <p className="text-xs text-red-600">{errors.secondaryPhone}</p>
-                      )}
-                    </div>
-                  )}
+                      <PhoneInput id="secondary-phone" value={secondaryPhone} onChange={value => {
+                    setSecondaryPhone(value);
+                    if (errors.secondaryPhone) {
+                      setErrors(prev => ({
+                        ...prev,
+                        secondaryPhone: undefined
+                      }));
+                    }
+                  }} defaultCountry="LB" onValidationChange={setSecondaryPhoneValid} placeholder="Enter secondary phone" className={cn("h-10", errors.secondaryPhone ? "border-red-300" : "border-gray-300")} />
+                      {errors.secondaryPhone && <p className="text-xs text-red-600">{errors.secondaryPhone}</p>}
+                    </div>}
                 </CardContent>
               </Card>
 
