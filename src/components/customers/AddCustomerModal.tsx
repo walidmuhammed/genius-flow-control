@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -9,6 +10,7 @@ import { AreaSelector } from "@/components/orders/AreaSelector";
 import { useScreenSize } from "@/hooks/useScreenSize";
 import { useCreateCustomer } from "@/hooks/use-customers";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { Plus, Trash2 } from "lucide-react";
 
 interface AddCustomerModalProps {
   open: boolean;
@@ -35,7 +37,6 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
 
   const { mutate: createCustomer } = useCreateCustomer();
 
-  // ADD: ref for the mobile form element
   const formRef = useRef<HTMLFormElement | null>(null);
 
   const resetForm = () => {
@@ -93,35 +94,19 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
     );
   }
 
-  // ========== Apple-style swipe/drag handle for modal =============
-  // We'll use a bigger, centered, touch-friendly handle bar always visible at the top
-  const DrawerHandleBar = () => (
-    <div className="w-full flex justify-center items-center py-2">
-      <div className="w-12 h-2 rounded-full bg-gray-300" style={{ opacity: 0.9 }} />
-    </div>
-  );
-
-  // ========== FIX: Remove justify-between & add grouped spacing =============
-  // We'll group fields, avoid justify-between, space sections with gaps and dividers on mobile
-
-  // ========== FIX: Clean footer sticky logic/height padding ============
-  // Properly stick the footer, padding bottom so last input is never hidden
-
+  // Modernize sticky mobile footer
   const mobileStickyFooter = (
     <div
-      className="fixed left-0 right-0 bottom-0 z-40 bg-white border-t px-4 py-3 flex items-center"
+      className="fixed left-0 right-0 bottom-0 z-40 bg-white/95 border-t border-gray-200 px-4 py-4 flex items-center shadow-lg"
       style={{
-        paddingBottom: "max(env(safe-area-inset-bottom, 12px), 12px)",
-        boxShadow: "0px -2px 14px 0px rgba(0,0,0,0.06)"
+        paddingBottom: "max(env(safe-area-inset-bottom, 18px), 18px)"
       }}
     >
       <Button
         type="button"
-        className="w-full bg-[#dc291e] text-white text-base font-semibold py-3 rounded-xl"
+        className="w-full bg-[#dc291e] text-base font-semibold py-3 rounded-xl shadow-sm transition shadow-[#dc291e]/10"
         disabled={loading}
-        style={{ height: 50 }}
         tabIndex={0}
-        // FIX: connect click to form submit
         onClick={() => {
           if (formRef.current) {
             formRef.current.requestSubmit();
@@ -133,20 +118,86 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
     </div>
   );
 
-  // ========== FIX: Refined Mobile Form Layout ==============
-  // Remove justified flex, group form fields, space with gaps
+  // Improved styles: rounded soft section, subtle modern divider, vertical space
+
+  const fieldSection = (children: React.ReactNode) => (
+    <div className="rounded-xl bg-gray-50/85 border border-gray-100 px-4 py-4 sm:px-6 mb-2">{children}</div>
+  );
+
+  // "+ Add Secondary Phone" modern button
+  const AddSecondaryPhoneButton = (
+    <Button
+      type="button"
+      variant="secondary"
+      className="w-full sm:w-auto mt-1 bg-white border border-gray-200 text-[#dc291e] flex gap-2 items-center justify-center font-medium hover:bg-gray-100 transition"
+      onClick={() => setShowSecondaryPhone(true)}
+      tabIndex={0}
+    >
+      <Plus className="h-4 w-4" />
+      Add Secondary Phone
+    </Button>
+  );
+
+  // Remove button with trash icon, compact
+  const RemoveSecondaryPhoneButton = (
+    <Button
+      type="button"
+      variant="ghost"
+      className="ml-2 mt-5 px-2 py-1 text-gray-600 flex gap-1 hover:text-red-600 rounded-lg"
+      onClick={() => setShowSecondaryPhone(false)}
+      tabIndex={0}
+    >
+      <Trash2 className="h-4 w-4" />
+      Remove
+    </Button>
+  );
+
+  // Modernized Checkbox styling
+  const ModernCheckbox: React.FC<{
+    checked: boolean;
+    onCheckedChange: (v: boolean) => void;
+    id?: string;
+    label?: string;
+  }> = ({ checked, onCheckedChange, id, label }) => (
+    <label className="flex items-center cursor-pointer gap-2 select-none">
+      <span
+        className={`
+          relative inline-flex h-5 w-10 flex-shrink-0 rounded-full transition-colors bg-gray-200
+          ${checked ? "bg-[#dc291e]/70" : ""}
+        `}
+      >
+        <span
+          className={`
+            inline-block h-5 w-5 bg-white rounded-full shadow transition-transform duration-200
+            ${checked ? "translate-x-5" : ""}
+          `}
+        />
+        <input
+          type="checkbox"
+          className="appearance-none w-0 h-0 absolute"
+          checked={checked}
+          id={id}
+          onChange={e => onCheckedChange(e.target.checked)}
+        />
+      </span>
+      {label && (
+        <span className="text-gray-800 text-[15px]">{label}</span>
+      )}
+    </label>
+  );
 
   const mobileFormFields = (
     <form
-      ref={formRef} // CONNECT ref here
+      ref={formRef}
       onSubmit={handleSubmit}
       className="space-y-5 mt-1"
       style={{ paddingBottom: 138, minHeight: "100%" }}
       autoComplete="off"
     >
-      {/* Full Name */}
+      <h2 className="text-[1.42rem] font-bold text-gray-900 mb-2 tracking-tight">Add Customer</h2>
+
       <div>
-        <label htmlFor="customer-name" className="block text-[15px] font-medium text-gray-800 mb-1">
+        <label htmlFor="customer-name" className="block text-[15px] text-gray-700 font-semibold mb-2">
           Full Name
         </label>
         <Input
@@ -156,14 +207,14 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
           placeholder="Enter customer's full name"
           required
           autoComplete="off"
-          className="text-base md:text-sm"
+          className="text-base md:text-sm bg-white"
         />
       </div>
 
-      {/* Phone(s) - grouped for visual clarity */}
+      {/* Phone (and Secondary Phone) */}
       <div className="space-y-2">
         <div>
-          <label htmlFor="customer-phone" className="block text-[15px] font-medium text-gray-800 mb-1">
+          <label htmlFor="customer-phone" className="block text-[15px] text-gray-700 font-semibold mb-2">
             Phone Number
           </label>
           <PhoneInput
@@ -173,14 +224,14 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
             onChange={val => setForm(f => ({ ...f, phone: val || "" }))}
             placeholder="03 123 456"
             required
-            inputClassName="text-base md:text-sm"
+            inputClassName="text-base md:text-sm bg-white"
             autoComplete="off"
           />
         </div>
         {showSecondaryPhone ? (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-start gap-2 mt-2">
             <div className="flex-1">
-              <label htmlFor="customer-secondary-phone" className="block text-[15px] font-medium text-gray-800 mb-1">
+              <label htmlFor="customer-secondary-phone" className="block text-[15px] text-gray-700 font-medium mb-1">
                 Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
               </label>
               <PhoneInput
@@ -189,80 +240,59 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
                 defaultCountry="LB"
                 onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
                 placeholder="70 123 456"
-                inputClassName="text-base md:text-sm"
+                inputClassName="text-base md:text-sm bg-white"
                 autoComplete="off"
               />
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              className="mt-6 text-xs px-2"
-              onClick={() => setShowSecondaryPhone(false)}
-              tabIndex={0}
-            >
-              Remove
-            </Button>
+            {RemoveSecondaryPhoneButton}
           </div>
         ) : (
-          <Button
-            type="button"
-            variant="ghost"
-            className="pl-0 text-[#db271e] underline text-sm hover:bg-transparent"
-            onClick={() => setShowSecondaryPhone(true)}
-            tabIndex={0}
-          >
-            + Add Secondary Phone
-          </Button>
+          <div className="mt-1">{AddSecondaryPhoneButton}</div>
         )}
       </div>
 
-      {/* Divider */}
-      <div className="border-t my-4" />
+      {/* Sectioned Area/Address */}
+      {fieldSection(
+        <>
+          <div className="mb-4">
+            <label className="block text-[15px] text-gray-700 font-semibold mb-2">
+              Area (Governorate & City)
+            </label>
+            <AreaSelector
+              selectedGovernorate={form.governorate}
+              selectedArea={form.city}
+              onAreaSelected={handleAreaSelected}
+            />
+          </div>
 
-      {/* Area Selector - visually grouped */}
-      <div>
-        <label className="block text-[15px] font-medium text-gray-800 mb-1">
-          Area (Governorate & City)
-        </label>
-        <AreaSelector
-          selectedGovernorate={form.governorate}
-          selectedArea={form.city}
-          onAreaSelected={handleAreaSelected}
-        />
-      </div>
+          <div>
+            <label htmlFor="customer-address" className="block text-[15px] text-gray-700 font-semibold mb-2">
+              Address Details
+            </label>
+            <Input
+              id="customer-address"
+              value={form.address}
+              onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+              placeholder="Building, street, landmark ..."
+              className="text-base md:text-sm bg-white"
+              autoComplete="off"
+            />
+          </div>
+        </>
+      )}
 
-      {/* Address */}
-      <div>
-        <label htmlFor="customer-address" className="block text-[15px] font-medium text-gray-800 mb-1">
-          Address Details
-        </label>
-        <Input
-          id="customer-address"
-          value={form.address}
-          onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-          placeholder="Building, street, landmark ..."
-          className="text-base md:text-sm"
-          autoComplete="off"
-        />
-      </div>
-
-      {/* Work Checkbox - visually spaced, no negative margin */}
-      <div className="flex items-center pt-1">
-        <Checkbox
-          id="is-work-address"
+      {/* Modernized work address switch/checkbox */}
+      <div className="pt-1">
+        <ModernCheckbox
           checked={form.is_work_address}
           onCheckedChange={v => setForm(f => ({ ...f, is_work_address: !!v }))}
-          className="mr-2"
+          id="is-work-address"
+          label="This is a work/business address"
         />
-        <label htmlFor="is-work-address" className="text-gray-800 cursor-pointer">
-          This is a work/business address
-        </label>
       </div>
     </form>
   );
 
-
-  // ========== Mobile Drawer Render ==============
   if (isMobile) {
     return (
       <Drawer
@@ -271,16 +301,18 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
         shouldScaleBackground
       >
         <DrawerContent className="rounded-t-2xl p-0 bg-background flex flex-col h-dvh max-h-none overflow-hidden shadow-xl">
-          <DrawerHandleBar />
+          <div className="w-full flex justify-center items-center py-2">
+            <div className="w-12 h-2 rounded-full bg-gray-300 opacity-90" />
+          </div>
           <DrawerHeader className="px-6 pb-0 pt-0">
-            <DrawerTitle className="text-xl font-semibold">Add Customer</DrawerTitle>
+            <DrawerTitle className="text-xl font-semibold"></DrawerTitle>
           </DrawerHeader>
           <div
             className="flex-1 flex flex-col overflow-y-auto px-4 pt-2 min-h-0"
             style={{
               minHeight: "0px",
               maxHeight: "calc(100dvh - 48px)",
-              marginBottom: 0 // prevent unintentional scroll gaps
+              marginBottom: 0
             }}
           >
             {mobileFormFields}
@@ -291,27 +323,30 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
     );
   }
 
+  // Desktop version
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) resetForm(); onOpenChange(v); }}>
-      <DialogContent className="sm:max-w-[470px] w-full rounded-xl p-0">
-        <DialogHeader className="px-6 pt-6 pb-1">
-          <DialogTitle className="text-xl font-semibold">Add Customer</DialogTitle>
+      <DialogContent className="sm:max-w-[440px] w-full rounded-xl p-0 overflow-hidden">
+        <DialogHeader className="px-6 pt-8 pb-2 border-b bg-white">
+          <DialogTitle className="text-2xl font-bold tracking-tight text-gray-900">
+            Add Customer
+          </DialogTitle>
         </DialogHeader>
-        <div className="p-6 pt-1">
-          <form onSubmit={handleSubmit} className="space-y-5 mt-1">
+        <div className="p-6 pt-2">
+          <form onSubmit={handleSubmit} className="space-y-7 mt-1">
             <div>
-              <label htmlFor="customer-name" className="block text-[15px] font-medium text-gray-800 mb-1">Full Name</label>
+              <label htmlFor="customer-name" className="block text-[15px] text-gray-700 font-semibold mb-2">Full Name</label>
               <Input
                 id="customer-name"
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 placeholder="Enter customer's full name"
                 required
-                className="text-base md:text-sm" // force 16px on mobile to prevent zoom
+                className="text-base md:text-sm bg-white"
               />
             </div>
             <div>
-              <label htmlFor="customer-phone" className="block text-[15px] font-medium text-gray-800 mb-1">Phone Number</label>
+              <label htmlFor="customer-phone" className="block text-[15px] text-gray-700 font-semibold mb-2">Phone Number</label>
               <PhoneInput
                 id="customer-phone"
                 value={form.phone}
@@ -319,14 +354,14 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
                 onChange={val => setForm(f => ({ ...f, phone: val || "" }))}
                 placeholder="03 123 456"
                 required
-                inputClassName="text-base md:text-sm" // force 16px on mobile for input
+                inputClassName="text-base md:text-sm bg-white"
               />
             </div>
             {/* Secondary Phone Option */}
             {showSecondaryPhone ? (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-start gap-2 mt-2">
                 <div className="flex-1">
-                  <label htmlFor="customer-secondary-phone" className="block text-[15px] font-medium text-gray-800 mb-1">
+                  <label htmlFor="customer-secondary-phone" className="block text-[15px] text-gray-700 font-medium mb-1">
                     Secondary Phone <span className="ml-1 text-xs text-gray-400">(Optional)</span>
                   </label>
                   <PhoneInput
@@ -335,56 +370,49 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
                     defaultCountry="LB"
                     onChange={val => setForm(f => ({ ...f, secondary_phone: val || "" }))}
                     placeholder="70 123 456"
-                    inputClassName="text-base md:text-sm"
+                    inputClassName="text-base md:text-sm bg-white"
                   />
                 </div>
-                <Button type="button" variant="ghost" className="mt-6 text-xs px-2" onClick={() => setShowSecondaryPhone(false)}>
-                  Remove
-                </Button>
+                {RemoveSecondaryPhoneButton}
               </div>
             ) : (
-              <Button
-                type="button"
-                variant="ghost"
-                className="pl-0 text-[#db271e] underline text-sm hover:bg-transparent"
-                onClick={() => setShowSecondaryPhone(true)}
-              >
-                + Add Secondary Phone
-              </Button>
+              <div className="mt-1">{AddSecondaryPhoneButton}</div>
             )}
-            {/* Area Selector */}
-            <div>
-              <label className="block text-[15px] font-medium text-gray-800 mb-1">Area (Governorate & City)</label>
-              <AreaSelector
-                selectedGovernorate={form.governorate}
-                selectedArea={form.city}
-                onAreaSelected={handleAreaSelected}
-              />
-            </div>
-            {/* Address Details */}
-            <div>
-              <label htmlFor="customer-address" className="block text-[15px] font-medium text-gray-800 mb-1">Address Details</label>
-              <Input
-                id="customer-address"
-                value={form.address}
-                onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                placeholder="Building, street, landmark ..."
-                className="text-base md:text-sm"
-              />
-            </div>
-            <div className="flex items-center mt-1">
-              <Checkbox
-                id="is-work-address"
+            {/* Area selector & address are grouped in a soft panel */}
+            {fieldSection(
+              <>
+                <div className="mb-4">
+                  <label className="block text-[15px] text-gray-700 font-semibold mb-2">Area (Governorate & City)</label>
+                  <AreaSelector
+                    selectedGovernorate={form.governorate}
+                    selectedArea={form.city}
+                    onAreaSelected={handleAreaSelected}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="customer-address" className="block text-[15px] text-gray-700 font-semibold mb-2">
+                    Address Details
+                  </label>
+                  <Input
+                    id="customer-address"
+                    value={form.address}
+                    onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
+                    placeholder="Building, street, landmark ..."
+                    className="text-base md:text-sm bg-white"
+                  />
+                </div>
+              </>
+            )}
+            <div className="pt-1">
+              <ModernCheckbox
                 checked={form.is_work_address}
                 onCheckedChange={v => setForm(f => ({ ...f, is_work_address: !!v }))}
-                className="mr-2"
+                id="is-work-address"
+                label="This is a work/business address"
               />
-              <label htmlFor="is-work-address" className="text-gray-800 cursor-pointer">
-                This is a work/business address
-              </label>
             </div>
-            <div className="flex mt-4">
-              <Button type="submit" className="w-full bg-[#dc291e] text-white" disabled={loading}>
+            <div className="flex mt-6">
+              <Button type="submit" className="w-full bg-[#dc291e] text-base font-semibold py-3 rounded-xl shadow transition shadow-[#dc291e]/10" disabled={loading}>
                 {loading ? "Adding..." : "Add Customer"}
               </Button>
             </div>
