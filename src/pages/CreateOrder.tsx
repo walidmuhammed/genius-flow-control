@@ -489,7 +489,11 @@ const CreateOrder = () => {
                         placeholder="Enter phone number"
                         className={cn("h-10", errors.phone ? "border-red-300" : "border-gray-300")}
                       />
-                      {errors.phone && <p className="text-xs text-red-600">{errors.phone}</p>}
+                      {errors.phone && (
+                        <p className="text-xs text-red-600 transition-all font-medium mb-2">
+                          {errors.phone}
+                        </p>
+                      )}
                       {searchingCustomers && (
                         <p className="text-xs text-blue-600 flex items-center gap-1">
                           <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -503,25 +507,25 @@ const CreateOrder = () => {
                         </p>
                       )}
                       {/* Animate "Add secondary phone" when error appears */}
-+                     <div
-+                       className={cn(
-+                         "transition-all duration-300",
-+                         errors.phone ? "mt-6" : "mt-2"
-+                       )}
-+                     >
-+                       {!isSecondaryPhone && (
-+                         <Button
-+                           type="button"
-+                           variant="outline"
-+                           size="sm"
-+                           onClick={() => setIsSecondaryPhone(true)}
-+                           className="text-xs h-8 mx-0 py-0 my-0"
-+                         >
-+                           <Plus className="h-3 w-3 mr-1" />
-+                           Add secondary phone
-+                         </Button>
-+                       )}
-+                     </div>
+                      <div
+                        className={cn(
+                          "transition-all duration-300",
+                          errors.phone ? "mt-6" : "mt-2"
+                        )}
+                      >
+                        {!isSecondaryPhone && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsSecondaryPhone(true)}
+                            className="text-xs h-8 mx-0 py-0 my-0"
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add secondary phone
+                          </Button>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="space-y-2">
@@ -529,14 +533,14 @@ const CreateOrder = () => {
                         Full Name
                       </Label>
                       <Input id="name" placeholder="Enter customer full name" value={name} onChange={e => {
-                      setName(e.target.value);
-                      if (errors.name) {
-                        setErrors(prev => ({
-                          ...prev,
-                          name: undefined
-                        }));
-                      }
-                    }} className={cn("h-10", errors.name ? "border-red-300" : "border-gray-300")} />
+                        setName(e.target.value);
+                        if (errors.name) {
+                          setErrors(prev => ({
+                            ...prev,
+                            name: undefined
+                          }));
+                        }
+                      }} className={cn("h-10", errors.name ? "border-red-300" : "border-gray-300")} />
                       {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
                     </div>
                   </div>
@@ -552,15 +556,15 @@ const CreateOrder = () => {
                           Secondary Phone
                         </Label>
                         <Button variant="ghost" size="sm" onClick={() => {
-                      setIsSecondaryPhone(false);
-                      setSecondaryPhone('');
-                      if (errors.secondaryPhone) {
-                        setErrors(prev => ({
-                          ...prev,
-                          secondaryPhone: undefined
-                        }));
-                      }
-                    }} className="text-xs h-6 px-2">
+                          setIsSecondaryPhone(false);
+                          setSecondaryPhone('');
+                          if (errors.secondaryPhone) {
+                            setErrors(prev => ({
+                              ...prev,
+                              secondaryPhone: undefined
+                            }));
+                          }
+                        }} className="text-xs h-6 px-2">
                           Remove
                         </Button>
                       </div>
