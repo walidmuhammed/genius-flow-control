@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from "@/components/layout/MainLayout";
@@ -31,6 +32,19 @@ const Pickups: React.FC = () => {
   const upcomingPickups = [...(scheduledPickups || []), ...(inProgressPickups || [])];
   const historyPickups = [...(completedPickups || []), ...(canceledPickups || [])];
 
+  // Helper for pickup ID formatting (PIC-001)
+  const formatPickupId = (id: string | number | undefined) => {
+    if (!id) return 'N/A';
+    if (typeof id === 'number') {
+      return `PIC-${id.toString().padStart(3, '0')}`;
+    }
+    if (typeof id === 'string' && id.startsWith('PIC-')) return id;
+    if (typeof id === 'string' && id.match(/^\d+$/)) {
+      return `PIC-${id.padStart(3, '0')}`;
+    }
+    return id;
+  };
+
   const getStatusBadge = (status: string) => {
     const baseClasses = "px-3 py-1.5 rounded-full text-xs font-medium";
     switch (status) {
@@ -59,14 +73,96 @@ const Pickups: React.FC = () => {
     pickup.contact_person.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  // Table-perfect date formatter (shows date and time)
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
-    });
+    }) + ' • ' +
+      date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit'
+      });
   };
 
+  // RED Pickup ID + note icon
+  const PickupIdWithNote = ({ pickup_id, note }: { pickup_id: string | number | undefined, note?: string }) => (
+    <div className="flex items-center gap-1">
+      <span className="font-semibold text-[#DC291E] text-sm">
+        {formatPickupId(pickup_id)}
+      </span>
+      {note && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="ml-1 cursor-help flex items-center">
+                <FileText className="h-4 w-4 text-gray-400 hover:text-[#DC291E]" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs p-3">
+              <p className="text-sm">{note}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </div>
+  );
+
+  // Table layout, desktop only (perfect version)
+  const renderPerfectTable = (pickups: any[]) => (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Pickup ID</TableHead>
+            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
+            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
+            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Contact</TableHead>
+            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Date</TableHead>
+            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Orders</TableHead>
+            <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Vehicle</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {pickups.map(pickup => (
+            <TableRow key={pickup.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+              <TableCell>
+                <PickupIdWithNote pickup_id={pickup.pickup_id} note={pickup.note} />
+              </TableCell>
+              <TableCell>{getStatusBadge(pickup.status)}</TableCell>
+              <TableCell>
+                <div>
+                  <div className="font-medium">{pickup.location}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{pickup.address}</div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div>
+                  <div className="font-medium">{pickup.contact_person}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{pickup.contact_phone}</div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <span className="font-medium">
+                  {formatDateTime(pickup.pickup_date)}
+                </span>
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline" className="rounded-full">{pickup.orders_count || 0} orders</Badge>
+              </TableCell>
+              <TableCell>
+                <span className="capitalize">{pickup.vehicle_type || 'small'}</span>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+
+  // Table-perfect mobile card
   const renderMobilePickupCard = (pickup: any) => (
     <motion.div
       key={pickup.id}
@@ -78,12 +174,12 @@ const Pickups: React.FC = () => {
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <span className="font-semibold text-blue-600 dark:text-blue-400">{pickup.pickup_id}</span>
+            <span className="font-semibold text-[#DC291E]">{formatPickupId(pickup.pickup_id)}</span>
             {pickup.note && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <FileText className="h-4 w-4 text-gray-400" />
+                    <FileText className="h-4 w-4 text-gray-400 hover:text-[#DC291E]" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs p-3">
                     <p className="text-sm">{pickup.note}</p>
@@ -96,19 +192,27 @@ const Pickups: React.FC = () => {
         </div>
         {getStatusBadge(pickup.status)}
       </div>
-      
+
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-gray-500 dark:text-gray-400">Contact:</span>
           <span className="font-medium">{pickup.contact_person}</span>
         </div>
         <div className="flex justify-between text-sm">
+          <span className="text-gray-500 dark:text-gray-400">Mobile:</span>
+          <span className="font-medium">{pickup.contact_phone}</span>
+        </div>
+        <div className="flex justify-between text-sm">
           <span className="text-gray-500 dark:text-gray-400">Date:</span>
-          <span className="font-medium">{formatDate(pickup.pickup_date)}</span>
+          <span className="font-medium">{formatDateTime(pickup.pickup_date)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-500 dark:text-gray-400">Orders:</span>
           <Badge variant="outline" className="text-xs">{pickup.orders_count || 0} orders</Badge>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-500 dark:text-gray-400">Vehicle:</span>
+          <span className="capitalize font-medium">{pickup.vehicle_type || 'small'}</span>
         </div>
       </div>
     </motion.div>
@@ -235,70 +339,7 @@ const Pickups: React.FC = () => {
                           {filteredUpcoming.map(renderMobilePickupCard)}
                         </div>
                       ) : (
-                        <div className="overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow className="bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Pickup ID</TableHead>
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Contact Person</TableHead>
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Pickup Date</TableHead>
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Orders</TableHead>
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Vehicle</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {filteredUpcoming.map(pickup => (
-                                <TableRow key={pickup.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors">
-                                  <TableCell>
-                                    <div className="flex items-center">
-                                      <span className="font-medium text-blue-600 dark:text-blue-400">{pickup.pickup_id}</span>
-                                      {pickup.note && (
-                                        <TooltipProvider>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <div className="ml-2 cursor-help">
-                                                <FileText className="h-4 w-4 text-gray-400" />
-                                              </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent className="max-w-xs p-3">
-                                              <p className="text-sm">{pickup.note}</p>
-                                            </TooltipContent>
-                                          </Tooltip>
-                                        </TooltipProvider>
-                                      )}
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>{getStatusBadge(pickup.status)}</TableCell>
-                                  <TableCell>
-                                    <div>
-                                      <div className="font-medium">{pickup.location}</div>
-                                      <div className="text-xs text-gray-500 dark:text-gray-400">{pickup.address}</div>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>
-                                    <div>
-                                      <div>{pickup.contact_person}</div>
-                                      <div className="text-xs text-gray-500 dark:text-gray-400">{pickup.contact_phone}</div>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>
-                                    <span className="font-medium">
-                                      {formatDate(pickup.pickup_date)}
-                                    </span>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge variant="outline" className="rounded-full">{pickup.orders_count || 0} orders</Badge>
-                                  </TableCell>
-                                  <TableCell>
-                                    <span className="capitalize">{pickup.vehicle_type || 'small'}</span>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
+                        renderPerfectTable(filteredUpcoming)
                       )}
                     </div>
                   )}
@@ -320,70 +361,7 @@ const Pickups: React.FC = () => {
                           {filteredHistory.map(renderMobilePickupCard)}
                         </div>
                       ) : (
-                        <div className="overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow className="bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Pickup ID</TableHead>
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Location</TableHead>
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Contact Person</TableHead>
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Pickup Date</TableHead>
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Orders</TableHead>
-                                <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Vehicle</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {filteredHistory.map(pickup => (
-                                <TableRow key={pickup.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                  <TableCell>
-                                    <div className="flex items-center">
-                                      <span className="font-medium text-blue-600 dark:text-blue-400">{pickup.pickup_id}</span>
-                                      {pickup.note && (
-                                        <TooltipProvider>
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <div className="ml-2 cursor-help">
-                                                <FileText className="h-4 w-4 text-gray-400" />
-                                              </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent className="max-w-xs p-3">
-                                              <p className="text-sm">{pickup.note}</p>
-                                            </TooltipContent>
-                                          </Tooltip>
-                                        </TooltipProvider>
-                                      )}
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>{getStatusBadge(pickup.status)}</TableCell>
-                                  <TableCell>
-                                    <div>
-                                      <div className="font-medium">{pickup.location}</div>
-                                      <div className="text-xs text-gray-500 dark:text-gray-400">{pickup.address}</div>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>
-                                    <div>
-                                      <div>{pickup.contact_person}</div>
-                                      <div className="text-xs text-gray-500 dark:text-gray-400">{pickup.contact_phone}</div>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>
-                                    <span className="font-medium">
-                                      {formatDate(pickup.pickup_date)}
-                                    </span>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge variant="outline" className="rounded-full">{pickup.orders_count || 0} orders</Badge>
-                                  </TableCell>
-                                  <TableCell>
-                                    <span className="capitalize">{pickup.vehicle_type || 'small'}</span>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
+                        renderPerfectTable(filteredHistory)
                       )}
                     </div>
                   )}
