@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from "@/components/layout/MainLayout";
@@ -15,11 +14,16 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useScreenSize } from '@/hooks/useScreenSize';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import PickupDetailsDialog from '@/components/pickups/PickupDetailsDialog';
+import PickupDetailsDrawer from '@/components/pickups/PickupDetailsDrawer';
+import { mapPickupToComponentFormat } from '@/utils/pickupMappers';
 
 const Pickups: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("upcoming");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPickup, setSelectedPickup] = useState<any | null>(null); // PickupData
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const { isMobile, isTablet } = useScreenSize();
 
   // Fetch real pickup data
@@ -127,7 +131,11 @@ const Pickups: React.FC = () => {
         </TableHeader>
         <TableBody>
           {pickups.map(pickup => (
-            <TableRow key={pickup.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+            <TableRow
+              key={pickup.id}
+              className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
+              onClick={() => handleViewPickupDetails(pickup)}
+            >
               <TableCell>
                 <PickupIdWithNote pickup_id={pickup.pickup_id} note={pickup.note} />
               </TableCell>
@@ -166,10 +174,11 @@ const Pickups: React.FC = () => {
   const renderMobilePickupCard = (pickup: any) => (
     <motion.div
       key={pickup.id}
-      className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 space-y-3"
+      className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 space-y-3 cursor-pointer"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      onClick={() => handleViewPickupDetails(pickup)}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
@@ -217,6 +226,11 @@ const Pickups: React.FC = () => {
       </div>
     </motion.div>
   );
+
+  const handleViewPickupDetails = (pickup: any) => {
+    setSelectedPickup(mapPickupToComponentFormat(pickup));
+    setDetailsOpen(true);
+  };
 
   if (isLoading) {
     return (
@@ -371,6 +385,20 @@ const Pickups: React.FC = () => {
           </Card>
         </motion.div>
       </div>
+      {!isMobile && selectedPickup && (
+        <PickupDetailsDialog
+          pickup={selectedPickup}
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+        />
+      )}
+      {isMobile && selectedPickup && (
+        <PickupDetailsDrawer
+          pickup={selectedPickup}
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+        />
+      )}
     </MainLayout>
   );
 };
