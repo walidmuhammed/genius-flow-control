@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,9 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
   const [loading, setLoading] = useState(false);
 
   const { mutate: createCustomer } = useCreateCustomer();
+
+  // ADD: ref for the mobile form element
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   const resetForm = () => {
     setForm(initialState);
@@ -113,11 +116,17 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
       }}
     >
       <Button
-        type="submit"
+        type="button"
         className="w-full bg-[#dc291e] text-white text-base font-semibold py-3 rounded-xl"
         disabled={loading}
         style={{ height: 50 }}
         tabIndex={0}
+        // FIX: connect click to form submit
+        onClick={() => {
+          if (formRef.current) {
+            formRef.current.requestSubmit();
+          }
+        }}
       >
         {loading ? "Adding..." : "Add Customer"}
       </Button>
@@ -129,6 +138,7 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
 
   const mobileFormFields = (
     <form
+      ref={formRef} // CONNECT ref here
       onSubmit={handleSubmit}
       className="space-y-5 mt-1"
       style={{ paddingBottom: 138, minHeight: "100%" }}
@@ -384,3 +394,6 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
     </Dialog>
   );
 }
+
+// REMINDER: This file is getting too long (near 400 lines).
+// You should consider asking me to refactor it into smaller, more maintainable files.
