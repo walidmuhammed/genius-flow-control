@@ -35,7 +35,7 @@ const CustomersTableMobile: React.FC<CustomersTableMobileProps> = ({
         return (
           <button
             key={customer.id}
-            className="w-full text-left rounded-xl border border-transparent px-4 py-4 flex flex-col gap-2 focus:outline-none hover:border-[#db271e] transition duration-150"
+            className="w-full text-left rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2 focus:outline-none hover:border-[#db271e] transition duration-150"
             onClick={() => onCardClick(customer)}
             tabIndex={0}
             aria-label={`View customer ${customer.name}`}
