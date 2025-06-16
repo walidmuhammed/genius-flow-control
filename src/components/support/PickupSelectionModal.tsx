@@ -27,7 +27,8 @@ const PickupSelectionModal: React.FC<PickupSelectionModalProps> = ({
   const filteredPickups = pickups.filter(pickup => 
     pickup.pickup_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     pickup.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pickup.status.toLowerCase().includes(searchQuery.toLowerCase())
+    pickup.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    pickup.id.includes(searchQuery)
   );
 
   const handleSelect = (pickup: Pickup) => {
@@ -37,7 +38,7 @@ const PickupSelectionModal: React.FC<PickupSelectionModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col bg-background border shadow-lg">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col bg-background border shadow-lg rounded-2xl">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Select Pickup</DialogTitle>
         </DialogHeader>
@@ -47,13 +48,13 @@ const PickupSelectionModal: React.FC<PickupSelectionModalProps> = ({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search pickups by ID, location, or status..."
-              className="pl-10"
+              className="pl-10 rounded-xl"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           
-          <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
+          <div className="flex-1 overflow-y-auto space-y-3 min-h-0">
             {filteredPickups.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Clock className="h-12 w-12 text-muted-foreground mb-4" />
@@ -63,17 +64,17 @@ const PickupSelectionModal: React.FC<PickupSelectionModalProps> = ({
               filteredPickups.map(pickup => (
                 <div
                   key={pickup.id}
-                  className={`p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${
+                  className={`p-4 border rounded-xl cursor-pointer hover:bg-muted/50 transition-colors ${
                     selectedPickupId === pickup.id ? 'border-primary bg-primary/5' : ''
                   }`}
                   onClick={() => handleSelect(pickup)}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <p className="font-medium">{pickup.pickup_id}</p>
+                      <p className="font-medium">#{pickup.id.slice(-3)} {pickup.pickup_id}</p>
                       <p className="text-sm text-muted-foreground">{pickup.location}</p>
                     </div>
-                    <Badge variant="outline">{pickup.status}</Badge>
+                    <Badge variant="outline" className="rounded-lg">{pickup.status}</Badge>
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {pickup.address}
@@ -84,7 +85,7 @@ const PickupSelectionModal: React.FC<PickupSelectionModalProps> = ({
           </div>
           
           <div className="flex justify-end gap-2 pt-4 border-t flex-shrink-0">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">
               Cancel
             </Button>
           </div>

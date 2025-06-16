@@ -25,7 +25,8 @@ const InvoiceSelectionModal: React.FC<InvoiceSelectionModalProps> = ({
 
   const filteredInvoices = invoices.filter(invoice => 
     invoice.invoice_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    invoice.merchant_name.toLowerCase().includes(searchQuery.toLowerCase())
+    invoice.merchant_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    invoice.id.includes(searchQuery)
   );
 
   const handleSelect = (invoice: Invoice) => {
@@ -35,7 +36,7 @@ const InvoiceSelectionModal: React.FC<InvoiceSelectionModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col bg-background border shadow-lg">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col bg-background border shadow-lg rounded-2xl">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Select Invoice</DialogTitle>
         </DialogHeader>
@@ -45,13 +46,13 @@ const InvoiceSelectionModal: React.FC<InvoiceSelectionModalProps> = ({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search invoices by ID or merchant..."
-              className="pl-10"
+              className="pl-10 rounded-xl"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           
-          <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
+          <div className="flex-1 overflow-y-auto space-y-3 min-h-0">
             {filteredInvoices.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <FileText className="h-12 w-12 text-muted-foreground mb-4" />
@@ -61,14 +62,14 @@ const InvoiceSelectionModal: React.FC<InvoiceSelectionModalProps> = ({
               filteredInvoices.map(invoice => (
                 <div
                   key={invoice.id}
-                  className={`p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors ${
+                  className={`p-4 border rounded-xl cursor-pointer hover:bg-muted/50 transition-colors ${
                     selectedInvoiceId === invoice.id ? 'border-primary bg-primary/5' : ''
                   }`}
                   onClick={() => handleSelect(invoice)}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <p className="font-medium">{invoice.invoice_id}</p>
+                      <p className="font-medium">#{invoice.id.slice(-3)} {invoice.invoice_id}</p>
                       <p className="text-sm text-muted-foreground">{invoice.merchant_name}</p>
                     </div>
                     <div className="text-right">
@@ -82,7 +83,7 @@ const InvoiceSelectionModal: React.FC<InvoiceSelectionModalProps> = ({
           </div>
           
           <div className="flex justify-end gap-2 pt-4 border-t flex-shrink-0">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">
               Cancel
             </Button>
           </div>

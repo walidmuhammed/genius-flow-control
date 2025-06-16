@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, Clock, Package, ArrowLeft, Package2, Wallet, FileText, Send, Loader2, Ticket, Paperclip } from 'lucide-react';
+import { Search, Filter, Clock, Package, ArrowLeft, Package2, Wallet, FileText, Send, Loader2, Ticket, Paperclip, X } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { useTickets, useTicket, useTicketMessages, useCreateTicket, useAddTicketMessage, useUpdateTicketStatus } from '@/hooks/use-tickets';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { useScreenSize } from '@/hooks/useScreenSize';
 import type { TicketCategory } from '@/services/tickets';
 import type { OrderWithCustomer } from '@/services/orders';
 import type { Pickup } from '@/services/pickups';
@@ -33,11 +34,14 @@ const Support: React.FC = () => {
   const [showOtherField, setShowOtherField] = useState<boolean>(false);
   const [customMessage, setCustomMessage] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [showMobileChat, setShowMobileChat] = useState(false);
 
   // Modal states
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showPickupModal, setShowPickupModal] = useState(false);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+
+  const { isMobile, isTablet } = useScreenSize();
 
   // Fetch tickets
   const {
@@ -78,6 +82,14 @@ const Support: React.FC = () => {
 
   const handleTicketClick = (ticketId: string) => {
     setSelectedTicketId(ticketId);
+    if (isMobile || isTablet) {
+      setShowMobileChat(true);
+    }
+  };
+
+  const handleBackToList = () => {
+    setShowMobileChat(false);
+    setSelectedTicketId(null);
   };
 
   const handleSendMessage = async () => {
@@ -269,7 +281,7 @@ const Support: React.FC = () => {
       </DialogDescription>
       
       <div className="space-y-3">
-        <div className="flex items-center space-x-3 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors" onClick={() => handleCategorySelect('orders')}>
+        <div className="flex items-center space-x-3 border rounded-xl p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all duration-200" onClick={() => handleCategorySelect('orders')}>
           <Package className="h-5 w-5 text-primary flex-shrink-0" />
           <div className="flex-1">
             <div className="font-medium">Orders</div>
@@ -278,7 +290,7 @@ const Support: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex items-center space-x-3 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors" onClick={() => handleCategorySelect('pickups')}>
+        <div className="flex items-center space-x-3 border rounded-xl p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all duration-200" onClick={() => handleCategorySelect('pickups')}>
           <Clock className="h-5 w-5 text-primary flex-shrink-0" />
           <div className="flex-1">
             <div className="font-medium">Pickups</div>
@@ -286,7 +298,7 @@ const Support: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex items-center space-x-3 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors" onClick={() => handleCategorySelect('payment')}>
+        <div className="flex items-center space-x-3 border rounded-xl p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all duration-200" onClick={() => handleCategorySelect('payment')}>
           <Wallet className="h-5 w-5 text-primary flex-shrink-0" />
           <div className="flex-1">
             <div className="font-medium">Payment and Wallet</div>
@@ -294,7 +306,7 @@ const Support: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex items-center space-x-3 border rounded-lg p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors" onClick={() => handleCategorySelect('others')}>
+        <div className="flex items-center space-x-3 border rounded-xl p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all duration-200" onClick={() => handleCategorySelect('others')}>
           <FileText className="h-5 w-5 text-primary flex-shrink-0" />
           <div className="flex-1">
             <div className="font-medium">Others</div>
@@ -325,12 +337,12 @@ const Support: React.FC = () => {
                 <Label htmlFor="order">Select Order</Label>
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start h-auto p-4"
+                  className="w-full justify-start h-auto p-4 rounded-xl"
                   onClick={() => setShowOrderModal(true)}
                 >
                   {selectedOrder ? (
                     <div className="text-left">
-                      <div className="font-medium">{selectedOrder.reference_number}</div>
+                      <div className="font-medium">#{selectedOrder.id.slice(-3)} {selectedOrder.reference_number}</div>
                       <div className="text-sm text-muted-foreground">{selectedOrder.customer.name}</div>
                     </div>
                   ) : (
@@ -344,7 +356,7 @@ const Support: React.FC = () => {
                 <select 
                   value={selectedIssue} 
                   onChange={(e) => setSelectedIssue(e.target.value)}
-                  className="w-full p-3 border rounded-lg bg-background"
+                  className="w-full p-3 border rounded-xl bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 >
                   <option value="">What's the issue?</option>
                   {orderIssues.map(issue => (
@@ -353,7 +365,7 @@ const Support: React.FC = () => {
                 </select>
               </div>
               
-              <Button variant="outline" onClick={() => setShowOtherField(!showOtherField)} className="w-full" type="button">
+              <Button variant="outline" onClick={() => setShowOtherField(!showOtherField)} className="w-full rounded-xl" type="button">
                 Other
               </Button>
               
@@ -366,6 +378,7 @@ const Support: React.FC = () => {
                     onChange={(e) => setCustomMessage(e.target.value)} 
                     placeholder="Please describe your issue in detail..." 
                     rows={3} 
+                    className="rounded-xl"
                   />
                 </div>
               )}
@@ -390,12 +403,12 @@ const Support: React.FC = () => {
                 <Label htmlFor="pickup">Select Pickup</Label>
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start h-auto p-4"
+                  className="w-full justify-start h-auto p-4 rounded-xl"
                   onClick={() => setShowPickupModal(true)}
                 >
                   {selectedPickup ? (
                     <div className="text-left">
-                      <div className="font-medium">{selectedPickup.pickup_id}</div>
+                      <div className="font-medium">#{selectedPickup.id.slice(-3)} {selectedPickup.pickup_id}</div>
                       <div className="text-sm text-muted-foreground">{selectedPickup.location}</div>
                     </div>
                   ) : (
@@ -409,7 +422,7 @@ const Support: React.FC = () => {
                 <select 
                   value={selectedIssue} 
                   onChange={(e) => setSelectedIssue(e.target.value)}
-                  className="w-full p-3 border rounded-lg bg-background"
+                  className="w-full p-3 border rounded-xl bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 >
                   <option value="">What's the issue?</option>
                   {pickupIssues.map(issue => (
@@ -418,7 +431,7 @@ const Support: React.FC = () => {
                 </select>
               </div>
               
-              <Button variant="outline" onClick={() => setShowOtherField(!showOtherField)} className="w-full" type="button">
+              <Button variant="outline" onClick={() => setShowOtherField(!showOtherField)} className="w-full rounded-xl" type="button">
                 Other
               </Button>
               
@@ -431,6 +444,7 @@ const Support: React.FC = () => {
                     onChange={(e) => setCustomMessage(e.target.value)} 
                     placeholder="Please describe your issue in detail..." 
                     rows={3} 
+                    className="rounded-xl"
                   />
                 </div>
               )}
@@ -455,12 +469,12 @@ const Support: React.FC = () => {
                 <Label htmlFor="invoice">Select Invoice</Label>
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start h-auto p-4"
+                  className="w-full justify-start h-auto p-4 rounded-xl"
                   onClick={() => setShowInvoiceModal(true)}
                 >
                   {selectedInvoice ? (
                     <div className="text-left">
-                      <div className="font-medium">{selectedInvoice.invoice_id}</div>
+                      <div className="font-medium">#{selectedInvoice.id.slice(-3)} {selectedInvoice.invoice_id}</div>
                       <div className="text-sm text-muted-foreground">${selectedInvoice.net_payout_usd}</div>
                     </div>
                   ) : (
@@ -474,7 +488,7 @@ const Support: React.FC = () => {
                 <select 
                   value={selectedIssue} 
                   onChange={(e) => setSelectedIssue(e.target.value)}
-                  className="w-full p-3 border rounded-lg bg-background"
+                  className="w-full p-3 border rounded-xl bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 >
                   <option value="">What's the issue?</option>
                   {walletIssues.map(issue => (
@@ -483,7 +497,7 @@ const Support: React.FC = () => {
                 </select>
               </div>
               
-              <Button variant="outline" onClick={() => setShowOtherField(!showOtherField)} className="w-full" type="button">
+              <Button variant="outline" onClick={() => setShowOtherField(!showOtherField)} className="w-full rounded-xl" type="button">
                 Other
               </Button>
               
@@ -496,6 +510,7 @@ const Support: React.FC = () => {
                     onChange={(e) => setCustomMessage(e.target.value)} 
                     placeholder="Please describe your issue in detail..." 
                     rows={3} 
+                    className="rounded-xl"
                   />
                 </div>
               )}
@@ -523,6 +538,7 @@ const Support: React.FC = () => {
                 onChange={(e) => setCustomMessage(e.target.value)} 
                 placeholder="Please describe your issue in detail..." 
                 rows={4} 
+                className="rounded-xl"
               />
             </div>
           </div>
@@ -532,198 +548,203 @@ const Support: React.FC = () => {
     }
   };
 
-  return (
-    <MainLayout className="p-0">
-      <div className="flex h-full flex-col lg:flex-row">
-        {/* Left Sidebar */}
-        <div className="w-full lg:w-1/3 border-r h-full flex flex-col">
-          <div className="p-4 lg:p-6 border-b">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h1 className="text-xl font-bold">Support Tickets</h1>
-                <p className="text-sm text-muted-foreground">Contact our support team and track your tickets.</p>
-              </div>
-            </div>
-
-            {/* Filter Tabs */}
-            <Tabs defaultValue="all" value={activeFilter} onValueChange={setActiveFilter} className="mb-4">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-                <TabsTrigger value="open" className="text-xs">New</TabsTrigger>
-                <TabsTrigger value="processing" className="text-xs">Process</TabsTrigger>
-                <TabsTrigger value="resolved" className="text-xs">Resolved</TabsTrigger>
-              </TabsList>
-            </Tabs>
-
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input 
-                placeholder="Search by ticket ID or subject..." 
-                className="pl-10" 
-                value={searchQuery} 
-                onChange={(e) => setSearchQuery(e.target.value)} 
-              />
-            </div>
-            
-            <Button 
-              onClick={() => setIsNewTicketModalOpen(true)} 
-              className="w-full bg-primary hover:bg-primary/90"
-            >
-              Create New Ticket
-            </Button>
-          </div>
-          
-          <div className="p-4 text-sm text-muted-foreground border-b">
-            Tickets ({filteredTickets.length})
-          </div>
-
-          <div className="flex-1 overflow-y-auto">
-            {isLoadingTickets ? (
-              <div className="flex justify-center items-center p-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : filteredTickets.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
-                <Ticket className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                <p>No tickets found. Create a new ticket to get help.</p>
-              </div>
-            ) : (
-              filteredTickets.map(ticket => (
-                <div 
-                  key={ticket.id} 
-                  className={`p-4 border-b cursor-pointer hover:bg-muted/40 transition-colors ${
-                    selectedTicketId === ticket.id ? 'bg-muted/40 border-l-4 border-l-primary' : ''
-                  }`} 
-                  onClick={() => handleTicketClick(ticket.id)}
-                >
-                  <div className="flex justify-between mb-2">
-                    <Badge variant="outline" className="bg-muted/80 text-muted-foreground text-xs">
-                      {ticket.category}
-                    </Badge>
-                    {getStatusBadge(ticket.status)}
-                  </div>
-
-                  <div className="mb-2">
-                    <p className="font-medium text-sm">TIC-{ticket.id.substring(0, 3)}</p>
-                    <p className="text-sm text-muted-foreground truncate">{ticket.title}</p>
-                  </div>
-
-                  <div className="text-xs text-muted-foreground">
-                    {formatDate(ticket.created_at)}
-                  </div>
+  // Desktop layout
+  if (!isMobile && !isTablet) {
+    return (
+      <MainLayout className="p-0">
+        <div className="flex h-full">
+          {/* Left Sidebar */}
+          <div className="w-1/3 border-r h-full flex flex-col bg-white">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h1 className="text-xl font-bold">Support Tickets</h1>
+                  <p className="text-sm text-muted-foreground">Contact our support team and track your tickets.</p>
                 </div>
-              ))
-            )}
-          </div>
-        </div>
-        
-        {/* Right Content */}
-        <div className="flex-1 flex flex-col h-full">
-          {selectedTicket ? (
-            <>
-              {/* Ticket Header */}
-              <div className="p-4 lg:p-6 border-b flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-2 lg:space-y-0">
-                <div className="flex items-center">
-                  <div>
-                    <h2 className="text-lg font-medium flex items-center gap-2">
-                      TIC-{selectedTicket.id.substring(0, 3)}
-                    </h2>
-                    <p className="text-muted-foreground">{selectedTicket.title}</p>
-                    <Badge variant="outline" className="bg-muted/80 text-muted-foreground mt-1">
-                      {selectedTicket.category}
-                    </Badge>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" onClick={handleCloseTicket}>
-                  {selectedTicket.status === 'Closed' ? 'Reopen' : 'Close'}
-                </Button>
+              </div>
+
+              {/* Filter Tabs */}
+              <Tabs defaultValue="all" value={activeFilter} onValueChange={setActiveFilter} className="mb-4">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+                  <TabsTrigger value="open" className="text-xs">New</TabsTrigger>
+                  <TabsTrigger value="processing" className="text-xs">Process</TabsTrigger>
+                  <TabsTrigger value="resolved" className="text-xs">Resolved</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input 
+                  placeholder="Search by ticket ID or subject..." 
+                  className="pl-10 rounded-xl" 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                />
               </div>
               
-              {/* Chat Messages */}
-              <div className="flex-1 p-4 lg:p-6 overflow-y-auto">
-                <div className="space-y-6">
-                  {/* Initial ticket message */}
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
-                        C
-                      </div>
-                    </div>
-                    <div className="bg-muted p-4 rounded-lg rounded-tl-none max-w-[80%]">
-                      <p>{selectedTicket.content}</p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {formatDate(selectedTicket.created_at)}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Ticket messages */}
-                  {ticketMessages.map(message => (
-                    <div className="flex gap-4" key={message.id}>
-                      <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                          {message.sender.charAt(0)}
-                        </div>
-                      </div>
-                      <div className="bg-primary/10 p-4 rounded-lg rounded-tl-none max-w-[80%]">
-                        <p>{message.content}</p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {formatDate(message.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Message Input */}
-              <div className="border-t p-4">
-                <div className="flex gap-2">
-                  <Button variant="outline" size="icon" className="flex-shrink-0">
-                    <Paperclip className="h-5 w-5" />
-                  </Button>
-                  <Textarea 
-                    placeholder="Type your message..." 
-                    className="min-h-12 resize-none" 
-                    value={newMessage} 
-                    onChange={(e) => setNewMessage(e.target.value)} 
-                    disabled={selectedTicket.status === 'Closed'}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }} 
-                  />
-                  <Button 
-                    size="icon" 
-                    className="flex-shrink-0 bg-primary hover:bg-primary/90" 
-                    onClick={handleSendMessage} 
-                    disabled={selectedTicket.status === 'Closed' || addTicketMessageMutation.isPending || !newMessage.trim()}
-                  >
-                    {addTicketMessageMutation.isPending ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <Send className="h-5 w-5" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center p-8 lg:p-16">
-              <div className="mb-4">
-                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-                  <Ticket className="h-8 w-8 text-muted-foreground" />
-                </div>
-              </div>
-              <h3 className="text-lg font-medium">No ticket selected</h3>
-              <p className="text-muted-foreground mt-2 max-w-md">Select a ticket from the list or create a new one to start a conversation with our support team.</p>
-              <Button className="mt-4 bg-primary hover:bg-primary/90" onClick={() => setIsNewTicketModalOpen(true)}>
+              <Button 
+                onClick={() => setIsNewTicketModalOpen(true)} 
+                className="w-full bg-primary hover:bg-primary/90 rounded-xl"
+              >
                 Create New Ticket
               </Button>
             </div>
-          )}
+            
+            <div className="p-4 text-sm text-muted-foreground border-b">
+              Tickets ({filteredTickets.length})
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {isLoadingTickets ? (
+                <div className="flex justify-center items-center p-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : filteredTickets.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground">
+                  <Ticket className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p>No tickets found. Create a new ticket to get help.</p>
+                </div>
+              ) : (
+                filteredTickets.map(ticket => (
+                  <div 
+                    key={ticket.id} 
+                    className={`p-4 border-b cursor-pointer hover:bg-muted/40 transition-colors ${
+                      selectedTicketId === ticket.id ? 'bg-muted/40 border-l-4 border-l-primary' : ''
+                    }`} 
+                    onClick={() => handleTicketClick(ticket.id)}
+                  >
+                    <div className="flex justify-between mb-2">
+                      <Badge variant="outline" className="bg-muted/80 text-muted-foreground text-xs">
+                        {ticket.category}
+                      </Badge>
+                      {getStatusBadge(ticket.status)}
+                    </div>
+
+                    <div className="mb-2">
+                      <p className="font-medium text-sm">TIC-{ticket.id.substring(0, 3)}</p>
+                      <p className="text-sm text-muted-foreground truncate">{ticket.title}</p>
+                    </div>
+
+                    <div className="text-xs text-muted-foreground">
+                      {formatDate(ticket.created_at)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          
+          {/* Right Content */}
+          <div className="flex-1 flex flex-col h-full">
+            {selectedTicket ? (
+              <>
+                {/* Ticket Header */}
+                <div className="p-6 border-b flex justify-between items-center bg-white">
+                  <div className="flex items-center">
+                    <div>
+                      <h2 className="text-lg font-medium flex items-center gap-2">
+                        TIC-{selectedTicket.id.substring(0, 3)}
+                      </h2>
+                      <p className="text-muted-foreground">{selectedTicket.title}</p>
+                      <Badge variant="outline" className="bg-muted/80 text-muted-foreground mt-1">
+                        {selectedTicket.category}
+                      </Badge>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleCloseTicket} className="rounded-xl">
+                    {selectedTicket.status === 'Closed' ? 'Reopen' : 'Close'}
+                  </Button>
+                </div>
+                
+                {/* Chat Messages */}
+                <div className="flex-1 p-6 overflow-y-auto bg-gray-50">
+                  <div className="space-y-6">
+                    {/* Initial ticket message */}
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-medium text-primary">U</span>
+                        </div>
+                      </div>
+                      <div className="bg-white p-4 rounded-2xl rounded-tl-lg shadow-sm max-w-[80%] border">
+                        <p className="text-gray-900">{selectedTicket.content}</p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {formatDate(selectedTicket.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Ticket messages */}
+                    {ticketMessages.map(message => (
+                      <div className="flex gap-4 justify-end" key={message.id}>
+                        <div className="bg-primary p-4 rounded-2xl rounded-tr-lg shadow-sm max-w-[80%]">
+                          <p className="text-sm text-white">{message.content}</p>
+                          <p className="text-xs text-primary-foreground/70 mt-2">
+                            {formatDate(message.created_at)}
+                          </p>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-white">S</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Message Input */}
+                <div className="border-t p-4 bg-white">
+                  <div className="flex gap-3">
+                    <Button variant="outline" size="icon" className="flex-shrink-0 rounded-xl">
+                      <Paperclip className="h-5 w-5" />
+                    </Button>
+                    <div className="flex-1 relative">
+                      <Textarea 
+                        placeholder="Type your message..." 
+                        className="min-h-12 resize-none rounded-xl border-0 shadow-sm focus:ring-2 focus:ring-primary/20" 
+                        value={newMessage} 
+                        onChange={(e) => setNewMessage(e.target.value)} 
+                        disabled={selectedTicket.status === 'Closed'}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                          }
+                        }} 
+                      />
+                    </div>
+                    <Button 
+                      size="icon" 
+                      className="flex-shrink-0 bg-primary hover:bg-primary/90 rounded-xl" 
+                      onClick={handleSendMessage} 
+                      disabled={selectedTicket.status === 'Closed' || addTicketMessageMutation.isPending || !newMessage.trim()}
+                    >
+                      {addTicketMessageMutation.isPending ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <Send className="h-5 w-5" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center p-16 bg-gray-50">
+                <div className="mb-4">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
+                    <Ticket className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-medium">No ticket selected</h3>
+                <p className="text-muted-foreground mt-2 max-w-md">Select a ticket from the list or create a new one to start a conversation with our support team.</p>
+                <Button className="mt-4 bg-primary hover:bg-primary/90 rounded-xl" onClick={() => setIsNewTicketModalOpen(true)}>
+                  Create New Ticket
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Selection Modals */}
@@ -753,7 +774,7 @@ const Support: React.FC = () => {
           setIsNewTicketModalOpen(open);
           if (!open) resetForm();
         }}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px] rounded-2xl">
             <DialogHeader>
               <DialogTitle>Create New Ticket</DialogTitle>
             </DialogHeader>
@@ -764,13 +785,13 @@ const Support: React.FC = () => {
               <Button variant="outline" onClick={() => {
                 setIsNewTicketModalOpen(false);
                 resetForm();
-              }}>
+              }} className="rounded-xl">
                 Cancel
               </Button>
               {currentStep === 2 && (
                 <Button 
                   onClick={handleCreateNewTicket} 
-                  className="bg-primary hover:bg-primary/90" 
+                  className="bg-primary hover:bg-primary/90 rounded-xl" 
                   disabled={createTicketMutation.isPending}
                 >
                   {createTicketMutation.isPending ? (
@@ -783,6 +804,235 @@ const Support: React.FC = () => {
                   )}
                 </Button>
               )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </MainLayout>
+    );
+  }
+
+  // Mobile layout
+  return (
+    <MainLayout className="p-0">
+      <div className="flex flex-col h-full bg-gray-50">
+        {/* Mobile Ticket List View */}
+        {!showMobileChat && (
+          <>
+            <div className="bg-white p-4 border-b">
+              <div className="mb-4">
+                <h1 className="text-xl font-bold">Support Tickets</h1>
+                <p className="text-sm text-muted-foreground">Contact our support team and track your tickets.</p>
+              </div>
+
+              {/* Filter Tabs */}
+              <Tabs defaultValue="all" value={activeFilter} onValueChange={setActiveFilter} className="mb-4">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+                  <TabsTrigger value="open" className="text-xs">New</TabsTrigger>
+                  <TabsTrigger value="processing" className="text-xs">Process</TabsTrigger>
+                  <TabsTrigger value="resolved" className="text-xs">Resolved</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input 
+                  placeholder="Search tickets..." 
+                  className="pl-10 rounded-xl" 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                />
+              </div>
+              
+              <Button 
+                onClick={() => setIsNewTicketModalOpen(true)} 
+                className="w-full bg-primary hover:bg-primary/90 rounded-xl"
+              >
+                Create New Ticket
+              </Button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {isLoadingTickets ? (
+                <div className="flex justify-center items-center p-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : filteredTickets.length === 0 ? (
+                <div className="text-center py-16">
+                  <Ticket className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p className="text-muted-foreground">No tickets found. Create a new ticket to get help.</p>
+                </div>
+              ) : (
+                filteredTickets.map(ticket => (
+                  <div 
+                    key={ticket.id} 
+                    className="bg-white p-4 rounded-xl border cursor-pointer hover:shadow-md transition-all duration-200" 
+                    onClick={() => handleTicketClick(ticket.id)}
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge variant="outline" className="text-xs">
+                            {ticket.category}
+                          </Badge>
+                          {getStatusBadge(ticket.status)}
+                        </div>
+                        <p className="font-medium text-sm">TIC-{ticket.id.substring(0, 3)}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{ticket.title}</p>
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatDate(ticket.created_at)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Mobile Chat View */}
+        {showMobileChat && selectedTicket && (
+          <div className="flex flex-col h-full">
+            {/* Chat Header */}
+            <div className="bg-white p-4 border-b flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={handleBackToList} className="rounded-xl">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="flex-1">
+                <h2 className="font-medium">TIC-{selectedTicket.id.substring(0, 3)}</h2>
+                <p className="text-sm text-muted-foreground">{selectedTicket.title}</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleCloseTicket} className="rounded-xl">
+                {selectedTicket.status === 'Closed' ? 'Reopen' : 'Close'}
+              </Button>
+            </div>
+            
+            {/* Chat Messages */}
+            <div className="flex-1 p-4 overflow-y-auto space-y-4">
+              {/* Initial ticket message */}
+              <div className="flex gap-3">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-medium text-primary">U</span>
+                  </div>
+                </div>
+                <div className="bg-white p-3 rounded-2xl rounded-tl-lg shadow-sm max-w-[85%] border">
+                  <p className="text-sm">{selectedTicket.content}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatDate(selectedTicket.created_at)}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Ticket messages */}
+              {ticketMessages.map(message => (
+                <div className="flex gap-3 justify-end" key={message.id}>
+                  <div className="bg-primary p-3 rounded-2xl rounded-tr-lg shadow-sm max-w-[85%]">
+                    <p className="text-sm text-white">{message.content}</p>
+                    <p className="text-xs text-primary-foreground/70 mt-1">
+                      {formatDate(message.created_at)}
+                    </p>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                      <span className="text-xs font-medium text-white">S</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Fixed Message Input */}
+            <div className="bg-white border-t p-4 safe-area-inset-bottom">
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <Textarea 
+                    placeholder="Type your message..." 
+                    className="min-h-10 max-h-20 resize-none rounded-xl border-gray-200 focus:ring-2 focus:ring-primary/20 pr-12" 
+                    value={newMessage} 
+                    onChange={(e) => setNewMessage(e.target.value)} 
+                    disabled={selectedTicket.status === 'Closed'}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }} 
+                  />
+                  <Button 
+                    size="icon" 
+                    className="absolute right-1 top-1 h-8 w-8 bg-primary hover:bg-primary/90 rounded-lg" 
+                    onClick={handleSendMessage} 
+                    disabled={selectedTicket.status === 'Closed' || addTicketMessageMutation.isPending || !newMessage.trim()}
+                  >
+                    {addTicketMessageMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Selection Modals */}
+        <OrderSelectionModal
+          open={showOrderModal}
+          onOpenChange={setShowOrderModal}
+          onSelect={setSelectedOrder}
+          selectedOrderId={selectedOrder?.id}
+        />
+
+        <PickupSelectionModal
+          open={showPickupModal}
+          onOpenChange={setShowPickupModal}
+          onSelect={setSelectedPickup}
+          selectedPickupId={selectedPickup?.id}
+        />
+
+        <InvoiceSelectionModal
+          open={showInvoiceModal}
+          onOpenChange={setShowInvoiceModal}
+          onSelect={setSelectedInvoice}
+          selectedInvoiceId={selectedInvoice?.id}
+        />
+
+        {/* New Ticket Dialog */}
+        <Dialog open={isNewTicketModalOpen} onOpenChange={(open) => {
+          setIsNewTicketModalOpen(open);
+          if (!open) resetForm();
+        }}>
+          <DialogContent className="sm:max-w-[400px] rounded-2xl mx-4">
+            <DialogHeader>
+              <DialogTitle>Create New Ticket</DialogTitle>
+            </DialogHeader>
+            
+            {currentStep === 1 ? renderStep1() : renderStep2()}
+            
+            <DialogFooter className="flex-col gap-2">
+              <Button 
+                onClick={handleCreateNewTicket} 
+                className="w-full bg-primary hover:bg-primary/90 rounded-xl order-1" 
+                disabled={createTicketMutation.isPending}
+              >
+                {createTicketMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                    Creating...
+                  </>
+                ) : (
+                  currentStep === 1 ? 'Next' : 'Create Ticket'
+                )}
+              </Button>
+              <Button variant="outline" onClick={() => {
+                setIsNewTicketModalOpen(false);
+                resetForm();
+              }} className="w-full rounded-xl order-2">
+                Cancel
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
