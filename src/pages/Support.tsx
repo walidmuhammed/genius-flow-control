@@ -635,12 +635,12 @@ const Support: React.FC = () => {
             </div>
           </div>
           
-          {/* Right Content */}
-          <div className="flex-1 flex flex-col h-full">
+          {/* Right Content - Fixed Layout Structure */}
+          <div className="flex-1 relative flex flex-col h-full">
             {selectedTicket ? (
               <>
                 {/* Ticket Header */}
-                <div className="p-6 border-b flex justify-between items-center bg-white">
+                <div className="p-6 border-b flex justify-between items-center bg-white shrink-0">
                   <div className="flex items-center">
                     <div>
                       <h2 className="text-lg font-medium flex items-center gap-2">
@@ -657,8 +657,8 @@ const Support: React.FC = () => {
                   </Button>
                 </div>
                 
-                {/* Chat Messages */}
-                <div className="flex-1 p-6 overflow-y-auto bg-gray-50">
+                {/* Chat Messages - Scrollable Area */}
+                <div className="flex-1 p-6 overflow-y-auto bg-gray-50" style={{ paddingBottom: '120px' }}>
                   <div className="space-y-6">
                     {/* Initial ticket message */}
                     <div className="flex gap-4">
@@ -694,8 +694,8 @@ const Support: React.FC = () => {
                   </div>
                 </div>
                 
-                {/* Message Input */}
-                <div className="border-t p-4 bg-white">
+                {/* Fixed Message Input Bar */}
+                <div className="absolute bottom-0 left-0 right-0 bg-white border-t p-4">
                   <div className="flex gap-3">
                     <Button variant="outline" size="icon" className="flex-shrink-0 rounded-xl">
                       <Paperclip className="h-5 w-5" />
@@ -811,14 +811,14 @@ const Support: React.FC = () => {
     );
   }
 
-  // Mobile layout
+  // Mobile layout with fixed input
   return (
     <MainLayout className="p-0">
-      <div className="flex flex-col h-full bg-gray-50">
+      <div className="flex flex-col h-screen bg-gray-50">
         {/* Mobile Ticket List View */}
         {!showMobileChat && (
           <>
-            <div className="bg-white p-4 border-b">
+            <div className="bg-white p-4 border-b shrink-0">
               <div className="mb-4">
                 <h1 className="text-xl font-bold">Support Tickets</h1>
                 <p className="text-sm text-muted-foreground">Contact our support team and track your tickets.</p>
@@ -891,25 +891,25 @@ const Support: React.FC = () => {
           </>
         )}
 
-        {/* Mobile Chat View */}
+        {/* Mobile Chat View with Fixed Input */}
         {showMobileChat && selectedTicket && (
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-screen">
             {/* Chat Header */}
-            <div className="bg-white p-4 border-b flex items-center gap-3">
+            <div className="bg-white p-4 border-b flex items-center gap-3 shrink-0">
               <Button variant="ghost" size="icon" onClick={handleBackToList} className="rounded-xl">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div className="flex-1">
                 <h2 className="font-medium">TIC-{selectedTicket.id.substring(0, 3)}</h2>
-                <p className="text-sm text-muted-foreground">{selectedTicket.title}</p>
+                <p className="text-sm text-muted-foreground truncate">{selectedTicket.title}</p>
               </div>
               <Button variant="outline" size="sm" onClick={handleCloseTicket} className="rounded-xl">
                 {selectedTicket.status === 'Closed' ? 'Reopen' : 'Close'}
               </Button>
             </div>
             
-            {/* Chat Messages */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-4">
+            {/* Chat Messages - Scrollable with bottom padding for fixed input */}
+            <div className="flex-1 p-4 overflow-y-auto space-y-4" style={{ paddingBottom: '100px' }}>
               {/* Initial ticket message */}
               <div className="flex gap-3">
                 <div className="flex-shrink-0">
@@ -943,8 +943,8 @@ const Support: React.FC = () => {
               ))}
             </div>
             
-            {/* Fixed Message Input */}
-            <div className="bg-white border-t p-4 safe-area-inset-bottom">
+            {/* Fixed Message Input Bar */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 pb-8">
               <div className="flex gap-2">
                 <div className="flex-1 relative">
                   <Textarea 
