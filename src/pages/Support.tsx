@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
-import { Search, Filter, Clock, Package, ArrowLeft, Package2, Wallet, FileText, Send, Loader2, Ticket } from 'lucide-react';
+import { Search, Filter, Clock, Package, ArrowLeft, Package2, Wallet, FileText, Send, Loader2, Ticket, Paperclip } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTickets, useTicket, useTicketMessages, useCreateTicket, useAddTicketMessage, useUpdateTicketStatus } from '@/hooks/use-tickets';
-import { useOrders } from '@/hooks/use-orders';
-import { usePickups } from '@/hooks/use-pickups';
-import { useInvoices } from '@/hooks/use-invoices';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import type { TicketCategory } from '@/services/tickets';
+import type { OrderWithCustomer } from '@/services/orders';
+import type { Pickup } from '@/services/pickups';
+import type { Invoice } from '@/services/invoices';
+import OrderSelectionModal from '@/components/support/OrderSelectionModal';
+import PickupSelectionModal from '@/components/support/PickupSelectionModal';
+import InvoiceSelectionModal from '@/components/support/InvoiceSelectionModal';
+
 const Support: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
@@ -24,29 +26,24 @@ const Support: React.FC = () => {
   const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [newTicketCategory, setNewTicketCategory] = useState<string>('');
-  const [selectedOrderId, setSelectedOrderId] = useState<string>('');
-  const [selectedPickupId, setSelectedPickupId] = useState<string>('');
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string>('');
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithCustomer | null>(null);
+  const [selectedPickup, setSelectedPickup] = useState<Pickup | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [selectedIssue, setSelectedIssue] = useState<string>('');
   const [showOtherField, setShowOtherField] = useState<boolean>(false);
   const [customMessage, setCustomMessage] = useState<string>('');
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+
+  // Modal states
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [showPickupModal, setShowPickupModal] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
   // Fetch tickets
   const {
     data: tickets = [],
     isLoading: isLoadingTickets
   } = useTickets();
-
-  // Fetch data for dropdowns
-  const {
-    data: orders = []
-  } = useOrders();
-  const {
-    data: pickups = []
-  } = usePickups();
-  const {
-    data: invoices = []
-  } = useInvoices();
 
   // Fetch selected ticket
   const {
@@ -63,16 +60,25 @@ const Support: React.FC = () => {
   const addTicketMessageMutation = useAddTicketMessage();
   const updateTicketStatusMutation = useUpdateTicketStatus();
 
-  // Filter tickets based on search query
-  const filteredTickets = tickets.filter(ticket => ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) || ticket.category.toLowerCase().includes(searchQuery.toLowerCase()) || ticket.id.includes(searchQuery));
+  // Filter tickets based on search query and active filter
+  const filteredTickets = tickets.filter(ticket => {
+    const matchesSearch = ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         ticket.category.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         ticket.id.includes(searchQuery);
+    
+    if (activeFilter === 'all') return matchesSearch;
+    return matchesSearch && ticket.status.toLowerCase() === activeFilter.toLowerCase();
+  });
 
   // Issue options for different categories
   const orderIssues = ['Delayed delivery', 'Missing item', 'Damaged order', 'Wrong delivery address', 'Order not delivered'];
   const pickupIssues = ['Delayed pickup', 'Pickup not completed', 'Wrong pickup address', 'Items not collected', 'Courier issues'];
   const walletIssues = ['Payment not received', 'Invoice discrepancy', 'Missing transaction', 'Incorrect amounts', 'Payment delays'];
+
   const handleTicketClick = (ticketId: string) => {
     setSelectedTicketId(ticketId);
   };
+
   const handleSendMessage = async () => {
     if (newMessage.trim() && selectedTicketId) {
       await addTicketMessageMutation.mutateAsync({
@@ -83,10 +89,12 @@ const Support: React.FC = () => {
       setNewMessage('');
     }
   };
+
   const handleCategorySelect = (category: string) => {
     setNewTicketCategory(category);
     setCurrentStep(2);
   };
+
   const handleCreateNewTicket = async () => {
     let ticketTitle = '';
     let ticketContent = '';
@@ -102,11 +110,10 @@ const Support: React.FC = () => {
           ticketTitle = 'Order Issue - Other';
           ticketContent = customMessage;
         } else {
-          if (!selectedOrderId || !selectedIssue) {
+          if (!selectedOrder || !selectedIssue) {
             toast.error('Please select an order and issue type');
             return;
           }
-          const selectedOrder = orders.find(o => o.id === selectedOrderId);
           ticketTitle = `Order Issue - ${selectedIssue}`;
           ticketContent = `Issue with order ${selectedOrder?.reference_number}: ${selectedIssue}`;
         }
@@ -120,11 +127,10 @@ const Support: React.FC = () => {
           ticketTitle = 'Pickup Issue - Other';
           ticketContent = customMessage;
         } else {
-          if (!selectedPickupId || !selectedIssue) {
+          if (!selectedPickup || !selectedIssue) {
             toast.error('Please select a pickup and issue type');
             return;
           }
-          const selectedPickup = pickups.find(p => p.id === selectedPickupId);
           ticketTitle = `Pickup Issue - ${selectedIssue}`;
           ticketContent = `Issue with pickup ${selectedPickup?.pickup_id}: ${selectedIssue}`;
         }
@@ -138,11 +144,10 @@ const Support: React.FC = () => {
           ticketTitle = 'Payment Issue - Other';
           ticketContent = customMessage;
         } else {
-          if (!selectedInvoiceId || !selectedIssue) {
+          if (!selectedInvoice || !selectedIssue) {
             toast.error('Please select an invoice and issue type');
             return;
           }
-          const selectedInvoice = invoices.find(i => i.id === selectedInvoiceId);
           ticketTitle = `Payment Issue - ${selectedIssue}`;
           ticketContent = `Issue with invoice ${selectedInvoice?.invoice_id}: ${selectedIssue}`;
         }
@@ -156,27 +161,31 @@ const Support: React.FC = () => {
         ticketContent = customMessage;
         break;
     }
+
     const newTicket = await createTicketMutation.mutateAsync({
       category: getCategoryTitle(newTicketCategory),
       title: ticketTitle,
       content: ticketContent
     });
+
     if (newTicket) {
       setIsNewTicketModalOpen(false);
       resetForm();
       setSelectedTicketId(newTicket.id);
     }
   };
+
   const resetForm = () => {
     setCurrentStep(1);
     setNewTicketCategory('');
-    setSelectedOrderId('');
-    setSelectedPickupId('');
-    setSelectedInvoiceId('');
+    setSelectedOrder(null);
+    setSelectedPickup(null);
+    setSelectedInvoice(null);
     setSelectedIssue('');
     setShowOtherField(false);
     setCustomMessage('');
   };
+
   const handleCloseTicket = async () => {
     if (selectedTicketId) {
       await updateTicketStatusMutation.mutateAsync({
@@ -186,18 +195,20 @@ const Support: React.FC = () => {
       setSelectedTicketId(null);
     }
   };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Open':
-        return <Badge className="bg-blue-500">Open</Badge>;
+        return <Badge className="bg-blue-500 text-white">New</Badge>;
       case 'Resolved':
-        return <Badge className="bg-green-500">Resolved</Badge>;
+        return <Badge className="bg-green-500 text-white">Resolved</Badge>;
       case 'Closed':
-        return <Badge variant="outline" className="bg-red-500 text-white">Closed</Badge>;
+        return <Badge className="bg-gray-500 text-white">Closed</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge className="bg-purple-500 text-white">Processing</Badge>;
     }
   };
+
   const getCategoryTitle = (categoryKey: string): TicketCategory => {
     switch (categoryKey) {
       case 'orders':
@@ -216,6 +227,7 @@ const Support: React.FC = () => {
         return 'Other';
     }
   };
+
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'dd MMM yyyy, hh:mm a');
@@ -223,17 +235,20 @@ const Support: React.FC = () => {
       return dateString;
     }
   };
+
   const goBackToStep1 = () => {
     setCurrentStep(1);
     setNewTicketCategory('');
-    setSelectedOrderId('');
-    setSelectedPickupId('');
-    setSelectedInvoiceId('');
+    setSelectedOrder(null);
+    setSelectedPickup(null);
+    setSelectedInvoice(null);
     setSelectedIssue('');
     setShowOtherField(false);
     setCustomMessage('');
   };
-  const renderStep1 = () => <div className="space-y-4">
+
+  const renderStep1 = () => (
+    <div className="space-y-4">
       <DialogDescription>
         Tell us which category fits your issue
       </DialogDescription>
@@ -272,11 +287,14 @@ const Support: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
+
   const renderStep2 = () => {
     switch (newTicketCategory) {
       case 'orders':
-        return <div className="space-y-6">
+        return (
+          <div className="space-y-6">
             <div className="flex items-center gap-2 mb-4">
               <Button variant="ghost" size="sm" onClick={goBackToStep1}>
                 <ArrowLeft className="h-4 w-4" />
@@ -290,44 +308,58 @@ const Support: React.FC = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="order">Select Order</Label>
-                <Select value={selectedOrderId} onValueChange={setSelectedOrderId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose an order..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {orders.map(order => <SelectItem key={order.id} value={order.id}>
-                        {order.reference_number} - {order.customer?.name}
-                      </SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start h-auto p-4"
+                  onClick={() => setShowOrderModal(true)}
+                >
+                  {selectedOrder ? (
+                    <div className="text-left">
+                      <div className="font-medium">{selectedOrder.reference_number}</div>
+                      <div className="text-sm text-muted-foreground">{selectedOrder.customer.name}</div>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">Choose an order...</span>
+                  )}
+                </Button>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="issue">Issue Type</Label>
-                <Select value={selectedIssue} onValueChange={setSelectedIssue}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="What's the issue?" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {orderIssues.map(issue => <SelectItem key={issue} value={issue}>
-                        {issue}
-                      </SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <select 
+                  value={selectedIssue} 
+                  onChange={(e) => setSelectedIssue(e.target.value)}
+                  className="w-full p-3 border rounded-lg bg-background"
+                >
+                  <option value="">What's the issue?</option>
+                  {orderIssues.map(issue => (
+                    <option key={issue} value={issue}>{issue}</option>
+                  ))}
+                </select>
               </div>
               
               <Button variant="outline" onClick={() => setShowOtherField(!showOtherField)} className="w-full" type="button">
                 Other
               </Button>
               
-              {showOtherField && <div className="space-y-2">
+              {showOtherField && (
+                <div className="space-y-2">
                   <Label htmlFor="custom-message">Describe your issue</Label>
-                  <Textarea id="custom-message" value={customMessage} onChange={e => setCustomMessage(e.target.value)} placeholder="Please describe your issue in detail..." rows={3} />
-                </div>}
+                  <Textarea 
+                    id="custom-message" 
+                    value={customMessage} 
+                    onChange={(e) => setCustomMessage(e.target.value)} 
+                    placeholder="Please describe your issue in detail..." 
+                    rows={3} 
+                  />
+                </div>
+              )}
             </div>
-          </div>;
+          </div>
+        );
       case 'pickups':
-        return <div className="space-y-6">
+        return (
+          <div className="space-y-6">
             <div className="flex items-center gap-2 mb-4">
               <Button variant="ghost" size="sm" onClick={goBackToStep1}>
                 <ArrowLeft className="h-4 w-4" />
@@ -341,44 +373,58 @@ const Support: React.FC = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="pickup">Select Pickup</Label>
-                <Select value={selectedPickupId} onValueChange={setSelectedPickupId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a pickup..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {pickups.map(pickup => <SelectItem key={pickup.id} value={pickup.id}>
-                        {pickup.pickup_id} - {pickup.location}
-                      </SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start h-auto p-4"
+                  onClick={() => setShowPickupModal(true)}
+                >
+                  {selectedPickup ? (
+                    <div className="text-left">
+                      <div className="font-medium">{selectedPickup.pickup_id}</div>
+                      <div className="text-sm text-muted-foreground">{selectedPickup.location}</div>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">Choose a pickup...</span>
+                  )}
+                </Button>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="issue">Issue Type</Label>
-                <Select value={selectedIssue} onValueChange={setSelectedIssue}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="What's the issue?" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {pickupIssues.map(issue => <SelectItem key={issue} value={issue}>
-                        {issue}
-                      </SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <select 
+                  value={selectedIssue} 
+                  onChange={(e) => setSelectedIssue(e.target.value)}
+                  className="w-full p-3 border rounded-lg bg-background"
+                >
+                  <option value="">What's the issue?</option>
+                  {pickupIssues.map(issue => (
+                    <option key={issue} value={issue}>{issue}</option>
+                  ))}
+                </select>
               </div>
               
               <Button variant="outline" onClick={() => setShowOtherField(!showOtherField)} className="w-full" type="button">
                 Other
               </Button>
               
-              {showOtherField && <div className="space-y-2">
+              {showOtherField && (
+                <div className="space-y-2">
                   <Label htmlFor="custom-message">Describe your issue</Label>
-                  <Textarea id="custom-message" value={customMessage} onChange={e => setCustomMessage(e.target.value)} placeholder="Please describe your issue in detail..." rows={3} />
-                </div>}
+                  <Textarea 
+                    id="custom-message" 
+                    value={customMessage} 
+                    onChange={(e) => setCustomMessage(e.target.value)} 
+                    placeholder="Please describe your issue in detail..." 
+                    rows={3} 
+                  />
+                </div>
+              )}
             </div>
-          </div>;
+          </div>
+        );
       case 'payment':
-        return <div className="space-y-6">
+        return (
+          <div className="space-y-6">
             <div className="flex items-center gap-2 mb-4">
               <Button variant="ghost" size="sm" onClick={goBackToStep1}>
                 <ArrowLeft className="h-4 w-4" />
@@ -392,44 +438,58 @@ const Support: React.FC = () => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="invoice">Select Invoice</Label>
-                <Select value={selectedInvoiceId} onValueChange={setSelectedInvoiceId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose an invoice..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {invoices.map(invoice => <SelectItem key={invoice.id} value={invoice.id}>
-                        {invoice.invoice_id} - ${invoice.net_payout_usd}
-                      </SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start h-auto p-4"
+                  onClick={() => setShowInvoiceModal(true)}
+                >
+                  {selectedInvoice ? (
+                    <div className="text-left">
+                      <div className="font-medium">{selectedInvoice.invoice_id}</div>
+                      <div className="text-sm text-muted-foreground">${selectedInvoice.net_payout_usd}</div>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">Choose an invoice...</span>
+                  )}
+                </Button>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="issue">Issue Type</Label>
-                <Select value={selectedIssue} onValueChange={setSelectedIssue}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="What's the issue?" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {walletIssues.map(issue => <SelectItem key={issue} value={issue}>
-                        {issue}
-                      </SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <select 
+                  value={selectedIssue} 
+                  onChange={(e) => setSelectedIssue(e.target.value)}
+                  className="w-full p-3 border rounded-lg bg-background"
+                >
+                  <option value="">What's the issue?</option>
+                  {walletIssues.map(issue => (
+                    <option key={issue} value={issue}>{issue}</option>
+                  ))}
+                </select>
               </div>
               
               <Button variant="outline" onClick={() => setShowOtherField(!showOtherField)} className="w-full" type="button">
                 Other
               </Button>
               
-              {showOtherField && <div className="space-y-2">
+              {showOtherField && (
+                <div className="space-y-2">
                   <Label htmlFor="custom-message">Describe your issue</Label>
-                  <Textarea id="custom-message" value={customMessage} onChange={e => setCustomMessage(e.target.value)} placeholder="Please describe your issue in detail..." rows={3} />
-                </div>}
+                  <Textarea 
+                    id="custom-message" 
+                    value={customMessage} 
+                    onChange={(e) => setCustomMessage(e.target.value)} 
+                    placeholder="Please describe your issue in detail..." 
+                    rows={3} 
+                  />
+                </div>
+              )}
             </div>
-          </div>;
+          </div>
+        );
       case 'others':
-        return <div className="space-y-6">
+        return (
+          <div className="space-y-6">
             <div className="flex items-center gap-2 mb-4">
               <Button variant="ghost" size="sm" onClick={goBackToStep1}>
                 <ArrowLeft className="h-4 w-4" />
@@ -442,73 +502,116 @@ const Support: React.FC = () => {
             
             <div className="space-y-2">
               <Label htmlFor="custom-message">Describe your issue</Label>
-              <Textarea id="custom-message" value={customMessage} onChange={e => setCustomMessage(e.target.value)} placeholder="Please describe your issue in detail..." rows={4} />
+              <Textarea 
+                id="custom-message" 
+                value={customMessage} 
+                onChange={(e) => setCustomMessage(e.target.value)} 
+                placeholder="Please describe your issue in detail..." 
+                rows={4} 
+              />
             </div>
-          </div>;
+          </div>
+        );
       default:
         return null;
     }
   };
-  return <MainLayout className="p-0">
-      <div className="flex h-full">
-        <div className="w-1/3 border-r h-full flex flex-col">
-          <div className="p-6 border-b">
+
+  return (
+    <MainLayout className="p-0">
+      <div className="flex h-full flex-col lg:flex-row">
+        {/* Left Sidebar */}
+        <div className="w-full lg:w-1/3 border-r h-full flex flex-col">
+          <div className="p-4 lg:p-6 border-b">
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h1 className="text-xl font-bold">Support Tickets</h1>
-                <p className="text-sm text-muted-foreground">Contact our support team and to help you anytime and track your tickets.</p>
+                <p className="text-sm text-muted-foreground">Contact our support team and track your tickets.</p>
               </div>
             </div>
-            <h2 className="text-lg font-medium mt-4 mb-2">Your Tickets List</h2>
-            <div className="relative">
+
+            {/* Filter Tabs */}
+            <Tabs defaultValue="all" value={activeFilter} onValueChange={setActiveFilter} className="mb-4">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+                <TabsTrigger value="open" className="text-xs">New</TabsTrigger>
+                <TabsTrigger value="processing" className="text-xs">Process</TabsTrigger>
+                <TabsTrigger value="resolved" className="text-xs">Resolved</TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input placeholder="Search for ticket..." className="pl-10" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+              <Input 
+                placeholder="Search by ticket ID or subject..." 
+                className="pl-10" 
+                value={searchQuery} 
+                onChange={(e) => setSearchQuery(e.target.value)} 
+              />
             </div>
             
-            <div className="flex justify-between mt-4">
-              <Button onClick={() => setIsNewTicketModalOpen(true)} className="w-full bg-primary hover:bg-primary/90">
-                Create New Ticket
-              </Button>
-            </div>
+            <Button 
+              onClick={() => setIsNewTicketModalOpen(true)} 
+              className="w-full bg-primary hover:bg-primary/90"
+            >
+              Create New Ticket
+            </Button>
           </div>
           
-          <div className="p-4 text-sm text-muted-foreground">
-            Tickets ( {filteredTickets.length} )
+          <div className="p-4 text-sm text-muted-foreground border-b">
+            Tickets ({filteredTickets.length})
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {isLoadingTickets ? <div className="flex justify-center items-center p-8">
+            {isLoadingTickets ? (
+              <div className="flex justify-center items-center p-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div> : filteredTickets.length === 0 ? <div className="p-8 text-center text-muted-foreground">
-                <Package className="h-12 w-12 mx-auto mb-4 opacity-20" />
+              </div>
+            ) : filteredTickets.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                <Ticket className="h-12 w-12 mx-auto mb-4 opacity-20" />
                 <p>No tickets found. Create a new ticket to get help.</p>
-              </div> : filteredTickets.map(ticket => <div key={ticket.id} className={`p-4 border-b cursor-pointer hover:bg-muted/40 transition-colors ${selectedTicketId === ticket.id ? 'bg-muted/40' : ''}`} onClick={() => handleTicketClick(ticket.id)}>
-                  <div className="flex justify-between">
-                    <Badge variant="outline" className="bg-muted/80 text-muted-foreground">
+              </div>
+            ) : (
+              filteredTickets.map(ticket => (
+                <div 
+                  key={ticket.id} 
+                  className={`p-4 border-b cursor-pointer hover:bg-muted/40 transition-colors ${
+                    selectedTicketId === ticket.id ? 'bg-muted/40 border-l-4 border-l-primary' : ''
+                  }`} 
+                  onClick={() => handleTicketClick(ticket.id)}
+                >
+                  <div className="flex justify-between mb-2">
+                    <Badge variant="outline" className="bg-muted/80 text-muted-foreground text-xs">
                       {ticket.category}
                     </Badge>
                     {getStatusBadge(ticket.status)}
                   </div>
 
-                  <div className="mt-2">
-                    <p className="font-medium">Ticket ID {ticket.id.substring(0, 6)}</p>
+                  <div className="mb-2">
+                    <p className="font-medium text-sm">TIC-{ticket.id.substring(0, 3)}</p>
                     <p className="text-sm text-muted-foreground truncate">{ticket.title}</p>
                   </div>
 
-                  <div className="mt-2 text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     {formatDate(ticket.created_at)}
                   </div>
-                </div>)}
+                </div>
+              ))
+            )}
           </div>
         </div>
         
+        {/* Right Content */}
         <div className="flex-1 flex flex-col h-full">
-          {selectedTicket ? <>
-              <div className="p-6 border-b flex justify-between items-center">
+          {selectedTicket ? (
+            <>
+              {/* Ticket Header */}
+              <div className="p-4 lg:p-6 border-b flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-2 lg:space-y-0">
                 <div className="flex items-center">
                   <div>
                     <h2 className="text-lg font-medium flex items-center gap-2">
-                      Ticket ID {selectedTicket.id.substring(0, 6)}
+                      TIC-{selectedTicket.id.substring(0, 3)}
                     </h2>
                     <p className="text-muted-foreground">{selectedTicket.title}</p>
                     <Badge variant="outline" className="bg-muted/80 text-muted-foreground mt-1">
@@ -521,8 +624,10 @@ const Support: React.FC = () => {
                 </Button>
               </div>
               
-              <div className="flex-1 p-6 overflow-y-auto">
+              {/* Chat Messages */}
+              <div className="flex-1 p-4 lg:p-6 overflow-y-auto">
                 <div className="space-y-6">
+                  {/* Initial ticket message */}
                   <div className="flex gap-4">
                     <div className="flex-shrink-0">
                       <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
@@ -537,57 +642,102 @@ const Support: React.FC = () => {
                     </div>
                   </div>
                   
-                  {ticketMessages.map(message => <div className="flex gap-4" key={message.id}>
+                  {/* Ticket messages */}
+                  {ticketMessages.map(message => (
+                    <div className="flex gap-4" key={message.id}>
                       <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                           {message.sender.charAt(0)}
                         </div>
                       </div>
-                      <div className="bg-muted p-4 rounded-lg rounded-tl-none max-w-[80%]">
+                      <div className="bg-primary/10 p-4 rounded-lg rounded-tl-none max-w-[80%]">
                         <p>{message.content}</p>
                         <p className="text-xs text-muted-foreground mt-2">
                           {formatDate(message.created_at)}
                         </p>
                       </div>
-                    </div>)}
+                    </div>
+                  ))}
                 </div>
               </div>
               
+              {/* Message Input */}
               <div className="border-t p-4">
                 <div className="flex gap-2">
                   <Button variant="outline" size="icon" className="flex-shrink-0">
-                    <Package className="h-5 w-5" />
+                    <Paperclip className="h-5 w-5" />
                   </Button>
-                  <Textarea placeholder="Type your message..." className="min-h-12 resize-none" value={newMessage} onChange={e => setNewMessage(e.target.value)} disabled={selectedTicket.status === 'Closed'} onKeyDown={e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }} />
-                  <Button size="icon" className="flex-shrink-0 bg-primary hover:bg-primary/90" onClick={handleSendMessage} disabled={selectedTicket.status === 'Closed' || addTicketMessageMutation.isPending || !newMessage.trim()}>
-                    {addTicketMessageMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                  <Textarea 
+                    placeholder="Type your message..." 
+                    className="min-h-12 resize-none" 
+                    value={newMessage} 
+                    onChange={(e) => setNewMessage(e.target.value)} 
+                    disabled={selectedTicket.status === 'Closed'}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }} 
+                  />
+                  <Button 
+                    size="icon" 
+                    className="flex-shrink-0 bg-primary hover:bg-primary/90" 
+                    onClick={handleSendMessage} 
+                    disabled={selectedTicket.status === 'Closed' || addTicketMessageMutation.isPending || !newMessage.trim()}
+                  >
+                    {addTicketMessageMutation.isPending ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Send className="h-5 w-5" />
+                    )}
                   </Button>
                 </div>
               </div>
-            </> : <div className="flex flex-col items-center justify-center h-full text-center p-60 px-[122px]">
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-center p-8 lg:p-16">
               <div className="mb-4">
                 <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-                  <Package className="h-8 w-8 text-muted-foreground" />
+                  <Ticket className="h-8 w-8 text-muted-foreground" />
                 </div>
               </div>
               <h3 className="text-lg font-medium">No ticket selected</h3>
-              <p className="text-muted-foreground mt-2">Select a ticket from the list or create a new one to start a conversation.</p>
+              <p className="text-muted-foreground mt-2 max-w-md">Select a ticket from the list or create a new one to start a conversation with our support team.</p>
               <Button className="mt-4 bg-primary hover:bg-primary/90" onClick={() => setIsNewTicketModalOpen(true)}>
                 Create New Ticket
               </Button>
-            </div>}
+            </div>
+          )}
         </div>
 
+        {/* Selection Modals */}
+        <OrderSelectionModal
+          open={showOrderModal}
+          onOpenChange={setShowOrderModal}
+          onSelect={setSelectedOrder}
+          selectedOrderId={selectedOrder?.id}
+        />
+
+        <PickupSelectionModal
+          open={showPickupModal}
+          onOpenChange={setShowPickupModal}
+          onSelect={setSelectedPickup}
+          selectedPickupId={selectedPickup?.id}
+        />
+
+        <InvoiceSelectionModal
+          open={showInvoiceModal}
+          onOpenChange={setShowInvoiceModal}
+          onSelect={setSelectedInvoice}
+          selectedInvoiceId={selectedInvoice?.id}
+        />
+
         {/* New Ticket Dialog */}
-        <Dialog open={isNewTicketModalOpen} onOpenChange={open => {
-        setIsNewTicketModalOpen(open);
-        if (!open) resetForm();
-      }}>
+        <Dialog open={isNewTicketModalOpen} onOpenChange={(open) => {
+          setIsNewTicketModalOpen(open);
+          if (!open) resetForm();
+        }}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Create New Ticket</DialogTitle>
@@ -597,18 +747,33 @@ const Support: React.FC = () => {
             
             <DialogFooter>
               <Button variant="outline" onClick={() => {
-              setIsNewTicketModalOpen(false);
-              resetForm();
-            }}>
+                setIsNewTicketModalOpen(false);
+                resetForm();
+              }}>
                 Cancel
               </Button>
-              {currentStep === 2 && <Button onClick={handleCreateNewTicket} className="bg-primary hover:bg-primary/90" disabled={createTicketMutation.isPending}>
-                  {createTicketMutation.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating...</> : 'Create Ticket'}
-                </Button>}
+              {currentStep === 2 && (
+                <Button 
+                  onClick={handleCreateNewTicket} 
+                  className="bg-primary hover:bg-primary/90" 
+                  disabled={createTicketMutation.isPending}
+                >
+                  {createTicketMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                      Creating...
+                    </>
+                  ) : (
+                    'Create Ticket'
+                  )}
+                </Button>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
-    </MainLayout>;
+    </MainLayout>
+  );
 };
+
 export default Support;
