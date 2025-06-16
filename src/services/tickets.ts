@@ -85,13 +85,23 @@ export async function createTicket(ticket: {
   try {
     console.log('Creating ticket with data:', ticket);
     
+    // Get the current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      console.error('User not authenticated:', userError);
+      toast.error('You must be logged in to create a support ticket');
+      return null;
+    }
+    
     const { data, error } = await supabase
       .from('tickets')
       .insert([{
         category: ticket.category,
         title: ticket.title,
         content: ticket.content,
-        status: 'Open'
+        status: 'Open',
+        created_by: user.id
       }])
       .select()
       .single();
@@ -118,9 +128,21 @@ export async function addTicketMessage(message: {
   content: string;
 }) {
   try {
+    // Get the current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      console.error('User not authenticated:', userError);
+      toast.error('You must be logged in to send a message');
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('ticket_messages')
-      .insert([message])
+      .insert([{
+        ...message,
+        created_by: user.id
+      }])
       .select()
       .single();
 
