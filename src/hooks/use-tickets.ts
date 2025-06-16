@@ -17,7 +17,9 @@ import { toast } from 'sonner';
 export function useTickets() {
   return useQuery({
     queryKey: ['tickets'],
-    queryFn: getTickets
+    queryFn: getTickets,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000 // Refetch every 30 seconds
   });
 }
 
@@ -43,12 +45,13 @@ export function useCreateTicket() {
   return useMutation({
     mutationFn: createTicket,
     onSuccess: (newTicket) => {
+      // Immediately invalidate and refetch tickets
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
-      toast.success('Support ticket created successfully');
+      console.log('Ticket created, invalidating queries...');
     },
     onError: (error) => {
+      console.error('Error in useCreateTicket:', error);
       toast.error('Failed to create support ticket');
-      console.error('Error creating ticket:', error);
     }
   });
 }

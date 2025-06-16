@@ -42,7 +42,8 @@ const Support: React.FC = () => {
   // Fetch tickets
   const {
     data: tickets = [],
-    isLoading: isLoadingTickets
+    isLoading: isLoadingTickets,
+    refetch: refetchTickets
   } = useTickets();
 
   // Fetch selected ticket
@@ -98,6 +99,8 @@ const Support: React.FC = () => {
   const handleCreateNewTicket = async () => {
     let ticketTitle = '';
     let ticketContent = '';
+
+    console.log('Creating ticket with category:', newTicketCategory);
 
     // Generate title and content based on category and selections
     switch (newTicketCategory) {
@@ -162,16 +165,28 @@ const Support: React.FC = () => {
         break;
     }
 
-    const newTicket = await createTicketMutation.mutateAsync({
-      category: getCategoryTitle(newTicketCategory),
-      title: ticketTitle,
-      content: ticketContent
-    });
+    console.log('Creating ticket:', { title: ticketTitle, content: ticketContent, category: getCategoryTitle(newTicketCategory) });
 
-    if (newTicket) {
-      setIsNewTicketModalOpen(false);
-      resetForm();
-      setSelectedTicketId(newTicket.id);
+    try {
+      const newTicket = await createTicketMutation.mutateAsync({
+        category: getCategoryTitle(newTicketCategory),
+        title: ticketTitle,
+        content: ticketContent
+      });
+
+      if (newTicket) {
+        console.log('Ticket created successfully:', newTicket);
+        setIsNewTicketModalOpen(false);
+        resetForm();
+        setSelectedTicketId(newTicket.id);
+        
+        // Force refetch tickets to ensure the new one appears
+        setTimeout(() => {
+          refetchTickets();
+        }, 500);
+      }
+    } catch (error) {
+      console.error('Failed to create ticket:', error);
     }
   };
 

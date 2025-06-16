@@ -35,13 +35,13 @@ const InvoiceSelectionModal: React.FC<InvoiceSelectionModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] h-[600px] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col bg-background border shadow-lg">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Select Invoice</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 flex-1 flex flex-col">
-          <div className="relative">
+        <div className="space-y-4 flex-1 flex flex-col min-h-0">
+          <div className="relative flex-shrink-0">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search invoices by ID or merchant..."
@@ -51,7 +51,7 @@ const InvoiceSelectionModal: React.FC<InvoiceSelectionModalProps> = ({
             />
           </div>
           
-          <div className="flex-1 overflow-y-auto space-y-2">
+          <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
             {filteredInvoices.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <FileText className="h-12 w-12 text-muted-foreground mb-4" />
@@ -81,7 +81,7 @@ const InvoiceSelectionModal: React.FC<InvoiceSelectionModalProps> = ({
             )}
           </div>
           
-          <div className="flex justify-end gap-2 pt-4 border-t">
+          <div className="flex justify-end gap-2 pt-4 border-t flex-shrink-0">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>

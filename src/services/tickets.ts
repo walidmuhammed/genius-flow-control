@@ -12,6 +12,7 @@ export type TicketStatus = 'Open' | 'Resolved' | 'Closed';
 
 export async function getTickets() {
   try {
+    console.log('Fetching tickets...');
     const { data, error } = await supabase
       .from('tickets')
       .select('*')
@@ -23,6 +24,7 @@ export async function getTickets() {
       return [];
     }
 
+    console.log('Fetched tickets:', data);
     return data || [];
   } catch (error) {
     console.error('Unexpected error fetching tickets:', error);
@@ -81,6 +83,8 @@ export async function createTicket(ticket: {
   content: string;
 }) {
   try {
+    console.log('Creating ticket with data:', ticket);
+    
     const { data, error } = await supabase
       .from('tickets')
       .insert([{
@@ -93,11 +97,12 @@ export async function createTicket(ticket: {
       .single();
 
     if (error) {
-      console.error('Error creating ticket:', error);
-      toast.error('Failed to create support ticket');
+      console.error('Database error creating ticket:', error);
+      toast.error(`Failed to create support ticket: ${error.message}`);
       return null;
     }
 
+    console.log('Ticket created successfully:', data);
     toast.success('Support ticket created successfully');
     return data;
   } catch (error) {
