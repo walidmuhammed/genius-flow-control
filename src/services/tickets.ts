@@ -93,16 +93,22 @@ export async function createTicket(ticket: {
       toast.error('You must be logged in to create a support ticket');
       return null;
     }
+
+    console.log('User authenticated:', user.id);
+    
+    const ticketData = {
+      category: ticket.category,
+      title: ticket.title,
+      content: ticket.content,
+      status: 'Open' as const,
+      created_by: user.id
+    };
+
+    console.log('Inserting ticket with data:', ticketData);
     
     const { data, error } = await supabase
       .from('tickets')
-      .insert([{
-        category: ticket.category,
-        title: ticket.title,
-        content: ticket.content,
-        status: 'Open',
-        created_by: user.id
-      }])
+      .insert([ticketData])
       .select()
       .single();
 
