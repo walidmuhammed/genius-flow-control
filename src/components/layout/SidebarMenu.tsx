@@ -3,11 +3,10 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Package, Truck, Home, Clock, Users, Wallet, BarChart3, Settings, Ticket } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 
 interface SidebarMenuProps {
   collapsed: boolean;
-  onNavigate?: () => void; // Added for mobile sidebar close
+  onNavigate?: () => void;
 }
 
 interface MenuItem {
@@ -58,14 +57,8 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onNavigate }) => {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="px-4">
       <div className="space-y-1">
-        <div className="mb-2">
-          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 px-4">
-            Main
-          </h3>
-        </div>
-        
         {mainMenuItems.map(item => (
           <MenuItem 
             key={item.path} 
@@ -90,40 +83,32 @@ interface MenuItemProps {
 const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, collapsed, onNavigate }) => {
   return (
     <Link to={item.path} onClick={onNavigate}>
-      <motion.div 
+      <div 
         className={cn(
-          "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium mb-1 transition-all duration-200", 
+          "relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
           isActive 
-            ? "bg-gray-200 dark:bg-gray-800 text-[#DC291E] dark:text-[#DC291E]" 
-            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
-        )} 
-        whileHover={{ 
-          x: 4,
-          transition: { duration: 0.2 }
-        }}
-        whileTap={{ scale: 0.98 }}
+            ? "text-[#DC291E] bg-[#DC291E]/5" 
+            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900"
+        )}
       >
+        {/* Active indicator - clean left border */}
+        {isActive && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#DC291E] rounded-full" />
+        )}
+        
         <span className={cn(
-          "flex items-center justify-center transition-all duration-200", 
-          isActive 
-            ? "text-[#DC291E]" 
-            : "text-gray-600 dark:text-gray-400"
+          "flex items-center justify-center transition-colors",
+          isActive ? "text-[#DC291E]" : "text-gray-500 dark:text-gray-400"
         )}>
           {item.icon}
         </span>
         
-        <span className={cn(
-          "transition-all duration-200",
-          isActive 
-            ? "font-medium" 
-            : ""
-        )}>
+        <span className="transition-colors">
           {item.label}
         </span>
-      </motion.div>
+      </div>
     </Link>
   );
 };
 
 export default SidebarMenu;
-
