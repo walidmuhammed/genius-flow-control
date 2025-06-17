@@ -110,7 +110,7 @@ const Dashboard: React.FC = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              Helloooo, Admin
+              Hello, Admin
             </motion.h2>
             <motion.p 
               className={cn(
