@@ -21,44 +21,44 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ collapsed, onNavigate }) => {
   const mainMenuItems: MenuItem[] = [
     {
       label: 'Dashboard',
-      icon: <Home className="h-4 w-4" />,
+      icon: <Home className="h-5 w-5" />,
       path: '/'
     }, 
     {
       label: 'Orders',
-      icon: <Package className="h-4 w-4" />,
+      icon: <Package className="h-5 w-5" />,
       path: '/orders'
     }, 
     {
       label: 'Pickups',
-      icon: <Clock className="h-4 w-4" />,
+      icon: <Clock className="h-5 w-5" />,
       path: '/pickups'
     }, 
     {
       label: 'Customers',
-      icon: <Users className="h-4 w-4" />,
+      icon: <Users className="h-5 w-5" />,
       path: '/customers'
     }, 
     {
       label: 'Wallet',
-      icon: <Wallet className="h-4 w-4" />,
+      icon: <Wallet className="h-5 w-5" />,
       path: '/wallet'
     }, 
     {
       label: 'Analytics',
-      icon: <BarChart3 className="h-4 w-4" />,
+      icon: <BarChart3 className="h-5 w-5" />,
       path: '/analytics'
     },
     {
       label: 'Support',
-      icon: <Ticket className="h-4 w-4" />,
+      icon: <Ticket className="h-5 w-5" />,
       path: '/support'
     }
   ];
 
   return (
-    <div className="px-4">
-      <div className="space-y-1">
+    <div className="px-6">
+      <div className="space-y-2">
         {mainMenuItems.map(item => (
           <MenuItem 
             key={item.path} 
@@ -85,17 +85,12 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, collapsed, onNaviga
     <Link to={item.path} onClick={onNavigate}>
       <div 
         className={cn(
-          "relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
+          "relative flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium transition-all duration-200 group",
           isActive 
-            ? "text-[#DC291E] bg-[#DC291E]/5" 
-            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900"
+            ? "text-[#DC291E] bg-gray-50 dark:bg-gray-800/50" 
+            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50/50 dark:hover:bg-gray-800/30"
         )}
       >
-        {/* Active indicator - clean left border */}
-        {isActive && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#DC291E] rounded-full" />
-        )}
-        
         <span className={cn(
           "flex items-center justify-center transition-colors",
           isActive ? "text-[#DC291E]" : "text-gray-500 dark:text-gray-400"
@@ -103,7 +98,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, collapsed, onNaviga
           {item.icon}
         </span>
         
-        <span className="transition-colors">
+        <span className="transition-colors text-base">
           {item.label}
         </span>
       </div>

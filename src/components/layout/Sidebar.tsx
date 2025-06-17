@@ -59,50 +59,50 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         </div>
         
         {/* Menu */}
-        <div className="flex-1 overflow-y-auto py-6">
+        <div className="flex-1 overflow-y-auto py-8">
           <SidebarMenu collapsed={false} onNavigate={handleMenuClick} />
         </div>
 
         {/* Footer Actions */}
-        <div className="border-t border-gray-50 dark:border-gray-800 p-4 space-y-1">
+        <div className="border-t border-gray-50 dark:border-gray-800 p-6 space-y-2">
           <Link to="/settings" onClick={handleMenuClick}>
             <div
               className={cn(
-                "flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                "hover:bg-gray-50 dark:hover:bg-gray-900",
+                "flex items-center gap-4 w-full px-4 py-4 rounded-xl text-sm font-medium transition-all duration-200",
+                "hover:bg-gray-50/50 dark:hover:bg-gray-800/30",
                 location.pathname === '/settings'
-                  ? "text-[#DC291E] bg-gray-50 dark:bg-gray-900"
-                  : "text-gray-700 dark:text-gray-300"
+                  ? "text-[#DC291E] bg-gray-50 dark:bg-gray-800/50"
+                  : "text-gray-600 dark:text-gray-400"
               )}
             >
-              <Settings className="h-4 w-4" />
-              <span>Settings</span>
+              <Settings className="h-5 w-5" />
+              <span className="text-base">Settings</span>
             </div>
           </Link>
           
           <button
             onClick={toggleDarkMode}
-            className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+            className="flex items-center gap-4 w-full px-4 py-4 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 hover:text-gray-900 dark:hover:text-gray-200 transition-all duration-200"
           >
             {darkMode ? (
               <>
-                <Sun className="h-4 w-4" />
-                <span>Light Mode</span>
+                <Sun className="h-5 w-5" />
+                <span className="text-base">Light Mode</span>
               </>
             ) : (
               <>
-                <Moon className="h-4 w-4" />
-                <span>Dark Mode</span>
+                <Moon className="h-5 w-5" />
+                <span className="text-base">Dark Mode</span>
               </>
             )}
           </button>
           
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+            className="flex items-center gap-4 w-full px-4 py-4 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 hover:text-gray-900 dark:hover:text-gray-200 transition-all duration-200"
           >
-            <LogOut className="h-4 w-4" />
-            <span>Sign Out</span>
+            <LogOut className="h-5 w-5" />
+            <span className="text-base">Sign Out</span>
           </button>
         </div>
       </div>
