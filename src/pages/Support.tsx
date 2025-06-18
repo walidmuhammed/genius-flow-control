@@ -1,26 +1,42 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Plus, Search, Filter, Ticket, MessageSquare, Clock, CheckCircle, XCircle } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, Ticket, Eye, Plus } from 'lucide-react';
-import { useTickets } from '@/hooks/use-tickets';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useTickets, useCreateTicket, useTicketMessages, useAddTicketMessage } from '@/hooks/use-tickets';
 import { EmptyState } from '@/components/ui/empty-state';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { formatDate } from '@/utils/format';
+import { Ticket as TicketType } from '@/services/tickets';
 
 const Support: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { data: tickets = [], isLoading } = useTickets();
+  const { mutate: createTicket } = useCreateTicket();
+  const { mutate: addMessage } = useAddTicketMessage();
+  
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<TicketType | null>(null);
   const [ticketDetailsOpen, setTicketDetailsOpen] = useState(false);
+  const [createTicketOpen, setCreateTicketOpen] = useState(false);
+  const [newMessage, setNewMessage] = useState('');
+
+  // New ticket form state
+  const [newTicketForm, setNewTicketForm] = useState({
+    title: '',
+    content: '',
+    category: 'general' as const
+  });
 
   document.title = "Support - Dashboard";
 
@@ -32,7 +48,7 @@ const Support: React.FC = () => {
     if (modal === 'details' && id && tickets.length > 0) {
       const ticket = tickets.find(t => t.id === id);
       if (ticket) {
-        setSelectedTicketId(id);
+        setSelectedTicket(ticket);
         setTicketDetailsOpen(true);
         // Clean up URL params
         navigate('/support', { replace: true });
@@ -63,6 +79,55 @@ const Support: React.FC = () => {
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'Open':
+        return <MessageSquare className="h-4 w-4" />;
+      case 'In Progress':
+        return <Clock className="h-4 w-4" />;
+      case 'Resolved':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'Closed':
+        return <XCircle className="h-4 w-4" />;
+      default:
+        return <Ticket className="h-4 w-4" />;
+    }
+  };
+
+  const handleCreateTicket = () => {
+    if (!newTicketForm.title.trim() || !newTicketForm.content.trim()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    createTicket({
+      title: newTicketForm.title,
+      content: newTicketForm.content,
+      category: newTicketForm.category,
+      status: 'Open'
+    }, {
+      onSuccess: () => {
+        toast.success('Support ticket created successfully');
+        setCreateTicketOpen(false);
+        setNewTicketForm({ title: '', content: '', category: 'general' });
+      }
+    });
+  };
+
+  const handleSendMessage = () => {
+    if (!selectedTicket || !newMessage.trim()) return;
+
+    addMessage({
+      ticket_id: selectedTicket.id,
+      content: newMessage.trim(),
+      sender_type: 'client'
+    }, {
+      onSuccess: () => {
+        setNewMessage('');
+      }
+    });
   };
 
   if (isLoading) {
@@ -102,7 +167,10 @@ const Support: React.FC = () => {
             <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
               {filteredTickets.length} Total Tickets
             </Badge>
-            <Button className="bg-[#DC291E] hover:bg-[#c0211a] text-white">
+            <Button 
+              className="bg-[#DC291E] hover:bg-[#c0211a] text-white"
+              onClick={() => setCreateTicketOpen(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               New Ticket
             </Button>
@@ -165,7 +233,10 @@ const Support: React.FC = () => {
                       {filteredTickets.map((ticket) => (
                         <TableRow key={ticket.id}>
                           <TableCell className="font-medium">
-                            {ticket.title}
+                            <div className="flex items-center gap-2">
+                              {getStatusIcon(ticket.status)}
+                              {ticket.title}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline">
@@ -183,14 +254,13 @@ const Support: React.FC = () => {
                           <TableCell>
                             <Button 
                               variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8"
+                              size="sm"
                               onClick={() => {
-                                setSelectedTicketId(ticket.id);
+                                setSelectedTicket(ticket);
                                 setTicketDetailsOpen(true);
                               }}
                             >
-                              <Eye className="h-4 w-4" />
+                              View Details
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -204,27 +274,115 @@ const Support: React.FC = () => {
                   title="No support tickets found"
                   description="No tickets match your search criteria."
                   actionLabel="Create Ticket"
-                  onAction={() => console.log('Create new ticket')}
+                  onAction={() => setCreateTicketOpen(true)}
                 />
               )}
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Ticket Details Modal - Placeholder */}
-        {ticketDetailsOpen && selectedTicketId && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setTicketDetailsOpen(false)}>
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
-              <h3 className="text-lg font-semibold mb-4">Ticket Details</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Support ticket details for ID: {selectedTicketId}
-              </p>
-              <Button onClick={() => setTicketDetailsOpen(false)}>
-                Close
-              </Button>
+        {/* Create Ticket Modal */}
+        <Dialog open={createTicketOpen} onOpenChange={setCreateTicketOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Create New Support Ticket</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Title</label>
+                <Input
+                  placeholder="Brief description of your issue"
+                  value={newTicketForm.title}
+                  onChange={(e) => setNewTicketForm(prev => ({ ...prev, title: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Category</label>
+                <Select
+                  value={newTicketForm.category}
+                  onValueChange={(value) => setNewTicketForm(prev => ({ ...prev, category: value as any }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">General</SelectItem>
+                    <SelectItem value="billing">Billing</SelectItem>
+                    <SelectItem value="technical">Technical</SelectItem>
+                    <SelectItem value="feature_request">Feature Request</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Description</label>
+                <Textarea
+                  placeholder="Please provide detailed information about your issue..."
+                  value={newTicketForm.content}
+                  onChange={(e) => setNewTicketForm(prev => ({ ...prev, content: e.target.value }))}
+                  rows={4}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setCreateTicketOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCreateTicket} className="bg-[#DC291E] hover:bg-[#c0211a]">
+                  Create Ticket
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Ticket Details Modal */}
+        <Dialog open={ticketDetailsOpen} onOpenChange={setTicketDetailsOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {selectedTicket && getStatusIcon(selectedTicket.status)}
+                {selectedTicket?.title}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedTicket && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Badge variant="outline" className={getStatusColor(selectedTicket.status)}>
+                    {selectedTicket.status}
+                  </Badge>
+                  <Badge variant="outline">
+                    {selectedTicket.category}
+                  </Badge>
+                  <span className="text-sm text-gray-500">
+                    Created {formatDate(new Date(selectedTicket.created_at))}
+                  </span>
+                </div>
+                
+                <div className="border rounded-lg p-4 bg-gray-50">
+                  <p className="text-sm text-gray-700">{selectedTicket.content}</p>
+                </div>
+
+                <div className="border-t pt-4">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Type your message..."
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                    />
+                    <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
+                      Send
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );
