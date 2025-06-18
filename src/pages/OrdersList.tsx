@@ -1,4 +1,6 @@
-import React, { useState, useMemo, useCallback, useEffect, useNavigate, useSearchParams } from 'react';
+
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, Package } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -288,7 +290,7 @@ const OrdersList: React.FC = () => {
                 searchQuery={searchQuery}
                 onSearchChange={handleSearch}
                 dateRange={dateRange}
-                onDateRangeChange={handleDateRange}
+                onDateRangeChange={handleDateChange}
                 onImport={() => setImportModalOpen(true)}
                 onExport={() => console.log('Export')}
                 selectedCount={selectedOrders.length}
