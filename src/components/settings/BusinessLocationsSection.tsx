@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,8 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { MapPin, Plus, Edit, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { MapPin, Plus, Edit, Trash2, Star, StarOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { PhoneInput } from '@/components/ui/phone-input';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BusinessLocation {
   id: string;
@@ -19,12 +23,16 @@ interface BusinessLocation {
   address: string;
   contactPerson: string;
   contactPhone: string;
+  isDefault: boolean;
+  userId: string;
 }
 
 const BusinessLocationsSection = () => {
+  const { user } = useAuth();
   const [locations, setLocations] = useState<BusinessLocation[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<BusinessLocation | null>(null);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     country: '',
@@ -32,12 +40,39 @@ const BusinessLocationsSection = () => {
     area: '',
     address: '',
     contactPerson: '',
-    contactPhone: ''
+    contactPhone: '',
+    isDefault: false
   });
 
   const countries = ['Lebanon', 'United Arab Emirates', 'Saudi Arabia', 'Egypt', 'Jordan'];
   const governorates = ['Beirut', 'Mount Lebanon', 'North Lebanon', 'South Lebanon', 'Bekaa', 'Nabatieh'];
   const areas = ['Achrafieh', 'Hamra', 'Verdun', 'Kaslik', 'Jounieh', 'Tripoli', 'Sidon', 'Tyre', 'Zahle', 'Baalbek'];
+
+  useEffect(() => {
+    if (user) {
+      fetchLocations();
+    }
+  }, [user]);
+
+  const fetchLocations = async () => {
+    if (!user) return;
+    
+    try {
+      // Since we don't have a business_locations table, we'll simulate with localStorage for now
+      const savedLocations = localStorage.getItem(`business_locations_${user.id}`);
+      if (savedLocations) {
+        setLocations(JSON.parse(savedLocations));
+      }
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+    }
+  };
+
+  const saveLocations = (newLocations: BusinessLocation[]) => {
+    if (!user) return;
+    localStorage.setItem(`business_locations_${user.id}`, JSON.stringify(newLocations));
+    setLocations(newLocations);
+  };
 
   const handleSubmit = () => {
     if (!formData.name || !formData.country || !formData.contactPerson || !formData.contactPhone) {
@@ -45,19 +80,33 @@ const BusinessLocationsSection = () => {
       return;
     }
 
+    if (!user) return;
+
     const location: BusinessLocation = {
       id: editingLocation?.id || Date.now().toString(),
+      userId: user.id,
+      isDefault: formData.isDefault,
       ...formData
     };
 
+    let updatedLocations;
+    
     if (editingLocation) {
-      setLocations(prev => prev.map(loc => loc.id === editingLocation.id ? location : loc));
+      updatedLocations = locations.map(loc => loc.id === editingLocation.id ? location : loc);
       toast.success('Location updated successfully');
     } else {
-      setLocations(prev => [...prev, location]);
+      updatedLocations = [...locations, location];
       toast.success('Location added successfully');
     }
 
+    // If setting as default, remove default from others
+    if (location.isDefault) {
+      updatedLocations = updatedLocations.map(loc => 
+        loc.id === location.id ? loc : { ...loc, isDefault: false }
+      );
+    }
+
+    saveLocations(updatedLocations);
     resetForm();
   };
 
@@ -69,7 +118,8 @@ const BusinessLocationsSection = () => {
       area: '',
       address: '',
       contactPerson: '',
-      contactPhone: ''
+      contactPhone: '',
+      isDefault: false
     });
     setEditingLocation(null);
     setIsModalOpen(false);
@@ -83,20 +133,31 @@ const BusinessLocationsSection = () => {
       area: location.area,
       address: location.address,
       contactPerson: location.contactPerson,
-      contactPhone: location.contactPhone
+      contactPhone: location.contactPhone,
+      isDefault: location.isDefault
     });
     setEditingLocation(location);
     setIsModalOpen(true);
   };
 
   const handleDelete = (id: string) => {
-    setLocations(prev => prev.filter(loc => loc.id !== id));
+    const updatedLocations = locations.filter(loc => loc.id !== id);
+    saveLocations(updatedLocations);
     toast.success('Location deleted successfully');
+  };
+
+  const handleSetDefault = (id: string) => {
+    const updatedLocations = locations.map(loc => ({
+      ...loc,
+      isDefault: loc.id === id
+    }));
+    saveLocations(updatedLocations);
+    toast.success('Default location updated');
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold">Business Locations</h2>
           <p className="text-muted-foreground">Manage your business locations and contact details</p>
@@ -109,7 +170,7 @@ const BusinessLocationsSection = () => {
               Add New Location
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingLocation ? 'Edit Location' : 'Add New Location'}
@@ -196,12 +257,22 @@ const BusinessLocationsSection = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="contactPhone">Contact Phone *</Label>
-                <Input 
-                  id="contactPhone"
+                <PhoneInput
                   value={formData.contactPhone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, contactPhone: e.target.value }))}
-                  placeholder="+961 XX XXX XXX"
+                  onChange={(value) => setFormData(prev => ({ ...prev, contactPhone: value }))}
+                  defaultCountry="LB"
                 />
+              </div>
+              
+              <div className="md:col-span-2 flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="isDefault"
+                  checked={formData.isDefault}
+                  onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
+                  className="rounded"
+                />
+                <Label htmlFor="isDefault">Set as default location</Label>
               </div>
             </div>
             
@@ -232,53 +303,75 @@ const BusinessLocationsSection = () => {
               <p className="text-sm">Add your first business location to get started</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Location Name</TableHead>
-                  <TableHead>Country</TableHead>
-                  <TableHead>Address</TableHead>
-                  <TableHead>Contact Person</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {locations.map((location) => (
-                  <TableRow key={location.id}>
-                    <TableCell className="font-medium">{location.name}</TableCell>
-                    <TableCell>{location.country}</TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {location.governorate && `${location.governorate}, `}
-                        {location.area && `${location.area}, `}
-                        {location.address}
-                      </div>
-                    </TableCell>
-                    <TableCell>{location.contactPerson}</TableCell>
-                    <TableCell>{location.contactPhone}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleEdit(location)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleDelete(location.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Location Name</TableHead>
+                    <TableHead className="hidden sm:table-cell">Country</TableHead>
+                    <TableHead className="hidden md:table-cell">Address</TableHead>
+                    <TableHead className="hidden lg:table-cell">Contact Person</TableHead>
+                    <TableHead className="hidden lg:table-cell">Phone</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {locations.map((location) => (
+                    <TableRow key={location.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {location.name}
+                          {location.isDefault && (
+                            <Badge variant="secondary" className="text-xs">
+                              <Star className="h-3 w-3 mr-1" />
+                              Default
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">{location.country}</TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="text-sm">
+                          {location.governorate && `${location.governorate}, `}
+                          {location.area && `${location.area}, `}
+                          {location.address}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">{location.contactPerson}</TableCell>
+                      <TableCell className="hidden lg:table-cell">{location.contactPhone}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {!location.isDefault && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleSetDefault(location.id)}
+                              title="Set as default"
+                            >
+                              <StarOff className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEdit(location)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDelete(location.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

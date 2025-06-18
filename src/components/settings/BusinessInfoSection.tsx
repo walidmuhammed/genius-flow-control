@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Building2, Globe, Facebook, Instagram, ShoppingBag } from 'lucide-react';
+import { Building2, Globe, Facebook, Instagram, ShoppingBag, Package, Truck, Smartphone } from 'lucide-react';
 
 const BusinessInfoSection = () => {
   const { user } = useAuth();
@@ -19,23 +19,20 @@ const BusinessInfoSection = () => {
     businessNameAr: '',
     industry: '',
     salesChannels: [] as string[],
-    websiteUrl: '',
-    facebookUrl: '',
-    instagramUrl: '',
-    shopifyUrl: ''
+    channelUrls: {} as Record<string, string>
   });
 
   const salesChannelOptions = [
     { value: 'facebook', label: 'Facebook', icon: Facebook },
     { value: 'instagram', label: 'Instagram', icon: Instagram },
-    { value: 'whatsapp', label: 'WhatsApp' },
+    { value: 'whatsapp', label: 'WhatsApp', icon: Smartphone },
     { value: 'shopify', label: 'Shopify', icon: ShoppingBag },
     { value: 'website', label: 'Custom Website', icon: Globe },
-    { value: 'tiktok', label: 'TikTok' },
-    { value: 'amazon', label: 'Amazon' },
-    { value: 'ebay', label: 'eBay' },
-    { value: 'marketplace', label: 'Local Marketplace' },
-    { value: 'retail', label: 'Physical Retail' }
+    { value: 'tiktok', label: 'TikTok', icon: Smartphone },
+    { value: 'amazon', label: 'Amazon', icon: Package },
+    { value: 'ebay', label: 'eBay', icon: Package },
+    { value: 'marketplace', label: 'Local Marketplace', icon: ShoppingBag },
+    { value: 'retail', label: 'Physical Retail', icon: Truck }
   ];
 
   const industryOptions = [
@@ -89,12 +86,41 @@ const BusinessInfoSection = () => {
     }
   };
 
+  const validateEnglishInput = (value: string) => {
+    return /^[a-zA-Z\s]*$/.test(value);
+  };
+
+  const validateArabicInput = (value: string) => {
+    return /^[\u0600-\u06FF\s]*$/.test(value);
+  };
+
+  const handleEnglishNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (validateEnglishInput(value)) {
+      setFormData(prev => ({ ...prev, businessNameEn: value }));
+    }
+  };
+
+  const handleArabicNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (validateArabicInput(value)) {
+      setFormData(prev => ({ ...prev, businessNameAr: value }));
+    }
+  };
+
   const handleSalesChannelChange = (channel: string, checked: boolean) => {
     setFormData(prev => ({
       ...prev,
       salesChannels: checked
         ? [...prev.salesChannels, channel]
         : prev.salesChannels.filter(c => c !== channel)
+    }));
+  };
+
+  const handleChannelUrlChange = (channel: string, url: string) => {
+    setFormData(prev => ({
+      ...prev,
+      channelUrls: { ...prev.channelUrls, [channel]: url }
     }));
   };
 
@@ -122,10 +148,6 @@ const BusinessInfoSection = () => {
     }
   };
 
-  const showWebsiteField = formData.salesChannels.includes('website') || formData.salesChannels.includes('shopify');
-  const showFacebookField = formData.salesChannels.includes('facebook');
-  const showInstagramField = formData.salesChannels.includes('instagram');
-
   return (
     <div className="space-y-6">
       <div>
@@ -147,9 +169,10 @@ const BusinessInfoSection = () => {
               <Input 
                 id="businessNameEn" 
                 value={formData.businessNameEn}
-                onChange={(e) => setFormData(prev => ({ ...prev, businessNameEn: e.target.value }))}
+                onChange={handleEnglishNameChange}
                 placeholder="Enter business name in English"
               />
+              <p className="text-xs text-muted-foreground">English letters only</p>
             </div>
             
             <div className="space-y-2">
@@ -157,10 +180,11 @@ const BusinessInfoSection = () => {
               <Input 
                 id="businessNameAr" 
                 value={formData.businessNameAr}
-                onChange={(e) => setFormData(prev => ({ ...prev, businessNameAr: e.target.value }))}
+                onChange={handleArabicNameChange}
                 placeholder="أدخل اسم العمل بالعربية"
                 dir="rtl"
               />
+              <p className="text-xs text-muted-foreground">Arabic letters only</p>
             </div>
           </div>
           
@@ -190,62 +214,35 @@ const BusinessInfoSection = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {salesChannelOptions.map((channel) => {
               const IconComponent = channel.icon;
+              const isSelected = formData.salesChannels.includes(channel.value);
               return (
-                <div key={channel.value} className="flex items-center space-x-2">
-                  <Checkbox 
-                    id={channel.value}
-                    checked={formData.salesChannels.includes(channel.value)}
-                    onCheckedChange={(checked) => handleSalesChannelChange(channel.value, checked as boolean)}
-                  />
-                  <Label htmlFor={channel.value} className="flex items-center gap-2 cursor-pointer">
-                    {IconComponent && <IconComponent className="h-4 w-4" />}
-                    {channel.label}
-                  </Label>
+                <div key={channel.value} className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={channel.value}
+                      checked={isSelected}
+                      onCheckedChange={(checked) => handleSalesChannelChange(channel.value, checked as boolean)}
+                    />
+                    <Label htmlFor={channel.value} className="flex items-center gap-2 cursor-pointer">
+                      <IconComponent className="h-4 w-4" />
+                      {channel.label}
+                    </Label>
+                  </div>
+                  
+                  {isSelected && (
+                    <Input
+                      placeholder={`Enter ${channel.label} URL/handle`}
+                      value={formData.channelUrls[channel.value] || ''}
+                      onChange={(e) => handleChannelUrlChange(channel.value, e.target.value)}
+                      className="ml-6"
+                    />
+                  )}
                 </div>
               );
             })}
-          </div>
-          
-          {/* Dynamic URL fields based on selected channels */}
-          <div className="space-y-4 pt-4 border-t">
-            {showWebsiteField && (
-              <div className="space-y-2">
-                <Label htmlFor="websiteUrl">Website URL</Label>
-                <Input 
-                  id="websiteUrl" 
-                  value={formData.websiteUrl}
-                  onChange={(e) => setFormData(prev => ({ ...prev, websiteUrl: e.target.value }))}
-                  placeholder="https://your-website.com"
-                />
-              </div>
-            )}
-            
-            {showFacebookField && (
-              <div className="space-y-2">
-                <Label htmlFor="facebookUrl">Facebook Page URL</Label>
-                <Input 
-                  id="facebookUrl" 
-                  value={formData.facebookUrl}
-                  onChange={(e) => setFormData(prev => ({ ...prev, facebookUrl: e.target.value }))}
-                  placeholder="https://facebook.com/your-page"
-                />
-              </div>
-            )}
-            
-            {showInstagramField && (
-              <div className="space-y-2">
-                <Label htmlFor="instagramUrl">Instagram Profile URL</Label>
-                <Input 
-                  id="instagramUrl" 
-                  value={formData.instagramUrl}
-                  onChange={(e) => setFormData(prev => ({ ...prev, instagramUrl: e.target.value }))}
-                  placeholder="https://instagram.com/your-profile"
-                />
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
