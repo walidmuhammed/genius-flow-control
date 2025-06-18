@@ -4,23 +4,24 @@ import { useQuery } from '@tanstack/react-query';
 import { useOrders } from '@/hooks/use-orders';
 import { useCustomers } from '@/hooks/use-customers';
 import { usePickups } from '@/hooks/use-pickups';
-import { Search, Package, User, Calendar, Settings, Ticket } from 'lucide-react';
+import { Search, Package, User, Calendar, Settings, Ticket, Receipt } from 'lucide-react';
 
 export interface SearchResult {
   id: string;
   title: string;
   subtitle: string;
-  category: 'Orders' | 'Customers' | 'Pickups' | 'Settings' | 'Support';
+  category: 'Orders' | 'Customers' | 'Pickups' | 'Settings' | 'Support' | 'Invoices';
   icon: React.ReactNode;
   path: string;
   metadata?: {
     status?: string;
-    statusColor?: string;
     phone?: string;
     amount_usd?: number;
     amount_lbp?: number;
     type?: string;
     date?: string;
+    pickup_id?: string;
+    order_id?: string;
   };
 }
 
@@ -59,9 +60,15 @@ const settingsResults: SearchResult[] = [
   }
 ];
 
-// Smart detection patterns
+// Enhanced smart detection patterns
 const isOrderId = (query: string): boolean => {
-  return /^#?\d{3,}$/.test(query.trim());
+  const cleaned = query.replace(/[#\s]/g, '');
+  return /^\d{1,}$/.test(cleaned) || /^REF-[A-Za-z0-9]+$/i.test(cleaned);
+};
+
+const isPickupId = (query: string): boolean => {
+  const cleaned = query.replace(/[#\s]/g, '');
+  return /^PIC-\d{3}$/i.test(cleaned) || /^pickup/i.test(query);
 };
 
 const isPhoneNumber = (query: string): boolean => {
@@ -72,27 +79,6 @@ const isPhoneNumber = (query: string): boolean => {
 const isLocationQuery = (query: string): boolean => {
   const locations = ['beirut', 'tripoli', 'sidon', 'zahle', 'baalbek', 'nabatieh', 'jbeil', 'batroun'];
   return locations.some(loc => query.toLowerCase().includes(loc));
-};
-
-const formatCurrency = (amount: number, currency: 'USD' | 'LBP'): string => {
-  if (currency === 'USD') {
-    return `$${amount.toLocaleString()}`;
-  }
-  return `${amount.toLocaleString()} LBP`;
-};
-
-const getStatusColor = (status: string): string => {
-  const statusColors: Record<string, string> = {
-    'New': 'text-blue-600',
-    'Pending Pickup': 'text-yellow-600',
-    'In Progress': 'text-orange-600',
-    'Successful': 'text-green-600',
-    'Unsuccessful': 'text-red-600',
-    'Scheduled': 'text-blue-600',
-    'Completed': 'text-green-600',
-    'Canceled': 'text-red-600'
-  };
-  return statusColors[status] || 'text-gray-600';
 };
 
 export function useGlobalSearch(query: string) {
@@ -134,43 +120,102 @@ export function useGlobalSearch(query: string) {
 
     // Smart detection for different query types
     const isOrderQuery = isOrderId(searchTerm);
+    const isPickupQuery = isPickupId(searchTerm);
     const isPhoneQuery = isPhoneNumber(searchTerm);
     const isLocationSearch = isLocationQuery(searchTerm);
 
-    // Search Orders
-    if (orders && (!isPhoneQuery || isOrderQuery)) {
+    // PRIORITY 1: Search Orders (highest priority for numbers and refs)
+    if (orders) {
       const orderResults = orders
         .filter(order => {
-          const orderIdMatch = order.order_id.toString().includes(searchTerm.replace('#', ''));
-          const referenceMatch = order.reference_number?.toLowerCase().includes(searchTerm);
+          // Enhanced order matching with priority
+          const orderIdMatch = order.order_id.toString().includes(searchTerm.replace(/[#\s]/g, ''));
+          const referenceMatch = order.reference_number?.toLowerCase().includes(searchTerm.replace(/[#\s]/g, ''));
           const customerMatch = order.customer.name.toLowerCase().includes(searchTerm);
           const phoneMatch = order.customer.phone.includes(searchTerm);
           
+          // Give priority to exact matches
+          if (isOrderQuery) {
+            return orderIdMatch || referenceMatch;
+          }
+          
           return orderIdMatch || referenceMatch || customerMatch || phoneMatch;
         })
-        .slice(0, 4)
+        .sort((a, b) => {
+          // Prioritize exact order ID matches
+          const aOrderMatch = a.order_id.toString() === searchTerm.replace(/[#\s]/g, '');
+          const bOrderMatch = b.order_id.toString() === searchTerm.replace(/[#\s]/g, '');
+          if (aOrderMatch && !bOrderMatch) return -1;
+          if (!aOrderMatch && bOrderMatch) return 1;
+          return 0;
+        })
+        .slice(0, isOrderQuery ? 6 : 4)
         .map(order => ({
           id: order.id,
           title: `Order #${order.order_id}`,
           subtitle: `${order.customer.name} | ${order.customer.phone}`,
           category: 'Orders' as const,
           icon: <Package className="h-4 w-4" />,
-          path: `/orders?id=${order.id}`,
+          path: `/orders?modal=details&id=${order.id}`,
           metadata: {
             status: order.status,
-            statusColor: getStatusColor(order.status),
             phone: order.customer.phone,
             amount_usd: order.cash_collection_usd + order.delivery_fees_usd,
             amount_lbp: order.cash_collection_lbp + order.delivery_fees_lbp,
-            type: order.type
+            type: order.type,
+            order_id: order.order_id.toString()
           }
         }));
       
       results.push(...orderResults);
     }
 
-    // Search Customers
-    if (customers && (!isOrderQuery)) {
+    // PRIORITY 2: Search Pickups (enhanced with pickup_id matching)
+    if (pickups && (!isPhoneQuery || isPickupQuery || isLocationSearch)) {
+      const pickupResults = pickups
+        .filter(pickup => {
+          const pickupIdMatch = pickup.pickup_id?.toLowerCase().includes(searchTerm.replace(/[#\s]/g, ''));
+          const locationMatch = pickup.location.toLowerCase().includes(searchTerm);
+          const addressMatch = pickup.address.toLowerCase().includes(searchTerm);
+          const contactMatch = pickup.contact_person.toLowerCase().includes(searchTerm);
+          const phoneMatch = pickup.contact_phone.includes(searchTerm);
+          
+          // Give priority to pickup ID matches
+          if (isPickupQuery) {
+            return pickupIdMatch;
+          }
+          
+          return pickupIdMatch || locationMatch || addressMatch || contactMatch || phoneMatch;
+        })
+        .sort((a, b) => {
+          // Prioritize exact pickup ID matches
+          const aPickupMatch = a.pickup_id?.toLowerCase() === searchTerm.toLowerCase();
+          const bPickupMatch = b.pickup_id?.toLowerCase() === searchTerm.toLowerCase();
+          if (aPickupMatch && !bPickupMatch) return -1;
+          if (!aPickupMatch && bPickupMatch) return 1;
+          return 0;
+        })
+        .slice(0, isPickupQuery ? 6 : 3)
+        .map(pickup => ({
+          id: pickup.id,
+          title: `${pickup.pickup_id || 'Pickup'} - ${pickup.location}`,
+          subtitle: `${pickup.contact_person} | ${pickup.contact_phone}`,
+          category: 'Pickups' as const,
+          icon: <Calendar className="h-4 w-4" />,
+          path: `/pickups?modal=details&id=${pickup.id}`,
+          metadata: {
+            status: pickup.status,
+            date: pickup.pickup_date,
+            phone: pickup.contact_phone,
+            pickup_id: pickup.pickup_id
+          }
+        }));
+      
+      results.push(...pickupResults);
+    }
+
+    // PRIORITY 3: Search Customers
+    if (customers && (!isOrderQuery && !isPickupQuery)) {
       const customerResults = customers
         .filter(customer => {
           const nameMatch = customer.name.toLowerCase().includes(searchTerm);
@@ -186,7 +231,7 @@ export function useGlobalSearch(query: string) {
           subtitle: customer.phone,
           category: 'Customers' as const,
           icon: <User className="h-4 w-4" />,
-          path: `/customers?id=${customer.id}`,
+          path: `/customers?modal=details&id=${customer.id}`,
           metadata: {
             phone: customer.phone
           }
@@ -195,37 +240,7 @@ export function useGlobalSearch(query: string) {
       results.push(...customerResults);
     }
 
-    // Search Pickups
-    if (pickups && (!isPhoneQuery || isLocationSearch)) {
-      const pickupResults = pickups
-        .filter(pickup => {
-          const locationMatch = pickup.location.toLowerCase().includes(searchTerm);
-          const addressMatch = pickup.address.toLowerCase().includes(searchTerm);
-          const contactMatch = pickup.contact_person.toLowerCase().includes(searchTerm);
-          const phoneMatch = pickup.contact_phone.includes(searchTerm);
-          
-          return locationMatch || addressMatch || contactMatch || phoneMatch;
-        })
-        .slice(0, 3)
-        .map(pickup => ({
-          id: pickup.id,
-          title: `Pickup - ${pickup.location}`,
-          subtitle: `${pickup.contact_person} | ${pickup.contact_phone}`,
-          category: 'Pickups' as const,
-          icon: <Calendar className="h-4 w-4" />,
-          path: `/pickups?id=${pickup.id}`,
-          metadata: {
-            status: pickup.status,
-            statusColor: getStatusColor(pickup.status),
-            date: pickup.pickup_date,
-            phone: pickup.contact_phone
-          }
-        }));
-      
-      results.push(...pickupResults);
-    }
-
-    // Search Settings
+    // PRIORITY 4: Search Settings
     const settingsMatches = settingsResults.filter(setting => 
       setting.title.toLowerCase().includes(searchTerm) ||
       setting.subtitle.toLowerCase().includes(searchTerm)

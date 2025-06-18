@@ -22,19 +22,19 @@ const TopBar: React.FC = () => {
 
   const createActions = [
     {
-      icon: <div className="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">📦</div>,
+      icon: <Package className="w-5 h-5 text-blue-600" />,
       label: 'Create Order',
       description: 'Create a new delivery order',
       action: () => navigate('/create-order'),
     },
     {
-      icon: <div className="w-6 h-6 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">🚚</div>,
+      icon: <Calendar className="w-5 h-5 text-orange-600" />,
       label: 'Schedule Pickup',
       description: 'Schedule a new pickup',
       action: () => navigate('/schedule-pickup'),
     },
     {
-      icon: <div className="w-6 h-6 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">🎫</div>,
+      icon: <Ticket className="w-5 h-5 text-purple-600" />,
       label: 'Create Ticket',
       description: 'Submit a support request',
       action: () => navigate('/support'),
@@ -81,11 +81,12 @@ const TopBar: React.FC = () => {
             <Menu className="h-5 w-5" />
           </Button>
           
-          {/* Center - Logo */}
-          <div className="flex-1 flex justify-center">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-              Topspeed
-            </h1>
+          {/* Center - Search Bar for Mobile */}
+          <div className="flex-1 mx-4">
+            <GlobalSearch 
+              className="w-full"
+              placeholder="Search..."
+            />
           </div>
           
           {/* Right - Notifications + Create Button */}
@@ -157,7 +158,9 @@ const TopBar: React.FC = () => {
                       onClick={() => handleCreateAction(action.action)}
                       className="w-full flex items-center gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
                     >
-                      {action.icon}
+                      <div className="w-10 h-10 rounded-lg bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm">
+                        {action.icon}
+                      </div>
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900 dark:text-gray-100">
                           {action.label}
@@ -197,7 +200,7 @@ const TopBar: React.FC = () => {
           </Button>
         )}
         
-        {/* Enhanced Global Search Bar */}
+        {/* Enhanced Global Search Bar - Fixed Height */}
         <GlobalSearch 
           className="flex-1"
           placeholder="Search orders, customers, pickups, invoices..."
@@ -236,7 +239,7 @@ const TopBar: React.FC = () => {
           </AnimatePresence>
         </div>
         
-        {/* Create Button */}
+        {/* Create Button - Fixed Height */}
         <div ref={createRef} className="relative">
           <Button
             className="bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-xl px-6 h-10 font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
@@ -264,7 +267,9 @@ const TopBar: React.FC = () => {
                     onClick={() => handleCreateAction(action.action)}
                     className="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 text-left transition-colors"
                   >
-                    {action.icon}
+                    <div className="w-10 h-10 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+                      {action.icon}
+                    </div>
                     <div className="flex-1">
                       <div className="font-semibold text-gray-900 dark:text-gray-100">
                         {action.label}
