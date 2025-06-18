@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +12,7 @@ import { toast } from 'sonner';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BusinessLocation {
   id: string;
@@ -30,7 +29,7 @@ interface BusinessLocation {
 
 const BusinessLocationsSection = () => {
   const { user } = useAuth();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [locations, setLocations] = useState<BusinessLocation[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -369,8 +368,8 @@ const BusinessLocationsSection = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Location Name</TableHead>
-                      <TableHead>Address</TableHead>
                       <TableHead>Contact Person</TableHead>
+                      <TableHead>Address</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -389,16 +388,16 @@ const BusinessLocationsSection = () => {
                           </div>
                         </TableCell>
                         <TableCell>
+                          <div>
+                            <div className="font-medium">{location.contactPerson}</div>
+                            <div className="text-sm text-muted-foreground">{location.contactPhone}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
                           <div className="text-sm">
                             {location.governorate && `${location.governorate}, `}
                             {location.area && `${location.area}, `}
                             {location.address}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{location.contactPerson}</div>
-                            <div className="text-sm text-muted-foreground">{location.contactPhone}</div>
                           </div>
                         </TableCell>
                       </TableRow>
