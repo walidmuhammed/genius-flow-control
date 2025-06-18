@@ -14,6 +14,7 @@ import { Building2, Globe, Facebook, Instagram, ShoppingBag, Package, Truck, Sma
 const BusinessInfoSection = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [formData, setFormData] = useState({
     businessNameEn: '',
     businessNameAr: '',
@@ -23,16 +24,16 @@ const BusinessInfoSection = () => {
   });
 
   const salesChannelOptions = [
-    { value: 'facebook', label: 'Facebook', icon: Facebook },
-    { value: 'instagram', label: 'Instagram', icon: Instagram },
-    { value: 'whatsapp', label: 'WhatsApp', icon: Smartphone },
-    { value: 'shopify', label: 'Shopify', icon: ShoppingBag },
-    { value: 'website', label: 'Custom Website', icon: Globe },
-    { value: 'tiktok', label: 'TikTok', icon: Smartphone },
-    { value: 'amazon', label: 'Amazon', icon: Package },
-    { value: 'ebay', label: 'eBay', icon: Package },
-    { value: 'marketplace', label: 'Local Marketplace', icon: ShoppingBag },
-    { value: 'retail', label: 'Physical Retail', icon: Truck }
+    { value: 'facebook', label: 'Facebook', icon: Facebook, placeholder: 'Enter Facebook Page URL' },
+    { value: 'instagram', label: 'Instagram', icon: Instagram, placeholder: 'Enter Instagram Profile URL' },
+    { value: 'whatsapp', label: 'WhatsApp', icon: Smartphone, placeholder: 'Enter WhatsApp Business Number' },
+    { value: 'shopify', label: 'Shopify', icon: ShoppingBag, placeholder: 'Enter Shopify Store URL' },
+    { value: 'website', label: 'Custom Website', icon: Globe, placeholder: 'Enter Website URL' },
+    { value: 'tiktok', label: 'TikTok', icon: Smartphone, placeholder: 'Enter TikTok Profile URL' },
+    { value: 'amazon', label: 'Amazon', icon: Package, placeholder: 'Enter Amazon Store URL' },
+    { value: 'ebay', label: 'eBay', icon: Package, placeholder: 'Enter eBay Store URL' },
+    { value: 'marketplace', label: 'Local Marketplace', icon: ShoppingBag, placeholder: 'Enter Marketplace URL' },
+    { value: 'retail', label: 'Physical Retail', icon: Truck, placeholder: 'Enter Store Address' }
   ];
 
   const industryOptions = [
@@ -98,6 +99,7 @@ const BusinessInfoSection = () => {
     const value = e.target.value;
     if (validateEnglishInput(value)) {
       setFormData(prev => ({ ...prev, businessNameEn: value }));
+      setHasUnsavedChanges(true);
     }
   };
 
@@ -105,6 +107,7 @@ const BusinessInfoSection = () => {
     const value = e.target.value;
     if (validateArabicInput(value)) {
       setFormData(prev => ({ ...prev, businessNameAr: value }));
+      setHasUnsavedChanges(true);
     }
   };
 
@@ -115,6 +118,7 @@ const BusinessInfoSection = () => {
         ? [...prev.salesChannels, channel]
         : prev.salesChannels.filter(c => c !== channel)
     }));
+    setHasUnsavedChanges(true);
   };
 
   const handleChannelUrlChange = (channel: string, url: string) => {
@@ -122,6 +126,12 @@ const BusinessInfoSection = () => {
       ...prev,
       channelUrls: { ...prev.channelUrls, [channel]: url }
     }));
+    setHasUnsavedChanges(true);
+  };
+
+  const handleIndustryChange = (value: string) => {
+    setFormData(prev => ({ ...prev, industry: value }));
+    setHasUnsavedChanges(true);
   };
 
   const handleSave = async () => {
@@ -140,6 +150,7 @@ const BusinessInfoSection = () => {
       if (error) throw error;
       
       toast.success('Business information updated successfully');
+      setHasUnsavedChanges(false);
     } catch (error) {
       console.error('Error updating business info:', error);
       toast.error('Failed to update business information');
@@ -190,7 +201,7 @@ const BusinessInfoSection = () => {
           
           <div className="space-y-2">
             <Label htmlFor="industry">Industry</Label>
-            <Select value={formData.industry} onValueChange={(value) => setFormData(prev => ({ ...prev, industry: value }))}>
+            <Select value={formData.industry} onValueChange={handleIndustryChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Select your industry" />
               </SelectTrigger>
@@ -219,39 +230,79 @@ const BusinessInfoSection = () => {
               const IconComponent = channel.icon;
               const isSelected = formData.salesChannels.includes(channel.value);
               return (
-                <div key={channel.value} className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id={channel.value}
-                      checked={isSelected}
-                      onCheckedChange={(checked) => handleSalesChannelChange(channel.value, checked as boolean)}
-                    />
-                    <Label htmlFor={channel.value} className="flex items-center gap-2 cursor-pointer">
-                      <IconComponent className="h-4 w-4" />
-                      {channel.label}
-                    </Label>
-                  </div>
-                  
-                  {isSelected && (
-                    <Input
-                      placeholder={`Enter ${channel.label} URL/handle`}
-                      value={formData.channelUrls[channel.value] || ''}
-                      onChange={(e) => handleChannelUrlChange(channel.value, e.target.value)}
-                      className="ml-6"
-                    />
-                  )}
+                <div key={channel.value} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={channel.value}
+                    checked={isSelected}
+                    onCheckedChange={(checked) => handleSalesChannelChange(channel.value, checked as boolean)}
+                  />
+                  <Label htmlFor={channel.value} className="flex items-center gap-2 cursor-pointer">
+                    <IconComponent className="h-4 w-4" />
+                    {channel.label}
+                  </Label>
                 </div>
               );
             })}
           </div>
+          
+          {/* Channel URL Inputs */}
+          {formData.salesChannels.length > 0 && (
+            <div className="mt-6 space-y-3">
+              <h4 className="font-medium">Channel Details</h4>
+              {formData.salesChannels.map((channelValue) => {
+                const channel = salesChannelOptions.find(c => c.value === channelValue);
+                if (!channel) return null;
+                
+                const IconComponent = channel.icon;
+                return (
+                  <div key={channelValue} className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <IconComponent className="h-4 w-4" />
+                      {channel.label}
+                    </Label>
+                    <Input
+                      placeholder={channel.placeholder}
+                      value={formData.channelUrls[channelValue] || ''}
+                      onChange={(e) => handleChannelUrlChange(channelValue, e.target.value)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          
+          {/* Channel Summary */}
+          {formData.salesChannels.length > 0 && Object.keys(formData.channelUrls).some(key => formData.channelUrls[key]) && (
+            <div className="mt-6 p-4 bg-muted rounded-lg">
+              <h4 className="font-medium mb-3">Active Channels</h4>
+              <div className="space-y-2">
+                {Object.entries(formData.channelUrls).map(([channelValue, url]) => {
+                  if (!url) return null;
+                  const channel = salesChannelOptions.find(c => c.value === channelValue);
+                  if (!channel) return null;
+                  
+                  const IconComponent = channel.icon;
+                  return (
+                    <div key={channelValue} className="flex items-center gap-2 text-sm">
+                      <IconComponent className="h-4 w-4" />
+                      <span className="font-medium">{channel.label}:</span>
+                      <span className="text-muted-foreground truncate">{url}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={loading}>
-          {loading ? 'Saving...' : 'Save Business Information'}
-        </Button>
-      </div>
+      {hasUnsavedChanges && (
+        <div className="flex justify-end">
+          <Button onClick={handleSave} disabled={loading}>
+            {loading ? 'Saving...' : 'Save Business Information'}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

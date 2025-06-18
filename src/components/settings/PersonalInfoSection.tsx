@@ -7,27 +7,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { User, Mail, Shield, Phone } from 'lucide-react';
+import { User, Mail, Shield, Edit, Save, X } from 'lucide-react';
 import { PhoneInput } from '@/components/ui/phone-input';
 
 const PersonalInfoSection = () => {
   const { user, profile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
-    firstName: '',
-    lastName: '',
+    fullName: '',
     phone: '',
     email: ''
   });
 
   useEffect(() => {
     if (profile && user) {
-      const nameParts = profile.full_name?.split(' ') || ['', ''];
       setFormData(prev => ({
         ...prev,
-        firstName: nameParts[0] || '',
-        lastName: nameParts.slice(1).join(' ') || '',
+        fullName: profile.full_name || '',
         phone: profile.phone || '',
         email: user.email || '',
         username: profile.full_name?.toLowerCase().replace(/\s+/g, '') || ''
@@ -39,17 +37,17 @@ const PersonalInfoSection = () => {
     if (!user) return;
     setLoading(true);
     try {
-      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
       const { error } = await supabase
         .from('profiles')
         .update({
-          full_name: fullName,
+          full_name: formData.fullName,
           phone: formData.phone
         })
         .eq('id', user.id);
 
       if (error) throw error;
       toast.success('Profile updated successfully');
+      setIsEditing(false);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Failed to update profile');
@@ -75,6 +73,17 @@ const PersonalInfoSection = () => {
     }
   };
 
+  const handleCancel = () => {
+    if (profile && user) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: profile.full_name || '',
+        phone: profile.phone || '',
+      }));
+    }
+    setIsEditing(false);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -85,23 +94,40 @@ const PersonalInfoSection = () => {
       {/* Basic Information */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Basic Information
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Basic Information
+            </div>
+            {!isEditing ? (
+              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleCancel}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleUpdateProfile} disabled={loading}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {loading ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
-              <div className="flex">
-                <Input 
-                  id="username" 
-                  value={formData.username} 
-                  disabled 
-                  className="bg-muted text-muted-foreground cursor-not-allowed"
-                />
-              </div>
+              <Input 
+                id="username" 
+                value={formData.username} 
+                disabled 
+                className="bg-muted text-muted-foreground cursor-not-allowed"
+              />
               <p className="text-xs text-muted-foreground">Username can only be set once and cannot be changed</p>
             </div>
             
@@ -119,24 +145,17 @@ const PersonalInfoSection = () => {
                 </div>
               </div>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
-              <Input 
-                id="firstName" 
-                value={formData.firstName} 
-                onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))} 
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input 
-                id="lastName" 
-                value={formData.lastName} 
-                onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))} 
-              />
-            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="fullName">Full Name</Label>
+            <Input 
+              id="fullName" 
+              value={formData.fullName} 
+              onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+              disabled={!isEditing}
+              className={!isEditing ? "bg-muted text-muted-foreground cursor-not-allowed" : ""}
+            />
           </div>
           
           <div className="space-y-2">
@@ -146,13 +165,9 @@ const PersonalInfoSection = () => {
               onChange={(value) => setFormData(prev => ({ ...prev, phone: value }))}
               defaultCountry="LB"
               className="w-full"
+              disabled={!isEditing}
+              inputClassName={!isEditing ? "bg-muted text-muted-foreground cursor-not-allowed" : ""}
             />
-          </div>
-          
-          <div className="flex justify-end">
-            <Button onClick={handleUpdateProfile} disabled={loading}>
-              {loading ? 'Updating...' : 'Update Profile'}
-            </Button>
           </div>
         </CardContent>
       </Card>
