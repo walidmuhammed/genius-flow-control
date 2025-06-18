@@ -1,36 +1,29 @@
+
 import React, { useState } from 'react';
-import { User, Lock, Building2, Receipt, Users, ServerCog, Plug, FileCheck, ShieldAlert } from 'lucide-react';
+import { User, Lock, Building2, Receipt, Users, ServerCog, Plug, FileCheck, ShieldAlert, MapPin } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { CurrencyType } from '@/components/dashboard/CurrencySelector';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Separator } from '@/components/ui/separator';
+import PersonalInfoSection from '@/components/settings/PersonalInfoSection';
+import BusinessInfoSection from '@/components/settings/BusinessInfoSection';
+import BusinessLocationsSection from '@/components/settings/BusinessLocationsSection';
+import SecuritySection from '@/components/settings/SecuritySection';
 
 const Settings: React.FC = () => {
-  const [defaultCurrency, setDefaultCurrency] = useState<CurrencyType>('USD');
   const [activeTab, setActiveTab] = useState('personal');
 
   const menuItems = [
     { icon: <User className="h-5 w-5" />, label: 'Personal Info', value: 'personal' },
+    { icon: <Building2 className="h-5 w-5" />, label: 'Business Information', value: 'business-info' },
+    { icon: <MapPin className="h-5 w-5" />, label: 'Business Locations', value: 'business-locations' },
     { icon: <Lock className="h-5 w-5" />, label: 'Security', value: 'security' },
-    { icon: <Building2 className="h-5 w-5" />, label: 'Business Account', value: 'business' },
+    { icon: <FileCheck className="h-5 w-5" />, label: 'Pricing Plan', value: 'pricing' },
+    { icon: <Receipt className="h-5 w-5" />, label: 'Payout Methods', value: 'payout' },
     { icon: <Receipt className="h-5 w-5" />, label: 'Subscriptions', value: 'subscriptions' },
     { icon: <ShieldAlert className="h-5 w-5" />, label: 'Insurance', value: 'insurance' },
-    { icon: <FileCheck className="h-5 w-5" />, label: 'Pricing Plan', value: 'pricing' },
-    { icon: <Building2 className="h-5 w-5" />, label: 'Business Locations', value: 'locations' },
-    { icon: <Receipt className="h-5 w-5" />, label: 'Payout Methods', value: 'payout' },
     { icon: <Users className="h-5 w-5" />, label: 'Team Members', value: 'team' },
     { icon: <ServerCog className="h-5 w-5" />, label: 'API Integration', value: 'api' },
     { icon: <Plug className="h-5 w-5" />, label: 'Plugins', value: 'plugins' },
   ];
-
-  // Fix the onChange handler for RadioGroup
-  const handleCurrencyChange = (value: string) => {
-    setDefaultCurrency(value as CurrencyType);
-  };
 
   return (
     <MainLayout className="p-0">
@@ -43,14 +36,18 @@ const Settings: React.FC = () => {
           <div className="py-4">
             <nav className="space-y-1 px-2">
               {menuItems.map((item) => (
-                <a 
+                <button 
                   key={item.value}
-                  href={`#${item.value}`}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-muted text-muted-foreground hover:text-foreground"
+                  onClick={() => setActiveTab(item.value)}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all w-full text-left ${
+                    activeTab === item.value 
+                      ? 'bg-muted text-foreground' 
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
                 >
                   {item.icon}
                   <span>{item.label}</span>
-                </a>
+                </button>
               ))}
             </nav>
           </div>
@@ -58,114 +55,106 @@ const Settings: React.FC = () => {
         
         <div className="flex-1 overflow-y-auto">
           <div className="p-6">
-            <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsContent value="personal">
-                <div className="space-y-6" id="personal">
-                  <div>
-                    <h2 className="text-2xl font-bold">Personal Info</h2>
-                    <p className="text-muted-foreground">Setup your personal info</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="first-name">First name</Label>
-                      <div className="flex">
-                        <Input id="first-name" defaultValue="Walid" className="rounded-r-none" />
-                        <Button variant="outline" className="rounded-l-none border-l-0">
-                          Edit
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="last-name">Last name</Label>
-                      <div className="flex">
-                        <Input id="last-name" defaultValue="Mohammed" className="rounded-r-none" />
-                        <Button variant="outline" className="rounded-l-none border-l-0">
-                          Edit
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="phone-number">Phone number</Label>
-                      <div className="flex">
-                        <Input id="phone-number" defaultValue="+20114626333" className="rounded-r-none" />
-                        <Button variant="outline" className="rounded-l-none border-l-0">
-                          Edit
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <div className="flex">
-                        <Input id="email" defaultValue="walidmuhammed@gmail.com" className="rounded-r-none" />
-                        <Button variant="outline" className="rounded-l-none border-l-0">
-                          Edit
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <PersonalInfoSection />
+              </TabsContent>
+              
+              <TabsContent value="business-info">
+                <BusinessInfoSection />
+              </TabsContent>
+              
+              <TabsContent value="business-locations">
+                <BusinessLocationsSection />
               </TabsContent>
               
               <TabsContent value="security">
-                <Separator className="my-8" />
-                
-                <div className="space-y-6" id="security">
+                <SecuritySection />
+              </TabsContent>
+              
+              <TabsContent value="pricing">
+                <div className="space-y-6">
                   <div>
-                    <h2 className="text-2xl font-bold">Security</h2>
-                    <p className="text-muted-foreground">Change your password</p>
+                    <h2 className="text-2xl font-bold">Pricing Plan</h2>
+                    <p className="text-muted-foreground">Manage your pricing plan and billing</p>
                   </div>
-                  
-                  <div className="space-y-4">
-                    <Button variant="outline" className="bg-primary/5 border-primary/20 text-primary">
-                      Reset Password
-                    </Button>
-                    
-                    <div>
-                      <h3 className="text-lg font-medium mb-2">Currency Settings</h3>
-                      <div className="space-y-2">
-                        <Label className="text-base">Default Currency for Transactions</Label>
-                        <RadioGroup 
-                          defaultValue={defaultCurrency}
-                          onValueChange={handleCurrencyChange}
-                          className="flex flex-col space-y-1"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="USD" id="usd" />
-                            <Label htmlFor="usd">USD (US Dollar)</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="LBP" id="lbp" />
-                            <Label htmlFor="lbp">LBP (Lebanese Pound)</Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
-                    </div>
+                  <div className="text-center py-12 text-muted-foreground">
+                    Coming soon...
                   </div>
                 </div>
               </TabsContent>
               
-              <TabsContent value="delete-account">
-                <Separator className="my-8" />
-                
-                <div className="space-y-6" id="delete-account">
+              <TabsContent value="payout">
+                <div className="space-y-6">
                   <div>
-                    <h2 className="text-2xl font-bold text-destructive">Delete account</h2>
-                    <p className="text-muted-foreground">This will delete your account, Genius Store and Team members.</p>
+                    <h2 className="text-2xl font-bold">Payout Methods</h2>
+                    <p className="text-muted-foreground">Manage your payout methods</p>
                   </div>
-                  
-                  <div className="space-y-4">
-                    <Button variant="destructive">
-                      Delete account
-                    </Button>
+                  <div className="text-center py-12 text-muted-foreground">
+                    Coming soon...
                   </div>
                 </div>
               </TabsContent>
               
-              {/* Other TabsContent components for business, subscriptions, etc. can be added here */}
+              <TabsContent value="subscriptions">
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-2xl font-bold">Subscriptions</h2>
+                    <p className="text-muted-foreground">Manage your subscriptions</p>
+                  </div>
+                  <div className="text-center py-12 text-muted-foreground">
+                    Coming soon...
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="insurance">
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-2xl font-bold">Insurance</h2>
+                    <p className="text-muted-foreground">Manage your insurance settings</p>
+                  </div>
+                  <div className="text-center py-12 text-muted-foreground">
+                    Coming soon...
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="team">
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-2xl font-bold">Team Members</h2>
+                    <p className="text-muted-foreground">Manage your team members</p>
+                  </div>
+                  <div className="text-center py-12 text-muted-foreground">
+                    Coming soon...
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="api">
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-2xl font-bold">API Integration</h2>
+                    <p className="text-muted-foreground">Manage your API integrations</p>
+                  </div>
+                  <div className="text-center py-12 text-muted-foreground">
+                    Coming soon...
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="plugins">
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-2xl font-bold">Plugins</h2>
+                    <p className="text-muted-foreground">Manage your plugins</p>
+                  </div>
+                  <div className="text-center py-12 text-muted-foreground">
+                    Coming soon...
+                  </div>
+                </div>
+              </TabsContent>
             </Tabs>
           </div>
         </div>
