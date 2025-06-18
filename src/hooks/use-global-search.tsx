@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useOrders } from '@/hooks/use-orders';
 import { useCustomers } from '@/hooks/use-customers';
 import { usePickups } from '@/hooks/use-pickups';
+import { useTickets } from '@/hooks/use-tickets';
 import { Search, Package, User, Calendar, Settings, Ticket, Receipt } from 'lucide-react';
 
 export interface SearchResult {
@@ -22,6 +23,8 @@ export interface SearchResult {
     date?: string;
     pickup_id?: string;
     order_id?: string;
+    ticket_id?: string;
+    category?: string;
   };
 }
 
@@ -71,9 +74,35 @@ const isPickupId = (query: string): boolean => {
   return /^PIC-\d{3}$/i.test(cleaned) || /^pickup/i.test(query);
 };
 
+// Enhanced phone number detection and normalization
+const normalizePhoneNumber = (phone: string): string => {
+  return phone.replace(/[^\d]/g, '');
+};
+
 const isPhoneNumber = (query: string): boolean => {
-  const cleaned = query.replace(/\D/g, '');
+  const cleaned = normalizePhoneNumber(query);
   return cleaned.length >= 8 && /^(\+?961|0?[37][0-9]|8[1-9])/.test(cleaned);
+};
+
+const phoneMatches = (customerPhone: string, searchQuery: string): boolean => {
+  const normalizedCustomer = normalizePhoneNumber(customerPhone);
+  const normalizedSearch = normalizePhoneNumber(searchQuery);
+  
+  // Direct match
+  if (normalizedCustomer.includes(normalizedSearch)) return true;
+  
+  // Lebanese format matching
+  const lebanesePrefixes = ['961', '03', '70', '71', '76', '78', '79', '81'];
+  for (const prefix of lebanesePrefixes) {
+    if (normalizedCustomer.startsWith(prefix) && normalizedCustomer.slice(prefix.length).includes(normalizedSearch)) {
+      return true;
+    }
+    if (normalizedSearch.startsWith(prefix) && normalizedCustomer.includes(normalizedSearch.slice(prefix.length))) {
+      return true;
+    }
+  }
+  
+  return false;
 };
 
 const isLocationQuery = (query: string): boolean => {
@@ -86,6 +115,7 @@ export function useGlobalSearch(query: string) {
   const { data: orders } = useOrders();
   const { data: customers } = useCustomers();
   const { data: pickups } = usePickups();
+  const { data: tickets } = useTickets();
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -132,7 +162,7 @@ export function useGlobalSearch(query: string) {
           const orderIdMatch = order.order_id.toString().includes(searchTerm.replace(/[#\s]/g, ''));
           const referenceMatch = order.reference_number?.toLowerCase().includes(searchTerm.replace(/[#\s]/g, ''));
           const customerMatch = order.customer.name.toLowerCase().includes(searchTerm);
-          const phoneMatch = order.customer.phone.includes(searchTerm);
+          const phoneMatch = phoneMatches(order.customer.phone, searchTerm);
           
           // Give priority to exact matches
           if (isOrderQuery) {
@@ -178,7 +208,7 @@ export function useGlobalSearch(query: string) {
           const locationMatch = pickup.location.toLowerCase().includes(searchTerm);
           const addressMatch = pickup.address.toLowerCase().includes(searchTerm);
           const contactMatch = pickup.contact_person.toLowerCase().includes(searchTerm);
-          const phoneMatch = pickup.contact_phone.includes(searchTerm);
+          const phoneMatch = phoneMatches(pickup.contact_phone, searchTerm);
           
           // Give priority to pickup ID matches
           if (isPickupQuery) {
@@ -219,7 +249,7 @@ export function useGlobalSearch(query: string) {
       const customerResults = customers
         .filter(customer => {
           const nameMatch = customer.name.toLowerCase().includes(searchTerm);
-          const phoneMatch = customer.phone.includes(searchTerm);
+          const phoneMatch = phoneMatches(customer.phone, searchTerm);
           const addressMatch = customer.address?.toLowerCase().includes(searchTerm);
           
           return nameMatch || phoneMatch || addressMatch;
@@ -240,7 +270,36 @@ export function useGlobalSearch(query: string) {
       results.push(...customerResults);
     }
 
-    // PRIORITY 4: Search Settings
+    // PRIORITY 4: Search Support Tickets
+    if (tickets && tickets.length > 0) {
+      const ticketResults = tickets
+        .filter(ticket => {
+          const titleMatch = ticket.title.toLowerCase().includes(searchTerm);
+          const contentMatch = ticket.content.toLowerCase().includes(searchTerm);
+          const categoryMatch = ticket.category.toLowerCase().includes(searchTerm);
+          const ticketIdMatch = ticket.id.toLowerCase().includes(searchTerm);
+          
+          return titleMatch || contentMatch || categoryMatch || ticketIdMatch;
+        })
+        .slice(0, 3)
+        .map(ticket => ({
+          id: ticket.id,
+          title: ticket.title,
+          subtitle: `${ticket.category} | ${ticket.status}`,
+          category: 'Support' as const,
+          icon: <Ticket className="h-4 w-4" />,
+          path: `/support?modal=details&id=${ticket.id}`,
+          metadata: {
+            status: ticket.status,
+            category: ticket.category,
+            ticket_id: ticket.id
+          }
+        }));
+      
+      results.push(...ticketResults);
+    }
+
+    // PRIORITY 5: Search Settings
     const settingsMatches = settingsResults.filter(setting => 
       setting.title.toLowerCase().includes(searchTerm) ||
       setting.subtitle.toLowerCase().includes(searchTerm)
@@ -249,7 +308,7 @@ export function useGlobalSearch(query: string) {
 
     // Limit total results to 8
     return results.slice(0, 8);
-  }, [query, orders, customers, pickups]);
+  }, [query, orders, customers, pickups, tickets]);
 
   return {
     results: searchResults,

@@ -12,12 +12,14 @@ import { cn } from '@/lib/utils';
 interface GlobalSearchProps {
   className?: string;
   placeholder?: string;
+  onResultSelect?: (result: SearchResult) => void;
 }
 
 const categoryChips = [
   { label: 'Orders', value: 'orders', color: 'hover:bg-gray-100 dark:hover:bg-gray-800' },
   { label: 'Customers', value: 'customers', color: 'hover:bg-gray-100 dark:hover:bg-gray-800' },
   { label: 'Pickups', value: 'pickups', color: 'hover:bg-gray-100 dark:hover:bg-gray-800' },
+  { label: 'Support', value: 'support', color: 'hover:bg-gray-100 dark:hover:bg-gray-800' },
   { label: 'Settings', value: 'settings', color: 'hover:bg-gray-100 dark:hover:bg-gray-800' },
 ];
 
@@ -33,14 +35,18 @@ const getStatusBadgeProps = (status: string) => {
     'Unsuccessful': { variant: 'outline', className: 'bg-red-50 text-red-700 border-red-200' },
     'Scheduled': { variant: 'outline', className: 'bg-blue-50 text-blue-700 border-blue-200' },
     'Completed': { variant: 'outline', className: 'bg-green-50 text-green-700 border-green-200' },
-    'Canceled': { variant: 'outline', className: 'bg-gray-50 text-gray-700 border-gray-200' }
+    'Canceled': { variant: 'outline', className: 'bg-gray-50 text-gray-700 border-gray-200' },
+    'Open': { variant: 'outline', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+    'Resolved': { variant: 'outline', className: 'bg-green-50 text-green-700 border-green-200' },
+    'Closed': { variant: 'outline', className: 'bg-gray-50 text-gray-700 border-gray-200' }
   };
   return statusConfig[status] || { variant: 'secondary' as const, className: '' };
 };
 
 export const GlobalSearch: React.FC<GlobalSearchProps> = ({ 
   className, 
-  placeholder = "Search" 
+  placeholder = "Search",
+  onResultSelect
 }) => {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -48,6 +54,8 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const resultItemsRef = useRef<(HTMLButtonElement | null)[]>([]);
   const navigate = useNavigate();
 
   const { results, recentSearches, addToRecentSearches, clearRecentSearches } = useGlobalSearch(query);
@@ -79,6 +87,26 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Auto-scroll to selected item
+  useEffect(() => {
+    if (selectedIndex >= 0 && resultItemsRef.current[selectedIndex] && resultsRef.current) {
+      const selectedElement = resultItemsRef.current[selectedIndex];
+      const container = resultsRef.current;
+      
+      if (selectedElement) {
+        const containerRect = container.getBoundingClientRect();
+        const elementRect = selectedElement.getBoundingClientRect();
+        
+        if (elementRect.bottom > containerRect.bottom || elementRect.top < containerRect.top) {
+          selectedElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest'
+          });
+        }
+      }
+    }
+  }, [selectedIndex]);
+
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen) return;
@@ -86,11 +114,17 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex(prev => Math.min(prev + 1, filteredResults.length - 1));
+        setSelectedIndex(prev => {
+          const newIndex = prev < filteredResults.length - 1 ? prev + 1 : prev;
+          return newIndex;
+        });
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedIndex(prev => Math.max(prev - 1, -1));
+        setSelectedIndex(prev => {
+          const newIndex = prev > 0 ? prev - 1 : -1;
+          return newIndex;
+        });
         break;
       case 'Enter':
         e.preventDefault();
@@ -115,12 +149,17 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
   const handleResultClick = (result: SearchResult) => {
     addToRecentSearches(query);
     
+    // Call custom onResultSelect handler if provided
+    if (onResultSelect) {
+      onResultSelect(result);
+    }
+    
     // Enhanced navigation with modal support
     const url = new URL(result.path, window.location.origin);
     const pathWithoutQuery = url.pathname;
     const searchParams = url.searchParams;
     
-    // Navigate to the page first
+    // Navigate to the page with query params to trigger modal opening
     navigate(pathWithoutQuery + (searchParams.toString() ? '?' + searchParams.toString() : ''));
     
     setIsOpen(false);
@@ -204,7 +243,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
               </div>
             </div>
 
-            <div className="max-h-96 overflow-y-auto">
+            <div ref={resultsRef} className="max-h-96 overflow-y-auto">
               {query.trim() === '' ? (
                 // Show recent searches and welcome state
                 <div className="p-6">
@@ -239,7 +278,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
                       <Search className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                       <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">Find anything</h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Search orders, customers, pickups, settings and more
+                        Search orders, customers, pickups, support tickets and more
                       </p>
                     </div>
                   )}
@@ -257,6 +296,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
                         return (
                           <button
                             key={result.id}
+                            ref={(el) => { resultItemsRef.current[globalIndex] = el; }}
                             onClick={() => handleResultClick(result)}
                             className={cn(
                               "w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-b border-gray-50 dark:border-gray-800 last:border-b-0",
@@ -285,6 +325,9 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({
                                   )}
                                   {result.metadata.type && (
                                     <span className="text-xs text-gray-400 dark:text-gray-500">{result.metadata.type}</span>
+                                  )}
+                                  {result.metadata.category && (
+                                    <span className="text-xs text-gray-400 dark:text-gray-500">{result.metadata.category}</span>
                                   )}
                                   {(result.metadata.amount_usd > 0 || result.metadata.amount_lbp > 0) && (
                                     <div className="flex gap-1 text-xs text-gray-600 dark:text-gray-400">
