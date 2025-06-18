@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -17,9 +17,11 @@ import { cn } from '@/lib/utils';
 import PickupDetailsDialog from '@/components/pickups/PickupDetailsDialog';
 import PickupDetailsDrawer from '@/components/pickups/PickupDetailsDrawer';
 import { mapPickupToComponentFormat } from '@/utils/pickupMappers';
+import { toast } from 'sonner';
 
 const Pickups: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("upcoming");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPickup, setSelectedPickup] = useState<any | null>(null); // PickupData
@@ -35,6 +37,25 @@ const Pickups: React.FC = () => {
 
   const upcomingPickups = [...(scheduledPickups || []), ...(inProgressPickups || [])];
   const historyPickups = [...(completedPickups || []), ...(canceledPickups || [])];
+
+  // Handle URL parameters for modal opening (from global search)
+  useEffect(() => {
+    const modal = searchParams.get('modal');
+    const id = searchParams.get('id');
+    
+    if (modal === 'details' && id && allPickups) {
+      const pickup = allPickups.find(p => p.id === id);
+      if (pickup) {
+        setSelectedPickup(mapPickupToComponentFormat(pickup));
+        setDetailsOpen(true);
+        // Clean up URL params
+        navigate('/pickups', { replace: true });
+      } else {
+        toast.error('Pickup not found');
+        navigate('/pickups', { replace: true });
+      }
+    }
+  }, [searchParams, allPickups, navigate]);
 
   // Helper for pickup ID formatting (PIC-001)
   const formatPickupId = (id: string | number | undefined) => {
