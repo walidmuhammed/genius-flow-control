@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Search, Filter, Ticket, MessageSquare, Clock, CheckCircle, XCircle } from 'lucide-react';
@@ -105,8 +104,7 @@ const Support: React.FC = () => {
     createTicket({
       title: newTicketForm.title,
       content: newTicketForm.content,
-      category: newTicketForm.category,
-      status: 'Open'
+      category: newTicketForm.category
     }, {
       onSuccess: () => {
         toast.success('Support ticket created successfully');
@@ -122,7 +120,7 @@ const Support: React.FC = () => {
     addMessage({
       ticket_id: selectedTicket.id,
       content: newMessage.trim(),
-      sender_type: 'client'
+      sender: 'client'
     }, {
       onSuccess: () => {
         setNewMessage('');
