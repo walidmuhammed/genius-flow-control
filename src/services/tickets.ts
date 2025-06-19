@@ -6,9 +6,9 @@ import { toast } from "sonner";
 export type Ticket = Database["public"]["Tables"]["tickets"]["Row"];
 export type TicketMessage = Database["public"]["Tables"]["ticket_messages"]["Row"];
 
-export type TicketCategory = 'Delay Delivery' | 'Technical Issue' | 'Payment Issue' | 'Order Issue' | 'Pickup Issue' | 'Return Issue' | 'Packaging Issue' | 'Other';
-
-export type TicketStatus = 'Open' | 'Resolved' | 'Closed';
+export type TicketCategory = 'Orders Issue' | 'Pickup Issue' | 'Payments and Wallet' | 'Other';
+export type TicketStatus = 'New' | 'Processing' | 'Resolved';
+export type LinkedEntityType = 'order' | 'pickup' | 'invoice' | null;
 
 export async function getTickets() {
   try {
@@ -81,11 +81,13 @@ export async function createTicket(ticket: {
   category: string;
   title: string;
   content: string;
+  linked_entity_type?: LinkedEntityType;
+  linked_entity_id?: string;
+  issue_description?: string;
 }) {
   try {
     console.log('Creating ticket with data:', ticket);
     
-    // Get the current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
@@ -100,8 +102,11 @@ export async function createTicket(ticket: {
       category: ticket.category,
       title: ticket.title,
       content: ticket.content,
-      status: 'Open' as const,
-      created_by: user.id
+      status: 'New' as const,
+      created_by: user.id,
+      linked_entity_type: ticket.linked_entity_type || null,
+      linked_entity_id: ticket.linked_entity_id || null,
+      issue_description: ticket.issue_description || null
     };
 
     console.log('Inserting ticket with data:', ticketData);
@@ -134,7 +139,6 @@ export async function addTicketMessage(message: {
   content: string;
 }) {
   try {
-    // Get the current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
@@ -158,7 +162,6 @@ export async function addTicketMessage(message: {
       return null;
     }
 
-    // Update the ticket's updated_at timestamp
     await supabase
       .from('tickets')
       .update({ updated_at: new Date().toISOString() })

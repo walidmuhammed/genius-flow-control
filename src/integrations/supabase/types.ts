@@ -546,7 +546,11 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          issue_description: string | null
+          linked_entity_id: string | null
+          linked_entity_type: string | null
           status: string
+          ticket_number: string | null
           title: string
           updated_at: string
         }
@@ -556,7 +560,11 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          issue_description?: string | null
+          linked_entity_id?: string | null
+          linked_entity_type?: string | null
           status?: string
+          ticket_number?: string | null
           title: string
           updated_at?: string
         }
@@ -566,7 +574,11 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          issue_description?: string | null
+          linked_entity_id?: string | null
+          linked_entity_type?: string | null
           status?: string
+          ticket_number?: string | null
           title?: string
           updated_at?: string
         }
@@ -586,6 +598,10 @@ export type Database = {
         Returns: string
       }
       generate_reference_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_ticket_number: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
