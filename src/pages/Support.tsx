@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -68,10 +67,11 @@ const Support: React.FC = () => {
       ? ticket.status === 'open' || ticket.status === 'in_progress'
       : ticket.status === 'resolved' || ticket.status === 'closed';
     
+    const generatedTicketId = `TIC-${ticket.id.slice(-3)}`;
     const matchesSearch = !searchQuery || 
       ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ticket.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ticket.ticket_id?.toLowerCase().includes(searchQuery.toLowerCase());
+      generatedTicketId.toLowerCase().includes(searchQuery.toLowerCase());
       
     return matchesTab && matchesSearch;
   });
@@ -219,7 +219,7 @@ const Support: React.FC = () => {
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-[#DC291E]">
-                                {ticket.ticket_id || `TIC-${ticket.id.slice(-3)}`}
+                                TIC-{ticket.id.slice(-3)}
                               </span>
                               {getStatusBadge(ticket.status)}
                             </div>
@@ -259,7 +259,7 @@ const Support: React.FC = () => {
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-[#DC291E]">
-                                {ticket.ticket_id || `TIC-${ticket.id.slice(-3)}`}
+                                TIC-{ticket.id.slice(-3)}
                               </span>
                               {getStatusBadge(ticket.status)}
                             </div>
