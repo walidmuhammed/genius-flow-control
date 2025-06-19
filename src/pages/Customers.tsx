@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import MainLayout from "@/components/layout/MainLayout";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -171,6 +172,8 @@ const GOVERNORATES = [
 ];
 
 const Customers: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [governorateFilter, setGovernorateFilter] = useState<string>("all");
@@ -183,6 +186,26 @@ const Customers: React.FC = () => {
   const { data: selectedCustomer, isLoading: isLoadingCustomer } = useCustomer(selectedCustomerId || undefined);
   const { data: allOrders = [] } = useOrders();
   const { mutate: updateCustomer, isPending: isUpdating } = useUpdateCustomer();
+
+  // Handle URL parameters for global search modal opening
+  React.useEffect(() => {
+    const modal = searchParams.get('modal');
+    const id = searchParams.get('id');
+    
+    if (modal === 'details' && id && customers.length > 0) {
+      const foundCustomer = customers.find(customer => customer.id === id);
+      if (foundCustomer) {
+        setSelectedCustomerId(id);
+        setIsEditing(false);
+        // Clean up URL without adding to history
+        navigate('/customers', { replace: true });
+      } else {
+        // Invalid customer ID, clean up URL
+        navigate('/customers', { replace: true });
+        toast.error('Customer not found');
+      }
+    }
+  }, [searchParams, customers, navigate]);
 
   // Get customer orders
   const customerOrders = selectedCustomer ? allOrders.filter(

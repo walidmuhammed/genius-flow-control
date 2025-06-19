@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AlertCircle, Package } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -20,6 +21,8 @@ import cn from 'classnames';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 
 const OrdersList: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>('all');
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -43,6 +46,25 @@ const OrdersList: React.FC = () => {
   
   // FIX: Call useDeleteOrder
   const deleteOrderMutation = useDeleteOrder();
+
+  // Handle URL parameters for global search modal opening
+  React.useEffect(() => {
+    const modal = searchParams.get('modal');
+    const id = searchParams.get('id');
+    
+    if (modal === 'details' && id && allOrders) {
+      const foundOrder = allOrders.find(order => order.id === id);
+      if (foundOrder) {
+        handleViewOrder(foundOrder);
+        // Clean up URL without adding to history
+        navigate('/orders', { replace: true });
+      } else {
+        // Invalid order ID, clean up URL
+        navigate('/orders', { replace: true });
+        toast.error('Order not found');
+      }
+    }
+  }, [searchParams, allOrders, navigate]);
   
   // Show toast notification if there's an error loading orders
   React.useEffect(() => {
