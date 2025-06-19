@@ -1,6 +1,4 @@
-
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useMemo, useCallback } from 'react';
 import { AlertCircle, Package } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -32,8 +30,6 @@ const OrdersList: React.FC = () => {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [orderPendingDelete, setOrderPendingDelete] = useState<OrderWithCustomer | null>(null);
   const { isMobile, isTablet } = useScreenSize();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   
   // Fetch orders from the database using our hooks
   const { data: allOrders, isLoading: isLoadingAllOrders, error: ordersError } = useOrders();
@@ -47,28 +43,9 @@ const OrdersList: React.FC = () => {
   
   // FIX: Call useDeleteOrder
   const deleteOrderMutation = useDeleteOrder();
-
-  // Handle URL parameters for modal opening (from global search)
-  useEffect(() => {
-    const modal = searchParams.get('modal');
-    const id = searchParams.get('id');
-    
-    if (modal === 'details' && id && allOrders) {
-      const order = allOrders.find(o => o.id === id);
-      if (order) {
-        setSelectedOrder(order);
-        setOrderDetailsOpen(true);
-        // Clean up URL params
-        navigate('/orders', { replace: true });
-      } else {
-        toast.error('Order not found');
-        navigate('/orders', { replace: true });
-      }
-    }
-  }, [searchParams, allOrders, navigate]);
   
   // Show toast notification if there's an error loading orders
-  useEffect(() => {
+  React.useEffect(() => {
     if (ordersError) {
       toast.error("Failed to load orders. Please try again.");
       console.error("Error loading orders:", ordersError);

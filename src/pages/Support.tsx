@@ -1,384 +1,1039 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Search, Filter, Ticket, MessageSquare, Clock, CheckCircle, XCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Filter, Clock, Package, ArrowLeft, Package2, Wallet, FileText, Send, Loader2, Ticket, Paperclip, X } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useTickets, useCreateTicket, useTicketMessages, useAddTicketMessage } from '@/hooks/use-tickets';
-import { EmptyState } from '@/components/ui/empty-state';
-import { motion } from 'framer-motion';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { useTickets, useTicket, useTicketMessages, useCreateTicket, useAddTicketMessage, useUpdateTicketStatus } from '@/hooks/use-tickets';
+import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { formatDate } from '@/utils/format';
-import { Ticket as TicketType } from '@/services/tickets';
+import { useScreenSize } from '@/hooks/useScreenSize';
+import type { TicketCategory } from '@/services/tickets';
+import type { OrderWithCustomer } from '@/services/orders';
+import type { Pickup } from '@/services/pickups';
+import type { Invoice } from '@/services/invoices';
+import OrderSelectionModal from '@/components/support/OrderSelectionModal';
+import PickupSelectionModal from '@/components/support/PickupSelectionModal';
+import InvoiceSelectionModal from '@/components/support/InvoiceSelectionModal';
 
 const Support: React.FC = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { data: tickets = [], isLoading } = useTickets();
-  const { mutate: createTicket } = useCreateTicket();
-  const { mutate: addMessage } = useAddTicketMessage();
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTicket, setSelectedTicket] = useState<TicketType | null>(null);
-  const [ticketDetailsOpen, setTicketDetailsOpen] = useState(false);
-  const [createTicketOpen, setCreateTicketOpen] = useState(false);
-  const [newMessage, setNewMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [newMessage, setNewMessage] = useState<string>('');
+  const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [newTicketCategory, setNewTicketCategory] = useState<string>('');
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithCustomer | null>(null);
+  const [selectedPickup, setSelectedPickup] = useState<Pickup | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [selectedIssue, setSelectedIssue] = useState<string>('');
+  const [showOtherField, setShowOtherField] = useState<boolean>(false);
+  const [customMessage, setCustomMessage] = useState<string>('');
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [showMobileChat, setShowMobileChat] = useState(false);
 
-  // New ticket form state
-  const [newTicketForm, setNewTicketForm] = useState({
-    title: '',
-    content: '',
-    category: 'general' as const
-  });
+  // Modal states
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [showPickupModal, setShowPickupModal] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
-  document.title = "Support - Dashboard";
+  const { isMobile, isTablet } = useScreenSize();
 
-  // Handle URL parameters for modal opening (from global search)
-  useEffect(() => {
-    const modal = searchParams.get('modal');
-    const id = searchParams.get('id');
-    
-    if (modal === 'details' && id && tickets.length > 0) {
-      const ticket = tickets.find(t => t.id === id);
-      if (ticket) {
-        setSelectedTicket(ticket);
-        setTicketDetailsOpen(true);
-        // Clean up URL params
-        navigate('/support', { replace: true });
-      } else {
-        toast.error('Support ticket not found');
-        navigate('/support', { replace: true });
-      }
-    }
-  }, [searchParams, tickets, navigate]);
+  // Fetch tickets
+  const {
+    data: tickets = [],
+    isLoading: isLoadingTickets,
+    refetch: refetchTickets
+  } = useTickets();
 
+  // Fetch selected ticket
+  const {
+    data: selectedTicket
+  } = useTicket(selectedTicketId || undefined);
+
+  // Fetch ticket messages
+  const {
+    data: ticketMessages = []
+  } = useTicketMessages(selectedTicketId || undefined);
+
+  // Mutations
+  const createTicketMutation = useCreateTicket();
+  const addTicketMessageMutation = useAddTicketMessage();
+  const updateTicketStatusMutation = useUpdateTicketStatus();
+
+  // Filter tickets based on search query and active filter
   const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.category.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+    const matchesSearch = ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         ticket.category.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         ticket.id.includes(searchQuery);
+    
+    if (activeFilter === 'all') return matchesSearch;
+    return matchesSearch && ticket.status.toLowerCase() === activeFilter.toLowerCase();
   });
 
-  const getStatusColor = (status: string) => {
+  // Issue options for different categories
+  const orderIssues = ['Delayed delivery', 'Missing item', 'Damaged order', 'Wrong delivery address', 'Order not delivered'];
+  const pickupIssues = ['Delayed pickup', 'Pickup not completed', 'Wrong pickup address', 'Items not collected', 'Courier issues'];
+  const walletIssues = ['Payment not received', 'Invoice discrepancy', 'Missing transaction', 'Incorrect amounts', 'Payment delays'];
+
+  const handleTicketClick = (ticketId: string) => {
+    setSelectedTicketId(ticketId);
+    if (isMobile || isTablet) {
+      setShowMobileChat(true);
+    }
+  };
+
+  const handleBackToList = () => {
+    setShowMobileChat(false);
+    setSelectedTicketId(null);
+  };
+
+  const handleSendMessage = async () => {
+    if (newMessage.trim() && selectedTicketId) {
+      await addTicketMessageMutation.mutateAsync({
+        ticket_id: selectedTicketId,
+        sender: 'Customer Service',
+        content: newMessage
+      });
+      setNewMessage('');
+    }
+  };
+
+  const handleCategorySelect = (category: string) => {
+    setNewTicketCategory(category);
+    setCurrentStep(2);
+  };
+
+  const handleCreateNewTicket = async () => {
+    let ticketTitle = '';
+    let ticketContent = '';
+
+    console.log('Creating ticket with category:', newTicketCategory);
+
+    // Generate title and content based on category and selections
+    switch (newTicketCategory) {
+      case 'orders':
+        if (showOtherField) {
+          if (!customMessage.trim()) {
+            toast.error('Please describe your issue');
+            return;
+          }
+          ticketTitle = 'Order Issue - Other';
+          ticketContent = customMessage;
+        } else {
+          if (!selectedOrder || !selectedIssue) {
+            toast.error('Please select an order and issue type');
+            return;
+          }
+          ticketTitle = `Order Issue - ${selectedIssue}`;
+          ticketContent = `Issue with order ${selectedOrder?.reference_number}: ${selectedIssue}`;
+        }
+        break;
+      case 'pickups':
+        if (showOtherField) {
+          if (!customMessage.trim()) {
+            toast.error('Please describe your issue');
+            return;
+          }
+          ticketTitle = 'Pickup Issue - Other';
+          ticketContent = customMessage;
+        } else {
+          if (!selectedPickup || !selectedIssue) {
+            toast.error('Please select a pickup and issue type');
+            return;
+          }
+          ticketTitle = `Pickup Issue - ${selectedIssue}`;
+          ticketContent = `Issue with pickup ${selectedPickup?.pickup_id}: ${selectedIssue}`;
+        }
+        break;
+      case 'payment':
+        if (showOtherField) {
+          if (!customMessage.trim()) {
+            toast.error('Please describe your issue');
+            return;
+          }
+          ticketTitle = 'Payment Issue - Other';
+          ticketContent = customMessage;
+        } else {
+          if (!selectedInvoice || !selectedIssue) {
+            toast.error('Please select an invoice and issue type');
+            return;
+          }
+          ticketTitle = `Payment Issue - ${selectedIssue}`;
+          ticketContent = `Issue with invoice ${selectedInvoice?.invoice_id}: ${selectedIssue}`;
+        }
+        break;
+      case 'others':
+        if (!customMessage.trim()) {
+          toast.error('Please describe your issue');
+          return;
+        }
+        ticketTitle = 'General Issue';
+        ticketContent = customMessage;
+        break;
+    }
+
+    console.log('Creating ticket:', { title: ticketTitle, content: ticketContent, category: getCategoryTitle(newTicketCategory) });
+
+    try {
+      const newTicket = await createTicketMutation.mutateAsync({
+        category: getCategoryTitle(newTicketCategory),
+        title: ticketTitle,
+        content: ticketContent
+      });
+
+      if (newTicket) {
+        console.log('Ticket created successfully:', newTicket);
+        setIsNewTicketModalOpen(false);
+        resetForm();
+        setSelectedTicketId(newTicket.id);
+        
+        // Force refetch tickets to ensure the new one appears
+        setTimeout(() => {
+          refetchTickets();
+        }, 500);
+      }
+    } catch (error) {
+      console.error('Failed to create ticket:', error);
+    }
+  };
+
+  const resetForm = () => {
+    setCurrentStep(1);
+    setNewTicketCategory('');
+    setSelectedOrder(null);
+    setSelectedPickup(null);
+    setSelectedInvoice(null);
+    setSelectedIssue('');
+    setShowOtherField(false);
+    setCustomMessage('');
+  };
+
+  const handleCloseTicket = async () => {
+    if (selectedTicketId) {
+      await updateTicketStatusMutation.mutateAsync({
+        ticketId: selectedTicketId,
+        status: 'Closed'
+      });
+      setSelectedTicketId(null);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Open':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'In Progress':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return <Badge className="bg-blue-500 text-white">New</Badge>;
       case 'Resolved':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return <Badge className="bg-green-500 text-white">Resolved</Badge>;
       case 'Closed':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return <Badge className="bg-gray-500 text-white">Closed</Badge>;
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return <Badge className="bg-purple-500 text-white">Processing</Badge>;
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'Open':
-        return <MessageSquare className="h-4 w-4" />;
-      case 'In Progress':
-        return <Clock className="h-4 w-4" />;
-      case 'Resolved':
-        return <CheckCircle className="h-4 w-4" />;
-      case 'Closed':
-        return <XCircle className="h-4 w-4" />;
+  const getCategoryTitle = (categoryKey: string): TicketCategory => {
+    switch (categoryKey) {
+      case 'orders':
+        return 'Order Issue';
+      case 'pickups':
+        return 'Pickup Issue';
+      case 'return':
+        return 'Return Issue';
+      case 'payment':
+        return 'Payment Issue';
+      case 'technical':
+        return 'Technical Issue';
+      case 'delay':
+        return 'Delay Delivery';
       default:
-        return <Ticket className="h-4 w-4" />;
+        return 'Other';
     }
   };
 
-  const handleCreateTicket = () => {
-    if (!newTicketForm.title.trim() || !newTicketForm.content.trim()) {
-      toast.error('Please fill in all required fields');
-      return;
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'dd MMM yyyy, hh:mm a');
+    } catch (error) {
+      return dateString;
     }
-
-    createTicket({
-      title: newTicketForm.title,
-      content: newTicketForm.content,
-      category: newTicketForm.category
-    }, {
-      onSuccess: () => {
-        toast.success('Support ticket created successfully');
-        setCreateTicketOpen(false);
-        setNewTicketForm({ title: '', content: '', category: 'general' });
-      }
-    });
   };
 
-  const handleSendMessage = () => {
-    if (!selectedTicket || !newMessage.trim()) return;
-
-    addMessage({
-      ticket_id: selectedTicket.id,
-      content: newMessage.trim(),
-      sender: 'client'
-    }, {
-      onSuccess: () => {
-        setNewMessage('');
-      }
-    });
+  const goBackToStep1 = () => {
+    setCurrentStep(1);
+    setNewTicketCategory('');
+    setSelectedOrder(null);
+    setSelectedPickup(null);
+    setSelectedInvoice(null);
+    setSelectedIssue('');
+    setShowOtherField(false);
+    setCustomMessage('');
   };
 
-  if (isLoading) {
-    return (
-      <MainLayout>
-        <div className="space-y-6">
-          <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
-          <Card className="animate-pulse">
-            <CardContent className="p-6">
-              <div className="h-64 bg-gray-200 rounded"></div>
-            </CardContent>
-          </Card>
+  const renderStep1 = () => (
+    <div className="space-y-4">
+      <DialogDescription>
+        Tell us which category fits your issue
+      </DialogDescription>
+      
+      <div className="space-y-3">
+        <div className="flex items-center space-x-3 border rounded-xl p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all duration-200" onClick={() => handleCategorySelect('orders')}>
+          <Package className="h-5 w-5 text-primary flex-shrink-0" />
+          <div className="flex-1">
+            <div className="font-medium">Orders</div>
+            <div className="text-sm text-muted-foreground">(Forward or Return)</div>
+            <p className="text-sm text-muted-foreground mt-1">Delayed delivery, Damaged order, Missing item...etc</p>
+          </div>
         </div>
+        
+        <div className="flex items-center space-x-3 border rounded-xl p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all duration-200" onClick={() => handleCategorySelect('pickups')}>
+          <Clock className="h-5 w-5 text-primary flex-shrink-0" />
+          <div className="flex-1">
+            <div className="font-medium">Pickups</div>
+            <p className="text-sm text-muted-foreground mt-1">Delay pickup, Fake update...etc</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-3 border rounded-xl p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all duration-200" onClick={() => handleCategorySelect('payment')}>
+          <Wallet className="h-5 w-5 text-primary flex-shrink-0" />
+          <div className="flex-1">
+            <div className="font-medium">Payment and Wallet</div>
+            <p className="text-sm text-muted-foreground mt-1">Issues you face with your payments or financial issues</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-3 border rounded-xl p-4 hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-all duration-200" onClick={() => handleCategorySelect('others')}>
+          <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+          <div className="flex-1">
+            <div className="font-medium">Others</div>
+            <p className="text-sm text-muted-foreground mt-1">Any other issues you are facing</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStep2 = () => {
+    switch (newTicketCategory) {
+      case 'orders':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Button variant="ghost" size="sm" onClick={goBackToStep1}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h3 className="font-medium">Order Issue</h3>
+                <p className="text-sm text-muted-foreground">Select your order and describe the issue</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="order">Select Order</Label>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start h-auto p-4 rounded-xl"
+                  onClick={() => setShowOrderModal(true)}
+                >
+                  {selectedOrder ? (
+                    <div className="text-left">
+                      <div className="font-medium">#{selectedOrder.id.slice(-3)} {selectedOrder.reference_number}</div>
+                      <div className="text-sm text-muted-foreground">{selectedOrder.customer.name}</div>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">Choose an order...</span>
+                  )}
+                </Button>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="issue">Issue Type</Label>
+                <select 
+                  value={selectedIssue} 
+                  onChange={(e) => setSelectedIssue(e.target.value)}
+                  className="w-full p-3 border rounded-xl bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                >
+                  <option value="">What's the issue?</option>
+                  {orderIssues.map(issue => (
+                    <option key={issue} value={issue}>{issue}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <Button variant="outline" onClick={() => setShowOtherField(!showOtherField)} className="w-full rounded-xl" type="button">
+                Other
+              </Button>
+              
+              {showOtherField && (
+                <div className="space-y-2">
+                  <Label htmlFor="custom-message">Describe your issue</Label>
+                  <Textarea 
+                    id="custom-message" 
+                    value={customMessage} 
+                    onChange={(e) => setCustomMessage(e.target.value)} 
+                    placeholder="Please describe your issue in detail..." 
+                    rows={3} 
+                    className="rounded-xl"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      case 'pickups':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Button variant="ghost" size="sm" onClick={goBackToStep1}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h3 className="font-medium">Pickup Issue</h3>
+                <p className="text-sm text-muted-foreground">Select your pickup and describe the issue</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="pickup">Select Pickup</Label>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start h-auto p-4 rounded-xl"
+                  onClick={() => setShowPickupModal(true)}
+                >
+                  {selectedPickup ? (
+                    <div className="text-left">
+                      <div className="font-medium">#{selectedPickup.id.slice(-3)} {selectedPickup.pickup_id}</div>
+                      <div className="text-sm text-muted-foreground">{selectedPickup.location}</div>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">Choose a pickup...</span>
+                  )}
+                </Button>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="issue">Issue Type</Label>
+                <select 
+                  value={selectedIssue} 
+                  onChange={(e) => setSelectedIssue(e.target.value)}
+                  className="w-full p-3 border rounded-xl bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                >
+                  <option value="">What's the issue?</option>
+                  {pickupIssues.map(issue => (
+                    <option key={issue} value={issue}>{issue}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <Button variant="outline" onClick={() => setShowOtherField(!showOtherField)} className="w-full rounded-xl" type="button">
+                Other
+              </Button>
+              
+              {showOtherField && (
+                <div className="space-y-2">
+                  <Label htmlFor="custom-message">Describe your issue</Label>
+                  <Textarea 
+                    id="custom-message" 
+                    value={customMessage} 
+                    onChange={(e) => setCustomMessage(e.target.value)} 
+                    placeholder="Please describe your issue in detail..." 
+                    rows={3} 
+                    className="rounded-xl"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      case 'payment':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Button variant="ghost" size="sm" onClick={goBackToStep1}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h3 className="font-medium">Payment Issue</h3>
+                <p className="text-sm text-muted-foreground">Select your invoice and describe the issue</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="invoice">Select Invoice</Label>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start h-auto p-4 rounded-xl"
+                  onClick={() => setShowInvoiceModal(true)}
+                >
+                  {selectedInvoice ? (
+                    <div className="text-left">
+                      <div className="font-medium">#{selectedInvoice.id.slice(-3)} {selectedInvoice.invoice_id}</div>
+                      <div className="text-sm text-muted-foreground">${selectedInvoice.net_payout_usd}</div>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">Choose an invoice...</span>
+                  )}
+                </Button>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="issue">Issue Type</Label>
+                <select 
+                  value={selectedIssue} 
+                  onChange={(e) => setSelectedIssue(e.target.value)}
+                  className="w-full p-3 border rounded-xl bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                >
+                  <option value="">What's the issue?</option>
+                  {walletIssues.map(issue => (
+                    <option key={issue} value={issue}>{issue}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <Button variant="outline" onClick={() => setShowOtherField(!showOtherField)} className="w-full rounded-xl" type="button">
+                Other
+              </Button>
+              
+              {showOtherField && (
+                <div className="space-y-2">
+                  <Label htmlFor="custom-message">Describe your issue</Label>
+                  <Textarea 
+                    id="custom-message" 
+                    value={customMessage} 
+                    onChange={(e) => setCustomMessage(e.target.value)} 
+                    placeholder="Please describe your issue in detail..." 
+                    rows={3} 
+                    className="rounded-xl"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      case 'others':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Button variant="ghost" size="sm" onClick={goBackToStep1}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h3 className="font-medium">General Issue</h3>
+                <p className="text-sm text-muted-foreground">Describe your issue</p>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="custom-message">Describe your issue</Label>
+              <Textarea 
+                id="custom-message" 
+                value={customMessage} 
+                onChange={(e) => setCustomMessage(e.target.value)} 
+                placeholder="Please describe your issue in detail..." 
+                rows={4} 
+                className="rounded-xl"
+              />
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  // Desktop layout
+  if (!isMobile && !isTablet) {
+    return (
+      <MainLayout className="p-0">
+        <div className="flex h-full">
+          {/* Left Sidebar */}
+          <div className="w-1/3 border-r h-full flex flex-col bg-white">
+            <div className="p-6 border-b">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h1 className="text-xl font-bold">Support Tickets</h1>
+                  <p className="text-sm text-muted-foreground">Contact our support team and track your tickets.</p>
+                </div>
+              </div>
+
+              {/* Filter Tabs */}
+              <Tabs defaultValue="all" value={activeFilter} onValueChange={setActiveFilter} className="mb-4">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+                  <TabsTrigger value="open" className="text-xs">New</TabsTrigger>
+                  <TabsTrigger value="processing" className="text-xs">Process</TabsTrigger>
+                  <TabsTrigger value="resolved" className="text-xs">Resolved</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input 
+                  placeholder="Search by ticket ID or subject..." 
+                  className="pl-10 rounded-xl" 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                />
+              </div>
+              
+              <Button 
+                onClick={() => setIsNewTicketModalOpen(true)} 
+                className="w-full bg-primary hover:bg-primary/90 rounded-xl"
+              >
+                Create New Ticket
+              </Button>
+            </div>
+            
+            <div className="p-4 text-sm text-muted-foreground border-b">
+              Tickets ({filteredTickets.length})
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {isLoadingTickets ? (
+                <div className="flex justify-center items-center p-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : filteredTickets.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground">
+                  <Ticket className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p>No tickets found. Create a new ticket to get help.</p>
+                </div>
+              ) : (
+                filteredTickets.map(ticket => (
+                  <div 
+                    key={ticket.id} 
+                    className={`p-4 border-b cursor-pointer hover:bg-muted/40 transition-colors ${
+                      selectedTicketId === ticket.id ? 'bg-muted/40 border-l-4 border-l-primary' : ''
+                    }`} 
+                    onClick={() => handleTicketClick(ticket.id)}
+                  >
+                    <div className="flex justify-between mb-2">
+                      <Badge variant="outline" className="bg-muted/80 text-muted-foreground text-xs">
+                        {ticket.category}
+                      </Badge>
+                      {getStatusBadge(ticket.status)}
+                    </div>
+
+                    <div className="mb-2">
+                      <p className="font-medium text-sm">TIC-{ticket.id.substring(0, 3)}</p>
+                      <p className="text-sm text-muted-foreground truncate">{ticket.title}</p>
+                    </div>
+
+                    <div className="text-xs text-muted-foreground">
+                      {formatDate(ticket.created_at)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          
+          {/* Right Content - Fixed Layout Structure */}
+          <div className="flex-1 relative flex flex-col h-full">
+            {selectedTicket ? (
+              <>
+                {/* Ticket Header */}
+                <div className="p-6 border-b flex justify-between items-center bg-white shrink-0">
+                  <div className="flex items-center">
+                    <div>
+                      <h2 className="text-lg font-medium flex items-center gap-2">
+                        TIC-{selectedTicket.id.substring(0, 3)}
+                      </h2>
+                      <p className="text-muted-foreground">{selectedTicket.title}</p>
+                      <Badge variant="outline" className="bg-muted/80 text-muted-foreground mt-1">
+                        {selectedTicket.category}
+                      </Badge>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleCloseTicket} className="rounded-xl">
+                    {selectedTicket.status === 'Closed' ? 'Reopen' : 'Close'}
+                  </Button>
+                </div>
+                
+                {/* Chat Messages - Scrollable Area */}
+                <div className="flex-1 p-6 overflow-y-auto bg-gray-50" style={{ paddingBottom: '120px' }}>
+                  <div className="space-y-6">
+                    {/* Initial ticket message */}
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-medium text-primary">U</span>
+                        </div>
+                      </div>
+                      <div className="bg-white p-4 rounded-2xl rounded-tl-lg shadow-sm max-w-[80%] border">
+                        <p className="text-gray-900">{selectedTicket.content}</p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {formatDate(selectedTicket.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Ticket messages */}
+                    {ticketMessages.map(message => (
+                      <div className="flex gap-4 justify-end" key={message.id}>
+                        <div className="bg-primary p-4 rounded-2xl rounded-tr-lg shadow-sm max-w-[80%]">
+                          <p className="text-sm text-white">{message.content}</p>
+                          <p className="text-xs text-primary-foreground/70 mt-2">
+                            {formatDate(message.created_at)}
+                          </p>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-white">S</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Fixed Message Input Bar */}
+                <div className="absolute bottom-0 left-0 right-0 bg-white border-t p-4">
+                  <div className="flex gap-3">
+                    <Button variant="outline" size="icon" className="flex-shrink-0 rounded-xl">
+                      <Paperclip className="h-5 w-5" />
+                    </Button>
+                    <div className="flex-1 relative">
+                      <Textarea 
+                        placeholder="Type your message..." 
+                        className="min-h-12 resize-none rounded-xl border-0 shadow-sm focus:ring-2 focus:ring-primary/20" 
+                        value={newMessage} 
+                        onChange={(e) => setNewMessage(e.target.value)} 
+                        disabled={selectedTicket.status === 'Closed'}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                          }
+                        }} 
+                      />
+                    </div>
+                    <Button 
+                      size="icon" 
+                      className="flex-shrink-0 bg-primary hover:bg-primary/90 rounded-xl" 
+                      onClick={handleSendMessage} 
+                      disabled={selectedTicket.status === 'Closed' || addTicketMessageMutation.isPending || !newMessage.trim()}
+                    >
+                      {addTicketMessageMutation.isPending ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <Send className="h-5 w-5" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center p-16 bg-gray-50">
+                <div className="mb-4">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
+                    <Ticket className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-medium">No ticket selected</h3>
+                <p className="text-muted-foreground mt-2 max-w-md">Select a ticket from the list or create a new one to start a conversation with our support team.</p>
+                <Button className="mt-4 bg-primary hover:bg-primary/90 rounded-xl" onClick={() => setIsNewTicketModalOpen(true)}>
+                  Create New Ticket
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Selection Modals */}
+        <OrderSelectionModal
+          open={showOrderModal}
+          onOpenChange={setShowOrderModal}
+          onSelect={setSelectedOrder}
+          selectedOrderId={selectedOrder?.id}
+        />
+
+        <PickupSelectionModal
+          open={showPickupModal}
+          onOpenChange={setShowPickupModal}
+          onSelect={setSelectedPickup}
+          selectedPickupId={selectedPickup?.id}
+        />
+
+        <InvoiceSelectionModal
+          open={showInvoiceModal}
+          onOpenChange={setShowInvoiceModal}
+          onSelect={setSelectedInvoice}
+          selectedInvoiceId={selectedInvoice?.id}
+        />
+
+        {/* New Ticket Dialog */}
+        <Dialog open={isNewTicketModalOpen} onOpenChange={(open) => {
+          setIsNewTicketModalOpen(open);
+          if (!open) resetForm();
+        }}>
+          <DialogContent className="sm:max-w-[500px] rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>Create New Ticket</DialogTitle>
+            </DialogHeader>
+            
+            {currentStep === 1 ? renderStep1() : renderStep2()}
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setIsNewTicketModalOpen(false);
+                resetForm();
+              }} className="rounded-xl">
+                Cancel
+              </Button>
+              {currentStep === 2 && (
+                <Button 
+                  onClick={handleCreateNewTicket} 
+                  className="bg-primary hover:bg-primary/90 rounded-xl" 
+                  disabled={createTicketMutation.isPending}
+                >
+                  {createTicketMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                      Creating...
+                    </>
+                  ) : (
+                    'Create Ticket'
+                  )}
+                </Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </MainLayout>
     );
   }
 
+  // Mobile layout with fixed input
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <motion.div 
-          className="flex items-center justify-between"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Support Tickets
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Manage your support requests and tickets
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              {filteredTickets.length} Total Tickets
-            </Badge>
-            <Button 
-              className="bg-[#DC291E] hover:bg-[#c0211a] text-white"
-              onClick={() => setCreateTicketOpen(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Ticket
-            </Button>
-          </div>
-        </motion.div>
-
-        {/* Search */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-        >
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search by title, content, or category..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filters
-                </Button>
+    <MainLayout className="p-0">
+      <div className="flex flex-col h-screen bg-gray-50">
+        {/* Mobile Ticket List View */}
+        {!showMobileChat && (
+          <>
+            <div className="bg-white p-4 border-b shrink-0">
+              <div className="mb-4">
+                <h1 className="text-xl font-bold">Support Tickets</h1>
+                <p className="text-sm text-muted-foreground">Contact our support team and track your tickets.</p>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
 
-        {/* Tickets Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>All Support Tickets</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {filteredTickets.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredTickets.map((ticket) => (
-                        <TableRow key={ticket.id}>
-                          <TableCell className="font-medium">
-                            <div className="flex items-center gap-2">
-                              {getStatusIcon(ticket.status)}
-                              {ticket.title}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">
-                              {ticket.category}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={getStatusColor(ticket.status)}>
-                              {ticket.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {formatDate(new Date(ticket.created_at))}
-                          </TableCell>
-                          <TableCell>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => {
-                                setSelectedTicket(ticket);
-                                setTicketDetailsOpen(true);
-                              }}
-                            >
-                              View Details
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+              {/* Filter Tabs */}
+              <Tabs defaultValue="all" value={activeFilter} onValueChange={setActiveFilter} className="mb-4">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+                  <TabsTrigger value="open" className="text-xs">New</TabsTrigger>
+                  <TabsTrigger value="processing" className="text-xs">Process</TabsTrigger>
+                  <TabsTrigger value="resolved" className="text-xs">Resolved</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input 
+                  placeholder="Search tickets..." 
+                  className="pl-10 rounded-xl" 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                />
+              </div>
+              
+              <Button 
+                onClick={() => setIsNewTicketModalOpen(true)} 
+                className="w-full bg-primary hover:bg-primary/90 rounded-xl"
+              >
+                Create New Ticket
+              </Button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {isLoadingTickets ? (
+                <div className="flex justify-center items-center p-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : filteredTickets.length === 0 ? (
+                <div className="text-center py-16">
+                  <Ticket className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p className="text-muted-foreground">No tickets found. Create a new ticket to get help.</p>
                 </div>
               ) : (
-                <EmptyState
-                  icon={Ticket}
-                  title="No support tickets found"
-                  description="No tickets match your search criteria."
-                  actionLabel="Create Ticket"
-                  onAction={() => setCreateTicketOpen(true)}
-                />
+                filteredTickets.map(ticket => (
+                  <div 
+                    key={ticket.id} 
+                    className="bg-white p-4 rounded-xl border cursor-pointer hover:shadow-md transition-all duration-200" 
+                    onClick={() => handleTicketClick(ticket.id)}
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge variant="outline" className="text-xs">
+                            {ticket.category}
+                          </Badge>
+                          {getStatusBadge(ticket.status)}
+                        </div>
+                        <p className="font-medium text-sm">TIC-{ticket.id.substring(0, 3)}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{ticket.title}</p>
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatDate(ticket.created_at)}
+                    </div>
+                  </div>
+                ))
               )}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Create Ticket Modal */}
-        <Dialog open={createTicketOpen} onOpenChange={setCreateTicketOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Create New Support Ticket</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Title</label>
-                <Input
-                  placeholder="Brief description of your issue"
-                  value={newTicketForm.title}
-                  onChange={(e) => setNewTicketForm(prev => ({ ...prev, title: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Category</label>
-                <Select
-                  value={newTicketForm.category}
-                  onValueChange={(value) => setNewTicketForm(prev => ({ ...prev, category: value as any }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">General</SelectItem>
-                    <SelectItem value="billing">Billing</SelectItem>
-                    <SelectItem value="technical">Technical</SelectItem>
-                    <SelectItem value="feature_request">Feature Request</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium">Description</label>
-                <Textarea
-                  placeholder="Please provide detailed information about your issue..."
-                  value={newTicketForm.content}
-                  onChange={(e) => setNewTicketForm(prev => ({ ...prev, content: e.target.value }))}
-                  rows={4}
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setCreateTicketOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCreateTicket} className="bg-[#DC291E] hover:bg-[#c0211a]">
-                  Create Ticket
-                </Button>
-              </div>
             </div>
-          </DialogContent>
-        </Dialog>
+          </>
+        )}
 
-        {/* Ticket Details Modal */}
-        <Dialog open={ticketDetailsOpen} onOpenChange={setTicketDetailsOpen}>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                {selectedTicket && getStatusIcon(selectedTicket.status)}
-                {selectedTicket?.title}
-              </DialogTitle>
-            </DialogHeader>
-            {selectedTicket && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <Badge variant="outline" className={getStatusColor(selectedTicket.status)}>
-                    {selectedTicket.status}
-                  </Badge>
-                  <Badge variant="outline">
-                    {selectedTicket.category}
-                  </Badge>
-                  <span className="text-sm text-gray-500">
-                    Created {formatDate(new Date(selectedTicket.created_at))}
-                  </span>
-                </div>
-                
-                <div className="border rounded-lg p-4 bg-gray-50">
-                  <p className="text-sm text-gray-700">{selectedTicket.content}</p>
-                </div>
-
-                <div className="border-t pt-4">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Type your message..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                    />
-                    <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
-                      Send
-                    </Button>
+        {/* Mobile Chat View with Fixed Input */}
+        {showMobileChat && selectedTicket && (
+          <div className="flex flex-col h-screen">
+            {/* Chat Header */}
+            <div className="bg-white p-4 border-b flex items-center gap-3 shrink-0">
+              <Button variant="ghost" size="icon" onClick={handleBackToList} className="rounded-xl">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="flex-1">
+                <h2 className="font-medium">TIC-{selectedTicket.id.substring(0, 3)}</h2>
+                <p className="text-sm text-muted-foreground truncate">{selectedTicket.title}</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleCloseTicket} className="rounded-xl">
+                {selectedTicket.status === 'Closed' ? 'Reopen' : 'Close'}
+              </Button>
+            </div>
+            
+            {/* Chat Messages - Scrollable with bottom padding for fixed input */}
+            <div className="flex-1 p-4 overflow-y-auto space-y-4" style={{ paddingBottom: '100px' }}>
+              {/* Initial ticket message */}
+              <div className="flex gap-3">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-medium text-primary">U</span>
                   </div>
                 </div>
+                <div className="bg-white p-3 rounded-2xl rounded-tl-lg shadow-sm max-w-[85%] border">
+                  <p className="text-sm">{selectedTicket.content}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatDate(selectedTicket.created_at)}
+                  </p>
+                </div>
               </div>
-            )}
+              
+              {/* Ticket messages */}
+              {ticketMessages.map(message => (
+                <div className="flex gap-3 justify-end" key={message.id}>
+                  <div className="bg-primary p-3 rounded-2xl rounded-tr-lg shadow-sm max-w-[85%]">
+                    <p className="text-sm text-white">{message.content}</p>
+                    <p className="text-xs text-primary-foreground/70 mt-1">
+                      {formatDate(message.created_at)}
+                    </p>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                      <span className="text-xs font-medium text-white">S</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Fixed Message Input Bar */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 pb-8">
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <Textarea 
+                    placeholder="Type your message..." 
+                    className="min-h-10 max-h-20 resize-none rounded-xl border-gray-200 focus:ring-2 focus:ring-primary/20 pr-12" 
+                    value={newMessage} 
+                    onChange={(e) => setNewMessage(e.target.value)} 
+                    disabled={selectedTicket.status === 'Closed'}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }} 
+                  />
+                  <Button 
+                    size="icon" 
+                    className="absolute right-1 top-1 h-8 w-8 bg-primary hover:bg-primary/90 rounded-lg" 
+                    onClick={handleSendMessage} 
+                    disabled={selectedTicket.status === 'Closed' || addTicketMessageMutation.isPending || !newMessage.trim()}
+                  >
+                    {addTicketMessageMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Selection Modals */}
+        <OrderSelectionModal
+          open={showOrderModal}
+          onOpenChange={setShowOrderModal}
+          onSelect={setSelectedOrder}
+          selectedOrderId={selectedOrder?.id}
+        />
+
+        <PickupSelectionModal
+          open={showPickupModal}
+          onOpenChange={setShowPickupModal}
+          onSelect={setSelectedPickup}
+          selectedPickupId={selectedPickup?.id}
+        />
+
+        <InvoiceSelectionModal
+          open={showInvoiceModal}
+          onOpenChange={setShowInvoiceModal}
+          onSelect={setSelectedInvoice}
+          selectedInvoiceId={selectedInvoice?.id}
+        />
+
+        {/* New Ticket Dialog */}
+        <Dialog open={isNewTicketModalOpen} onOpenChange={(open) => {
+          setIsNewTicketModalOpen(open);
+          if (!open) resetForm();
+        }}>
+          <DialogContent className="sm:max-w-[400px] rounded-2xl mx-4">
+            <DialogHeader>
+              <DialogTitle>Create New Ticket</DialogTitle>
+            </DialogHeader>
+            
+            {currentStep === 1 ? renderStep1() : renderStep2()}
+            
+            <DialogFooter className="flex-col gap-2">
+              <Button 
+                onClick={handleCreateNewTicket} 
+                className="w-full bg-primary hover:bg-primary/90 rounded-xl order-1" 
+                disabled={createTicketMutation.isPending}
+              >
+                {createTicketMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                    Creating...
+                  </>
+                ) : (
+                  currentStep === 1 ? 'Next' : 'Create Ticket'
+                )}
+              </Button>
+              <Button variant="outline" onClick={() => {
+                setIsNewTicketModalOpen(false);
+                resetForm();
+              }} className="w-full rounded-xl order-2">
+                Cancel
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
