@@ -63,50 +63,117 @@ const settingsResults: SearchResult[] = [
   }
 ];
 
-// Enhanced smart detection patterns
-const isOrderId = (query: string): boolean => {
-  const cleaned = query.replace(/[#\s]/g, '');
-  return /^\d{1,}$/.test(cleaned) || /^REF-[A-Za-z0-9]+$/i.test(cleaned);
-};
-
-const isPickupId = (query: string): boolean => {
-  const cleaned = query.replace(/[#\s]/g, '');
-  return /^PIC-\d{3}$/i.test(cleaned) || /^pickup/i.test(query);
-};
-
-// Enhanced phone number detection and normalization
+// Enhanced phone number normalization and matching
 const normalizePhoneNumber = (phone: string): string => {
   return phone.replace(/[^\d]/g, '');
 };
 
-const isPhoneNumber = (query: string): boolean => {
-  const cleaned = normalizePhoneNumber(query);
-  return cleaned.length >= 8 && /^(\+?961|0?[37][0-9]|8[1-9])/.test(cleaned);
+const createPhoneVariations = (phone: string): string[] => {
+  const normalized = normalizePhoneNumber(phone);
+  const variations = [normalized];
+  
+  // Add common Lebanese phone formats
+  if (normalized.startsWith('961')) {
+    variations.push(normalized.substring(3)); // Remove 961
+    variations.push('0' + normalized.substring(3)); // Add 0 prefix
+  }
+  
+  if (normalized.startsWith('0')) {
+    variations.push(normalized.substring(1)); // Remove leading 0
+    variations.push('961' + normalized.substring(1)); // Add 961
+  }
+  
+  if (!normalized.startsWith('961') && !normalized.startsWith('0')) {
+    variations.push('961' + normalized); // Add 961
+    variations.push('0' + normalized); // Add 0
+  }
+  
+  return variations;
 };
 
 const phoneMatches = (customerPhone: string, searchQuery: string): boolean => {
-  const normalizedCustomer = normalizePhoneNumber(customerPhone);
-  const normalizedSearch = normalizePhoneNumber(searchQuery);
+  const customerVariations = createPhoneVariations(customerPhone);
+  const searchVariations = createPhoneVariations(searchQuery);
   
-  // Direct match
-  if (normalizedCustomer.includes(normalizedSearch)) return true;
-  
-  // Lebanese format matching
-  const lebanesePrefixes = ['961', '03', '70', '71', '76', '78', '79', '81'];
-  for (const prefix of lebanesePrefixes) {
-    if (normalizedCustomer.startsWith(prefix) && normalizedCustomer.slice(prefix.length).includes(normalizedSearch)) {
-      return true;
-    }
-    if (normalizedSearch.startsWith(prefix) && normalizedCustomer.includes(normalizedSearch.slice(prefix.length))) {
-      return true;
+  // Check if any customer variation contains any search variation
+  for (const customerVar of customerVariations) {
+    for (const searchVar of searchVariations) {
+      if (customerVar.includes(searchVar) || searchVar.includes(customerVar)) {
+        return true;
+      }
     }
   }
   
   return false;
 };
 
+// Enhanced text matching with fuzzy search
+const textMatches = (text: string, query: string): { matches: boolean; score: number } => {
+  if (!text || !query) return { matches: false, score: 0 };
+  
+  const textLower = text.toLowerCase();
+  const queryLower = query.toLowerCase();
+  
+  // Exact match gets highest score
+  if (textLower === queryLower) return { matches: true, score: 100 };
+  
+  // Starts with gets high score
+  if (textLower.startsWith(queryLower)) return { matches: true, score: 90 };
+  
+  // Contains gets medium score
+  if (textLower.includes(queryLower)) return { matches: true, score: 70 };
+  
+  // Word boundary matches
+  const words = textLower.split(/\s+/);
+  for (const word of words) {
+    if (word.startsWith(queryLower)) return { matches: true, score: 80 };
+    if (word.includes(queryLower)) return { matches: true, score: 60 };
+  }
+  
+  // Fuzzy matching for typos (simple version)
+  if (queryLower.length > 3) {
+    const chars = queryLower.split('');
+    let foundChars = 0;
+    let lastIndex = -1;
+    
+    for (const char of chars) {
+      const index = textLower.indexOf(char, lastIndex + 1);
+      if (index > lastIndex) {
+        foundChars++;
+        lastIndex = index;
+      }
+    }
+    
+    const fuzzyScore = (foundChars / chars.length) * 100;
+    if (fuzzyScore > 70) return { matches: true, score: Math.floor(fuzzyScore / 2) };
+  }
+  
+  return { matches: false, score: 0 };
+};
+
+// Enhanced ID detection patterns
+const isOrderId = (query: string): boolean => {
+  const cleaned = query.replace(/[#\s]/g, '');
+  return /^\d+$/.test(cleaned) || /^REF-[A-Za-z0-9]+$/i.test(cleaned) || /^order/i.test(query);
+};
+
+const isPickupId = (query: string): boolean => {
+  const cleaned = query.replace(/[#\s]/g, '');
+  return /^PIC-\d{3}$/i.test(cleaned) || /^pickup/i.test(query) || /^pic/i.test(query);
+};
+
+const isTicketId = (query: string): boolean => {
+  const cleaned = query.replace(/[#\s]/g, '');
+  return /^TIC-\d{3}$/i.test(cleaned) || /^ticket/i.test(query) || /^tic/i.test(query);
+};
+
+const isPhoneNumber = (query: string): boolean => {
+  const cleaned = normalizePhoneNumber(query);
+  return cleaned.length >= 6 && /^(\+?961|0?[37][0-9]|8[1-9])/.test(cleaned);
+};
+
 const isLocationQuery = (query: string): boolean => {
-  const locations = ['beirut', 'tripoli', 'sidon', 'zahle', 'baalbek', 'nabatieh', 'jbeil', 'batroun'];
+  const locations = ['beirut', 'tripoli', 'sidon', 'zahle', 'baalbek', 'nabatieh', 'jbeil', 'batroun', 'hamra', 'verdun', 'achrafieh', 'gemmayzeh'];
   return locations.some(loc => query.toLowerCase().includes(loc));
 };
 
@@ -145,169 +212,415 @@ export function useGlobalSearch(query: string) {
   const searchResults = useMemo(() => {
     if (!query.trim()) return [];
 
-    const results: SearchResult[] = [];
+    const results: (SearchResult & { score: number })[] = [];
     const searchTerm = query.toLowerCase().trim();
 
-    // Smart detection for different query types
+    // Detect query type for intelligent prioritization
     const isOrderQuery = isOrderId(searchTerm);
     const isPickupQuery = isPickupId(searchTerm);
+    const isTicketQuery = isTicketId(searchTerm);
     const isPhoneQuery = isPhoneNumber(searchTerm);
     const isLocationSearch = isLocationQuery(searchTerm);
 
-    // PRIORITY 1: Search Orders (highest priority for numbers and refs)
+    // PRIORITY 1: Search Orders with enhanced matching
     if (orders) {
       const orderResults = orders
-        .filter(order => {
-          // Enhanced order matching with priority
-          const orderIdMatch = order.order_id.toString().includes(searchTerm.replace(/[#\s]/g, ''));
-          const referenceMatch = order.reference_number?.toLowerCase().includes(searchTerm.replace(/[#\s]/g, ''));
-          const customerMatch = order.customer.name.toLowerCase().includes(searchTerm);
-          const phoneMatch = phoneMatches(order.customer.phone, searchTerm);
-          
-          // Give priority to exact matches
-          if (isOrderQuery) {
-            return orderIdMatch || referenceMatch;
+        .map(order => {
+          let totalScore = 0;
+          let matches = false;
+
+          // Order ID matching (highest priority)
+          const orderIdMatch = textMatches(order.order_id.toString(), searchTerm.replace(/[#\s]/g, ''));
+          if (orderIdMatch.matches) {
+            totalScore += orderIdMatch.score + 50; // Boost for ID matches
+            matches = true;
           }
-          
-          return orderIdMatch || referenceMatch || customerMatch || phoneMatch;
-        })
-        .sort((a, b) => {
-          // Prioritize exact order ID matches
-          const aOrderMatch = a.order_id.toString() === searchTerm.replace(/[#\s]/g, '');
-          const bOrderMatch = b.order_id.toString() === searchTerm.replace(/[#\s]/g, '');
-          if (aOrderMatch && !bOrderMatch) return -1;
-          if (!aOrderMatch && bOrderMatch) return 1;
-          return 0;
-        })
-        .slice(0, isOrderQuery ? 6 : 4)
-        .map(order => ({
-          id: order.id,
-          title: `Order #${order.order_id}`,
-          subtitle: `${order.customer.name} | ${order.customer.phone}`,
-          category: 'Orders' as const,
-          icon: <Package className="h-4 w-4" />,
-          path: `/orders?modal=details&id=${order.id}`,
-          metadata: {
-            status: order.status,
-            phone: order.customer.phone,
-            amount_usd: order.cash_collection_usd + order.delivery_fees_usd,
-            amount_lbp: order.cash_collection_lbp + order.delivery_fees_lbp,
-            type: order.type,
-            order_id: order.order_id.toString()
+
+          // Reference number matching
+          if (order.reference_number) {
+            const refMatch = textMatches(order.reference_number, searchTerm.replace(/[#\s]/g, ''));
+            if (refMatch.matches) {
+              totalScore += refMatch.score + 40;
+              matches = true;
+            }
           }
-        }));
+
+          // Customer name matching
+          const nameMatch = textMatches(order.customer.name, searchTerm);
+          if (nameMatch.matches) {
+            totalScore += nameMatch.score + 30;
+            matches = true;
+          }
+
+          // Enhanced phone matching
+          if (phoneMatches(order.customer.phone, searchTerm)) {
+            totalScore += 85; // High score for phone matches
+            matches = true;
+          }
+
+          // Location matching
+          if (order.customer.city_name) {
+            const cityMatch = textMatches(order.customer.city_name, searchTerm);
+            if (cityMatch.matches) {
+              totalScore += cityMatch.score + 20;
+              matches = true;
+            }
+          }
+
+          if (order.customer.governorate_name) {
+            const govMatch = textMatches(order.customer.governorate_name, searchTerm);
+            if (govMatch.matches) {
+              totalScore += govMatch.score + 20;
+              matches = true;
+            }
+          }
+
+          // Address matching
+          if (order.customer.address) {
+            const addressMatch = textMatches(order.customer.address, searchTerm);
+            if (addressMatch.matches) {
+              totalScore += addressMatch.score + 15;
+              matches = true;
+            }
+          }
+
+          // Status matching
+          const statusMatch = textMatches(order.status, searchTerm);
+          if (statusMatch.matches) {
+            totalScore += statusMatch.score + 10;
+            matches = true;
+          }
+
+          // Type matching
+          const typeMatch = textMatches(order.type, searchTerm);
+          if (typeMatch.matches) {
+            totalScore += typeMatch.score + 10;
+            matches = true;
+          }
+
+          // Note matching
+          if (order.note) {
+            const noteMatch = textMatches(order.note, searchTerm);
+            if (noteMatch.matches) {
+              totalScore += noteMatch.score + 5;
+              matches = true;
+            }
+          }
+
+          // Package description matching
+          if (order.package_description) {
+            const packageMatch = textMatches(order.package_description, searchTerm);
+            if (packageMatch.matches) {
+              totalScore += packageMatch.score + 10;
+              matches = true;
+            }
+          }
+
+          if (!matches) return null;
+
+          return {
+            id: order.id,
+            title: `Order #${order.order_id}`,
+            subtitle: `${order.customer.name} | ${order.customer.phone}`,
+            category: 'Orders' as const,
+            icon: <Package className="h-4 w-4" />,
+            path: `/orders?modal=details&id=${order.id}`,
+            metadata: {
+              status: order.status,
+              phone: order.customer.phone,
+              amount_usd: order.cash_collection_usd + order.delivery_fees_usd,
+              amount_lbp: order.cash_collection_lbp + order.delivery_fees_lbp,
+              type: order.type,
+              order_id: order.order_id.toString()
+            },
+            score: totalScore
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b!.score - a!.score)
+        .slice(0, isOrderQuery ? 8 : 4);
       
-      results.push(...orderResults);
+      results.push(...orderResults as (SearchResult & { score: number })[]);
     }
 
-    // PRIORITY 2: Search Pickups (enhanced with pickup_id matching)
+    // PRIORITY 2: Search Pickups with enhanced matching
     if (pickups && (!isPhoneQuery || isPickupQuery || isLocationSearch)) {
       const pickupResults = pickups
-        .filter(pickup => {
-          const pickupIdMatch = pickup.pickup_id?.toLowerCase().includes(searchTerm.replace(/[#\s]/g, ''));
-          const locationMatch = pickup.location.toLowerCase().includes(searchTerm);
-          const addressMatch = pickup.address.toLowerCase().includes(searchTerm);
-          const contactMatch = pickup.contact_person.toLowerCase().includes(searchTerm);
-          const phoneMatch = phoneMatches(pickup.contact_phone, searchTerm);
-          
-          // Give priority to pickup ID matches
-          if (isPickupQuery) {
-            return pickupIdMatch;
+        .map(pickup => {
+          let totalScore = 0;
+          let matches = false;
+
+          // Pickup ID matching
+          if (pickup.pickup_id) {
+            const pickupIdMatch = textMatches(pickup.pickup_id, searchTerm.replace(/[#\s]/g, ''));
+            if (pickupIdMatch.matches) {
+              totalScore += pickupIdMatch.score + 50;
+              matches = true;
+            }
           }
-          
-          return pickupIdMatch || locationMatch || addressMatch || contactMatch || phoneMatch;
-        })
-        .sort((a, b) => {
-          // Prioritize exact pickup ID matches
-          const aPickupMatch = a.pickup_id?.toLowerCase() === searchTerm.toLowerCase();
-          const bPickupMatch = b.pickup_id?.toLowerCase() === searchTerm.toLowerCase();
-          if (aPickupMatch && !bPickupMatch) return -1;
-          if (!aPickupMatch && bPickupMatch) return 1;
-          return 0;
-        })
-        .slice(0, isPickupQuery ? 6 : 3)
-        .map(pickup => ({
-          id: pickup.id,
-          title: `${pickup.pickup_id || 'Pickup'} - ${pickup.location}`,
-          subtitle: `${pickup.contact_person} | ${pickup.contact_phone}`,
-          category: 'Pickups' as const,
-          icon: <Calendar className="h-4 w-4" />,
-          path: `/pickups?modal=details&id=${pickup.id}`,
-          metadata: {
-            status: pickup.status,
-            date: pickup.pickup_date,
-            phone: pickup.contact_phone,
-            pickup_id: pickup.pickup_id
+
+          // Location matching
+          const locationMatch = textMatches(pickup.location, searchTerm);
+          if (locationMatch.matches) {
+            totalScore += locationMatch.score + 40;
+            matches = true;
           }
-        }));
+
+          // Address matching
+          const addressMatch = textMatches(pickup.address, searchTerm);
+          if (addressMatch.matches) {
+            totalScore += addressMatch.score + 30;
+            matches = true;
+          }
+
+          // Contact person matching
+          const contactMatch = textMatches(pickup.contact_person, searchTerm);
+          if (contactMatch.matches) {
+            totalScore += contactMatch.score + 30;
+            matches = true;
+          }
+
+          // Phone matching
+          if (phoneMatches(pickup.contact_phone, searchTerm)) {
+            totalScore += 85;
+            matches = true;
+          }
+
+          // Status matching
+          const statusMatch = textMatches(pickup.status, searchTerm);
+          if (statusMatch.matches) {
+            totalScore += statusMatch.score + 15;
+            matches = true;
+          }
+
+          // Vehicle type matching
+          if (pickup.vehicle_type) {
+            const vehicleMatch = textMatches(pickup.vehicle_type, searchTerm);
+            if (vehicleMatch.matches) {
+              totalScore += vehicleMatch.score + 20;
+              matches = true;
+            }
+          }
+
+          // Note matching
+          if (pickup.note) {
+            const noteMatch = textMatches(pickup.note, searchTerm);
+            if (noteMatch.matches) {
+              totalScore += noteMatch.score + 10;
+              matches = true;
+            }
+          }
+
+          if (!matches) return null;
+
+          return {
+            id: pickup.id,
+            title: `${pickup.pickup_id || 'Pickup'} - ${pickup.location}`,
+            subtitle: `${pickup.contact_person} | ${pickup.contact_phone}`,
+            category: 'Pickups' as const,
+            icon: <Calendar className="h-4 w-4" />,
+            path: `/pickups?modal=details&id=${pickup.id}`,
+            metadata: {
+              status: pickup.status,
+              date: pickup.pickup_date,
+              phone: pickup.contact_phone,
+              pickup_id: pickup.pickup_id
+            },
+            score: totalScore
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b!.score - a!.score)
+        .slice(0, isPickupQuery ? 8 : 3);
       
-      results.push(...pickupResults);
+      results.push(...pickupResults as (SearchResult & { score: number })[]);
     }
 
-    // PRIORITY 3: Search Customers
-    if (customers && (!isOrderQuery && !isPickupQuery)) {
+    // PRIORITY 3: Search Customers with enhanced matching
+    if (customers && (!isOrderQuery && !isPickupQuery && !isTicketQuery)) {
       const customerResults = customers
-        .filter(customer => {
-          const nameMatch = customer.name.toLowerCase().includes(searchTerm);
-          const phoneMatch = phoneMatches(customer.phone, searchTerm);
-          const addressMatch = customer.address?.toLowerCase().includes(searchTerm);
-          
-          return nameMatch || phoneMatch || addressMatch;
-        })
-        .slice(0, 3)
-        .map(customer => ({
-          id: customer.id,
-          title: customer.name,
-          subtitle: customer.phone,
-          category: 'Customers' as const,
-          icon: <User className="h-4 w-4" />,
-          path: `/customers?modal=details&id=${customer.id}`,
-          metadata: {
-            phone: customer.phone
+        .map(customer => {
+          let totalScore = 0;
+          let matches = false;
+
+          // Name matching
+          const nameMatch = textMatches(customer.name, searchTerm);
+          if (nameMatch.matches) {
+            totalScore += nameMatch.score + 40;
+            matches = true;
           }
-        }));
+
+          // Phone matching
+          if (phoneMatches(customer.phone, searchTerm)) {
+            totalScore += 90; // Highest score for direct customer phone match
+            matches = true;
+          }
+
+          // Secondary phone matching
+          if (customer.secondary_phone && phoneMatches(customer.secondary_phone, searchTerm)) {
+            totalScore += 85;
+            matches = true;
+          }
+
+          // Address matching
+          if (customer.address) {
+            const addressMatch = textMatches(customer.address, searchTerm);
+            if (addressMatch.matches) {
+              totalScore += addressMatch.score + 25;
+              matches = true;
+            }
+          }
+
+          // City matching
+          if (customer.city_name) {
+            const cityMatch = textMatches(customer.city_name, searchTerm);
+            if (cityMatch.matches) {
+              totalScore += cityMatch.score + 20;
+              matches = true;
+            }
+          }
+
+          // Governorate matching
+          if (customer.governorate_name) {
+            const govMatch = textMatches(customer.governorate_name, searchTerm);
+            if (govMatch.matches) {
+              totalScore += govMatch.score + 20;
+              matches = true;
+            }
+          }
+
+          if (!matches) return null;
+
+          return {
+            id: customer.id,
+            title: customer.name,
+            subtitle: customer.phone,
+            category: 'Customers' as const,
+            icon: <User className="h-4 w-4" />,
+            path: `/customers?modal=details&id=${customer.id}`,
+            metadata: {
+              phone: customer.phone
+            },
+            score: totalScore
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b!.score - a!.score)
+        .slice(0, 4);
       
-      results.push(...customerResults);
+      results.push(...customerResults as (SearchResult & { score: number })[]);
     }
 
-    // PRIORITY 4: Search Support Tickets
+    // PRIORITY 4: Search Support Tickets with enhanced matching
     if (tickets && tickets.length > 0) {
       const ticketResults = tickets
-        .filter(ticket => {
-          const titleMatch = ticket.title.toLowerCase().includes(searchTerm);
-          const contentMatch = ticket.content.toLowerCase().includes(searchTerm);
-          const categoryMatch = ticket.category.toLowerCase().includes(searchTerm);
-          const ticketIdMatch = ticket.id.toLowerCase().includes(searchTerm);
-          
-          return titleMatch || contentMatch || categoryMatch || ticketIdMatch;
-        })
-        .slice(0, 3)
-        .map(ticket => ({
-          id: ticket.id,
-          title: ticket.title,
-          subtitle: `${ticket.category} | ${ticket.status}`,
-          category: 'Support' as const,
-          icon: <Ticket className="h-4 w-4" />,
-          path: `/support?modal=details&id=${ticket.id}`,
-          metadata: {
-            status: ticket.status,
-            category: ticket.category,
-            ticket_id: ticket.id
+        .map(ticket => {
+          let totalScore = 0;
+          let matches = false;
+
+          // Ticket number matching
+          if (ticket.ticket_number) {
+            const ticketIdMatch = textMatches(ticket.ticket_number, searchTerm.replace(/[#\s]/g, ''));
+            if (ticketIdMatch.matches) {
+              totalScore += ticketIdMatch.score + 50;
+              matches = true;
+            }
           }
-        }));
+
+          // Title matching
+          const titleMatch = textMatches(ticket.title, searchTerm);
+          if (titleMatch.matches) {
+            totalScore += titleMatch.score + 40;
+            matches = true;
+          }
+
+          // Content matching
+          const contentMatch = textMatches(ticket.content, searchTerm);
+          if (contentMatch.matches) {
+            totalScore += contentMatch.score + 30;
+            matches = true;
+          }
+
+          // Category matching
+          const categoryMatch = textMatches(ticket.category, searchTerm);
+          if (categoryMatch.matches) {
+            totalScore += categoryMatch.score + 25;
+            matches = true;
+          }
+
+          // Status matching
+          const statusMatch = textMatches(ticket.status, searchTerm);
+          if (statusMatch.matches) {
+            totalScore += statusMatch.score + 15;
+            matches = true;
+          }
+
+          // Issue description matching
+          if (ticket.issue_description) {
+            const issueMatch = textMatches(ticket.issue_description, searchTerm);
+            if (issueMatch.matches) {
+              totalScore += issueMatch.score + 20;
+              matches = true;
+            }
+          }
+
+          if (!matches) return null;
+
+          return {
+            id: ticket.id,
+            title: ticket.title,
+            subtitle: `${ticket.category} | ${ticket.status}`,
+            category: 'Support' as const,
+            icon: <Ticket className="h-4 w-4" />,
+            path: `/support?modal=details&id=${ticket.id}`,
+            metadata: {
+              status: ticket.status,
+              category: ticket.category,
+              ticket_id: ticket.id
+            },
+            score: totalScore
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b!.score - a!.score)
+        .slice(0, isTicketQuery ? 6 : 3);
       
-      results.push(...ticketResults);
+      results.push(...ticketResults as (SearchResult & { score: number })[]);
     }
 
-    // PRIORITY 5: Search Settings
-    const settingsMatches = settingsResults.filter(setting => 
-      setting.title.toLowerCase().includes(searchTerm) ||
-      setting.subtitle.toLowerCase().includes(searchTerm)
-    );
-    results.push(...settingsMatches.slice(0, 2));
+    // PRIORITY 5: Search Settings with enhanced matching
+    const settingsMatches = settingsResults
+      .map(setting => {
+        let totalScore = 0;
+        let matches = false;
 
-    // Limit total results to 8
-    return results.slice(0, 8);
+        const titleMatch = textMatches(setting.title, searchTerm);
+        if (titleMatch.matches) {
+          totalScore += titleMatch.score + 30;
+          matches = true;
+        }
+
+        const subtitleMatch = textMatches(setting.subtitle, searchTerm);
+        if (subtitleMatch.matches) {
+          totalScore += subtitleMatch.score + 20;
+          matches = true;
+        }
+
+        if (!matches) return null;
+
+        return { ...setting, score: totalScore };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b!.score - a!.score)
+      .slice(0, 2);
+
+    results.push(...settingsMatches as (SearchResult & { score: number })[]);
+
+    // Sort all results by score and limit total results
+    return results
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10)
+      .map(({ score, ...result }) => result);
   }, [query, orders, customers, pickups, tickets]);
 
   return {
