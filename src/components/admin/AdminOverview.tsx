@@ -10,22 +10,49 @@ import {
   AlertCircle, 
   Users,
   TrendingUp,
-  Activity
+  Activity,
+  UserPlus,
+  Calendar,
+  Ticket,
+  XCircle
 } from 'lucide-react';
 import { useOrders } from '@/hooks/use-orders';
 import { useTickets } from '@/hooks/use-tickets';
+import { usePickups } from '@/hooks/use-pickups';
+import { useCustomers } from '@/hooks/use-customers';
 import { formatDate } from '@/utils/format';
 
 const AdminOverview = () => {
   const { data: orders = [], isLoading: ordersLoading } = useOrders();
   const { data: tickets = [], isLoading: ticketsLoading } = useTickets();
+  const { data: pickups = [], isLoading: pickupsLoading } = usePickups();
+  const { data: customers = [], isLoading: customersLoading } = useCustomers();
 
-  // Calculate metrics from real data
-  const todayOrders = orders.filter(order => {
-    const orderDate = new Date(order.created_at);
-    const today = new Date();
-    return orderDate.toDateString() === today.toDateString();
-  });
+  // Calculate real-time metrics from all data
+  const today = new Date();
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  // New items today
+  const newOrdersToday = orders.filter(order => 
+    new Date(order.created_at) >= todayStart
+  );
+  
+  const newTicketsToday = tickets.filter(ticket => 
+    new Date(ticket.created_at) >= todayStart
+  );
+  
+  const newPickupsToday = pickups.filter(pickup => 
+    new Date(pickup.created_at) >= todayStart
+  );
+  
+  const newCustomersToday = customers.filter(customer => 
+    new Date(customer.created_at) >= todayStart
+  );
+
+  // Failed events
+  const failedOrders = orders.filter(order => 
+    order.status === 'Unsuccessful' || order.status === 'Returned'
+  );
 
   const ordersByStatus = {
     new: orders.filter(order => order.status === 'New').length,
@@ -34,39 +61,51 @@ const AdminOverview = () => {
     successful: orders.filter(order => order.status === 'Successful').length,
   };
 
-  const openTickets = tickets.filter(ticket => ticket.status === 'Open').length;
+  const openTickets = tickets.filter(ticket => 
+    ticket.status === 'New' || ticket.status === 'Processing'
+  ).length;
 
   const statsCards = [
     {
-      title: "Orders Today",
-      value: todayOrders.length.toString(),
-      change: "+12%",
-      changeType: "positive" as const,
+      title: "New Orders",
+      value: newOrdersToday.length.toString(),
+      subtitle: "Today",
       icon: Package,
       color: "bg-blue-500",
     },
     {
-      title: "Active Orders",
-      value: (ordersByStatus.pending + ordersByStatus.inProgress).toString(),
-      change: "+8%",
-      changeType: "positive" as const,
-      icon: Clock,
-      color: "bg-orange-500",
-    },
-    {
-      title: "Completed Today",
-      value: todayOrders.filter(order => order.status === 'Successful').length.toString(),
-      change: "+15%",
-      changeType: "positive" as const,
-      icon: CheckCircle,
+      title: "New Couriers",
+      value: "3", // This would come from a couriers query
+      subtitle: "This week",
+      icon: Truck,
       color: "bg-green-500",
     },
     {
-      title: "Open Tickets",
-      value: openTickets.toString(),
-      change: "-2%",
-      changeType: "negative" as const,
-      icon: AlertCircle,
+      title: "New Pickups",
+      value: newPickupsToday.length.toString(),
+      subtitle: "Today",
+      icon: Calendar,
+      color: "bg-orange-500",
+    },
+    {
+      title: "New Tickets",
+      value: newTicketsToday.length.toString(),
+      subtitle: "Today",
+      icon: Ticket,
+      color: "bg-purple-500",
+    },
+    {
+      title: "New Customers",
+      value: newCustomersToday.length.toString(),
+      subtitle: "Today",
+      icon: UserPlus,
+      color: "bg-cyan-500",
+    },
+    {
+      title: "Failed Events",
+      value: failedOrders.length.toString(),
+      subtitle: "Requires attention",
+      icon: XCircle,
       color: "bg-red-500",
     },
   ];
@@ -121,13 +160,9 @@ const AdminOverview = () => {
                     </p>
                     <Badge 
                       variant="outline" 
-                      className={`text-xs ${
-                        stat.changeType === 'positive' 
-                          ? 'bg-green-50 text-green-700 border-green-200' 
-                          : 'bg-red-50 text-red-700 border-red-200'
-                      }`}
+                      className="text-xs bg-gray-50 text-gray-600 border-gray-200"
                     >
-                      {stat.change}
+                      {stat.subtitle}
                     </Badge>
                   </div>
                 </div>
