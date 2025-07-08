@@ -36,7 +36,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, className }) => {
       <div className="flex-1 flex flex-col">
         <AdminTopBar />
         <main className={cn(
-          "p-3 sm:p-4 md:p-6 overflow-y-auto h-[calc(100vh-64px)] transition-all bg-gray-50 dark:bg-gray-900",
+          "flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-all",
+          isMobile ? "p-3 pb-6" : isTablet ? "p-4 pb-6" : "p-6",
           className
         )}>
           <motion.div 
