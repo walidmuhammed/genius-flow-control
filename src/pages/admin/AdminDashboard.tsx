@@ -1,16 +1,16 @@
 
 import React from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import AdminOverview from '@/components/admin/AdminOverview';
+import AdminDashboard from '@/components/admin/AdminDashboard';
 
-const AdminDashboard = () => {
+const AdminDashboardPage = () => {
   document.title = "Admin Dashboard - Topspeed";
   
   return (
     <AdminLayout>
-      <AdminOverview />
+      <AdminDashboard />
     </AdminLayout>
   );
 };
 
-export default AdminDashboard;
+export default AdminDashboardPage;
