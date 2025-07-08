@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   requiredRole?: 'client' | 'admin';
 }
 
@@ -29,11 +29,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   }
 
   if (requiredRole && profile.user_type !== requiredRole) {
-    const redirectPath = profile.user_type === 'admin' ? '/dashboard/admin' : '/dashboard/client';
+    const redirectPath = profile.user_type === 'admin' ? '/dashboard/admin' : '/dashboard';
     return <Navigate to={redirectPath} replace />;
   }
 
-  return <>{children}</>;
+  return children ? <>{children}</> : <Outlet />;
 };
 
 export default ProtectedRoute;
