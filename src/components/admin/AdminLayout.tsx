@@ -33,7 +33,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, className }) => {
         </Sheet>
       )}
       
-      <div className="flex-1 flex flex-col">
+      <div className={cn(
+        "flex-1 flex flex-col",
+        !isMobile && "ml-[260px]"
+      )}>
         <AdminTopBar />
         <main className={cn(
           "flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-all",
