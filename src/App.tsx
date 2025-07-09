@@ -37,6 +37,7 @@ import AdminTickets from '@/pages/admin/AdminTickets';
 import AdminSettings from '@/pages/admin/AdminSettings';
 import AdminDispatch from '@/pages/admin/AdminDispatch';
 import AdminClients from '@/pages/admin/AdminClients';
+import AdminWallet from '@/pages/admin/AdminWallet';
 
 // Import protected route component
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -93,6 +94,7 @@ function App() {
               <Route path="/dashboard/admin/pickups" element={<AdminPickups />} />
               <Route path="/dashboard/admin/couriers" element={<AdminCouriers />} />
               <Route path="/dashboard/admin/customers" element={<AdminCustomers />} />
+              <Route path="/dashboard/admin/wallet" element={<AdminWallet />} />
               <Route path="/dashboard/admin/pricing" element={<AdminPricing />} />
               <Route path="/dashboard/admin/analytics" element={<AdminActivity />} />
               <Route path="/dashboard/admin/support" element={<AdminTickets />} />

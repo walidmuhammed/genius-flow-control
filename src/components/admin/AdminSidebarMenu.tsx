@@ -27,37 +27,47 @@ const AdminSidebarMenu: React.FC<AdminSidebarMenuProps> = ({ collapsed }) => {
     {
       label: 'Orders',
       icon: <Package className="h-4 w-4" />,
-      path: '/admin/orders'
+      path: '/dashboard/admin/orders'
+    }, 
+    {
+      label: 'Pickups',
+      icon: <Navigation className="h-4 w-4" />,
+      path: '/dashboard/admin/pickups'
     }, 
     {
       label: 'Clients',
       icon: <Users className="h-4 w-4" />,
-      path: '/admin/clients'
+      path: '/dashboard/admin/clients'
     }, 
     {
       label: 'Couriers',
       icon: <Truck className="h-4 w-4" />,
-      path: '/admin/couriers'
+      path: '/dashboard/admin/couriers'
     }, 
     {
-      label: 'Dispatch',
-      icon: <Navigation className="h-4 w-4" />,
-      path: '/admin/dispatch'
+      label: 'Customers',
+      icon: <Users className="h-4 w-4" />,
+      path: '/dashboard/admin/customers'
     }, 
+    {
+      label: 'Wallet',
+      icon: <DollarSign className="h-4 w-4" />,
+      path: '/dashboard/admin/wallet'
+    },
     {
       label: 'Pricing',
       icon: <DollarSign className="h-4 w-4" />,
-      path: '/admin/pricing'
+      path: '/dashboard/admin/pricing'
     },
     {
-      label: 'Activity',
+      label: 'Analytics',
       icon: <Activity className="h-4 w-4" />,
-      path: '/admin/activity'
+      path: '/dashboard/admin/analytics'
     },
     {
       label: 'Support',
       icon: <Ticket className="h-4 w-4" />,
-      path: '/admin/tickets'
+      path: '/dashboard/admin/support'
     }
   ];
 
