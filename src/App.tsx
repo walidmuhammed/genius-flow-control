@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -60,16 +60,30 @@ function App() {
 
             {/* Protected client routes */}
             <Route element={<ProtectedRoute requiredRole="client" />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/orders" element={<OrdersList />} />
-              <Route path="/create-order" element={<CreateOrder />} />
-              <Route path="/pickups" element={<Pickups />} />
-              <Route path="/schedule-pickup" element={<SchedulePickup />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/wallet" element={<Wallet />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/settings" element={<Settings />} />
+              <Route path="/dashboard/client" element={<Dashboard />} />
+              <Route path="/dashboard/client/orders" element={<OrdersList />} />
+              <Route path="/dashboard/client/create-order" element={<CreateOrder />} />
+              <Route path="/dashboard/client/pickups" element={<Pickups />} />
+              <Route path="/dashboard/client/schedule-pickup" element={<SchedulePickup />} />
+              <Route path="/dashboard/client/customers" element={<Customers />} />
+              <Route path="/dashboard/client/wallet" element={<Wallet />} />
+              <Route path="/dashboard/client/support" element={<Support />} />
+              <Route path="/dashboard/client/analytics" element={<Analytics />} />
+              <Route path="/dashboard/client/settings" element={<Settings />} />
+            </Route>
+
+            {/* Backward compatibility redirects */}
+            <Route element={<ProtectedRoute requiredRole="client" />}>
+              <Route path="/dashboard" element={<Navigate to="/dashboard/client" replace />} />
+              <Route path="/orders" element={<Navigate to="/dashboard/client/orders" replace />} />
+              <Route path="/create-order" element={<Navigate to="/dashboard/client/create-order" replace />} />
+              <Route path="/pickups" element={<Navigate to="/dashboard/client/pickups" replace />} />
+              <Route path="/schedule-pickup" element={<Navigate to="/dashboard/client/schedule-pickup" replace />} />
+              <Route path="/customers" element={<Navigate to="/dashboard/client/customers" replace />} />
+              <Route path="/wallet" element={<Navigate to="/dashboard/client/wallet" replace />} />
+              <Route path="/support" element={<Navigate to="/dashboard/client/support" replace />} />
+              <Route path="/analytics" element={<Navigate to="/dashboard/client/analytics" replace />} />
+              <Route path="/settings" element={<Navigate to="/dashboard/client/settings" replace />} />
             </Route>
 
             {/* Protected admin routes */}

@@ -29,7 +29,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   }
 
   if (requiredRole && profile.user_type !== requiredRole) {
-    const redirectPath = profile.user_type === 'admin' ? '/dashboard/admin' : '/dashboard';
+    const redirectPath = profile.user_type === 'admin' ? '/dashboard/admin' : '/dashboard/client';
     return <Navigate to={redirectPath} replace />;
   }
 
