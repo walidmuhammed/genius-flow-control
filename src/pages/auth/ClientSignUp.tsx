@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, UserPlus, Building2, Mail, Phone, User, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import BusinessTypeSelector from '@/components/auth/BusinessTypeSelector';
 
 const ClientSignUp = () => {
   const [formData, setFormData] = useState({
@@ -24,29 +24,6 @@ const ClientSignUp = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
-  const businessTypes = [
-    'Fashion & Apparel',
-    'Electronics & Gadgets', 
-    'Cosmetics & Beauty',
-    'Books & Stationery',
-    'Gifts & Handicrafts',
-    'Baby Products',
-    'Furniture',
-    'Jewelry & Accessories',
-    'Tools & Hardware',
-    'Food & Beverages',
-    'Frozen Goods',
-    'Grocery & Mini Markets',
-    'Medical Supplies & Pharmacies',
-    'Event Supplies',
-    'Florists',
-    'Tech Services / Repairs',
-    'Toys & Games',
-    'Cleaning & Home Care',
-    'Sports & Fitness Equipment',
-    'Pet Supplies'
-  ];
 
   const handleInputChange = (field: string, value: string) => {
     // Input sanitization and length limits
@@ -73,6 +50,11 @@ const ClientSignUp = () => {
   const validateForm = () => {
     if (!formData.fullName || !formData.email || !formData.phone || !formData.businessName || !formData.password) {
       setError('Please fill in all required fields');
+      return false;
+    }
+
+    if (!formData.businessType) {
+      setError('Please select your business type');
       return false;
     }
 
@@ -115,7 +97,7 @@ const ClientSignUp = () => {
             full_name: formData.fullName,
             phone: formData.phone,
             business_name: formData.businessName,
-            business_type: formData.businessType || 'Fashion & Apparel',
+            business_type: formData.businessType,
             user_type: 'client'
           }
         }
@@ -140,7 +122,7 @@ const ClientSignUp = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-md"
+        className="w-full max-w-2xl"
       >
         {/* Logo/Branding */}
         <div className="text-center mb-8">
@@ -164,24 +146,43 @@ const ClientSignUp = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSignUp} className="space-y-4">
+            <form onSubmit={handleSignUp} className="space-y-6">
               {/* Personal Information */}
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-sm font-medium flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Full Name *
-                  </Label>
-                   <Input
-                     id="fullName"
-                     type="text"
-                     placeholder="Enter your full name"
-                     value={formData.fullName}
-                     onChange={(e) => handleInputChange('fullName', e.target.value)}
-                     maxLength={100}
-                     required
-                     className="h-11"
-                   />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="text-sm font-medium flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Full Name *
+                    </Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={formData.fullName}
+                      onChange={(e) => handleInputChange('fullName', e.target.value)}
+                      maxLength={100}
+                      required
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-sm font-medium flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      Phone Number *
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="Enter your phone number"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      maxLength={20}
+                      required
+                      className="h-11"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -199,96 +200,69 @@ const ClientSignUp = () => {
                     className="h-11"
                   />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-medium flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    Phone Number *
-                  </Label>
-                   <Input
-                     id="phone"
-                     type="tel"
-                     placeholder="Enter your phone number"
-                     value={formData.phone}
-                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                     maxLength={20}
-                     required
-                     className="h-11"
-                   />
-                </div>
               </div>
 
               {/* Business Information */}
-              <div className="border-t pt-4 space-y-4">
+              <div className="border-t pt-6 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="businessName" className="text-sm font-medium flex items-center gap-2">
                     <Building2 className="h-4 w-4" />
                     Business Name *
                   </Label>
-                   <Input
-                     id="businessName"
-                     type="text"
-                     placeholder="Enter your business name"
-                     value={formData.businessName}
-                     onChange={(e) => handleInputChange('businessName', e.target.value)}
-                     maxLength={200}
-                     required
-                     className="h-11"
-                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="businessType" className="text-sm font-medium">
-                    Business Type
-                  </Label>
-                  <Select value={formData.businessType} onValueChange={(value) => handleInputChange('businessType', value)}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select your business type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {businessTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Password */}
-              <div className="border-t pt-4 space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
-                    Password *
-                  </Label>
-                   <Input
-                     id="password"
-                     type="password"
-                     placeholder="Create a secure password (min 6 characters)"
-                     value={formData.password}
-                     onChange={(e) => handleInputChange('password', e.target.value)}
-                     minLength={6}
-                     required
-                     className="h-11"
-                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
-                    Confirm Password *
-                  </Label>
                   <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    id="businessName"
+                    type="text"
+                    placeholder="Enter your business name"
+                    value={formData.businessName}
+                    onChange={(e) => handleInputChange('businessName', e.target.value)}
+                    maxLength={200}
                     required
                     className="h-11"
                   />
+                </div>
+
+                <BusinessTypeSelector
+                  value={formData.businessType}
+                  onChange={(value) => handleInputChange('businessType', value)}
+                  error={error && !formData.businessType ? 'Please select your business type' : undefined}
+                />
+              </div>
+
+              {/* Password */}
+              <div className="border-t pt-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-sm font-medium flex items-center gap-2">
+                      <Lock className="h-4 w-4" />
+                      Password *
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Create a secure password (min 6 characters)"
+                      value={formData.password}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
+                      minLength={6}
+                      required
+                      className="h-11"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-sm font-medium flex items-center gap-2">
+                      <Lock className="h-4 w-4" />
+                      Confirm Password *
+                    </Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Confirm your password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                      required
+                      className="h-11"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -305,7 +279,7 @@ const ClientSignUp = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-11 bg-[#DB271E] hover:bg-[#c0211a] text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+                className="w-full h-12 bg-[#DB271E] hover:bg-[#c0211a] text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
               >
                 {loading ? (
                   <>

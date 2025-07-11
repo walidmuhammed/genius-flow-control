@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Building2, Globe, Facebook, Instagram, ShoppingBag, Package, Truck, Smartphone } from 'lucide-react';
+import { Building2, Globe, Facebook, Instagram, ShoppingBag, Package, Truck, Smartphone, Lock } from 'lucide-react';
 
 const BusinessInfoSection = () => {
   const { user } = useAuth();
@@ -34,29 +34,6 @@ const BusinessInfoSection = () => {
     { value: 'ebay', label: 'eBay', icon: Package, placeholder: 'Enter eBay Store URL' },
     { value: 'marketplace', label: 'Local Marketplace', icon: ShoppingBag, placeholder: 'Enter Marketplace URL' },
     { value: 'retail', label: 'Physical Retail', icon: Truck, placeholder: 'Enter Store Address' }
-  ];
-
-  const industryOptions = [
-    'Fashion & Apparel',
-    'Electronics & Gadgets', 
-    'Cosmetics & Beauty',
-    'Books & Stationery',
-    'Gifts & Handicrafts',
-    'Baby Products',
-    'Furniture',
-    'Jewelry & Accessories',
-    'Tools & Hardware',
-    'Food & Beverages',
-    'Frozen Goods',
-    'Grocery & Mini Markets',
-    'Medical Supplies & Pharmacies',
-    'Event Supplies',
-    'Florists',
-    'Tech Services / Repairs',
-    'Toys & Games',
-    'Cleaning & Home Care',
-    'Sports & Fitness Equipment',
-    'Pet Supplies'
   ];
 
   useEffect(() => {
@@ -129,11 +106,6 @@ const BusinessInfoSection = () => {
     setHasUnsavedChanges(true);
   };
 
-  const handleIndustryChange = (value: string) => {
-    setFormData(prev => ({ ...prev, industry: value }));
-    setHasUnsavedChanges(true);
-  };
-
   const handleSave = async () => {
     if (!user) return;
     
@@ -142,8 +114,7 @@ const BusinessInfoSection = () => {
       const { error } = await supabase
         .from('profiles')
         .update({
-          business_name: formData.businessNameEn,
-          business_type: formData.industry
+          business_name: formData.businessNameEn
         })
         .eq('id', user.id);
 
@@ -200,19 +171,23 @@ const BusinessInfoSection = () => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="industry">Industry</Label>
-            <Select value={formData.industry} onValueChange={handleIndustryChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select your industry" />
-              </SelectTrigger>
-              <SelectContent>
-                {industryOptions.map((industry) => (
-                  <SelectItem key={industry} value={industry}>
-                    {industry}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="industry" className="flex items-center gap-2">
+              Business Type
+              <Lock className="h-3 w-3 text-muted-foreground" />
+            </Label>
+            <div className="relative">
+              <Input
+                id="industry"
+                value={formData.industry}
+                readOnly
+                disabled
+                className="bg-gray-50 text-gray-600 cursor-not-allowed"
+                placeholder="Business type set during registration"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Business type was set during account registration and cannot be changed
+            </p>
           </div>
         </CardContent>
       </Card>
