@@ -121,10 +121,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Input validation
+      if (!email || !password) {
+        return { error: { message: 'Email and password are required' } };
+      }
+      
+      if (password.length < 6) {
+        return { error: { message: 'Password must be at least 6 characters' } };
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim().toLowerCase(),
         password,
       });
+
+      // Log failed login attempts for security monitoring
+      if (error) {
+        try {
+          await supabase.rpc('log_security_event', {
+            event_type: 'login_failed',
+            entity_id: null,
+            details: { email: email.trim().toLowerCase(), error: error.message }
+          });
+        } catch (logError) {
+          // Ignore logging errors to prevent blocking authentication
+        }
+      }
+
       return { error };
     } catch (error) {
       console.error('Sign in error:', error);
@@ -134,22 +157,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
     try {
+      // Input validation
+      if (!email || !password) {
+        return { error: { message: 'Email and password are required' } };
+      }
+      
+      if (password.length < 6) {
+        return { error: { message: 'Password must be at least 6 characters' } };
+      }
+
+      // Validate business name length
+      if (userData.business_name && userData.business_name.length > 200) {
+        return { error: { message: 'Business name must be less than 200 characters' } };
+      }
+
+      // Validate full name length
+      if (userData.full_name && userData.full_name.length > 100) {
+        return { error: { message: 'Full name must be less than 100 characters' } };
+      }
+
+      // Sanitize input data
+      const sanitizedData = {
+        full_name: userData.full_name?.trim(),
+        user_type: userData.user_type === 'admin' ? 'client' : (userData.user_type || 'client'), // Prevent admin signup
+        phone: userData.phone?.trim(),
+        business_name: userData.business_name?.trim(),
+        business_type: userData.business_type?.trim() || 'Fashion & Apparel',
+      };
+
       const redirectUrl = `${window.location.origin}/`;
       
       const { error } = await supabase.auth.signUp({
-        email,
+        email: email.trim().toLowerCase(),
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: {
-            full_name: userData.full_name,
-            user_type: userData.user_type || 'client',
-            phone: userData.phone,
-            business_name: userData.business_name,
-            business_type: userData.business_type || 'Fashion & Apparel',
-          }
+          data: sanitizedData
         }
       });
+
+      // Log signup attempts
+      try {
+        await supabase.rpc('log_security_event', {
+          event_type: error ? 'signup_failed' : 'signup_success',
+          entity_id: null,
+          details: { 
+            email: email.trim().toLowerCase(), 
+            business_name: sanitizedData.business_name,
+            error: error?.message 
+          }
+        });
+      } catch (logError) {
+        // Ignore logging errors to prevent blocking authentication
+      }
+
       return { error };
     } catch (error) {
       console.error('Sign up error:', error);

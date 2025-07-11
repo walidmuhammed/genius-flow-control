@@ -49,7 +49,25 @@ const ClientSignUp = () => {
   ];
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    // Input sanitization and length limits
+    let sanitizedValue = value;
+    
+    switch (field) {
+      case 'fullName':
+        sanitizedValue = value.slice(0, 100);
+        break;
+      case 'businessName':
+        sanitizedValue = value.slice(0, 200);
+        break;
+      case 'phone':
+        sanitizedValue = value.slice(0, 20);
+        break;
+      case 'email':
+        sanitizedValue = value.trim().toLowerCase().slice(0, 254);
+        break;
+    }
+    
+    setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
   };
 
   const validateForm = () => {
@@ -154,15 +172,16 @@ const ClientSignUp = () => {
                     <User className="h-4 w-4" />
                     Full Name *
                   </Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={formData.fullName}
-                    onChange={(e) => handleInputChange('fullName', e.target.value)}
-                    required
-                    className="h-11"
-                  />
+                   <Input
+                     id="fullName"
+                     type="text"
+                     placeholder="Enter your full name"
+                     value={formData.fullName}
+                     onChange={(e) => handleInputChange('fullName', e.target.value)}
+                     maxLength={100}
+                     required
+                     className="h-11"
+                   />
                 </div>
 
                 <div className="space-y-2">
@@ -186,15 +205,16 @@ const ClientSignUp = () => {
                     <Phone className="h-4 w-4" />
                     Phone Number *
                   </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="Enter your phone number"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    required
-                    className="h-11"
-                  />
+                   <Input
+                     id="phone"
+                     type="tel"
+                     placeholder="Enter your phone number"
+                     value={formData.phone}
+                     onChange={(e) => handleInputChange('phone', e.target.value)}
+                     maxLength={20}
+                     required
+                     className="h-11"
+                   />
                 </div>
               </div>
 
@@ -205,15 +225,16 @@ const ClientSignUp = () => {
                     <Building2 className="h-4 w-4" />
                     Business Name *
                   </Label>
-                  <Input
-                    id="businessName"
-                    type="text"
-                    placeholder="Enter your business name"
-                    value={formData.businessName}
-                    onChange={(e) => handleInputChange('businessName', e.target.value)}
-                    required
-                    className="h-11"
-                  />
+                   <Input
+                     id="businessName"
+                     type="text"
+                     placeholder="Enter your business name"
+                     value={formData.businessName}
+                     onChange={(e) => handleInputChange('businessName', e.target.value)}
+                     maxLength={200}
+                     required
+                     className="h-11"
+                   />
                 </div>
 
                 <div className="space-y-2">
@@ -242,15 +263,16 @@ const ClientSignUp = () => {
                     <Lock className="h-4 w-4" />
                     Password *
                   </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Create a secure password"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    required
-                    className="h-11"
-                  />
+                   <Input
+                     id="password"
+                     type="password"
+                     placeholder="Create a secure password (min 6 characters)"
+                     value={formData.password}
+                     onChange={(e) => handleInputChange('password', e.target.value)}
+                     minLength={6}
+                     required
+                     className="h-11"
+                   />
                 </div>
 
                 <div className="space-y-2">
