@@ -16,3 +16,6 @@ export function useGovernorate(id: string | undefined) {
     enabled: !!id
   });
 }
+
+// Re-export from the separate file
+export { useGovernoratesAndCities } from './use-governorates-and-cities';

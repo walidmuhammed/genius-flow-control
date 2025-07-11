@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Courier {
@@ -46,7 +45,7 @@ export async function getCouriers(): Promise<CourierWithStats[]> {
       const stats = await getCourierStats(courier.id);
       return {
         ...courier,
-        status: courier.status || 'active' as const,
+        status: (courier.status || 'active') as 'active' | 'inactive' | 'suspended',
         vehicle_type: courier.vehicle_type || 'motorcycle',
         assigned_zones: courier.assigned_zones || [],
         ...stats
@@ -73,7 +72,7 @@ export async function getCourierById(id: string): Promise<CourierWithStats | nul
   
   return {
     ...data,
-    status: data.status || 'active' as const,
+    status: (data.status || 'active') as 'active' | 'inactive' | 'suspended',
     vehicle_type: data.vehicle_type || 'motorcycle',
     assigned_zones: data.assigned_zones || [],
     ...stats
