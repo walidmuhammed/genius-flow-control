@@ -42,7 +42,7 @@ export async function getCouriers(): Promise<CourierWithStats[]> {
   // Calculate stats for each courier
   const couriersWithStats = await Promise.all(
     data.map(async (courier) => {
-      const stats = await getCourierStats(courier.id);
+      const stats = await getCourierStats(courier.id, courier.full_name);
       return {
         ...courier,
         status: (courier.status || 'active') as 'active' | 'inactive' | 'suspended',
@@ -68,7 +68,7 @@ export async function getCourierById(id: string): Promise<CourierWithStats | nul
     return null;
   }
   
-  const stats = await getCourierStats(id);
+  const stats = await getCourierStats(id, data.full_name);
   
   return {
     ...data,
@@ -79,7 +79,7 @@ export async function getCourierById(id: string): Promise<CourierWithStats | nul
   };
 }
 
-export async function getCourierStats(courierId: string) {
+export async function getCourierStats(courierId: string, courierName: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayStr = today.toISOString();
@@ -99,11 +99,11 @@ export async function getCourierStats(courierId: string) {
     .eq('status', 'Successful')
     .gte('created_at', todayStr);
     
-  // Get pickups completed today
+  // Get pickups completed today using courier name
   const { data: pickupsToday } = await supabase
     .from('pickups')
     .select('*')
-    .eq('courier_name', (await getCourierById(courierId))?.full_name || '')
+    .eq('courier_name', courierName)
     .eq('picked_up', true)
     .gte('created_at', todayStr);
     
