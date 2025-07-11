@@ -1,10 +1,9 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -28,9 +27,10 @@ import {
   TrendingUp,
   Timer
 } from 'lucide-react';
-import { useCouriers, useCreateCourier, useUpdateCourier, useDeleteCourier } from '@/hooks/use-couriers';
+import { useCouriers, useUpdateCourier, useDeleteCourier } from '@/hooks/use-couriers';
 import { useOrders } from '@/hooks/use-orders';
 import { usePickups } from '@/hooks/use-pickups';
+import AddCourierModal from './AddCourierModal';
 import CourierProfileDialog from './CourierProfileDialog';
 import { toast } from 'sonner';
 
@@ -39,13 +39,11 @@ const AdminCouriersContent = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedCourier, setSelectedCourier] = useState(null);
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
-  const [newCourier, setNewCourier] = useState({ full_name: '', phone: '' });
   
   // Hooks
   const { data: couriers = [], isLoading } = useCouriers();
   const { data: orders = [] } = useOrders();
   const { data: pickups = [] } = usePickups();
-  const createCourierMutation = useCreateCourier();
   const updateCourierMutation = useUpdateCourier();
   const deleteCourierMutation = useDeleteCourier();
 
@@ -60,7 +58,10 @@ const AdminCouriersContent = () => {
   // Filter couriers based on search
   const filteredCouriers = couriers.filter(courier => 
     courier.full_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    (courier.phone && courier.phone.includes(searchQuery))
+    (courier.phone && courier.phone.includes(searchQuery)) ||
+    (courier.assigned_zones && courier.assigned_zones.some(zone => 
+      zone.toLowerCase().includes(searchQuery.toLowerCase())
+    ))
   );
 
   const getStatusBadge = (status: string) => {
@@ -85,20 +86,6 @@ const AdminCouriersContent = () => {
     return `${Math.floor(diffInHours / 24)}d ago`;
   };
 
-  const handleCreateCourier = () => {
-    if (!newCourier.full_name.trim()) {
-      toast.error('Please enter courier name');
-      return;
-    }
-    
-    createCourierMutation.mutate(newCourier, {
-      onSuccess: () => {
-        setNewCourier({ full_name: '', phone: '' });
-        setIsAddModalOpen(false);
-      }
-    });
-  };
-
   const handleViewCourier = (courier: any) => {
     setSelectedCourier(courier);
     setIsProfileDialogOpen(true);
@@ -116,6 +103,7 @@ const AdminCouriersContent = () => {
       deleteCourierMutation.mutate(courierId);
     }
   };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -129,51 +117,11 @@ const AdminCouriersContent = () => {
           </p>
         </div>
         
-        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Courier
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add New Courier</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Full Name</Label>
-                <Input 
-                  id="name" 
-                  placeholder="Enter courier name"
-                  value={newCourier.full_name}
-                  onChange={(e) => setNewCourier(prev => ({ ...prev, full_name: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input 
-                  id="phone" 
-                  placeholder="+961 70 123 456"
-                  value={newCourier.phone}
-                  onChange={(e) => setNewCourier(prev => ({ ...prev, phone: e.target.value }))}
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  className="flex-1" 
-                  onClick={handleCreateCourier}
-                  disabled={createCourierMutation.isPending}
-                >
-                  {createCourierMutation.isPending ? 'Adding...' : 'Add Courier'}
-                </Button>
-                <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setIsAddModalOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Courier
+        </Button>
+        
       </div>
 
       {/* KPI Overview Cards */}
@@ -412,7 +360,12 @@ const AdminCouriersContent = () => {
         </CardContent>
       </Card>
 
-      {/* Courier Profile Dialog */}
+      {/* Modals */}
+      <AddCourierModal
+        open={isAddModalOpen}
+        onOpenChange={setIsAddModalOpen}
+      />
+
       <CourierProfileDialog
         courier={selectedCourier}
         open={isProfileDialogOpen}
@@ -421,4 +374,5 @@ const AdminCouriersContent = () => {
     </div>
   );
 };
+
 export default AdminCouriersContent;

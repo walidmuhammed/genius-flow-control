@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Courier {
@@ -45,9 +46,9 @@ export async function getCouriers(): Promise<CourierWithStats[]> {
       const stats = await getCourierStats(courier.id);
       return {
         ...courier,
-        status: 'active' as const, // Default status
-        vehicle_type: 'Motorcycle', // Default vehicle
-        assigned_zones: [], // Default empty zones
+        status: courier.status || 'active' as const,
+        vehicle_type: courier.vehicle_type || 'motorcycle',
+        assigned_zones: courier.assigned_zones || [],
         ...stats
       };
     })
@@ -72,9 +73,9 @@ export async function getCourierById(id: string): Promise<CourierWithStats | nul
   
   return {
     ...data,
-    status: 'active' as const,
-    vehicle_type: 'Motorcycle',
-    assigned_zones: [],
+    status: data.status || 'active' as const,
+    vehicle_type: data.vehicle_type || 'motorcycle',
+    assigned_zones: data.assigned_zones || [],
     ...stats
   };
 }
@@ -146,7 +147,16 @@ export async function createCourier(courier: Omit<Courier, 'id' | 'created_at'>)
     .from('couriers')
     .insert([{
       full_name: courier.full_name,
-      phone: courier.phone
+      phone: courier.phone,
+      email: courier.email,
+      address: courier.address,
+      status: courier.status || 'active',
+      vehicle_type: courier.vehicle_type || 'motorcycle',
+      assigned_zones: courier.assigned_zones || [],
+      avatar_url: courier.avatar_url,
+      id_photo_url: courier.id_photo_url,
+      license_photo_url: courier.license_photo_url,
+      admin_notes: courier.admin_notes
     }])
     .select()
     .single();
@@ -164,7 +174,16 @@ export async function updateCourier(id: string, updates: Partial<Omit<Courier, '
     .from('couriers')
     .update({
       full_name: updates.full_name,
-      phone: updates.phone
+      phone: updates.phone,
+      email: updates.email,
+      address: updates.address,
+      status: updates.status,
+      vehicle_type: updates.vehicle_type,
+      assigned_zones: updates.assigned_zones,
+      avatar_url: updates.avatar_url,
+      id_photo_url: updates.id_photo_url,
+      license_photo_url: updates.license_photo_url,
+      admin_notes: updates.admin_notes
     })
     .eq('id', id)
     .select()
@@ -229,4 +248,24 @@ export async function getCourierPickups(courierName: string) {
   }
   
   return data;
+}
+
+export async function uploadCourierFile(file: File, type: 'avatar' | 'id_photo' | 'license_photo'): Promise<string> {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${type}_${Date.now()}.${fileExt}`;
+  
+  const { data, error } = await supabase.storage
+    .from('courier-documents')
+    .upload(fileName, file);
+  
+  if (error) {
+    console.error('Error uploading file:', error);
+    throw error;
+  }
+  
+  const { data: { publicUrl } } = supabase.storage
+    .from('courier-documents')
+    .getPublicUrl(fileName);
+  
+  return publicUrl;
 }

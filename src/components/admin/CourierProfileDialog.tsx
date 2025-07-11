@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,7 +21,9 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Download,
+  Eye
 } from 'lucide-react';
 import { CourierWithStats } from '@/services/couriers';
 import { useCourierOrders, useCourierPickups } from '@/hooks/use-couriers';
@@ -165,6 +168,51 @@ const CourierProfileDialog = ({ courier, open, onOpenChange }: CourierProfileDia
                 </CardContent>
               </Card>
             </div>
+
+            {/* Document Previews */}
+            {(courier.id_photo_url || courier.license_photo_url) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Documents</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {courier.id_photo_url && (
+                      <div className="space-y-2">
+                        <Label>ID Photo</Label>
+                        <div className="border rounded-lg p-2">
+                          <img 
+                            src={courier.id_photo_url} 
+                            alt="ID Photo" 
+                            className="w-full h-40 object-cover rounded"
+                          />
+                          <Button variant="outline" size="sm" className="mt-2 w-full">
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Full Size
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {courier.license_photo_url && (
+                      <div className="space-y-2">
+                        <Label>Driver License</Label>
+                        <div className="border rounded-lg p-2">
+                          <img 
+                            src={courier.license_photo_url} 
+                            alt="License Photo" 
+                            className="w-full h-40 object-cover rounded"
+                          />
+                          <Button variant="outline" size="sm" className="mt-2 w-full">
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Full Size
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Performance Stats */}
             <Card>

@@ -75,22 +75,49 @@ export type Database = {
       }
       couriers: {
         Row: {
+          address: string | null
+          admin_notes: string | null
+          assigned_zones: string[] | null
+          avatar_url: string | null
           created_at: string
+          email: string | null
           full_name: string
           id: string
+          id_photo_url: string | null
+          license_photo_url: string | null
           phone: string | null
+          status: string | null
+          vehicle_type: string | null
         }
         Insert: {
+          address?: string | null
+          admin_notes?: string | null
+          assigned_zones?: string[] | null
+          avatar_url?: string | null
           created_at?: string
+          email?: string | null
           full_name: string
           id?: string
+          id_photo_url?: string | null
+          license_photo_url?: string | null
           phone?: string | null
+          status?: string | null
+          vehicle_type?: string | null
         }
         Update: {
+          address?: string | null
+          admin_notes?: string | null
+          assigned_zones?: string[] | null
+          avatar_url?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string
           id?: string
+          id_photo_url?: string | null
+          license_photo_url?: string | null
           phone?: string | null
+          status?: string | null
+          vehicle_type?: string | null
         }
         Relationships: []
       }

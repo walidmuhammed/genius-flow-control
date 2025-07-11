@@ -1,3 +1,4 @@
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   getCouriers, 
@@ -7,6 +8,7 @@ import {
   deleteCourier,
   getCourierOrders,
   getCourierPickups,
+  uploadCourierFile,
   Courier 
 } from "@/services/couriers";
 import { toast } from "sonner";
@@ -87,5 +89,15 @@ export function useCourierPickups(courierName: string | undefined) {
     queryKey: ['courier-pickups', courierName],
     queryFn: () => courierName ? getCourierPickups(courierName) : Promise.resolve([]),
     enabled: !!courierName
+  });
+}
+
+export function useUploadCourierFile() {
+  return useMutation({
+    mutationFn: ({ file, type }: { file: File, type: 'avatar' | 'id_photo' | 'license_photo' }) => 
+      uploadCourierFile(file, type),
+    onError: (error) => {
+      toast.error(`Error uploading file: ${error.message}`);
+    }
   });
 }
