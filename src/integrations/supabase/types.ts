@@ -126,6 +126,7 @@ export type Database = {
           address: string | null
           city_id: string | null
           created_at: string
+          created_by: string | null
           governorate_id: string | null
           id: string
           is_work_address: boolean | null
@@ -138,6 +139,7 @@ export type Database = {
           address?: string | null
           city_id?: string | null
           created_at?: string
+          created_by?: string | null
           governorate_id?: string | null
           id?: string
           is_work_address?: boolean | null
@@ -150,6 +152,7 @@ export type Database = {
           address?: string | null
           city_id?: string | null
           created_at?: string
+          created_by?: string | null
           governorate_id?: string | null
           id?: string
           is_work_address?: boolean | null

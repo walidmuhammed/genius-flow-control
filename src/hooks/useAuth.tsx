@@ -146,7 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             user_type: userData.user_type || 'client',
             phone: userData.phone,
             business_name: userData.business_name,
-            business_type: userData.business_type,
+            business_type: userData.business_type || 'Fashion & Apparel',
           }
         }
       });

@@ -26,14 +26,26 @@ const ClientSignUp = () => {
   const navigate = useNavigate();
 
   const businessTypes = [
-    'E-commerce',
-    'Restaurant',
-    'Retail Store',
-    'Healthcare',
-    'Real Estate',
-    'Technology',
-    'Fashion',
-    'Other'
+    'Fashion & Apparel',
+    'Electronics & Gadgets', 
+    'Cosmetics & Beauty',
+    'Books & Stationery',
+    'Gifts & Handicrafts',
+    'Baby Products',
+    'Furniture',
+    'Jewelry & Accessories',
+    'Tools & Hardware',
+    'Food & Beverages',
+    'Frozen Goods',
+    'Grocery & Mini Markets',
+    'Medical Supplies & Pharmacies',
+    'Event Supplies',
+    'Florists',
+    'Tech Services / Repairs',
+    'Toys & Games',
+    'Cleaning & Home Care',
+    'Sports & Fitness Equipment',
+    'Pet Supplies'
   ];
 
   const handleInputChange = (field: string, value: string) => {
@@ -74,15 +86,18 @@ const ClientSignUp = () => {
     setLoading(true);
 
     try {
+      const redirectUrl = `${window.location.origin}/`;
+      
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             full_name: formData.fullName,
             phone: formData.phone,
             business_name: formData.businessName,
-            business_type: formData.businessType || 'Other',
+            business_type: formData.businessType || 'Fashion & Apparel',
             user_type: 'client'
           }
         }

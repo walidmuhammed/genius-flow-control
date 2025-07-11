@@ -12,6 +12,7 @@ export interface Customer {
   is_work_address: boolean;
   created_at: string;
   updated_at: string;
+  created_by?: string;
 }
 
 export interface CustomerWithLocation extends Customer {
@@ -69,10 +70,21 @@ export async function getCustomerById(id: string) {
   return customer;
 }
 
-export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at' | 'updated_at'>) {
+export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at' | 'updated_at' | 'created_by'>) {
+  // Get current user for proper tenant isolation
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  const customerWithCreatedBy = {
+    ...customer,
+    created_by: user.id
+  };
+
   const { data, error } = await supabase
     .from('customers')
-    .insert([customer])
+    .insert([customerWithCreatedBy])
     .select()
     .single();
   

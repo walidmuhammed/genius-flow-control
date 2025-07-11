@@ -38,25 +38,25 @@ const BusinessInfoSection = () => {
 
   const industryOptions = [
     'Fashion & Apparel',
-    'Electronics & Technology',
-    'Food & Beverages',
-    'Health & Beauty',
-    'Home & Garden',
-    'Sports & Fitness',
-    'Books & Media',
+    'Electronics & Gadgets', 
+    'Cosmetics & Beauty',
+    'Books & Stationery',
+    'Gifts & Handicrafts',
+    'Baby Products',
+    'Furniture',
     'Jewelry & Accessories',
+    'Tools & Hardware',
+    'Food & Beverages',
+    'Frozen Goods',
+    'Grocery & Mini Markets',
+    'Medical Supplies & Pharmacies',
+    'Event Supplies',
+    'Florists',
+    'Tech Services / Repairs',
     'Toys & Games',
-    'Automotive',
-    'Arts & Crafts',
-    'Pet Supplies',
-    'Office Supplies',
-    'Musical Instruments',
-    'Travel & Tourism',
-    'Education & Training',
-    'Professional Services',
-    'Real Estate',
-    'Finance & Insurance',
-    'Other'
+    'Cleaning & Home Care',
+    'Sports & Fitness Equipment',
+    'Pet Supplies'
   ];
 
   useEffect(() => {
