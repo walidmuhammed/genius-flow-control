@@ -670,6 +670,18 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_current_user_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      log_security_event: {
+        Args: { event_type: string; entity_id: string; details?: Json }
+        Returns: undefined
+      }
+      update_user_role: {
+        Args: { target_user_id: string; new_role: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
