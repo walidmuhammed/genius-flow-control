@@ -24,11 +24,11 @@ export function useAdminPickupsWithClients(filters?: { status?: string; search?:
     queryFn: () => getAdminPickupsWithClients({
       status: filters?.status,
       search: filters?.search,
-      limit: 100 // Reasonable limit for performance
+      limit: 100
     }),
-    staleTime: 5000, // Consider data fresh for 5 seconds
-    refetchInterval: 30000, // Refresh every 30 seconds instead of 15
-    refetchOnWindowFocus: false, // Prevent excessive refetching
+    staleTime: 10000, // Consider data fresh for 10 seconds
+    refetchInterval: false, // Disable automatic refetching for better performance
+    refetchOnWindowFocus: false,
   });
 }
 

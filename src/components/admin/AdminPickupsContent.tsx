@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,7 @@ import CourierAssignmentDialog from './CourierAssignmentDialog';
 
 const AdminPickupsContent = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [courierAssignDialogOpen, setCourierAssignDialogOpen] = useState(false);
   const [selectedPickupForAssignment, setSelectedPickupForAssignment] = useState<{
@@ -22,10 +23,19 @@ const AdminPickupsContent = () => {
     location: string;
   } | null>(null);
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const { data: stats, isLoading: statsLoading } = useAdminPickupStats();
   const { data: pickups, isLoading: pickupsLoading } = useAdminPickupsWithClients({
-    status: statusFilter,
-    search: searchQuery
+    status: statusFilter === 'all' ? undefined : statusFilter,
+    search: debouncedSearchQuery || undefined
   });
   const updateStatus = useUpdatePickupStatus();
 
@@ -74,18 +84,20 @@ const AdminPickupsContent = () => {
   }, [pickups, statusFilter]);
 
   const statusFilters = useMemo(() => [
-    { value: 'all', label: 'All', count: pickups?.length || 0 },
+    { value: 'all', label: 'All', count: stats?.totalPickups || 0 },
     { value: 'scheduled', label: 'Scheduled', count: stats?.totalScheduled || 0 },
     { value: 'assigned', label: 'Assigned', count: stats?.totalAssigned || 0 },
     { value: 'in progress', label: 'In Progress', count: stats?.totalInProgress || 0 },
     { value: 'completed', label: 'Completed', count: stats?.totalCompleted || 0 },
     { value: 'canceled', label: 'Canceled', count: stats?.totalCanceled || 0 },
-  ], [pickups?.length, stats]);
+  ], [stats]);
 
   const activeFilterCount = useMemo(() => {
-    const activeFilter = statusFilters.find(f => f.value === statusFilter);
-    return activeFilter?.count || 0;
-  }, [statusFilters, statusFilter]);
+    if (statusFilter === 'all') {
+      return stats?.totalPickups || 0;
+    }
+    return pickups?.length || 0;
+  }, [statusFilter, stats?.totalPickups, pickups?.length]);
 
   return (
     <div className="space-y-6">
@@ -140,36 +152,29 @@ const AdminPickupsContent = () => {
             {statusFilters.map((filter) => (
               <Button
                 key={filter.value}
-                variant={statusFilter === filter.value ? "default" : "outline"}
+                variant={statusFilter === filter.value ? "destructive" : "outline"}
                 size="sm"
                 onClick={() => setStatusFilter(filter.value)}
-                className={`transition-all duration-200 ${
-                  statusFilter === filter.value 
-                    ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
-                    : "hover:bg-muted"
-                }`}
+                className="transition-all duration-200"
+                disabled={pickupsLoading}
               >
                 {filter.label}
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                  statusFilter === filter.value 
-                    ? "bg-destructive-foreground/20 text-destructive-foreground" 
-                    : "bg-muted-foreground/20 text-muted-foreground"
-                }`}>
-                  {statusFilter === filter.value ? activeFilterCount : filter.count}
-                </span>
+                {statusFilter === filter.value && (
+                  <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-destructive-foreground/20 text-destructive-foreground">
+                    {activeFilterCount}
+                  </span>
+                )}
               </Button>
             ))}
           </div>
 
           {/* Table */}
-          <div className="border rounded-lg overflow-hidden">
-            <AdminPickupsTable
-              pickups={pickups || []}
-              onStatusUpdate={handleStatusUpdate}
-              onCourierAssign={handleCourierAssign}
-              isLoading={pickupsLoading}
-            />
-          </div>
+          <AdminPickupsTable
+            pickups={pickups || []}
+            onStatusUpdate={handleStatusUpdate}
+            onCourierAssign={handleCourierAssign}
+            isLoading={pickupsLoading}
+          />
         </CardContent>
       </Card>
 
