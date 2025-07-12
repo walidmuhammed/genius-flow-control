@@ -1,10 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Filter, Truck, Clock } from 'lucide-react';
+import { Search, Download, Truck } from 'lucide-react';
 import { 
   useAdminPickupStats, 
   useAdminPickupsWithClients, 
@@ -30,11 +29,11 @@ const AdminPickupsContent = () => {
   });
   const updateStatus = useUpdatePickupStatus();
 
-  const handleStatusUpdate = (pickupId: string, status: string) => {
+  const handleStatusUpdate = useCallback((pickupId: string, status: string) => {
     updateStatus.mutate({ pickupId, status });
-  };
+  }, [updateStatus]);
 
-  const handleCourierAssign = (pickupId: string) => {
+  const handleCourierAssign = useCallback((pickupId: string) => {
     const pickup = pickups?.find(p => p.id === pickupId);
     if (pickup) {
       setSelectedPickupForAssignment({
@@ -43,16 +42,50 @@ const AdminPickupsContent = () => {
       });
       setCourierAssignDialogOpen(true);
     }
-  };
+  }, [pickups]);
 
-  const statusTabs = [
-    { value: 'all', label: 'All Pickups', count: pickups?.length || 0 },
+  const handleExport = useCallback(() => {
+    if (!pickups?.length) return;
+    
+    const csvData = pickups.map(pickup => ({
+      'Pickup ID': pickup.pickup_id,
+      'Client': pickup.client_business_name,
+      'Date': new Date(pickup.pickup_date).toLocaleDateString(),
+      'Status': pickup.status,
+      'Courier': pickup.courier_name || 'Unassigned',
+      'Orders': pickup.total_orders,
+      'Location': pickup.location,
+      'Contact': pickup.contact_person
+    }));
+    
+    const headers = Object.keys(csvData[0]);
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => headers.map(h => `"${row[h as keyof typeof row] || ''}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pickups-${statusFilter}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [pickups, statusFilter]);
+
+  const statusFilters = useMemo(() => [
+    { value: 'all', label: 'All', count: pickups?.length || 0 },
     { value: 'scheduled', label: 'Scheduled', count: stats?.totalScheduled || 0 },
     { value: 'assigned', label: 'Assigned', count: stats?.totalAssigned || 0 },
     { value: 'in progress', label: 'In Progress', count: stats?.totalInProgress || 0 },
     { value: 'completed', label: 'Completed', count: stats?.totalCompleted || 0 },
     { value: 'canceled', label: 'Canceled', count: stats?.totalCanceled || 0 },
-  ];
+  ], [pickups?.length, stats]);
+
+  const activeFilterCount = useMemo(() => {
+    const activeFilter = statusFilters.find(f => f.value === statusFilter);
+    return activeFilter?.count || 0;
+  }, [statusFilters, statusFilter]);
 
   return (
     <div className="space-y-6">
@@ -66,10 +99,6 @@ const AdminPickupsContent = () => {
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button variant="outline" size="sm">
             <Truck className="h-4 w-4 mr-2" />
             Dispatch Console
           </Button>
@@ -81,49 +110,68 @@ const AdminPickupsContent = () => {
         <AdminPickupKPICards stats={stats} isLoading={statsLoading} />
       )}
 
-      {/* Search and Filters */}
+      {/* Single Container: Search, Export, Filters, and Table */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex gap-4">
+        <CardContent className="p-6 space-y-4">
+          {/* Search and Export Row */}
+          <div className="flex items-center gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search pickups by ID, client, location, or contact..."
+                placeholder="Search by Pickup ID, Client, Courier, or Location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
             </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExport}
+              disabled={!pickups?.length}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </div>
+
+          {/* Filter Buttons */}
+          <div className="flex flex-wrap gap-2">
+            {statusFilters.map((filter) => (
+              <Button
+                key={filter.value}
+                variant={statusFilter === filter.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter(filter.value)}
+                className={`transition-all duration-200 ${
+                  statusFilter === filter.value 
+                    ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
+                    : "hover:bg-muted"
+                }`}
+              >
+                {filter.label}
+                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                  statusFilter === filter.value 
+                    ? "bg-destructive-foreground/20 text-destructive-foreground" 
+                    : "bg-muted-foreground/20 text-muted-foreground"
+                }`}>
+                  {statusFilter === filter.value ? activeFilterCount : filter.count}
+                </span>
+              </Button>
+            ))}
+          </div>
+
+          {/* Table */}
+          <div className="border rounded-lg overflow-hidden">
+            <AdminPickupsTable
+              pickups={pickups || []}
+              onStatusUpdate={handleStatusUpdate}
+              onCourierAssign={handleCourierAssign}
+              isLoading={pickupsLoading}
+            />
           </div>
         </CardContent>
       </Card>
-
-      {/* Status Tabs and Table */}
-      <Tabs value={statusFilter} onValueChange={setStatusFilter} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
-          {statusTabs.map((tab) => (
-            <TabsTrigger 
-              key={tab.value} 
-              value={tab.value} 
-              className="flex items-center gap-2"
-            >
-              {tab.label}
-              <span className="text-xs bg-muted-foreground/20 px-2 py-1 rounded-full">
-                {tab.count}
-              </span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <TabsContent value={statusFilter} className="space-y-4">
-          <AdminPickupsTable
-            pickups={pickups || []}
-            onStatusUpdate={handleStatusUpdate}
-            onCourierAssign={handleCourierAssign}
-            isLoading={pickupsLoading}
-          />
-        </TabsContent>
-      </Tabs>
 
       {/* Courier Assignment Dialog */}
       {selectedPickupForAssignment && (

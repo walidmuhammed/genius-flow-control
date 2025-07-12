@@ -41,17 +41,17 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
     const statusLower = status.toLowerCase();
     switch (statusLower) {
       case 'scheduled':
-        return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400';
+        return 'bg-blue-500/10 text-blue-600 border-blue-500/20 hover:bg-blue-500/20';
       case 'assigned':
-        return 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400';
+        return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/20';
       case 'in progress':
-        return 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400';
+        return 'bg-orange-500/10 text-orange-600 border-orange-500/20 hover:bg-orange-500/20';
       case 'completed':
-        return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400';
+        return 'bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20';
       case 'canceled':
-        return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400';
+        return 'bg-gray-500/10 text-gray-600 border-gray-500/20 hover:bg-gray-500/20';
       default:
-        return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400';
+        return 'bg-gray-500/10 text-gray-600 border-gray-500/20 hover:bg-gray-500/20';
     }
   };
 

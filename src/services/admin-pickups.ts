@@ -83,34 +83,95 @@ export async function getAdminPickupStats(): Promise<AdminPickupStats> {
   };
 }
 
-export async function getAdminPickupsWithClients(): Promise<AdminPickupWithClient[]> {
-  const { data, error } = await supabase
+export async function getAdminPickupsWithClients(filters?: { 
+  status?: string; 
+  search?: string; 
+  limit?: number; 
+  offset?: number; 
+}): Promise<AdminPickupWithClient[]> {
+  // Build optimized query with filters at database level
+  let query = supabase
     .from('pickups')
     .select(`
-      *,
+      id,
+      pickup_id,
+      pickup_date,
+      status,
+      location,
+      address,
+      contact_person,
+      contact_phone,
+      courier_name,
+      courier_phone,
+      note,
+      vehicle_type,
+      orders_count,
+      created_at,
+      updated_at,
+      client_id,
       profiles!pickups_client_id_fkey(
         full_name,
         business_name,
         business_type
       ),
       pickup_orders(
-        orders(
-          cash_collection_usd,
-          cash_collection_lbp,
-          cash_collection_enabled
-        )
+        count
       )
     `)
     .order('created_at', { ascending: false });
+
+  // Apply status filter at database level
+  if (filters?.status && filters.status !== 'all') {
+    query = query.ilike('status', filters.status);
+  }
+
+  // Apply search filter at database level
+  if (filters?.search) {
+    const searchTerm = `%${filters.search}%`;
+    query = query.or(`pickup_id.ilike.${searchTerm},location.ilike.${searchTerm},contact_person.ilike.${searchTerm}`);
+  }
+
+  // Apply pagination
+  if (filters?.limit) {
+    query = query.limit(filters.limit);
+  }
+  if (filters?.offset) {
+    query = query.range(filters.offset, (filters.offset + (filters.limit || 50)) - 1);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching admin pickups:', error);
     throw error;
   }
 
-  return data.map((pickup: any) => {
-    const totalOrders = pickup.pickup_orders?.length || 0;
-    const cashTotals = pickup.pickup_orders?.reduce(
+  // Get cash collection data separately for better performance
+  const pickupIds = data?.map(p => p.id) || [];
+  let cashData = [];
+  
+  if (pickupIds.length > 0) {
+    const { data: cashResult } = await supabase
+      .from('pickup_orders')
+      .select(`
+        pickup_id,
+        orders!inner(
+          cash_collection_usd,
+          cash_collection_lbp,
+          cash_collection_enabled
+        )
+      `)
+      .in('pickup_id', pickupIds);
+    
+    cashData = cashResult || [];
+  }
+
+  return data?.map((pickup: any) => {
+    const totalOrders = pickup.orders_count || pickup.pickup_orders?.length || 0;
+    
+    // Calculate cash totals for this pickup
+    const pickupCashData = cashData.filter((cd: any) => cd.pickup_id === pickup.id);
+    const cashTotals = pickupCashData.reduce(
       (acc: any, po: any) => {
         if (po.orders?.cash_collection_enabled) {
           acc.usd += po.orders.cash_collection_usd || 0;
@@ -119,7 +180,7 @@ export async function getAdminPickupsWithClients(): Promise<AdminPickupWithClien
         return acc;
       },
       { usd: 0, lbp: 0 }
-    ) || { usd: 0, lbp: 0 };
+    );
 
     return {
       ...pickup,
@@ -130,7 +191,7 @@ export async function getAdminPickupsWithClients(): Promise<AdminPickupWithClien
       total_cash_usd: cashTotals.usd,
       total_cash_lbp: cashTotals.lbp
     };
-  });
+  }) || [];
 }
 
 export async function updatePickupStatus(pickupId: string, status: string): Promise<void> {

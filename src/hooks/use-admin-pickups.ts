@@ -21,32 +21,14 @@ export function useAdminPickupStats() {
 export function useAdminPickupsWithClients(filters?: { status?: string; search?: string }) {
   return useQuery<AdminPickupWithClient[]>({
     queryKey: ['admin-pickups-with-clients', filters],
-    queryFn: async () => {
-      const data = await getAdminPickupsWithClients();
-      
-      // Apply filters
-      let filteredData = data;
-      
-      if (filters?.status && filters.status !== 'all') {
-        filteredData = filteredData.filter(pickup => 
-          pickup.status.toLowerCase() === filters.status?.toLowerCase()
-        );
-      }
-      
-      if (filters?.search) {
-        const search = filters.search.toLowerCase();
-        filteredData = filteredData.filter(pickup =>
-          pickup.pickup_id?.toLowerCase().includes(search) ||
-          pickup.client_business_name.toLowerCase().includes(search) ||
-          pickup.client_name.toLowerCase().includes(search) ||
-          pickup.location.toLowerCase().includes(search) ||
-          pickup.contact_person.toLowerCase().includes(search)
-        );
-      }
-      
-      return filteredData;
-    },
-    refetchInterval: 15000, // Refresh every 15 seconds
+    queryFn: () => getAdminPickupsWithClients({
+      status: filters?.status,
+      search: filters?.search,
+      limit: 100 // Reasonable limit for performance
+    }),
+    staleTime: 5000, // Consider data fresh for 5 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds instead of 15
+    refetchOnWindowFocus: false, // Prevent excessive refetching
   });
 }
 
