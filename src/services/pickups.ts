@@ -73,7 +73,7 @@ export async function getPickupById(id: string) {
   return data as Pickup;
 }
 
-export async function createPickup(pickup: Omit<Pickup, 'id' | 'pickup_id' | 'created_at' | 'updated_at' | 'client_id'>) {
+export async function createPickup(pickup: Omit<Pickup, 'id' | 'pickup_id' | 'created_at' | 'updated_at' | 'client_id'>, orderIds?: string[]) {
   const { data, error } = await supabase
     .from('pickups')
     .insert([{
@@ -86,6 +86,11 @@ export async function createPickup(pickup: Omit<Pickup, 'id' | 'pickup_id' | 'cr
   if (error) {
     console.error('Error creating pickup:', error);
     throw error;
+  }
+
+  // Link orders to pickup if provided
+  if (orderIds && orderIds.length > 0) {
+    await linkOrdersToPickup(data.id, orderIds);
   }
   
   return data as Pickup;

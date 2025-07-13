@@ -37,10 +37,13 @@ export function useCreatePickup() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (pickup: Omit<Pickup, 'id' | 'pickup_id' | 'created_at' | 'updated_at'>) => 
-      createPickup(pickup),
+    mutationFn: ({ pickup, orderIds }: { 
+      pickup: Omit<Pickup, 'id' | 'pickup_id' | 'created_at' | 'updated_at' | 'client_id'>, 
+      orderIds?: string[] 
+    }) => createPickup(pickup, orderIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pickups'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
       toast.success("Pickup created successfully");
     },
     onError: (error) => {
