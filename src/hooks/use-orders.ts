@@ -30,7 +30,8 @@ export function useOrder(id: string | undefined) {
   return useQuery({
     queryKey: ['order', id],
     queryFn: () => id ? getOrderById(id) : Promise.resolve(null),
-    enabled: !!id
+    enabled: !!id,
+    staleTime: 0 // Always fetch fresh data for editing
   });
 }
 

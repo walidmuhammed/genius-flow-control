@@ -40,7 +40,7 @@ const CreateOrder = () => {
   const editOrderId = urlParams.get('id');
   
   // Fetch order data if in edit mode
-  const { data: editOrder } = useOrder(editOrderId || undefined);
+  const { data: editOrder, isLoading: orderLoading, error: orderError } = useOrder(editOrderId || undefined);
   
   const [formKey, setFormKey] = useState(getUniqueFormKey());
   const initialRenderRef = useRef(true);
@@ -146,33 +146,36 @@ const CreateOrder = () => {
   };
 
   const resetForm = () => {
-    setOrderType('shipment');
-    setPhone('+961');
-    setSecondaryPhone('');
-    setIsSecondaryPhone(false);
-    setName('');
-    setIsWorkAddress(false);
-    setPackageType('parcel');
-    setSelectedGovernorateId('');
-    setSelectedCityId('');
-    setSelectedGovernorateName('');
-    setSelectedCityName('');
-    setCashCollection(true);
-    setUsdAmount('');
-    setLbpAmount('');
-    setAddress('');
-    setDescription('');
-    setItemsCount(1);
-    setOrderReference('');
-    setDeliveryNotes('');
-    setAllowOpening(false);
-    setExistingCustomer(null);
-    setErrors({});
-    clearCachedFormData();
-    queryClient.removeQueries({
-      queryKey: ['customers', 'search']
-    });
-    setFormKey(getUniqueFormKey());
+    // Only reset if not in edit mode
+    if (!isEditMode) {
+      setOrderType('shipment');
+      setPhone('+961');
+      setSecondaryPhone('');
+      setIsSecondaryPhone(false);
+      setName('');
+      setIsWorkAddress(false);
+      setPackageType('parcel');
+      setSelectedGovernorateId('');
+      setSelectedCityId('');
+      setSelectedGovernorateName('');
+      setSelectedCityName('');
+      setCashCollection(true);
+      setUsdAmount('');
+      setLbpAmount('');
+      setAddress('');
+      setDescription('');
+      setItemsCount(1);
+      setOrderReference('');
+      setDeliveryNotes('');
+      setAllowOpening(false);
+      setExistingCustomer(null);
+      setErrors({});
+      clearCachedFormData();
+      queryClient.removeQueries({
+        queryKey: ['customers', 'search']
+      });
+      setFormKey(getUniqueFormKey());
+    }
   };
 
   useEffect(() => {
@@ -430,6 +433,79 @@ const CreateOrder = () => {
       }));
     }
   };
+
+  // Show loading state while fetching order data in edit mode
+  if (isEditMode && orderLoading) {
+    return (
+      <MainLayout className="bg-gray-50/30">
+        <div className="min-h-screen w-full">
+          <div className="w-full px-4 py-6">
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-2xl font-semibold text-gray-900">Edit Order</h1>
+            </div>
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading order data...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Show error state if order fetch failed
+  if (isEditMode && orderError) {
+    return (
+      <MainLayout className="bg-gray-50/30">
+        <div className="min-h-screen w-full">
+          <div className="w-full px-4 py-6">
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-2xl font-semibold text-gray-900">Edit Order</h1>
+            </div>
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <p className="text-destructive mb-4">Failed to load order data</p>
+                <Button 
+                  onClick={() => navigate('/dashboard/client/orders')}
+                  variant="outline"
+                >
+                  Back to Orders
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Show error if in edit mode but no order found
+  if (isEditMode && !editOrder && !orderLoading) {
+    return (
+      <MainLayout className="bg-gray-50/30">
+        <div className="min-h-screen w-full">
+          <div className="w-full px-4 py-6">
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-2xl font-semibold text-gray-900">Edit Order</h1>
+            </div>
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <p className="text-destructive mb-4">Order not found</p>
+                <Button 
+                  onClick={() => navigate('/dashboard/client/orders')}
+                  variant="outline"
+                >
+                  Back to Orders
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return <MainLayout className="bg-gray-50/30">
       <div className="min-h-screen w-full" key={formKey}>
