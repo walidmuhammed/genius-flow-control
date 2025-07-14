@@ -37,6 +37,7 @@ import AdminSettings from '@/pages/admin/AdminSettings';
 import AdminDispatch from '@/pages/admin/AdminDispatch';
 import AdminClients from '@/pages/admin/AdminClients';
 import AdminWallet from '@/pages/admin/AdminWallet';
+import AdminCreateOrder from '@/pages/admin/AdminCreateOrder';
 
 // Import protected route component
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -90,6 +91,7 @@ function App() {
             <Route element={<ProtectedRoute requiredRole="admin" />}>
               <Route path="/dashboard/admin" element={<AdminDashboard />} />
               <Route path="/dashboard/admin/orders" element={<AdminOrders />} />
+              <Route path="/dashboard/admin/create-order" element={<AdminCreateOrder />} />
               <Route path="/dashboard/admin/pickups" element={<AdminPickups />} />
               <Route path="/dashboard/admin/couriers" element={<AdminCouriers />} />
               <Route path="/dashboard/admin/customers" element={<AdminCustomers />} />

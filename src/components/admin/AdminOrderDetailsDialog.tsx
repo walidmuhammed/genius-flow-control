@@ -39,7 +39,7 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
 
   const handleEditOrder = () => {
     if (order) {
-      navigate(`/dashboard/admin/create-order?edit=${order.id}`);
+      navigate(`/dashboard/admin/create-order?edit=true&id=${order.id}`);
       onOpenChange(false);
     }
   };
@@ -130,8 +130,8 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
     }
   };
 
-  // Check if order can be edited/deleted (only NEW orders)
-  const canEditDelete = order?.status === 'New';
+  // Check if order can be edited/deleted (admins can edit any order except "Paid")
+  const canEditDelete = order?.status !== 'Paid';
 
   // Get shop name (placeholder for now)
   const getShopName = () => {
