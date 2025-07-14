@@ -350,6 +350,11 @@ const OrdersList: React.FC = () => {
                             handleViewOrder(order.originalOrder);
                           }
                         }}
+                        onEditOrder={(order) => {
+                          if (order) {
+                            handleEditOrder(order);
+                          }
+                        }}
                         onDeleteOrder={(order) => {
                           if (order?.originalOrder) {
                             handleDeleteOrder(order.originalOrder);

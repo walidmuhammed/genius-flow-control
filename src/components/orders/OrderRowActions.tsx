@@ -20,7 +20,7 @@ interface OrderRowActionsProps {
   originalOrder?: OrderWithCustomer;
   isRowHovered: boolean;
   onViewDetails: () => void;
-  onEditOrder: () => void;
+  onEditOrder: (order?: OrderWithCustomer | Order) => void;
   onPrintLabel: () => void;
   onCreateTicket: () => void;
   onDeleteOrder: () => void;
@@ -39,11 +39,10 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const isNewStatus = order.status === 'New';
 
-  // Correct, always use the real DB id for edit redirect
+  // Use the onEditOrder prop instead of direct navigation
   const handleEdit = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    const dbId = originalOrder?.id || order.id;
-    window.location.href = `/dashboard/client/create-order?edit=true&id=${dbId}`;
+    onEditOrder && onEditOrder(originalOrder || order);
   };
 
   return (

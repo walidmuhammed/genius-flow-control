@@ -19,6 +19,7 @@ interface OrdersTableMobileProps {
   onViewDetails?: (order: Order & {
     originalOrder: OrderWithCustomer;
   }) => void;
+  onEditOrder?: (order: OrderWithCustomer) => void;
   onDeleteOrder?: (order: any) => void;
   showActions?: boolean;
 }
@@ -27,6 +28,7 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
   selectedOrders = [],
   toggleSelectOrder = () => {},
   onViewDetails = () => {},
+  onEditOrder = () => {},
   onDeleteOrder = () => {},
   showActions = true
 }) => {
@@ -58,11 +60,11 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
   // Mobile/tablet deletion dialog state
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [orderPendingDelete, setOrderPendingDelete] = useState<any>(null);
-  // Add edit handler using originalOrder (ensure fallback to order.id for safety)
+  // Add edit handler using onEditOrder prop for proper navigation
   const handleEdit = (originalOrder: OrderWithCustomer, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (originalOrder && originalOrder.id) {
-      window.location.href = `/create-order?edit=${originalOrder.id}`;
+    if (originalOrder && onEditOrder) {
+      onEditOrder(originalOrder);
     }
   };
   const handleDelete = (order: any, e?: React.MouseEvent) => {
