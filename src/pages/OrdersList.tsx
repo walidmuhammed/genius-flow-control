@@ -179,7 +179,7 @@ const OrdersList: React.FC = () => {
 
   const handleEditOrder = (order: OrderWithCustomer) => {
     // Navigate to edit order page
-    console.log('Edit order:', order.id);
+    navigate(`/dashboard/client/create-order?edit=true&id=${order.id}`);
   };
 
   const handleDeleteOrder = (order: OrderWithCustomer) => {

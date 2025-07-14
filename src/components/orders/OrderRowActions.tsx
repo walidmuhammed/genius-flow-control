@@ -43,7 +43,7 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
   const handleEdit = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     const dbId = originalOrder?.id || order.id;
-    window.location.href = `/create-order?edit=true&id=${dbId}`;
+    window.location.href = `/dashboard/client/create-order?edit=true&id=${dbId}`;
   };
 
   return (
