@@ -181,9 +181,16 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
           </div>
         </TableCell>
         <TableCell>
-          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${getStatusColor(order.status)}`}>
-            {order.status}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${getStatusColor(order.status)}`}>
+              {order.status}
+            </span>
+            {originalOrder?.edited && (
+              <span className="inline-flex px-2 py-1 text-xs font-medium rounded-md bg-orange-50 text-orange-600">
+                Edited
+              </span>
+            )}
+          </div>
         </TableCell>
         <TableCell>
           <div className="text-sm text-gray-900">

@@ -21,6 +21,12 @@ export interface CustomerWithLocation extends Customer {
 }
 
 export async function getCustomers() {
+  // Get current user for proper tenant isolation
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
   const { data, error } = await supabase
     .from('customers')
     .select(`
@@ -28,6 +34,7 @@ export async function getCustomers() {
       cities:city_id(name),
       governorates:governorate_id(name)
     `)
+    .eq('created_by', user.id)
     .order('created_at', { ascending: false });
   
   if (error) {
@@ -113,6 +120,12 @@ export async function updateCustomer(id: string, updates: Partial<Omit<Customer,
 }
 
 export async function searchCustomersByPhone(phone: string) {
+  // Get current user for proper tenant isolation
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
   const { data, error } = await supabase
     .from('customers')
     .select(`
@@ -120,6 +133,7 @@ export async function searchCustomersByPhone(phone: string) {
       cities:city_id(name),
       governorates:governorate_id(name)
     `)
+    .eq('created_by', user.id)
     .ilike('phone', `%${phone}%`)
     .limit(5);
   

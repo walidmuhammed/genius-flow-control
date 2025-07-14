@@ -665,18 +665,19 @@ const Customers: React.FC = () => {
                     No orders found for this customer
                   </div>
                 ) : (
-                  <div className="border rounded-md overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-gray-50">
-                          <TableHead className="text-xs">Order ID</TableHead>
-                          <TableHead className="text-xs">Date</TableHead>
-                          <TableHead className="text-xs">Amount</TableHead>
-                          <TableHead className="text-xs">Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {customerOrders.slice(0, 5).map(order => (
+                  <div className="border rounded-md overflow-hidden max-h-60">
+                    <div className="overflow-y-auto max-h-60">
+                      <Table>
+                        <TableHeader className="sticky top-0 bg-gray-50 z-10">
+                          <TableRow className="bg-gray-50">
+                            <TableHead className="text-xs">Order ID</TableHead>
+                            <TableHead className="text-xs">Date</TableHead>
+                            <TableHead className="text-xs">Amount</TableHead>
+                            <TableHead className="text-xs">Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {customerOrders.slice(0, 10).map(order => (
                           <TableRow key={order.id}>
                             <TableCell className="font-medium">{order.reference_number || order.id.substring(0, 8)}</TableCell>
                             <TableCell>{formatDate(new Date(order.created_at))}</TableCell>
@@ -701,11 +702,12 @@ const Customers: React.FC = () => {
                               </Badge>
                             </TableCell>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                    {customerOrders.length > 5 && (
-                      <div className="p-2 text-center border-t">
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    {customerOrders.length > 10 && (
+                      <div className="p-2 text-center border-t bg-gray-50 sticky bottom-0">
                         <Button variant="ghost" size="sm">
                           View all {customerOrders.length} orders
                         </Button>

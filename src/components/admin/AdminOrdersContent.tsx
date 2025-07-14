@@ -264,9 +264,16 @@ const AdminOrdersContent = () => {
                             <Eye className="h-4 w-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              if (order.status !== 'Paid') {
+                                window.location.href = `/create-order?edit=true&id=${order.id}`;
+                              }
+                            }}
+                            disabled={order.status === 'Paid'}
+                          >
                             <Edit className="h-4 w-4 mr-2" />
-                            Edit Order
+                            {order.status === 'Paid' ? 'Cannot Edit (Paid)' : 'Edit Order'}
                           </DropdownMenuItem>
                           <DropdownMenuItem>
                             <User className="h-4 w-4 mr-2" />

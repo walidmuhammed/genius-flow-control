@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useCustomers } from '@/hooks/use-customers';
+import { useAdminCustomers } from '@/hooks/use-admin-customers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,7 +55,7 @@ const mockClients = [
 ];
 
 const AdminCustomersContent = () => {
-  const { data: customers = [], isLoading } = useCustomers();
+  const { data: customers = [], isLoading } = useAdminCustomers();
   const [clients] = useState(mockClients);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('customers');

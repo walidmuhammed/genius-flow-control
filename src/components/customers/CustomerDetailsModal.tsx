@@ -42,13 +42,13 @@ export default function CustomerDetailsModal({
       <DialogContent
         className={`${
           isEditing ? "max-w-4xl" : "sm:max-w-[600px]"
-        } p-0 rounded-xl w-full`}
+        } p-0 rounded-xl w-full max-h-[80vh] flex flex-col`}
       >
-        <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between">
+        <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between flex-shrink-0">
           <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
           {headerActions && <div className="flex items-center gap-2">{headerActions}</div>}
         </DialogHeader>
-        <div className={isEditing ? "p-8 bg-white" : "p-6"}>{children}</div>
+        <div className={`${isEditing ? "p-8 bg-white" : "p-6"} overflow-y-auto flex-1`}>{children}</div>
       </DialogContent>
     </Dialog>
   );

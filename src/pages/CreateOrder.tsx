@@ -35,8 +35,9 @@ const CreateOrder = () => {
   const { isMobile } = useScreenSize();
   
   // Check if we're in edit mode
-  const editOrderId = new URLSearchParams(location.search).get('edit');
-  const isEditMode = !!editOrderId;
+  const urlParams = new URLSearchParams(location.search);
+  const isEditMode = urlParams.get('edit') === 'true';
+  const editOrderId = urlParams.get('id');
   
   // Fetch order data if in edit mode
   const { data: editOrder } = useOrder(editOrderId || undefined);
