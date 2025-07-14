@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -44,6 +44,12 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
+// Component to preserve search parameters during redirect
+const RedirectWithParams = ({ to }: { to: string }) => {
+  const location = useLocation();
+  return <Navigate to={`${to}${location.search}`} replace />;
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -73,11 +79,11 @@ function App() {
               <Route path="/dashboard/client/settings" element={<Settings />} />
             </Route>
 
-            {/* Backward compatibility redirects */}
+            {/* Backward compatibility redirects with search params preserved */}
             <Route element={<ProtectedRoute requiredRole="client" />}>
               <Route path="/dashboard" element={<Navigate to="/dashboard/client" replace />} />
               <Route path="/orders" element={<Navigate to="/dashboard/client/orders" replace />} />
-              <Route path="/create-order" element={<Navigate to="/dashboard/client/create-order" replace />} />
+              <Route path="/create-order" element={<RedirectWithParams to="/dashboard/client/create-order" />} />
               <Route path="/pickups" element={<Navigate to="/dashboard/client/pickups" replace />} />
               <Route path="/schedule-pickup" element={<Navigate to="/dashboard/client/schedule-pickup" replace />} />
               <Route path="/customers" element={<Navigate to="/dashboard/client/customers" replace />} />

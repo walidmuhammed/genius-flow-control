@@ -178,8 +178,17 @@ const OrdersList: React.FC = () => {
   };
 
   const handleEditOrder = (order: OrderWithCustomer) => {
+    // DEBUG: Log the edit button click and navigation URL
+    console.log('🚀 EDIT BUTTON CLICKED!');
+    console.log('📄 Order being edited:', order);
+    console.log('🆔 Order ID:', order.id);
+    const editUrl = `/dashboard/client/create-order?edit=true&id=${order.id}`;
+    console.log('🔗 Navigation URL:', editUrl);
+    
     // Navigate to edit order page
-    navigate(`/dashboard/client/create-order?edit=true&id=${order.id}`);
+    navigate(editUrl);
+    
+    console.log('✅ Navigation completed');
   };
 
   const handleDeleteOrder = (order: OrderWithCustomer) => {
@@ -321,6 +330,11 @@ const OrdersList: React.FC = () => {
                           // Use the originalOrder property that's already included in the mapped data
                           if (order.originalOrder) {
                             handleViewOrder(order.originalOrder);
+                          }
+                        }}
+                        onEditOrder={(order) => {
+                          if (order) {
+                            handleEditOrder(order);
                           }
                         }}
                         onDeleteOrder={(order) => {

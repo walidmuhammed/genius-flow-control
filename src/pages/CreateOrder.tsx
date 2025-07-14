@@ -39,6 +39,14 @@ const CreateOrder = () => {
   const isEditMode = urlParams.get('edit') === 'true';
   const editOrderId = urlParams.get('id');
   
+  // DEBUG: Log URL parameters and edit mode status
+  console.log('🔍 CREATEORDER PAGE LOADED!');
+  console.log('🌐 Current URL:', location.pathname + location.search);
+  console.log('📊 URL Search Params:', location.search);
+  console.log('✏️ isEditMode:', isEditMode);
+  console.log('🆔 editOrderId:', editOrderId);
+  console.log('🔗 Full URLParams object:', Object.fromEntries(urlParams.entries()));
+  
   // Fetch order data if in edit mode
   const { data: editOrder, isLoading: orderLoading, error: orderError } = useOrder(editOrderId || undefined);
   
@@ -100,8 +108,9 @@ const CreateOrder = () => {
 
   // Load order data for edit mode
   useEffect(() => {
+    console.log('🔄 useEffect triggered - isEditMode:', isEditMode, 'editOrder:', !!editOrder);
     if (isEditMode && editOrder) {
-      console.log('🔄 Loading order data for edit mode:', editOrder);
+      console.log('✅ EDIT MODE CONFIRMED - Loading order data:', editOrder);
       
       // Pre-fill form with existing order data
       setOrderType(editOrder.type === 'Exchange' ? 'exchange' : 'shipment');
