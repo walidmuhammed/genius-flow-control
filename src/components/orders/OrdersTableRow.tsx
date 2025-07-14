@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TableRow, TableCell } from '@/components/ui/table';
 import OrderNoteTooltip from './OrderNoteTooltip';
 import StatusBadge from './StatusBadge';
@@ -57,6 +58,7 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
   onViewDetails,
   showActions = true
 }) => {
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
@@ -65,7 +67,11 @@ const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
     // Use actual unique DB ID for the redirect for Edit functionality to work (and autofill):
     // Try to use originalOrder.id, fallback to order.id if needed
     const dbId = originalOrder?.id || order.id;
-    window.location.href = `/create-order?edit=${dbId}`;
+    console.log('🚀 EDIT BUTTON CLICKED FROM OrdersTableRow!');
+    console.log('🆔 Order ID:', dbId);
+    const editUrl = `/dashboard/client/create-order?edit=true&id=${dbId}`;
+    console.log('🔗 Navigation URL:', editUrl);
+    navigate(editUrl);
   };
   const handlePrintLabel = () => {
     console.log(`Printing label for order ${order.id}`);
