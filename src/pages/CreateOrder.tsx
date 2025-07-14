@@ -101,9 +101,11 @@ const CreateOrder = () => {
   // Load order data for edit mode
   useEffect(() => {
     if (isEditMode && editOrder) {
+      console.log('🔄 Loading order data for edit mode:', editOrder);
+      
       // Pre-fill form with existing order data
       setOrderType(editOrder.type === 'Exchange' ? 'exchange' : 'shipment');
-      setPackageType(editOrder.package_type as 'parcel' | 'document' | 'bulky');
+      setPackageType((editOrder.package_type || 'parcel') as 'parcel' | 'document' | 'bulky');
       setDescription(editOrder.package_description || '');
       setItemsCount(editOrder.items_count || 1);
       setAllowOpening(editOrder.allow_opening || false);
@@ -113,28 +115,73 @@ const CreateOrder = () => {
       setDeliveryNotes(editOrder.note || '');
       setOrderReference(editOrder.reference_number || '');
 
-      // Load customer data
-      if (editOrder.customer) {
-        setPhone(editOrder.customer.phone);
-        setName(editOrder.customer.name);
-        setAddress(editOrder.customer.address || '');
-        setIsWorkAddress(editOrder.customer.is_work_address || false);
+      console.log('📱 Order basic data loaded');
+
+      // Load customer data - Check both possible data structures
+      const customerData = editOrder.customer || editOrder;
+      console.log('👤 Customer data structure:', customerData);
+      
+      if (customerData) {
+        // Set phone and validate it
+        if (customerData.phone) {
+          console.log('📞 Setting phone:', customerData.phone);
+          setPhone(customerData.phone);
+          setPhoneValid(true);
+        }
         
-        if (editOrder.customer.secondary_phone) {
-          setSecondaryPhone(editOrder.customer.secondary_phone);
+        // Set name
+        if (customerData.name) {
+          console.log('🏷️ Setting name:', customerData.name);
+          setName(customerData.name);
+        }
+        
+        // Set address
+        if (customerData.address) {
+          console.log('🏠 Setting address:', customerData.address);
+          setAddress(customerData.address);
+        }
+        
+        // Set work address flag
+        setIsWorkAddress(customerData.is_work_address || false);
+        
+        // Set secondary phone if exists
+        if (customerData.secondary_phone) {
+          console.log('📱 Setting secondary phone:', customerData.secondary_phone);
+          setSecondaryPhone(customerData.secondary_phone);
           setIsSecondaryPhone(true);
         }
 
-        if (editOrder.customer.governorate_id && editOrder.customer.city_id) {
-          setSelectedGovernorateId(editOrder.customer.governorate_id);
-          setSelectedCityId(editOrder.customer.city_id);
-          setSelectedGovernorateName(editOrder.customer.governorate_name || '');
-          setSelectedCityName(editOrder.customer.city_name || '');
+        // Set location data (governorate and city)
+        if (customerData.governorate_id && customerData.city_id) {
+          console.log('🗺️ Setting location data:', {
+            governorate_id: customerData.governorate_id,
+            city_id: customerData.city_id,
+            governorate_name: customerData.governorate_name,
+            city_name: customerData.city_name
+          });
+          
+          setSelectedGovernorateId(customerData.governorate_id);
+          setSelectedCityId(customerData.city_id);
+          setSelectedGovernorateName(customerData.governorate_name || '');
+          setSelectedCityName(customerData.city_name || '');
         }
 
-        setExistingCustomer(editOrder.customer);
-        setPhoneValid(true);
+        setExistingCustomer(customerData as any);
+        console.log('✅ Customer data loaded successfully');
+      } else {
+        console.error('❌ No customer data found in order:', editOrder);
       }
+      
+      console.log('🎯 Form state after loading:', {
+        phone,
+        name,
+        address,
+        governorate: selectedGovernorateName,
+        city: selectedCityName,
+        orderType,
+        packageType,
+        description
+      });
     }
   }, [isEditMode, editOrder]);
 
