@@ -39,6 +39,7 @@ export interface Order {
   courier_id?: string | null;
   created_by?: string | null;
   invoice_id?: string | null;
+  pricing_source?: string | null;
 }
 
 export interface OrderWithCustomer extends Order {

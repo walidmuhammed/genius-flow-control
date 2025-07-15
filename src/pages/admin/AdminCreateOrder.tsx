@@ -74,7 +74,8 @@ const AdminCreateOrder = () => {
   // Delivery fees (calculated or fixed)
   const deliveryFees = {
     usd: 5,
-    lbp: 150000
+    lbp: 150000,
+    rule_type: 'global'
   };
 
   // Form validation
@@ -354,6 +355,7 @@ const AdminCreateOrder = () => {
         cash_collection_lbp: cashCollection ? Number(lbpAmount) || 0 : 0,
         delivery_fees_usd: deliveryFees.usd,
         delivery_fees_lbp: deliveryFees.lbp,
+        pricing_source: deliveryFees.rule_type,
         note: deliveryNotes || undefined,
         status: 'New' as import('@/services/orders').OrderStatus,
         ...(orderReference.trim() && {

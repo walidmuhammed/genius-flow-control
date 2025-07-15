@@ -301,6 +301,7 @@ export type Database = {
           order_id: number
           package_description: string | null
           package_type: string | null
+          pricing_source: string | null
           reason_unsuccessful: string | null
           reference_number: string | null
           status: string | null
@@ -330,6 +331,7 @@ export type Database = {
           order_id?: number
           package_description?: string | null
           package_type?: string | null
+          pricing_source?: string | null
           reason_unsuccessful?: string | null
           reference_number?: string | null
           status?: string | null
@@ -359,6 +361,7 @@ export type Database = {
           order_id?: number
           package_description?: string | null
           package_type?: string | null
+          pricing_source?: string | null
           reason_unsuccessful?: string | null
           reference_number?: string | null
           status?: string | null

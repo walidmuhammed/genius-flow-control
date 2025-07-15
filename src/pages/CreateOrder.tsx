@@ -93,7 +93,8 @@ const CreateOrder = () => {
   // Delivery fees (from pricing system or fallback)
   const deliveryFees = {
     usd: calculatedFees?.fee_usd || 5,
-    lbp: calculatedFees?.fee_lbp || 150000
+    lbp: calculatedFees?.fee_lbp || 150000,
+    rule_type: calculatedFees?.rule_type || 'global'
   };
 
   // Form validation
