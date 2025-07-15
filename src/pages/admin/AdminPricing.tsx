@@ -1,6 +1,10 @@
 
 import React from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
+import PricingKPICards from '@/components/admin/pricing/PricingKPICards';
+import GlobalPricingSection from '@/components/admin/pricing/GlobalPricingSection';
+import ClientPricingSection from '@/components/admin/pricing/ClientPricingSection';
+import ZonePricingSection from '@/components/admin/pricing/ZonePricingSection';
 
 const AdminPricing = () => {
   document.title = "Pricing Management - Admin Panel";
@@ -9,18 +13,20 @@ const AdminPricing = () => {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-2xl font-bold">
             Pricing Management
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Configure delivery fees and pricing rules
+          <p className="text-muted-foreground mt-1">
+            Master pricing system for TopSpeed - Configure global and client-specific delivery fees
           </p>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Pricing Configuration</h3>
-          <p className="text-gray-600 dark:text-gray-400">Coming soon...</p>
-        </div>
+        <PricingKPICards />
+        <GlobalPricingSection />
+        <ClientPricingSection />
+        <ZonePricingSection />
+        
+        {/* Package Type Pricing and Change Logs sections can be added here */}
       </div>
     </AdminLayout>
   );
