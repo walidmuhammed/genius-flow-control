@@ -5,6 +5,8 @@ import PricingKPICards from '@/components/admin/pricing/PricingKPICards';
 import GlobalPricingSection from '@/components/admin/pricing/GlobalPricingSection';
 import ClientPricingSection from '@/components/admin/pricing/ClientPricingSection';
 import ZonePricingSection from '@/components/admin/pricing/ZonePricingSection';
+import PackageTypePricingSection from '@/components/admin/pricing/PackageTypePricingSection';
+import PricingChangeLogsSection from '@/components/admin/pricing/PricingChangeLogsSection';
 
 const AdminPricing = () => {
   document.title = "Pricing Management - Admin Panel";
@@ -25,6 +27,8 @@ const AdminPricing = () => {
         <GlobalPricingSection />
         <ClientPricingSection />
         <ZonePricingSection />
+        <PackageTypePricingSection />
+        <PricingChangeLogsSection />
         
         {/* Package Type Pricing and Change Logs sections can be added here */}
       </div>

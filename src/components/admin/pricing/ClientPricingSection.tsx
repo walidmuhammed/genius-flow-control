@@ -6,11 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Users, Plus, Pencil, Trash2, DollarSign, Loader2 } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, DollarSign, Loader2, AlertTriangle } from 'lucide-react';
 import { useClientPricingOverrides, useCreateClientPricingOverride, useUpdateClientPricingOverride, useDeleteClientPricingOverride } from '@/hooks/use-pricing';
 import { useAdminClients } from '@/hooks/use-admin-clients';
 import { formatCurrency } from '@/utils/format';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 const ClientPricingSection = () => {
   const { data: overrides, isLoading } = useClientPricingOverrides();
@@ -24,6 +25,22 @@ const ClientPricingSection = () => {
   const [selectedClientId, setSelectedClientId] = useState('');
   const [feeUsd, setFeeUsd] = useState('');
   const [feeLbp, setFeeLbp] = useState('');
+
+  // Validation functions
+  const validateUsd = (value: string) => {
+    const num = parseFloat(value);
+    return !isNaN(num) && num >= 0 && (num * 2) % 1 === 0; // Check if it's a 0.5 increment
+  };
+
+  const validateLbp = (value: string) => {
+    const num = parseInt(value.replace(/,/g, ''));
+    return !isNaN(num) && num >= 0 && num % 1000 === 0; // Check if it's a thousand
+  };
+
+  const handleLbpChange = (value: string) => {
+    const cleanValue = value.replace(/[^\d,]/g, '');
+    setFeeLbp(cleanValue);
+  };
 
   const resetForm = () => {
     setSelectedClientId('');
@@ -42,10 +59,25 @@ const ClientPricingSection = () => {
   };
 
   const handleSubmit = () => {
+    if (!selectedClientId || !feeUsd || !feeLbp) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (!validateUsd(feeUsd)) {
+      toast.error("USD fee must be in 0.5 increments (e.g., 2.0, 2.5, 3.0, 4.5)");
+      return;
+    }
+
+    if (!validateLbp(feeLbp)) {
+      toast.error("LBP fee must be in thousands (e.g., 1,000, 150,000, 200,000)");
+      return;
+    }
+
     const data = {
       client_id: selectedClientId,
       fee_usd: parseFloat(feeUsd),
-      fee_lbp: parseFloat(feeLbp),
+      fee_lbp: parseInt(feeLbp.replace(/,/g, '')),
     };
 
     if (editingId) {
@@ -58,7 +90,7 @@ const ClientPricingSection = () => {
     }
   };
 
-  const isFormValid = selectedClientId && feeUsd && feeLbp && parseFloat(feeUsd) > 0 && parseFloat(feeLbp) > 0;
+  const isFormValid = selectedClientId && feeUsd && feeLbp && validateUsd(feeUsd) && validateLbp(feeLbp);
 
   // Get available clients (not already having overrides)
   const availableClients = clients?.filter(client => 
@@ -129,14 +161,20 @@ const ClientPricingSection = () => {
                     <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       type="number"
-                      step="0.01"
+                      step="0.5"
                       min="0"
                       placeholder="4.00"
                       value={feeUsd}
                       onChange={(e) => setFeeUsd(e.target.value)}
-                      className="pl-9"
+                      className={`pl-9 ${!validateUsd(feeUsd) && feeUsd ? 'border-destructive' : ''}`}
                     />
                   </div>
+                  {!validateUsd(feeUsd) && feeUsd && (
+                    <div className="flex items-center gap-1 text-xs text-destructive">
+                      <AlertTriangle className="h-3 w-3" />
+                      Must be in 0.5 increments (e.g., 2.0, 2.5, 3.0)
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -146,15 +184,19 @@ const ClientPricingSection = () => {
                       L.L.
                     </span>
                     <Input
-                      type="number"
-                      step="1000"
-                      min="0"
-                      placeholder="150000"
-                      value={feeLbp}
-                      onChange={(e) => setFeeLbp(e.target.value)}
-                      className="pl-12"
+                      type="text"
+                      placeholder="150,000"
+                      value={feeLbp ? parseInt(feeLbp.replace(/,/g, '')).toLocaleString() : ''}
+                      onChange={(e) => handleLbpChange(e.target.value)}
+                      className={`pl-12 ${!validateLbp(feeLbp) && feeLbp ? 'border-destructive' : ''}`}
                     />
                   </div>
+                  {!validateLbp(feeLbp) && feeLbp && (
+                    <div className="flex items-center gap-1 text-xs text-destructive">
+                      <AlertTriangle className="h-3 w-3" />
+                      Must be in thousands (e.g., 1,000, 150,000)
+                    </div>
+                  )}
                 </div>
               </div>
 

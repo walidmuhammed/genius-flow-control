@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { DollarSign, Save, Loader2 } from 'lucide-react';
+import { DollarSign, Save, Loader2, AlertTriangle } from 'lucide-react';
 import { useGlobalPricing, useUpdateGlobalPricing } from '@/hooks/use-pricing';
 import { formatCurrency } from '@/utils/format';
+import { toast } from 'sonner';
 
 const GlobalPricingSection = () => {
   const { data: globalPricing, isLoading } = useGlobalPricing();
@@ -22,17 +23,53 @@ const GlobalPricingSection = () => {
     }
   }, [globalPricing]);
 
+  // Validation functions
+  const validateUsd = (value: string) => {
+    const num = parseFloat(value);
+    return !isNaN(num) && num >= 0 && (num * 2) % 1 === 0; // Check if it's a 0.5 increment
+  };
+
+  const validateLbp = (value: string) => {
+    const num = parseInt(value.replace(/,/g, ''));
+    return !isNaN(num) && num >= 0 && num % 1000 === 0; // Check if it's a thousand
+  };
+
+  const handleUsdChange = (value: string) => {
+    setFeeUsd(value);
+  };
+
+  const handleLbpChange = (value: string) => {
+    // Allow only numbers and commas
+    const cleanValue = value.replace(/[^\d,]/g, '');
+    setFeeLbp(cleanValue);
+  };
+
   const handleSave = () => {
+    const usdValue = parseFloat(feeUsd);
+    const lbpValue = parseInt(feeLbp.replace(/,/g, ''));
+    
+    // Validate USD is 0.5 increment
+    if (!validateUsd(feeUsd)) {
+      toast.error("USD fee must be in 0.5 increments (e.g., 2.0, 2.5, 3.0, 4.5)");
+      return;
+    }
+    
+    // Validate LBP is thousands
+    if (!validateLbp(feeLbp)) {
+      toast.error("LBP fee must be in thousands (e.g., 1,000, 150,000, 200,000)");
+      return;
+    }
+
     updateGlobalPricing.mutate({
-      default_fee_usd: parseFloat(feeUsd),
-      default_fee_lbp: parseFloat(feeLbp),
+      default_fee_usd: usdValue,
+      default_fee_lbp: lbpValue,
     });
   };
 
-  const isFormValid = feeUsd && feeLbp && parseFloat(feeUsd) > 0 && parseFloat(feeLbp) > 0;
+  const isFormValid = feeUsd && feeLbp && validateUsd(feeUsd) && validateLbp(feeLbp);
   const hasChanges = globalPricing && (
     parseFloat(feeUsd) !== globalPricing.default_fee_usd ||
-    parseFloat(feeLbp) !== globalPricing.default_fee_lbp
+    parseInt(feeLbp.replace(/,/g, '')) !== globalPricing.default_fee_lbp
   );
 
   if (isLoading) {
@@ -69,13 +106,19 @@ const GlobalPricingSection = () => {
               <Input
                 id="fee-usd"
                 type="number"
-                step="0.01"
+                step="0.5"
                 min="0"
                 placeholder="4.00"
                 value={feeUsd}
-                onChange={(e) => setFeeUsd(e.target.value)}
-                className="pl-9"
+                onChange={(e) => handleUsdChange(e.target.value)}
+                className={`pl-9 ${!validateUsd(feeUsd) && feeUsd ? 'border-destructive' : ''}`}
               />
+              {!validateUsd(feeUsd) && feeUsd && (
+                <div className="flex items-center gap-1 text-xs text-destructive mt-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Must be in 0.5 increments (e.g., 2.0, 2.5, 3.0)
+                </div>
+              )}
             </div>
           </div>
 
@@ -87,14 +130,18 @@ const GlobalPricingSection = () => {
               </span>
               <Input
                 id="fee-lbp"
-                type="number"
-                step="1000"
-                min="0"
-                placeholder="150000"
-                value={feeLbp}
-                onChange={(e) => setFeeLbp(e.target.value)}
-                className="pl-12"
+                type="text"
+                placeholder="150,000"
+                value={feeLbp ? parseInt(feeLbp.replace(/,/g, '')).toLocaleString() : ''}
+                onChange={(e) => handleLbpChange(e.target.value)}
+                className={`pl-12 ${!validateLbp(feeLbp) && feeLbp ? 'border-destructive' : ''}`}
               />
+              {!validateLbp(feeLbp) && feeLbp && (
+                <div className="flex items-center gap-1 text-xs text-destructive mt-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Must be in thousands (e.g., 1,000, 150,000)
+                </div>
+              )}
             </div>
           </div>
         </div>
