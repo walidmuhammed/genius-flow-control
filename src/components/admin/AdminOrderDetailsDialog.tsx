@@ -509,16 +509,33 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
 
               {/* Delivery Fees */}
               <div>
-                <div className="text-sm text-gray-500 mb-3">Delivery Fees</div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-base text-gray-700">USD</span>
-                    <span className="text-base font-medium text-gray-900">${order.delivery_fees_usd}</span>
+                <div className="text-sm text-gray-500 mb-3">Delivery Fee</div>
+                <div className="space-y-3">
+                  {/* Display delivery fees */}
+                  <div className="space-y-2">
+                    {order.delivery_fees_usd > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-base text-gray-700">USD</span>
+                        <span className="text-lg font-semibold text-gray-900">${order.delivery_fees_usd}</span>
+                      </div>
+                    )}
+                    {order.delivery_fees_lbp > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-base text-gray-700">LBP</span>
+                        <span className="text-lg font-semibold text-gray-900">{order.delivery_fees_lbp.toLocaleString()}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-base text-gray-700">LBP</span>
-                    <span className="text-base font-medium text-gray-900">{order.delivery_fees_lbp.toLocaleString()}</span>
-                  </div>
+                  
+                  {/* Pricing source information */}
+                  {order.pricing_source && (
+                    <div className="pt-2 border-t border-gray-100">
+                      <div className="text-xs text-gray-500 mb-1">Pricing Source</div>
+                      <span className="text-sm text-gray-600 capitalize">
+                        {order.pricing_source.replace('_', ' ')} pricing
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>

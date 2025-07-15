@@ -374,6 +374,7 @@ const CreateOrder = () => {
         cash_collection_lbp: cashCollection ? Number(lbpAmount) || 0 : 0,
         delivery_fees_usd: deliveryFees.usd,
         delivery_fees_lbp: deliveryFees.lbp,
+        pricing_source: deliveryFees.rule_type,
         note: deliveryNotes || undefined,
         status: 'New' as import('@/services/orders').OrderStatus,
         ...(orderReference.trim() && {
