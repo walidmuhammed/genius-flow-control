@@ -39,7 +39,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
 
   const handleEditOrder = () => {
     if (order) {
-      navigate(`/create-order?edit=${order.id}`);
+      navigate(`/dashboard/client/create-order?edit=true&id=${order.id}`);
       onOpenChange(false);
     }
   };
