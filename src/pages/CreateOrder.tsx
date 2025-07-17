@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Info, Check, Plus, MapPin, Search, Phone, Package, FileText, ScrollText, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -90,12 +91,17 @@ const CreateOrder = () => {
     packageType === 'parcel' ? 'Parcel' : packageType === 'document' ? 'Document' : 'Bulky'
   );
 
-  // Delivery fees (from pricing system or fallback)
-  const deliveryFees = {
-    usd: calculatedFees?.fee_usd || 5,
-    lbp: calculatedFees?.fee_lbp || 150000,
-    rule_type: calculatedFees?.rule_type || 'global'
-  };
+  console.log('💰 Dynamic Pricing Data:', {
+    userId: user?.id,
+    governorateId: selectedGovernorateId,
+    cityId: selectedCityId,
+    packageType,
+    calculatedFees,
+    feesLoading
+  });
+
+  // Delivery fees (from pricing system)
+  const deliveryFees = calculatedFees || { fee_usd: 0, fee_lbp: 0, rule_type: 'loading' };
 
   // Form validation
   const [errors, setErrors] = useState<{
@@ -336,6 +342,18 @@ const CreateOrder = () => {
       return;
     }
     
+    // Make sure we have delivery fee data before proceeding
+    if (!calculatedFees && !feesLoading) {
+      toast.error("Unable to calculate delivery fees. Please try again.");
+      return;
+    }
+    
+    // If still loading fees, show a message and don't proceed
+    if (feesLoading) {
+      toast.info("Calculating delivery fees... Please wait.");
+      return;
+    }
+    
     try {
       let customerId = existingCustomer?.id;
       const fullAddressData = {
@@ -363,6 +381,7 @@ const CreateOrder = () => {
       else if (orderType === "exchange") typeForBackend = "Exchange";
       else typeForBackend = "Deliver"; // default/fallback
 
+      // Use the dynamically calculated delivery fees from the pricing system
       const orderPayload = {
         type: typeForBackend,
         customer_id: customerId,
@@ -373,9 +392,9 @@ const CreateOrder = () => {
         cash_collection_enabled: cashCollection,
         cash_collection_usd: cashCollection ? Number(usdAmount) || 0 : 0,
         cash_collection_lbp: cashCollection ? Number(lbpAmount) || 0 : 0,
-        delivery_fees_usd: deliveryFees.usd,
-        delivery_fees_lbp: deliveryFees.lbp,
-        pricing_source: deliveryFees.rule_type,
+        delivery_fees_usd: calculatedFees?.fee_usd || 0,
+        delivery_fees_lbp: calculatedFees?.fee_lbp || 0,
+        pricing_source: calculatedFees?.rule_type || 'global',
         note: deliveryNotes || undefined,
         status: 'New' as import('@/services/orders').OrderStatus,
         ...(orderReference.trim() && {
@@ -896,12 +915,25 @@ const CreateOrder = () => {
                     </div>
                     
                     {/* Delivery Fees */}
-                    <div className="flex items-center justify-between mt-4 p-3 rounded-md bg-gray-50 border border-gray-100">
-                      <span className="text-sm font-medium">Delivery Fee:</span>
-                      <div className="text-sm">
-                        <span className="font-medium">${deliveryFees.usd}</span> 
-                        <span className="mx-1 text-gray-500">|</span> 
-                        <span className="font-medium">{deliveryFees.lbp.toLocaleString()} LBP</span>
+                    <div className="flex flex-col p-3 rounded-md bg-gray-50 border border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Delivery Fee:</span>
+                        <div className="text-sm">
+                          {feesLoading ? (
+                            <span className="text-gray-500">Calculating...</span>
+                          ) : (
+                            <>
+                              <span className="font-medium">${deliveryFees.fee_usd}</span> 
+                              <span className="mx-1 text-gray-500">|</span> 
+                              <span className="font-medium">{deliveryFees.fee_lbp.toLocaleString()} LBP</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 flex items-center justify-end">
+                        <span className="capitalize">
+                          {feesLoading ? 'Loading pricing source...' : `Source: ${deliveryFees.rule_type}`}
+                        </span>
                       </div>
                     </div>
                   </CardContent>}
