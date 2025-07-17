@@ -109,14 +109,35 @@ export const getGlobalPricing = async (): Promise<GlobalPricing | null> => {
 export const updateGlobalPricing = async (
   pricing: Pick<GlobalPricing, 'default_fee_usd' | 'default_fee_lbp'>
 ): Promise<GlobalPricing> => {
+  // First, get the current user
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  // Get the existing global pricing record separately to avoid circular dependency
+  const { data: existingPricing, error: fetchError } = await supabase
+    .from('pricing_global')
+    .select('id')
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (fetchError) {
+    console.error('Error fetching existing global pricing ID:', fetchError);
+    throw fetchError;
+  }
+
+  if (!existingPricing?.id) {
+    throw new Error('No global pricing record found to update');
+  }
+
+  // Now update the record using the fetched ID
   const { data, error } = await supabase
     .from('pricing_global')
     .update({
       ...pricing,
       updated_at: new Date().toISOString(),
-      updated_by: (await supabase.auth.getUser()).data.user?.id,
+      updated_by: user?.id,
     })
-    .eq('id', (await getGlobalPricing())?.id)
+    .eq('id', existingPricing.id)
     .select()
     .single();
 

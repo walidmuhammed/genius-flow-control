@@ -17,6 +17,8 @@ import { useGovernorates } from '@/hooks/use-governorates';
 import { useCity, useCitiesByGovernorate } from '@/hooks/use-cities';
 import { useSearchCustomersByPhone, useCreateCustomer } from '@/hooks/use-customers';
 import { useCreateOrder, useUpdateOrder, useOrder } from '@/hooks/use-orders';
+import { useCalculateDeliveryFee } from '@/hooks/use-pricing';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CustomerWithLocation } from '@/services/customers';
@@ -33,6 +35,7 @@ const AdminCreateOrder = () => {
   const location = useLocation();
   const queryClient = useQueryClient();
   const { isMobile } = useScreenSize();
+  const { user } = useAuth();
   
   // Check if we're in edit mode
   const urlParams = new URLSearchParams(location.search);
@@ -71,11 +74,19 @@ const AdminCreateOrder = () => {
   const [existingCustomer, setExistingCustomer] = useState<CustomerWithLocation | null>(null);
   const [guidelinesModalOpen, setGuidelinesModalOpen] = useState<boolean>(false);
 
-  // Delivery fees (calculated or fixed)
+  // Calculate delivery fees using pricing system
+  const { data: calculatedFees, isLoading: feesLoading } = useCalculateDeliveryFee(
+    user?.id,
+    selectedGovernorateId || undefined,
+    selectedCityId || undefined,
+    packageType === 'parcel' ? 'Parcel' : packageType === 'document' ? 'Document' : 'Bulky'
+  );
+
+  // Delivery fees (from pricing system or fallback)
   const deliveryFees = {
-    usd: 5,
-    lbp: 150000,
-    rule_type: 'global'
+    usd: calculatedFees?.fee_usd || 5,
+    lbp: calculatedFees?.fee_lbp || 150000,
+    rule_type: calculatedFees?.rule_type || 'global'
   };
 
   // Form validation

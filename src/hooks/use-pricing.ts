@@ -39,7 +39,10 @@ export const useUpdateGlobalPricing = () => {
   return useMutation({
     mutationFn: updateGlobalPricing,
     onSuccess: () => {
+      // Invalidate all pricing-related queries to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      // Also invalidate specific delivery fee calculations to refresh them
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
       toast.success('Global pricing updated successfully');
     },
     onError: (error: any) => {
@@ -63,6 +66,7 @@ export const useCreateClientPricingOverride = () => {
     mutationFn: createClientPricingOverride,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
       toast.success('Client pricing override created successfully');
     },
     onError: (error: any) => {
@@ -79,6 +83,7 @@ export const useUpdateClientPricingOverride = () => {
       updateClientPricingOverride(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
       toast.success('Client pricing override updated successfully');
     },
     onError: (error: any) => {
@@ -94,6 +99,7 @@ export const useDeleteClientPricingOverride = () => {
     mutationFn: deleteClientPricingOverride,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
       toast.success('Client pricing override deleted successfully');
     },
     onError: (error: any) => {
@@ -117,6 +123,7 @@ export const useCreateZonePricingRule = () => {
     mutationFn: createZonePricingRule,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
       toast.success('Zone pricing rule created successfully');
     },
     onError: (error: any) => {
@@ -135,6 +142,7 @@ export const useUpdateZonePricingRule = () => {
     }) => updateZonePricingRule(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
       toast.success('Zone pricing rule updated successfully');
     },
     onError: (error: any) => {
@@ -150,6 +158,7 @@ export const useDeleteZonePricingRule = () => {
     mutationFn: deleteZonePricingRule,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
       toast.success('Zone pricing rule deleted successfully');
     },
     onError: (error: any) => {
@@ -173,6 +182,7 @@ export const useCreatePackageTypePricing = () => {
     mutationFn: createPackageTypePricing,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
       toast.success('Package type pricing created successfully');
     },
     onError: (error: any) => {
@@ -191,6 +201,7 @@ export const useUpdatePackageTypePricing = () => {
     }) => updatePackageTypePricing(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
       toast.success('Package type pricing updated successfully');
     },
     onError: (error: any) => {
@@ -206,6 +217,7 @@ export const useDeletePackageTypePricing = () => {
     mutationFn: deletePackageTypePricing,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
       toast.success('Package type pricing deleted successfully');
     },
     onError: (error: any) => {
@@ -242,5 +254,7 @@ export const useCalculateDeliveryFee = (
     queryKey: ['pricing', 'calculate', clientId, governorateId, cityId, packageType],
     queryFn: () => calculateDeliveryFee(clientId!, governorateId, cityId, packageType),
     enabled: !!clientId,
+    staleTime: 0, // Always fetch fresh data for accurate pricing
+    refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 };
