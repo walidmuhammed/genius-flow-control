@@ -457,8 +457,24 @@ export const calculateDeliveryFee = async (
 
   if (error) {
     console.error('Error calculating delivery fee:', error);
-    throw error;
+    // Fall back to global pricing from database
+    const globalPricing = await getGlobalPricing();
+    return { 
+      fee_usd: globalPricing?.default_fee_usd || 4, 
+      fee_lbp: globalPricing?.default_fee_lbp || 150000, 
+      rule_type: 'global' 
+    };
   }
 
-  return data[0] || { fee_usd: 4, fee_lbp: 150000, rule_type: 'global' };
+  if (!data || data.length === 0) {
+    // Fall back to global pricing from database
+    const globalPricing = await getGlobalPricing();
+    return { 
+      fee_usd: globalPricing?.default_fee_usd || 4, 
+      fee_lbp: globalPricing?.default_fee_lbp || 150000, 
+      rule_type: 'global' 
+    };
+  }
+
+  return data[0];
 };
