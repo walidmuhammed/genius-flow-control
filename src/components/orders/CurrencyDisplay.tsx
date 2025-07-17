@@ -2,19 +2,20 @@
 import React from 'react';
 
 interface CurrencyDisplayProps {
-  valueUSD: number;
-  valueLBP: number;
+  valueUSD: number | null;
+  valueLBP: number | null;
 }
 
 const CurrencyDisplay: React.FC<CurrencyDisplayProps> = ({ valueUSD, valueLBP }) => {
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null || amount === undefined) return '0';
     return amount.toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2
     });
   };
 
-  if (valueUSD <= 0 && valueLBP <= 0) {
+  if ((valueUSD === null || valueUSD <= 0) && (valueLBP === null || valueLBP <= 0)) {
     return (
       <div className="flex flex-col">
         <span className="text-gray-500">$0</span>

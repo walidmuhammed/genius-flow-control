@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Info, Check, Plus, MapPin, Search, Phone, Package, FileText, ScrollText, AlertTriangle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -923,16 +922,20 @@ const CreateOrder = () => {
                             <span className="text-gray-500">Calculating...</span>
                           ) : (
                             <>
-                              <span className="font-medium">${deliveryFees.fee_usd}</span> 
+                              <span className="font-medium">${deliveryFees.fee_usd || 0}</span> 
                               <span className="mx-1 text-gray-500">|</span> 
-                              <span className="font-medium">{deliveryFees.fee_lbp.toLocaleString()} LBP</span>
+                              <span className="font-medium">
+                                {(deliveryFees.fee_lbp !== null && deliveryFees.fee_lbp !== undefined) 
+                                  ? deliveryFees.fee_lbp.toLocaleString() 
+                                  : '0'} LBP
+                              </span>
                             </>
                           )}
                         </div>
                       </div>
                       <div className="text-xs text-gray-500 mt-1 flex items-center justify-end">
                         <span className="capitalize">
-                          {feesLoading ? 'Loading pricing source...' : `Source: ${deliveryFees.rule_type}`}
+                          {feesLoading ? 'Loading pricing source...' : `Source: ${deliveryFees.rule_type || 'global'}`}
                         </span>
                       </div>
                     </div>

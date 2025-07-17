@@ -3,13 +3,13 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface CurrencyDisplayProps {
-  usd: number;
-  lbp: number;
+  usd: number | null | undefined;
+  lbp: number | null | undefined;
   label?: string;
   className?: string;
   // For backward compatibility
-  usdValue?: number;
-  lbpValue?: string | number;
+  usdValue?: number | null;
+  lbpValue?: string | number | null;
 }
 
 const CurrencyDisplay: React.FC<CurrencyDisplayProps> = ({
@@ -30,11 +30,13 @@ const CurrencyDisplay: React.FC<CurrencyDisplayProps> = ({
       <div className="flex flex-wrap gap-2">
         <div className="currency-badge currency-badge-usd">
           <span className="mr-1">$</span>
-          {displayUsd}
+          {displayUsd ?? 0}
         </div>
         <div className="currency-badge currency-badge-lbp">
           <span className="mr-1">LBP</span>
-          {typeof displayLbp === 'number' ? displayLbp.toLocaleString() : displayLbp}
+          {typeof displayLbp === 'number' 
+            ? (displayLbp ?? 0).toLocaleString() 
+            : displayLbp ?? '0'}
         </div>
       </div>
     </div>
