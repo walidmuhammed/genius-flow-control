@@ -72,10 +72,7 @@ export const TicketListPanel: React.FC<TicketListPanelProps> = ({
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Support Tickets</h2>
-          <Button size="sm" className="bg-[#DC291E] hover:bg-[#c0211a] text-white" onClick={onCreateTicket}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create
-          </Button>
+          
         </div>
         
         {/* Search Bar */}
