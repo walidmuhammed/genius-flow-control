@@ -1,139 +1,89 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Package, Users, Home, Activity, Navigation, DollarSign, Settings, Ticket, Truck } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  Package, 
+  Truck, 
+  Users, 
+  UserPlus, 
+  Headphones, 
+  CreditCard, 
+  DollarSign, 
+  Settings, 
+  Activity,
+  MessageCircle
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-
-interface AdminSidebarMenuProps {
-  collapsed: boolean;
-}
 
 interface MenuItem {
-  label: string;
-  icon: React.ReactNode;
-  path: string;
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
 }
 
-const AdminSidebarMenu: React.FC<AdminSidebarMenuProps> = ({ collapsed }) => {
+const menuItems: MenuItem[] = [
+  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { name: 'Orders', href: '/admin/orders', icon: Package },
+  { name: 'Pickups', href: '/admin/pickups', icon: Truck },
+  { name: 'Customers', href: '/admin/customers', icon: Users },
+  { name: 'Clients', href: '/admin/clients', icon: UserPlus },
+  { name: 'Couriers', href: '/admin/couriers', icon: Headphones },
+  { name: 'Support', href: '/admin/support', icon: MessageCircle },
+  { name: 'Pricing', href: '/admin/pricing', icon: DollarSign },
+  { name: 'Wallet', href: '/admin/wallet', icon: CreditCard },
+  { name: 'Activity', href: '/admin/activity', icon: Activity },
+  { name: 'Settings', href: '/admin/settings', icon: Settings },
+];
+
+const AdminSidebarMenu: React.FC = () => {
   const location = useLocation();
-  
-  const mainMenuItems: MenuItem[] = [
-    {
-      label: 'Dashboard',
-      icon: <Home className="h-4 w-4" />,
-      path: '/dashboard/admin'
-    }, 
-    {
-      label: 'Orders',
-      icon: <Package className="h-4 w-4" />,
-      path: '/dashboard/admin/orders'
-    }, 
-    {
-      label: 'Pickups',
-      icon: <Navigation className="h-4 w-4" />,
-      path: '/dashboard/admin/pickups'
-    }, 
-    {
-      label: 'Clients',
-      icon: <Users className="h-4 w-4" />,
-      path: '/dashboard/admin/clients'
-    }, 
-    {
-      label: 'Couriers',
-      icon: <Truck className="h-4 w-4" />,
-      path: '/dashboard/admin/couriers'
-    }, 
-    {
-      label: 'Customers',
-      icon: <Users className="h-4 w-4" />,
-      path: '/dashboard/admin/customers'
-    }, 
-    {
-      label: 'Wallet',
-      icon: <DollarSign className="h-4 w-4" />,
-      path: '/dashboard/admin/wallet'
-    },
-    {
-      label: 'Pricing',
-      icon: <DollarSign className="h-4 w-4" />,
-      path: '/dashboard/admin/pricing'
-    },
-    {
-      label: 'Analytics',
-      icon: <Activity className="h-4 w-4" />,
-      path: '/dashboard/admin/analytics'
-    },
-    {
-      label: 'Support',
-      icon: <Ticket className="h-4 w-4" />,
-      path: '/dashboard/admin/support'
+
+  const isActiveRoute = (href: string) => {
+    if (href === '/admin') {
+      return location.pathname === '/admin';
     }
-  ];
+    return location.pathname.startsWith(href);
+  };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="space-y-1">
-        <div className="mb-2">
-          <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 px-4">
-            Main
-          </h3>
-        </div>
+    <nav className="space-y-1">
+      {menuItems.map((item) => {
+        const isActive = isActiveRoute(item.href);
         
-        {mainMenuItems.map(item => (
-          <AdminMenuItem 
-            key={item.path} 
-            collapsed={collapsed} 
-            item={item} 
-            isActive={location.pathname === item.path} 
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-interface AdminMenuItemProps {
-  item: MenuItem;
-  isActive: boolean;
-  collapsed: boolean;
-}
-
-const AdminMenuItem: React.FC<AdminMenuItemProps> = ({ item, isActive, collapsed }) => {
-  return (
-    <Link to={item.path}>
-      <motion.div 
-        className={cn(
-          "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium mb-1 transition-all duration-200", 
-          isActive 
-            ? "bg-gray-200 dark:bg-gray-800 text-[#DC291E] dark:text-[#DC291E]" 
-            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
-        )} 
-        whileHover={{ 
-          x: 4,
-          transition: { duration: 0.2 }
-        }}
-        whileTap={{ scale: 0.98 }}
-      >
-        <span className={cn(
-          "flex items-center justify-center transition-all duration-200", 
-          isActive 
-            ? "text-[#DC291E]" 
-            : "text-gray-600 dark:text-gray-400"
-        )}>
-          {item.icon}
-        </span>
-        
-        <span className={cn(
-          "transition-all duration-200",
-          isActive 
-            ? "font-medium" 
-            : ""
-        )}>
-          {item.label}
-        </span>
-      </motion.div>
-    </Link>
+        return (
+          <NavLink
+            key={item.name}
+            to={item.href}
+            className={cn(
+              'group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200',
+              isActive
+                ? 'bg-[#DC291E] text-white shadow-sm'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+            )}
+          >
+            <item.icon 
+              className={cn(
+                'mr-3 h-5 w-5 transition-colors',
+                isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-700'
+              )} 
+            />
+            <span>{item.name}</span>
+            {item.badge && (
+              <span className={cn(
+                'ml-auto inline-block py-0.5 px-2 text-xs rounded-full',
+                isActive 
+                  ? 'bg-white/20 text-white' 
+                  : 'bg-gray-200 text-gray-600'
+              )}>
+                {item.badge}
+              </span>
+            )}
+          </NavLink>
+        );
+      })}
+    </nav>
   );
 };
 

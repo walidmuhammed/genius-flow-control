@@ -13,10 +13,31 @@ export type LinkedEntityType = 'order' | 'pickup' | 'invoice' | null;
 export async function getTickets() {
   try {
     console.log('Fetching tickets...');
-    const { data, error } = await supabase
+    
+    // Check if user is admin
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('id', (await supabase.auth.getUser()).data.user?.id)
+      .single();
+
+    let query = supabase
       .from('tickets')
-      .select('*')
+      .select(`
+        *,
+        profiles!tickets_created_by_fkey(full_name, business_name)
+      `)
       .order('created_at', { ascending: false });
+
+    // If not admin, filter to user's own tickets
+    if (userProfile?.user_type !== 'admin') {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        query = query.eq('created_by', user.id);
+      }
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching tickets:', error);
@@ -179,7 +200,10 @@ export async function updateTicketStatus(ticketId: string, status: TicketStatus)
   try {
     const { error } = await supabase
       .from('tickets')
-      .update({ status })
+      .update({ 
+        status,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', ticketId);
 
     if (error) {
@@ -188,7 +212,6 @@ export async function updateTicketStatus(ticketId: string, status: TicketStatus)
       return false;
     }
 
-    toast.success(`Ticket marked as ${status}`);
     return true;
   } catch (error) {
     console.error('Unexpected error updating ticket status:', error);
