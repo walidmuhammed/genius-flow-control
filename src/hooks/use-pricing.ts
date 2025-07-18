@@ -243,7 +243,7 @@ export const usePricingKPIs = () => {
   });
 };
 
-// Calculate Delivery Fee Hook
+// Calculate Delivery Fee Hook with enhanced debugging
 export const useCalculateDeliveryFee = (
   clientId: string | undefined,
   governorateId?: string,
@@ -252,7 +252,23 @@ export const useCalculateDeliveryFee = (
 ) => {
   return useQuery({
     queryKey: ['pricing', 'calculate', clientId, governorateId, cityId, packageType],
-    queryFn: () => calculateDeliveryFee(clientId!, governorateId, cityId, packageType),
+    queryFn: async () => {
+      console.log('🎯 useCalculateDeliveryFee query function called with:', {
+        clientId,
+        governorateId,
+        cityId,
+        packageType
+      });
+      
+      if (!clientId) {
+        console.log('❌ No clientId provided, cannot calculate delivery fee');
+        return null;
+      }
+      
+      const result = await calculateDeliveryFee(clientId, governorateId, cityId, packageType);
+      console.log('📊 useCalculateDeliveryFee result:', result);
+      return result;
+    },
     enabled: !!clientId,
     staleTime: 0, // Always fetch fresh data for accurate pricing
     refetchOnWindowFocus: true, // Refetch when window regains focus

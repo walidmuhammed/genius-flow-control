@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 // Types for pricing system
@@ -441,13 +442,25 @@ export const getPricingKPIs = async (): Promise<PricingKPIs> => {
   };
 };
 
-// Calculate delivery fee function
+// Calculate delivery fee function with enhanced debugging
 export const calculateDeliveryFee = async (
   clientId: string,
   governorateId?: string,
   cityId?: string,
   packageType?: 'Parcel' | 'Document' | 'Bulky'
 ): Promise<DeliveryFeeResult> => {
+  console.log('🚀 calculateDeliveryFee called with:', {
+    clientId,
+    governorateId,
+    cityId,
+    packageType
+  });
+
+  // First, let's get the global pricing to see what we should expect
+  const globalPricing = await getGlobalPricing();
+  console.log('🌍 Global pricing from DB:', globalPricing);
+
+  // Try the RPC call
   const { data, error } = await supabase.rpc('calculate_delivery_fee', {
     p_client_id: clientId,
     p_governorate_id: governorateId || null,
@@ -455,26 +468,39 @@ export const calculateDeliveryFee = async (
     p_package_type: packageType || null,
   });
 
+  console.log('📞 RPC call result:', { data, error });
+
   if (error) {
-    console.error('Error calculating delivery fee:', error);
-    // Fall back to global pricing from database
-    const globalPricing = await getGlobalPricing();
+    console.error('❌ Error calculating delivery fee with RPC:', error);
+    console.log('🔄 Falling back to global pricing:', globalPricing);
     return { 
-      fee_usd: globalPricing?.default_fee_usd || 4, 
-      fee_lbp: globalPricing?.default_fee_lbp || 150000, 
-      rule_type: 'global' 
+      fee_usd: globalPricing?.default_fee_usd || 56, 
+      fee_lbp: globalPricing?.default_fee_lbp || 500000, 
+      rule_type: 'global_fallback' 
     };
   }
 
   if (!data || data.length === 0) {
-    // Fall back to global pricing from database
-    const globalPricing = await getGlobalPricing();
+    console.log('⚠️ RPC returned no data, falling back to global pricing:', globalPricing);
     return { 
-      fee_usd: globalPricing?.default_fee_usd || 4, 
-      fee_lbp: globalPricing?.default_fee_lbp || 150000, 
-      rule_type: 'global' 
+      fee_usd: globalPricing?.default_fee_usd || 56, 
+      fee_lbp: globalPricing?.default_fee_lbp || 500000, 
+      rule_type: 'global_fallback' 
     };
   }
 
-  return data[0];
+  const result = data[0];
+  console.log('✅ RPC returned result:', result);
+
+  // If RPC returns zero values but says it's global, that's wrong - use actual global pricing
+  if (result.rule_type === 'global' && (result.fee_usd === 0 || result.fee_lbp === 0)) {
+    console.log('🔧 RPC returned zero for global rule, using actual global pricing:', globalPricing);
+    return {
+      fee_usd: globalPricing?.default_fee_usd || 56,
+      fee_lbp: globalPricing?.default_fee_lbp || 500000,
+      rule_type: 'global_corrected'
+    };
+  }
+
+  return result;
 };
