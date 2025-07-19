@@ -10,7 +10,7 @@ import { Ticket } from '@/services/tickets';
 
 const AdminTickets = () => {
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'New' | 'Processing' | 'Resolved'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'Open' | 'Processing' | 'Resolved'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: tickets = [], isLoading, error } = useTickets();
