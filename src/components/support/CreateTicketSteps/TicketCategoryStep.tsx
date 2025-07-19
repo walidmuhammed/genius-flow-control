@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Package, Truck, CreditCard, HelpCircle } from 'lucide-react';
+import { Package, Truck, CreditCard, HelpCircle, Settings, DollarSign } from 'lucide-react';
 
 interface TicketCategoryStepProps {
   onSelect: (category: string) => void;
@@ -10,29 +10,43 @@ interface TicketCategoryStepProps {
 export const TicketCategoryStep: React.FC<TicketCategoryStepProps> = ({ onSelect }) => {
   const categories = [
     {
-      id: 'Orders Issue',
-      title: 'Orders Issue',
+      id: 'Order Related',
+      title: '📦 Order Related',
       description: 'Problems with delivery, packages, or order status',
       icon: Package,
       color: 'border-blue-200 hover:border-blue-300 hover:bg-blue-50'
     },
     {
-      id: 'Pickup Issue',
-      title: 'Pickup Issue',
-      description: 'Issues with scheduled pickups or collection',
-      icon: Truck,
+      id: 'Invoice / Payment',
+      title: '💰 Invoice / Payment',
+      description: 'Billing, invoices, or payment-related questions',
+      icon: CreditCard,
       color: 'border-green-200 hover:border-green-300 hover:bg-green-50'
     },
     {
-      id: 'Payments and Wallet',
-      title: 'Payments and Wallet',
-      description: 'Billing, invoices, or payment-related questions',
-      icon: CreditCard,
+      id: 'Technical / Platform Issue',
+      title: '⚙️ Technical / Platform Issue',
+      description: 'Technical problems with the platform or app',
+      icon: Settings,
+      color: 'border-orange-200 hover:border-orange-300 hover:bg-orange-50'
+    },
+    {
+      id: 'Pricing / Delivery Fees',
+      title: '🧾 Pricing / Delivery Fees',
+      description: 'Questions about pricing or delivery costs',
+      icon: DollarSign,
       color: 'border-purple-200 hover:border-purple-300 hover:bg-purple-50'
     },
     {
-      id: 'Other',
-      title: 'Other',
+      id: 'Pickup Problem',
+      title: '📦 Pickup Problem',
+      description: 'Issues with scheduled pickups or collection',
+      icon: Truck,
+      color: 'border-indigo-200 hover:border-indigo-300 hover:bg-indigo-50'
+    },
+    {
+      id: 'Something Else',
+      title: '📁 Something Else',
       description: 'General questions or other concerns',
       icon: HelpCircle,
       color: 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'

@@ -64,8 +64,8 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
   const handleCategorySelect = (category: string) => {
     setFlowData(prev => ({ ...prev, category }));
     
-    // Skip entity selection for "Other" category
-    if (category === 'Other') {
+    // Skip entity selection for "Something Else" category
+    if (category === 'Something Else') {
       setCurrentStep(4); // Go directly to final message step
     } else {
       setCurrentStep(2); // Go to entity selection
@@ -82,7 +82,7 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
     setCurrentStep(4); // Go to final message step
   };
 
-  const handleSubmit = async (title: string, message: string) =>  {
+  const handleSubmit = async (title: string, message: string, attachments?: File[]) =>  {
     try {
       const ticketData = {
         category: flowData.category,
