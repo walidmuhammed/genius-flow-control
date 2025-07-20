@@ -1,68 +1,120 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Toaster } from '@/components/ui/sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AuthProvider } from '@/hooks/useAuth';
+
+// Import public pages
+import Index from '@/pages/Index';
+import SignIn from '@/pages/SignIn';
+import ClientSignIn from '@/pages/auth/ClientSignIn';
+import ClientSignUp from '@/pages/auth/ClientSignUp';
+import AdminSignIn from '@/pages/auth/AdminSignIn';
+import NotFound from '@/pages/NotFound';
+
+// Import client pages
 import Dashboard from '@/pages/Dashboard';
-import Orders from '@/pages/Orders';
+import OrdersList from '@/pages/OrdersList';
+import CreateOrder from '@/pages/CreateOrder';
 import Pickups from '@/pages/Pickups';
+import SchedulePickup from '@/pages/SchedulePickup';
 import Customers from '@/pages/Customers';
-import Support from '@/pages/Support';
-import Pricing from '@/pages/Pricing';
 import Wallet from '@/pages/Wallet';
-import Activity from '@/pages/Activity';
+import Support from '@/pages/Support';
+import Analytics from '@/pages/Analytics';
 import Settings from '@/pages/Settings';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
+
+// Import admin pages
 import AdminDashboard from '@/pages/admin/AdminDashboard';
 import AdminOrders from '@/pages/admin/AdminOrders';
 import AdminPickups from '@/pages/admin/AdminPickups';
-import AdminCustomers from '@/pages/admin/AdminCustomers';
-import AdminClients from '@/pages/admin/AdminClients';
 import AdminCouriers from '@/pages/admin/AdminCouriers';
+import AdminCustomers from '@/pages/admin/AdminCustomers';
 import AdminPricing from '@/pages/admin/AdminPricing';
-import AdminWallet from '@/pages/admin/AdminWallet';
 import AdminActivity from '@/pages/admin/AdminActivity';
-import AdminSettings from '@/pages/admin/AdminSettings';
 import AdminTickets from '@/pages/admin/AdminTickets';
+import AdminSettings from '@/pages/admin/AdminSettings';
+import AdminDispatch from '@/pages/admin/AdminDispatch';
+import AdminClients from '@/pages/admin/AdminClients';
+import AdminWallet from '@/pages/admin/AdminWallet';
+import AdminCreateOrder from '@/pages/admin/AdminCreateOrder';
+
+// Import protected route component
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+
+const queryClient = new QueryClient();
+
+// Component to preserve search parameters during redirect
+const RedirectWithParams = ({ to }: { to: string }) => {
+  const location = useLocation();
+  return <Navigate to={`${to}${location.search}`} replace />;
+};
 
 function App() {
   return (
-    <QueryClientProvider client={new QueryClient()}>
-      <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <Toaster position="top-right" />
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Navigate to="/auth/client-signup" replace />} />
+            <Route path="/auth/signin" element={<ClientSignIn />} />
+            <Route path="/auth/client-signin" element={<ClientSignIn />} />
+            <Route path="/auth/client-signup" element={<ClientSignUp />} />
+            <Route path="/auth/admin-signin" element={<AdminSignIn />} />
 
-          {/* Client Routes */}
-          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
-          <Route path="/pickups" element={<ProtectedRoute><Pickups /></ProtectedRoute>} />
-          <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
-          <Route path="/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
-          <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
-          <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
-          <Route path="/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          
-          {/* Admin Routes */}
-          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/orders" element={<ProtectedRoute><AdminOrders /></ProtectedRoute>} />
-          <Route path="/admin/pickups" element={<ProtectedRoute><AdminPickups /></ProtectedRoute>} />
-          <Route path="/admin/customers" element={<ProtectedRoute><AdminCustomers /></ProtectedRoute>} />
-          <Route path="/admin/clients" element={<ProtectedRoute><AdminClients /></ProtectedRoute>} />
-          <Route path="/admin/couriers" element={<ProtectedRoute><AdminCouriers /></ProtectedRoute>} />
-          <Route path="/admin/support" element={<ProtectedRoute><AdminTickets /></ProtectedRoute>} />
-          <Route path="/admin/pricing" element={<ProtectedRoute><AdminPricing /></ProtectedRoute>} />
-          <Route path="/admin/wallet" element={<ProtectedRoute><AdminWallet /></ProtectedRoute>} />
-          <Route path="/admin/activity" element={<ProtectedRoute><AdminActivity /></ProtectedRoute>} />
-          <Route path="/admin/settings" element={<ProtectedRoute><AdminSettings /></ProtectedRoute>} />
-        </Routes>
-      </Router>
+            {/* Protected client routes */}
+            <Route element={<ProtectedRoute requiredRole="client" />}>
+              <Route path="/dashboard/client" element={<Dashboard />} />
+              <Route path="/dashboard/client/orders" element={<OrdersList />} />
+              <Route path="/dashboard/client/create-order" element={<CreateOrder />} />
+              <Route path="/dashboard/client/pickups" element={<Pickups />} />
+              <Route path="/dashboard/client/schedule-pickup" element={<SchedulePickup />} />
+              <Route path="/dashboard/client/customers" element={<Customers />} />
+              <Route path="/dashboard/client/wallet" element={<Wallet />} />
+              <Route path="/dashboard/client/support" element={<Support />} />
+              <Route path="/dashboard/client/analytics" element={<Analytics />} />
+              <Route path="/dashboard/client/settings" element={<Settings />} />
+            </Route>
+
+            {/* Backward compatibility redirects with search params preserved */}
+            <Route element={<ProtectedRoute requiredRole="client" />}>
+              <Route path="/dashboard" element={<Navigate to="/dashboard/client" replace />} />
+              <Route path="/orders" element={<Navigate to="/dashboard/client/orders" replace />} />
+              <Route path="/create-order" element={<RedirectWithParams to="/dashboard/client/create-order" />} />
+              <Route path="/pickups" element={<Navigate to="/dashboard/client/pickups" replace />} />
+              <Route path="/schedule-pickup" element={<Navigate to="/dashboard/client/schedule-pickup" replace />} />
+              <Route path="/customers" element={<Navigate to="/dashboard/client/customers" replace />} />
+              <Route path="/wallet" element={<Navigate to="/dashboard/client/wallet" replace />} />
+              <Route path="/support" element={<Navigate to="/dashboard/client/support" replace />} />
+              <Route path="/analytics" element={<Navigate to="/dashboard/client/analytics" replace />} />
+              <Route path="/settings" element={<Navigate to="/dashboard/client/settings" replace />} />
+            </Route>
+
+            {/* Protected admin routes */}
+            <Route element={<ProtectedRoute requiredRole="admin" />}>
+              <Route path="/dashboard/admin" element={<AdminDashboard />} />
+              <Route path="/dashboard/admin/orders" element={<AdminOrders />} />
+              <Route path="/dashboard/admin/create-order" element={<AdminCreateOrder />} />
+              <Route path="/dashboard/admin/pickups" element={<AdminPickups />} />
+              <Route path="/dashboard/admin/couriers" element={<AdminCouriers />} />
+              <Route path="/dashboard/admin/customers" element={<AdminCustomers />} />
+              <Route path="/dashboard/admin/wallet" element={<AdminWallet />} />
+              <Route path="/dashboard/admin/pricing" element={<AdminPricing />} />
+              <Route path="/dashboard/admin/analytics" element={<AdminActivity />} />
+              <Route path="/dashboard/admin/support" element={<AdminTickets />} />
+              <Route path="/dashboard/admin/settings" element={<AdminSettings />} />
+              <Route path="/dashboard/admin/dispatch" element={<AdminDispatch />} />
+              <Route path="/dashboard/admin/clients" element={<AdminClients />} />
+            </Route>
+
+            {/* 404 route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
