@@ -474,8 +474,8 @@ export const calculateDeliveryFee = async (
     console.error('❌ Error calculating delivery fee with RPC:', error);
     console.log('🔄 Falling back to global pricing:', globalPricing);
     return { 
-      fee_usd: globalPricing?.default_fee_usd || 56, 
-      fee_lbp: globalPricing?.default_fee_lbp || 500000, 
+      fee_usd: globalPricing?.default_fee_usd || 0, 
+      fee_lbp: globalPricing?.default_fee_lbp || 0, 
       rule_type: 'global_fallback' 
     };
   }
@@ -483,8 +483,8 @@ export const calculateDeliveryFee = async (
   if (!data || data.length === 0) {
     console.log('⚠️ RPC returned no data, falling back to global pricing:', globalPricing);
     return { 
-      fee_usd: globalPricing?.default_fee_usd || 56, 
-      fee_lbp: globalPricing?.default_fee_lbp || 500000, 
+      fee_usd: globalPricing?.default_fee_usd || 0, 
+      fee_lbp: globalPricing?.default_fee_lbp || 0, 
       rule_type: 'global_fallback' 
     };
   }
@@ -496,8 +496,8 @@ export const calculateDeliveryFee = async (
   if (result.rule_type === 'global' && (result.fee_usd === 0 || result.fee_lbp === 0)) {
     console.log('🔧 RPC returned zero for global rule, using actual global pricing:', globalPricing);
     return {
-      fee_usd: globalPricing?.default_fee_usd || 56,
-      fee_lbp: globalPricing?.default_fee_lbp || 500000,
+      fee_usd: globalPricing?.default_fee_usd || 0,
+      fee_lbp: globalPricing?.default_fee_lbp || 0,
       rule_type: 'global_corrected'
     };
   }
