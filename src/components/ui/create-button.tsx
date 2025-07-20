@@ -12,13 +12,11 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import { cn } from '@/lib/utils';
-import { CreateTicketModal } from '@/components/support/CreateTicketModal';
 
 const CreateButton: React.FC = () => {
   const navigate = useNavigate();
   const { isMobile } = useScreenSize();
   const [isOpen, setIsOpen] = useState(false);
-  const [createTicketOpen, setCreateTicketOpen] = useState(false);
 
   const createActions = [
     {
@@ -34,7 +32,7 @@ const CreateButton: React.FC = () => {
     {
       icon: MessageSquare,
       label: 'Create Ticket',
-      action: () => setCreateTicketOpen(true),
+      action: () => navigate('/support'),
     },
   ];
 
@@ -80,48 +78,34 @@ const CreateButton: React.FC = () => {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        
-        {/* Create Ticket Modal */}
-        <CreateTicketModal
-          open={createTicketOpen}
-          onOpenChange={setCreateTicketOpen}
-        />
       </motion.div>
     );
   }
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            className="bg-[#DC291E] hover:bg-[#DC291E]/90 shadow-sm rounded-xl"
-            size="default"
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          className="bg-[#DC291E] hover:bg-[#DC291E]/90 shadow-sm rounded-xl"
+          size="default"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Create
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48 rounded-xl border-gray-200 dark:border-gray-700 shadow-xl">
+        {createActions.map((action) => (
+          <DropdownMenuItem
+            key={action.label}
+            onClick={action.action}
+            className="rounded-lg p-3 font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Create
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48 rounded-xl border-gray-200 dark:border-gray-700 shadow-xl">
-          {createActions.map((action) => (
-            <DropdownMenuItem
-              key={action.label}
-              onClick={action.action}
-              className="rounded-lg p-3 font-medium hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              <action.icon className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-300" />
-              {action.label}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-      
-      {/* Create Ticket Modal */}
-      <CreateTicketModal
-        open={createTicketOpen}
-        onOpenChange={setCreateTicketOpen}
-      />
-    </>
+            <action.icon className="h-4 w-4 mr-3 text-gray-600 dark:text-gray-300" />
+            {action.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

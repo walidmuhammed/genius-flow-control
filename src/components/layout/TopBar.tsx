@@ -9,7 +9,6 @@ import useLayoutStore from '@/stores/layoutStore';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import GlobalSearch from '@/components/ui/global-search';
-import { CreateTicketModal } from '@/components/support/CreateTicketModal';
 
 const TopBar: React.FC = () => {
   const { isMobile, isTablet } = useScreenSize();
@@ -18,7 +17,6 @@ const TopBar: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const [mobileCreateOpen, setMobileCreateOpen] = useState(false);
-  const [createTicketOpen, setCreateTicketOpen] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
   const createRef = useRef<HTMLDivElement>(null);
 
@@ -39,7 +37,7 @@ const TopBar: React.FC = () => {
       icon: <Ticket className="w-5 h-5 text-purple-600" />,
       label: 'Create Ticket',
       description: 'Submit a support request',
-      action: () => setCreateTicketOpen(true),
+      action: () => navigate('/support'),
     },
   ];
 
@@ -178,12 +176,6 @@ const TopBar: React.FC = () => {
             </>
           )}
         </AnimatePresence>
-
-        {/* Create Ticket Modal */}
-        <CreateTicketModal
-          open={createTicketOpen}
-          onOpenChange={setCreateTicketOpen}
-        />
       </>
     );
   }
@@ -293,12 +285,6 @@ const TopBar: React.FC = () => {
           </AnimatePresence>
         </div>
       </div>
-
-      {/* Create Ticket Modal */}
-      <CreateTicketModal
-        open={createTicketOpen}
-        onOpenChange={setCreateTicketOpen}
-      />
     </motion.header>
   );
 };

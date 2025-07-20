@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Moon, Sun, Truck, Settings, LogOut } from 'lucide-react';
@@ -66,7 +65,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ className }) => {
 
         {/* Scrollable Menu */}
         <div className="flex-1 min-h-0 overflow-y-auto py-6 px-3 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
-          <AdminSidebarMenu />
+          <AdminSidebarMenu collapsed={false} />
         </div>
         
         {/* Footer: Settings, Dark Mode, Sign Out - always at bottom */}
