@@ -100,7 +100,7 @@ const ClientPricingSection = () => {
       client_id: selectedClientId,
       governorate_id: selectedLocation.governorateId || undefined,
       city_id: selectedLocation.cityId || undefined,
-      package_type: selectedPackageType || undefined,
+      package_type: selectedPackageType && selectedPackageType !== 'none' ? selectedPackageType : undefined,
       fee_usd: feeUsd ? parseFloat(feeUsd) : 0,
       fee_lbp: feeLbp ? parseInt(feeLbp.replace(/,/g, '')) : 0,
     };
@@ -203,7 +203,7 @@ const ClientPricingSection = () => {
                       <SelectValue placeholder="Any package type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Any Package Type</SelectItem>
+                      <SelectItem value="none">Any Package Type</SelectItem>
                       <SelectItem value="Parcel">Parcel</SelectItem>
                       <SelectItem value="Document">Document</SelectItem>
                       <SelectItem value="Bulky">Bulky</SelectItem>
