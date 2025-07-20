@@ -23,14 +23,17 @@ const GlobalPricingSection = () => {
     }
   }, [globalPricing]);
 
-  // Validation functions
+  // Validation functions - allow 0 values and empty strings
   const validateUsd = (value: string) => {
+    if (!value || value === '') return true; // Allow empty - will default to 0
     const num = parseFloat(value);
     return !isNaN(num) && num >= 0 && (num * 2) % 1 === 0; // Check if it's a 0.5 increment
   };
 
   const validateLbp = (value: string) => {
-    const num = parseInt(value.replace(/,/g, ''));
+    if (!value || value === '') return true; // Allow empty - will default to 0
+    const cleanValue = value.replace(/,/g, '');
+    const num = parseInt(cleanValue);
     return !isNaN(num) && num >= 0 && num % 1000 === 0; // Check if it's a thousand
   };
 
@@ -45,31 +48,23 @@ const GlobalPricingSection = () => {
   };
 
   const handleSave = () => {
-    const usdValue = parseFloat(feeUsd);
-    const lbpValue = parseInt(feeLbp.replace(/,/g, ''));
-    
-    // Validate USD is 0.5 increment
-    if (!validateUsd(feeUsd)) {
-      toast.error("USD fee must be in 0.5 increments (e.g., 2.0, 2.5, 3.0, 4.5)");
-      return;
-    }
-    
-    // Validate LBP is thousands
-    if (!validateLbp(feeLbp)) {
-      toast.error("LBP fee must be in thousands (e.g., 1,000, 150,000, 200,000)");
+    if (!validateUsd(feeUsd) || !validateLbp(feeLbp)) {
+      toast.error("Please enter valid values");
       return;
     }
 
-    updateGlobalPricing.mutate({
-      default_fee_usd: usdValue,
-      default_fee_lbp: lbpValue,
-    });
+    const data = {
+      default_fee_usd: feeUsd ? parseFloat(feeUsd) : 0, // Default to 0 if empty
+      default_fee_lbp: feeLbp ? parseInt(feeLbp.replace(/,/g, '')) : 0, // Default to 0 if empty
+    };
+
+    updateGlobalPricing.mutate(data);
   };
 
-  const isFormValid = feeUsd && feeLbp && validateUsd(feeUsd) && validateLbp(feeLbp);
+  const isFormValid = validateUsd(feeUsd) && validateLbp(feeLbp); // Remove requirement for both fields
   const hasChanges = globalPricing && (
-    parseFloat(feeUsd) !== globalPricing.default_fee_usd ||
-    parseInt(feeLbp.replace(/,/g, '')) !== globalPricing.default_fee_lbp
+    (feeUsd ? parseFloat(feeUsd) : 0) !== globalPricing.default_fee_usd ||
+    (feeLbp ? parseInt(feeLbp.replace(/,/g, '')) : 0) !== globalPricing.default_fee_lbp
   );
 
   if (isLoading) {
@@ -102,16 +97,17 @@ const GlobalPricingSection = () => {
           <div className="space-y-2">
             <Label htmlFor="fee-usd">Default Fee (USD)</Label>
             <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
               <Input
                 id="fee-usd"
                 type="number"
                 step="0.5"
                 min="0"
-                placeholder="4.00"
+                placeholder="0.00"
                 value={feeUsd}
                 onChange={(e) => handleUsdChange(e.target.value)}
                 className={`pl-9 ${!validateUsd(feeUsd) && feeUsd ? 'border-destructive' : ''}`}
+                disabled={updateGlobalPricing.isPending}
               />
               {!validateUsd(feeUsd) && feeUsd && (
                 <div className="flex items-center gap-1 text-xs text-destructive mt-1">
@@ -120,21 +116,23 @@ const GlobalPricingSection = () => {
                 </div>
               )}
             </div>
+            <p className="text-xs text-muted-foreground">Leave empty for $0.00</p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="fee-lbp">Default Fee (LBP)</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground z-10">
                 L.L.
               </span>
               <Input
                 id="fee-lbp"
                 type="text"
-                placeholder="150,000"
+                placeholder="0"
                 value={feeLbp ? parseInt(feeLbp.replace(/,/g, '')).toLocaleString() : ''}
                 onChange={(e) => handleLbpChange(e.target.value)}
                 className={`pl-12 ${!validateLbp(feeLbp) && feeLbp ? 'border-destructive' : ''}`}
+                disabled={updateGlobalPricing.isPending}
               />
               {!validateLbp(feeLbp) && feeLbp && (
                 <div className="flex items-center gap-1 text-xs text-destructive mt-1">
@@ -143,6 +141,7 @@ const GlobalPricingSection = () => {
                 </div>
               )}
             </div>
+            <p className="text-xs text-muted-foreground">Leave empty for L.L. 0</p>
           </div>
         </div>
 

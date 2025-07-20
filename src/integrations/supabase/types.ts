@@ -559,33 +559,49 @@ export type Database = {
       }
       pricing_client_overrides: {
         Row: {
+          city_id: string | null
           client_id: string
           created_at: string
           created_by: string | null
           fee_lbp: number
           fee_usd: number
+          governorate_id: string | null
           id: string
+          package_type: string | null
           updated_at: string
         }
         Insert: {
+          city_id?: string | null
           client_id: string
           created_at?: string
           created_by?: string | null
           fee_lbp: number
           fee_usd: number
+          governorate_id?: string | null
           id?: string
+          package_type?: string | null
           updated_at?: string
         }
         Update: {
+          city_id?: string | null
           client_id?: string
           created_at?: string
           created_by?: string | null
           fee_lbp?: number
           fee_usd?: number
+          governorate_id?: string | null
           id?: string
+          package_type?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "pricing_client_overrides_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pricing_client_overrides_client_id_fkey"
             columns: ["client_id"]
@@ -598,6 +614,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_client_overrides_governorate_id_fkey"
+            columns: ["governorate_id"]
+            isOneToOne: false
+            referencedRelation: "governorates"
             referencedColumns: ["id"]
           },
         ]

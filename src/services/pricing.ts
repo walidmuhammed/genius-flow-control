@@ -14,6 +14,9 @@ export interface GlobalPricing {
 export interface ClientPricingOverride {
   id: string;
   client_id: string;
+  governorate_id?: string | null;
+  city_id?: string | null;
+  package_type?: string | null;
   fee_usd: number;
   fee_lbp: number;
   created_at: string;
@@ -22,6 +25,8 @@ export interface ClientPricingOverride {
   // Joined data
   client_name?: string;
   business_name?: string;
+  governorate_name?: string;
+  city_name?: string;
 }
 
 export interface ZonePricingRule {
@@ -134,7 +139,9 @@ export const updateGlobalPricing = async (
   const { data, error } = await supabase
     .from('pricing_global')
     .update({
-      ...pricing,
+      // Allow 0 values for either currency
+      default_fee_usd: pricing.default_fee_usd || 0,
+      default_fee_lbp: pricing.default_fee_lbp || 0,
       updated_at: new Date().toISOString(),
       updated_by: user?.id,
     })
@@ -159,7 +166,9 @@ export const getClientPricingOverrides = async (): Promise<ClientPricingOverride
       profiles!client_id (
         full_name,
         business_name
-      )
+      ),
+      governorates (name),
+      cities (name)
     `)
     .order('created_at', { ascending: false });
 
@@ -172,16 +181,21 @@ export const getClientPricingOverrides = async (): Promise<ClientPricingOverride
     ...item,
     client_name: item.profiles?.full_name,
     business_name: item.profiles?.business_name,
+    governorate_name: item.governorates?.name,
+    city_name: item.cities?.name,
   }));
 };
 
 export const createClientPricingOverride = async (
-  override: Pick<ClientPricingOverride, 'client_id' | 'fee_usd' | 'fee_lbp'>
+  override: Pick<ClientPricingOverride, 'client_id' | 'fee_usd' | 'fee_lbp' | 'governorate_id' | 'city_id' | 'package_type'>
 ): Promise<ClientPricingOverride> => {
   const { data, error } = await supabase
     .from('pricing_client_overrides')
     .insert({
       ...override,
+      // Allow 0 values for either currency
+      fee_usd: override.fee_usd || 0,
+      fee_lbp: override.fee_lbp || 0,
       created_by: (await supabase.auth.getUser()).data.user?.id,
     })
     .select()
@@ -197,12 +211,15 @@ export const createClientPricingOverride = async (
 
 export const updateClientPricingOverride = async (
   id: string,
-  updates: Pick<ClientPricingOverride, 'fee_usd' | 'fee_lbp'>
+  updates: Partial<Pick<ClientPricingOverride, 'fee_usd' | 'fee_lbp' | 'governorate_id' | 'city_id' | 'package_type'>>
 ): Promise<ClientPricingOverride> => {
   const { data, error } = await supabase
     .from('pricing_client_overrides')
     .update({
       ...updates,
+      // Allow 0 values for either currency
+      fee_usd: updates.fee_usd !== undefined ? (updates.fee_usd || 0) : undefined,
+      fee_lbp: updates.fee_lbp !== undefined ? (updates.fee_lbp || 0) : undefined,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)

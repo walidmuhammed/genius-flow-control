@@ -79,8 +79,10 @@ export const useUpdateClientPricingOverride = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Pick<ClientPricingOverride, 'fee_usd' | 'fee_lbp'> }) =>
-      updateClientPricingOverride(id, updates),
+    mutationFn: ({ id, updates }: { 
+      id: string; 
+      updates: Partial<Pick<ClientPricingOverride, 'fee_usd' | 'fee_lbp' | 'governorate_id' | 'city_id' | 'package_type'>> 
+    }) => updateClientPricingOverride(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pricing'] });
       queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
