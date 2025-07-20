@@ -92,7 +92,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 
   // Get current display value
   const getCurrentValue = () => {
-    if (!value?.governorateId && !value?.cityId) return '';
+    if (!value?.governorateId && !value?.cityId) return allowEmpty ? 'none' : '';
     
     if (value.cityId) {
       return `${value.governorateId}_${value.cityId}`;
@@ -100,7 +100,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       return value.governorateId;
     }
     
-    return '';
+    return allowEmpty ? 'none' : '';
   };
 
   const handleSearch = (newSearchTerm: string) => {
