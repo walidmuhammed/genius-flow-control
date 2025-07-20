@@ -12,8 +12,8 @@ interface AdminTicketListPanelProps {
   tickets: Ticket[];
   selectedTicket: Ticket | null;
   onSelectTicket: (ticket: Ticket) => void;
-  activeFilter: 'all' | 'Open' | 'Processing' | 'Resolved';
-  onFilterChange: (filter: 'all' | 'Open' | 'Processing' | 'Resolved') => void;
+  activeFilter: 'all' | 'New' | 'Processing' | 'Resolved';
+  onFilterChange: (filter: 'all' | 'New' | 'Processing' | 'Resolved') => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
@@ -40,7 +40,7 @@ export const AdminTicketListPanel: React.FC<AdminTicketListPanelProps> = ({
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'Open':
+      case 'New':
         return (
           <Badge className="bg-blue-100 text-blue-800 border-blue-200">
             <Clock className="h-3 w-3 mr-1" />
@@ -89,7 +89,7 @@ export const AdminTicketListPanel: React.FC<AdminTicketListPanelProps> = ({
   const getTicketCounts = () => {
     return {
       all: tickets.length,
-      Open: tickets.filter(t => t.status === 'Open').length,
+      New: tickets.filter(t => t.status === 'New').length,
       Processing: tickets.filter(t => t.status === 'Processing').length,
       Resolved: tickets.filter(t => t.status === 'Resolved').length
     };
@@ -123,8 +123,8 @@ export const AdminTicketListPanel: React.FC<AdminTicketListPanelProps> = ({
               <TabsTrigger value="all" className="text-xs">
                 All ({counts.all})
               </TabsTrigger>
-              <TabsTrigger value="Open" className="text-xs">
-                Open ({counts.Open})
+              <TabsTrigger value="New" className="text-xs">
+                Open ({counts.New})
               </TabsTrigger>
               <TabsTrigger value="Processing" className="text-xs">
                 Pending ({counts.Processing})

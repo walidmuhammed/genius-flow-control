@@ -11,8 +11,8 @@ interface TicketListPanelProps {
   tickets: Ticket[];
   selectedTicket: Ticket | null;
   onSelectTicket: (ticket: Ticket) => void;
-  activeFilter: 'all' | 'Open' | 'Processing' | 'Resolved';
-  onFilterChange: (filter: 'all' | 'Open' | 'Processing' | 'Resolved') => void;
+  activeFilter: 'all' | 'New' | 'Processing' | 'Resolved';
+  onFilterChange: (filter: 'all' | 'New' | 'Processing' | 'Resolved') => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onCreateTicket: () => void;
@@ -35,8 +35,8 @@ export const TicketListPanel: React.FC<TicketListPanelProps> = ({
   });
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'Open':
-        return <Badge className="bg-blue-100 text-blue-800"><Clock className="h-3 w-3 mr-1" />Open</Badge>;
+      case 'New':
+        return <Badge className="bg-blue-100 text-blue-800"><Clock className="h-3 w-3 mr-1" />New</Badge>;
       case 'Processing':
         return <Badge className="bg-purple-100 text-purple-800"><MessageCircle className="h-3 w-3 mr-1" />Processing</Badge>;
       case 'Resolved':
@@ -62,7 +62,7 @@ export const TicketListPanel: React.FC<TicketListPanelProps> = ({
   const getTicketCounts = () => {
     return {
       all: tickets.length,
-      Open: tickets.filter(t => t.status === 'Open').length,
+      New: tickets.filter(t => t.status === 'New').length,
       Processing: tickets.filter(t => t.status === 'Processing').length,
       Resolved: tickets.filter(t => t.status === 'Resolved').length
     };
@@ -85,20 +85,7 @@ export const TicketListPanel: React.FC<TicketListPanelProps> = ({
       <CardContent className="flex-1 overflow-hidden p-0">
         <Tabs value={activeFilter} onValueChange={value => onFilterChange(value as any)} className="h-full flex flex-col">
           <div className="px-4 pb-2">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all" className="text-xs">
-                All ({counts.all})
-              </TabsTrigger>
-              <TabsTrigger value="Open" className="text-xs">
-                Open ({counts.Open})
-              </TabsTrigger>
-              <TabsTrigger value="Processing" className="text-xs">
-                Processing ({counts.Processing})
-              </TabsTrigger>
-              <TabsTrigger value="Resolved" className="text-xs">
-                Resolved ({counts.Resolved})
-              </TabsTrigger>
-            </TabsList>
+            
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 pb-4">

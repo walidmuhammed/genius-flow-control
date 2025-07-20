@@ -6,8 +6,8 @@ import { toast } from "sonner";
 export type Ticket = Database["public"]["Tables"]["tickets"]["Row"];
 export type TicketMessage = Database["public"]["Tables"]["ticket_messages"]["Row"];
 
-export type TicketCategory = 'Order Related' | 'Pickup Problem' | 'Invoice / Payment' | 'Technical / Platform Issue' | 'Pricing / Delivery Fees' | 'Something Else';
-export type TicketStatus = 'Open' | 'Processing' | 'Resolved';
+export type TicketCategory = 'Orders Issue' | 'Pickup Issue' | 'Payments and Wallet' | 'Other';
+export type TicketStatus = 'New' | 'Processing' | 'Resolved';
 export type LinkedEntityType = 'order' | 'pickup' | 'invoice' | null;
 
 export async function getTickets() {
@@ -25,7 +25,7 @@ export async function getTickets() {
       .from('tickets')
       .select(`
         *,
-        profiles(full_name, business_name)
+        profiles!tickets_created_by_fkey(full_name, business_name)
       `)
       .order('created_at', { ascending: false });
 
@@ -123,7 +123,7 @@ export async function createTicket(ticket: {
       category: ticket.category,
       title: ticket.title,
       content: ticket.content,
-      status: 'Open' as const,
+      status: 'New' as const,
       created_by: user.id,
       linked_entity_type: ticket.linked_entity_type || null,
       linked_entity_id: ticket.linked_entity_id || null,

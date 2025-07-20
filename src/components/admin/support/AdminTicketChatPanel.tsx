@@ -21,7 +21,7 @@ export const AdminTicketChatPanel: React.FC<AdminTicketChatPanelProps> = ({
   onClose
 }) => {
   const [newMessage, setNewMessage] = useState('');
-  const [ticketStatus, setTicketStatus] = useState<TicketStatus>('Open');
+  const [ticketStatus, setTicketStatus] = useState<TicketStatus>('New');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   

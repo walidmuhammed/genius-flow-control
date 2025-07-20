@@ -13,75 +13,39 @@ export const IssueSelectionStep: React.FC<IssueSelectionStepProps> = ({
 }) => {
   const getIssues = () => {
     switch (category) {
-      case 'Order Related':
+      case 'Orders Issue':
         return [
-          'Tracking not updating',
-          'Order was not picked up',
-          'Order shows wrong price',
-          'Order marked delivered but not received',
-          'Courier arrived late',
-          'Package damaged during delivery',
-          'Wrong delivery address',
-          'Customer unavailable at delivery',
-          'Other'
+          'Delivery Delay',
+          'Wrong Address',
+          'Package Damaged',
+          'Package Lost',
+          'Customer Unavailable',
+          'Incorrect Package Contents',
+          'Return Request',
+          'Status Update Required'
         ];
-      case 'Pickup Problem':
+      case 'Pickup Issue':
         return [
-          'Pickup was not collected on time',
-          'Wrong pickup address provided',
-          'Access issues at pickup location',
-          'Package not ready for pickup',
-          'Courier communication problems',
-          'Need to reschedule pickup',
-          'Special pickup instructions needed',
-          'Other'
+          'Not Collected on Time',
+          'Wrong Pickup Address',
+          'Access Issues',
+          'Package Not Ready',
+          'Courier Communication',
+          'Rescheduling Required',
+          'Special Instructions Needed'
         ];
-      case 'Invoice / Payment':
+      case 'Payments and Wallet':
         return [
-          'Invoice amount is incorrect',
-          'Payment processing failed',
-          'Need a refund request',
-          'Billing discrepancy found',
-          'Update payment method',
-          'Transaction history query',
-          'Delivery fee clarification',
-          'Other'
-        ];
-      case 'Technical / Platform Issue':
-        return [
-          'Cannot login to account',
-          'Website not loading properly',
-          'Mobile app crashes',
-          'Features not working correctly',
-          'Data not syncing',
-          'Error messages appearing',
-          'Performance issues',
-          'Other'
-        ];
-      case 'Pricing / Delivery Fees':
-        return [
-          'Delivery fee seems incorrect',
-          'Need pricing information',
-          'Fee calculation questions',
-          'Discount not applied',
-          'Zone pricing inquiry',
-          'Bulk pricing request',
-          'Special rate negotiation',
-          'Other'
-        ];
-      case 'Something Else':
-        return [
-          'General inquiry',
-          'Feature request',
-          'Partnership inquiry',
-          'Feedback or suggestion',
-          'Account management',
-          'Service area questions',
-          'Business consultation',
-          'Other'
+          'Invoice Query',
+          'Payment Failed',
+          'Refund Request',
+          'Billing Discrepancy',
+          'Payment Method Update',
+          'Transaction History',
+          'Fee Clarification'
         ];
       default:
-        return ['Other'];
+        return [];
     }
   };
 
