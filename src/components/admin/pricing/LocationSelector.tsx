@@ -43,7 +43,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     // Add empty option if allowed
     if (allowEmpty) {
       options.push({
-        value: '',
+        value: 'none',
         label: 'No specific location',
         governorateId: '',
         governorate: '',
@@ -108,7 +108,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   };
 
   const handleSelect = (selectedValue: string) => {
-    if (!selectedValue) {
+    if (!selectedValue || selectedValue === 'none') {
       onChange({ governorateId: undefined, cityId: undefined, location: undefined });
       setSearchTerm('');
       return;
