@@ -457,7 +457,8 @@ export const calculateDeliveryFee = async (
   });
 
   // First, let's get the global pricing to see what we should expect
-  const globalPricing = await getGlobalPricing();
+  // const globalPricing = await getGlobalPricing();
+  const globalPricing = undefined;
   console.log('🌍 Global pricing from DB:', globalPricing);
 
   // Try the RPC call
