@@ -152,7 +152,7 @@ const ZonePricingSection = () => {
                       <SelectValue placeholder="Select governorate" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="any">Any Governorate</SelectItem>
+                      <SelectItem value="none">Any Governorate</SelectItem>
                       {governorates?.map((gov) => (
                         <SelectItem key={gov.id} value={gov.id}>
                           {gov.name}
@@ -169,7 +169,7 @@ const ZonePricingSection = () => {
                       <SelectValue placeholder="Select city" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="any">Any City</SelectItem>
+                      <SelectItem value="none">Any City</SelectItem>
                       {filteredCities.map((city) => (
                         <SelectItem key={city.id} value={city.id}>
                           {city.name}
@@ -213,7 +213,7 @@ const ZonePricingSection = () => {
                       <SelectValue placeholder="Any package type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="any">Any Package Type</SelectItem>
+                      <SelectItem value="none">Any Package Type</SelectItem>
                       <SelectItem value="Parcel">Parcel</SelectItem>
                       <SelectItem value="Document">Document</SelectItem>
                       <SelectItem value="Bulky">Bulky</SelectItem>

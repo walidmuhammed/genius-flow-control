@@ -241,7 +241,7 @@ const PackageTypePricingSection = () => {
                     <SelectValue placeholder="Any client" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any Client</SelectItem>
+                    <SelectItem value="none">Any Client</SelectItem>
                     {clients?.map((client) => (
                       <SelectItem key={client.id} value={client.id}>
                         {client.business_name || client.full_name}
@@ -261,7 +261,7 @@ const PackageTypePricingSection = () => {
                     <SelectValue placeholder="Any governorate" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any Governorate</SelectItem>
+                    <SelectItem value="none">Any Governorate</SelectItem>
                     {governorates?.map((gov) => (
                       <SelectItem key={gov.id} value={gov.id}>
                         {gov.name}
@@ -282,7 +282,7 @@ const PackageTypePricingSection = () => {
                     <SelectValue placeholder="Any city" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any City</SelectItem>
+                    <SelectItem value="none">Any City</SelectItem>
                     {cities?.filter(city => city.governorate_id === formData.governorateId).map((city) => (
                       <SelectItem key={city.id} value={city.id}>
                         {city.name}
