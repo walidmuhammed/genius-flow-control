@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,72 +6,164 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Users, Plus, Pencil, Trash2, DollarSign, Loader2, AlertTriangle, Package } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Users, Plus, Pencil, Trash2, DollarSign, Loader2, AlertTriangle, Package, Search, Check, ChevronsUpDown, MapPin, X } from 'lucide-react';
 import { useClientPricingOverrides, useCreateClientPricingOverride, useUpdateClientPricingOverride, useDeleteClientPricingOverride } from '@/hooks/use-pricing';
 import { useAdminClients } from '@/hooks/use-admin-clients';
+import { useGovernorates } from '@/hooks/use-governorates';
 import { formatCurrency } from '@/utils/format';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import LocationSelector from './LocationSelector';
+import { cn } from '@/lib/utils';
+
+interface GovernorateOverride {
+  id: string;
+  governorateId: string;
+  governorateName: string;
+  feeUsd: string;
+  feeLbp: string;
+}
+
+interface PackageTypeExtra {
+  id: string;
+  packageType: 'Parcel' | 'Document' | 'Bulky';
+  extraUsd: string;
+  extraLbp: string;
+}
 
 const ClientPricingSection = () => {
   const { data: overrides, isLoading } = useClientPricingOverrides();
   const { data: clients } = useAdminClients();
+  const { data: governorates } = useGovernorates();
   const createOverride = useCreateClientPricingOverride();
   const updateOverride = useUpdateClientPricingOverride();
   const deleteOverride = useDeleteClientPricingOverride();
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  
+  // Client selection with search
   const [selectedClientId, setSelectedClientId] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState<{ governorateId?: string; cityId?: string; location?: string }>({});
-  const [selectedPackageType, setSelectedPackageType] = useState('');
-  const [feeUsd, setFeeUsd] = useState('');
-  const [feeLbp, setFeeLbp] = useState('');
+  const [clientSearchOpen, setClientSearchOpen] = useState(false);
+  const [clientSearchValue, setClientSearchValue] = useState('');
+  
+  // Default fallback fees
+  const [defaultFeeUsd, setDefaultFeeUsd] = useState('');
+  const [defaultFeeLbp, setDefaultFeeLbp] = useState('');
+  
+  // Governorate overrides
+  const [governorateOverrides, setGovernorateOverrides] = useState<GovernorateOverride[]>([]);
+  
+  // Package type extras
+  const [packageTypeExtras, setPackageTypeExtras] = useState<PackageTypeExtra[]>([]);
 
-  // Validation functions - allow 0 values and empty strings
+  // Validation functions
   const validateUsd = (value: string) => {
-    if (!value || value === '') return true; // Allow empty
+    if (!value || value === '') return true;
     const num = parseFloat(value);
-    return !isNaN(num) && num >= 0 && (num * 2) % 1 === 0; // Check if it's a 0.5 increment
+    return !isNaN(num) && num >= 0 && (num * 2) % 1 === 0;
   };
 
   const validateLbp = (value: string) => {
-    if (!value || value === '') return true; // Allow empty
+    if (!value || value === '') return true;
     const cleanValue = value.replace(/,/g, '');
     const num = parseInt(cleanValue);
-    return !isNaN(num) && num >= 0 && num % 1000 === 0; // Check if it's a thousand
+    return !isNaN(num) && num >= 0 && num % 1000 === 0;
   };
 
-  const handleLbpChange = (value: string) => {
-    const cleanValue = value.replace(/[^\d,]/g, '');
-    setFeeLbp(cleanValue);
+  const formatLbpInput = (value: string) => {
+    const cleanValue = value.replace(/[^\d]/g, '');
+    if (cleanValue) {
+      return parseInt(cleanValue).toLocaleString();
+    }
+    return '';
   };
+
+  // Client search functionality
+  const filteredClients = useMemo(() => {
+    if (!clients) return [];
+    return clients.filter(client => {
+      const searchTerm = clientSearchValue.toLowerCase();
+      const businessName = (client.business_name || '').toLowerCase();
+      const fullName = (client.full_name || '').toLowerCase();
+      const phone = (client.phone || '').toLowerCase();
+      
+      return businessName.includes(searchTerm) || 
+             fullName.includes(searchTerm) || 
+             phone.includes(searchTerm);
+    });
+  }, [clients, clientSearchValue]);
+
+  const selectedClient = clients?.find(c => c.id === selectedClientId);
 
   const resetForm = () => {
     setSelectedClientId('');
-    setSelectedLocation({});
-    setSelectedPackageType('');
-    setFeeUsd('');
-    setFeeLbp('');
+    setClientSearchValue('');
+    setDefaultFeeUsd('');
+    setDefaultFeeLbp('');
+    setGovernorateOverrides([]);
+    setPackageTypeExtras([]);
     setEditingId(null);
     setShowForm(false);
   };
 
+  // Governorate override handlers
+  const addGovernorateOverride = () => {
+    const newOverride: GovernorateOverride = {
+      id: Date.now().toString(),
+      governorateId: '',
+      governorateName: '',
+      feeUsd: '',
+      feeLbp: ''
+    };
+    setGovernorateOverrides([...governorateOverrides, newOverride]);
+  };
+
+  const updateGovernorateOverride = (id: string, field: keyof GovernorateOverride, value: string) => {
+    setGovernorateOverrides(prev => prev.map(override => {
+      if (override.id === id) {
+        const updated = { ...override, [field]: value };
+        if (field === 'governorateId') {
+          const governorate = governorates?.find(g => g.id === value);
+          updated.governorateName = governorate?.name || '';
+        }
+        return updated;
+      }
+      return override;
+    }));
+  };
+
+  const removeGovernorateOverride = (id: string) => {
+    setGovernorateOverrides(prev => prev.filter(override => override.id !== id));
+  };
+
+  // Package type extra handlers
+  const addPackageTypeExtra = () => {
+    const newExtra: PackageTypeExtra = {
+      id: Date.now().toString(),
+      packageType: 'Parcel',
+      extraUsd: '',
+      extraLbp: ''
+    };
+    setPackageTypeExtras([...packageTypeExtras, newExtra]);
+  };
+
+  const updatePackageTypeExtra = (id: string, field: keyof PackageTypeExtra, value: string) => {
+    setPackageTypeExtras(prev => prev.map(extra => 
+      extra.id === id ? { ...extra, [field]: value } : extra
+    ));
+  };
+
+  const removePackageTypeExtra = (id: string) => {
+    setPackageTypeExtras(prev => prev.filter(extra => extra.id !== id));
+  };
+
   const handleEdit = (override: any) => {
-    setSelectedClientId(override.client_id);
-    setSelectedLocation({
-      governorateId: override.governorate_id || undefined,
-      cityId: override.city_id || undefined,
-      location: override.governorate_name && override.city_name 
-        ? `${override.governorate_name} → ${override.city_name}` 
-        : override.governorate_name || undefined
-    });
-    setSelectedPackageType(override.package_type || '');
-    setFeeUsd(override.fee_usd.toString());
-    setFeeLbp(override.fee_lbp.toString());
-    setEditingId(override.id);
-    setShowForm(true);
+    // For now, we'll disable editing since we need to restructure this
+    // to handle the new comprehensive format
+    toast.info("Edit functionality will be added in the next update");
   };
 
   const handleSubmit = () => {
@@ -80,55 +172,106 @@ const ClientPricingSection = () => {
       return;
     }
 
-    // At least one fee must be provided
-    if (!feeUsd && !feeLbp) {
-      toast.error("Please provide at least one fee amount");
+    // Validate default fees - at least one must be provided
+    if (!defaultFeeUsd && !defaultFeeLbp) {
+      toast.error("Please provide at least one default fee amount");
       return;
     }
 
-    if (feeUsd && !validateUsd(feeUsd)) {
-      toast.error("USD fee must be in 0.5 increments (e.g., 2.0, 2.5, 3.0, 4.5)");
+    if (defaultFeeUsd && !validateUsd(defaultFeeUsd)) {
+      toast.error("Default USD fee must be in 0.5 increments");
       return;
     }
 
-    if (feeLbp && !validateLbp(feeLbp)) {
-      toast.error("LBP fee must be in thousands (e.g., 1,000, 150,000, 200,000)");
+    if (defaultFeeLbp && !validateLbp(defaultFeeLbp)) {
+      toast.error("Default LBP fee must be in thousands");
       return;
     }
 
-    const data = {
+    // Validate governorate overrides
+    for (const override of governorateOverrides) {
+      if (!override.governorateId) {
+        toast.error("Please select a governorate for all overrides");
+        return;
+      }
+      if (!override.feeUsd && !override.feeLbp) {
+        toast.error("Each governorate override must have at least one fee");
+        return;
+      }
+      if (override.feeUsd && !validateUsd(override.feeUsd)) {
+        toast.error("All USD fees must be in 0.5 increments");
+        return;
+      }
+      if (override.feeLbp && !validateLbp(override.feeLbp)) {
+        toast.error("All LBP fees must be in thousands");
+        return;
+      }
+    }
+
+    // Validate package type extras
+    for (const extra of packageTypeExtras) {
+      if (!extra.extraUsd && !extra.extraLbp) {
+        toast.error("Each package type extra must have at least one fee");
+        return;
+      }
+      if (extra.extraUsd && !validateUsd(extra.extraUsd)) {
+        toast.error("All extra USD fees must be in 0.5 increments");
+        return;
+      }
+      if (extra.extraLbp && !validateLbp(extra.extraLbp)) {
+        toast.error("All extra LBP fees must be in thousands");
+        return;
+      }
+    }
+
+    // Create the default override first
+    const defaultData = {
       client_id: selectedClientId,
-      governorate_id: selectedLocation.governorateId || undefined,
-      city_id: selectedLocation.cityId || undefined,
-      package_type: selectedPackageType && selectedPackageType !== 'none' ? selectedPackageType : undefined,
-      fee_usd: feeUsd ? parseFloat(feeUsd) : 0,
-      fee_lbp: feeLbp ? parseInt(feeLbp.replace(/,/g, '')) : 0,
+      fee_usd: defaultFeeUsd ? parseFloat(defaultFeeUsd) : 0,
+      fee_lbp: defaultFeeLbp ? parseInt(defaultFeeLbp.replace(/,/g, '')) : 0,
     };
 
-    if (editingId) {
-      updateOverride.mutate(
-        { id: editingId, updates: data },
-        { onSuccess: resetForm }
-      );
-    } else {
-      createOverride.mutate(data, { onSuccess: resetForm });
-    }
+    createOverride.mutate(defaultData, {
+      onSuccess: () => {
+        // Then create governorate overrides
+        governorateOverrides.forEach(override => {
+          const govData = {
+            client_id: selectedClientId,
+            governorate_id: override.governorateId,
+            fee_usd: override.feeUsd ? parseFloat(override.feeUsd) : 0,
+            fee_lbp: override.feeLbp ? parseInt(override.feeLbp.replace(/,/g, '')) : 0,
+          };
+          createOverride.mutate(govData);
+        });
+
+        // Then create package type extras
+        packageTypeExtras.forEach(extra => {
+          const packageData = {
+            client_id: selectedClientId,
+            package_type: extra.packageType,
+            fee_usd: extra.extraUsd ? parseFloat(extra.extraUsd) : 0,
+            fee_lbp: extra.extraLbp ? parseInt(extra.extraLbp.replace(/,/g, '')) : 0,
+          };
+          createOverride.mutate(packageData);
+        });
+
+        resetForm();
+        toast.success("Client pricing configuration saved successfully");
+      }
+    });
   };
 
-  const isFormValid = selectedClientId && (feeUsd || feeLbp) && validateUsd(feeUsd) && validateLbp(feeLbp);
+  const isFormValid = selectedClientId && (defaultFeeUsd || defaultFeeLbp);
 
-  // Get available clients (not already having the same override configuration)
-  const availableClients = clients?.filter(client => {
-    if (editingId) return true; // When editing, allow the current client
-    
-    // Check if this client already has an override with the same location and package type
-    return !overrides?.some(override => 
-      override.client_id === client.id &&
-      override.governorate_id === selectedLocation.governorateId &&
-      override.city_id === selectedLocation.cityId &&
-      override.package_type === selectedPackageType
-    );
-  }) || [];
+  // Get available governorates for selection
+  const availableGovernorates = governorates?.filter(gov => 
+    !governorateOverrides.some(override => override.governorateId === gov.id)
+  ) || [];
+
+  // Get available package types for selection
+  const availablePackageTypes = ['Parcel', 'Document', 'Bulky'].filter(type =>
+    !packageTypeExtras.some(extra => extra.packageType === type)
+  );
 
   if (isLoading) {
     return (
@@ -166,109 +309,366 @@ const ClientPricingSection = () => {
         {showForm && (
           <Card className="mb-6 border-dashed">
             <CardHeader>
-              <CardTitle className="text-lg">
-                {editingId ? 'Edit Client Pricing' : 'Add Client Pricing Override'}
-              </CardTitle>
+              <CardTitle className="text-lg">Add Client Pricing Configuration</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Configure comprehensive pricing rules for a specific client
+              </p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Client *</Label>
-                  <Select value={selectedClientId} onValueChange={setSelectedClientId} disabled={!!editingId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select client" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(editingId ? clients || [] : availableClients).map((client) => (
-                        <SelectItem key={client.id} value={client.id}>
-                          {client.business_name || client.full_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <CardContent className="space-y-6">
+              {/* Client Selection */}
+              <div className="space-y-2">
+                <Label className="text-base font-medium">1. Select Client *</Label>
+                <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={clientSearchOpen}
+                      className="w-full justify-between"
+                    >
+                      {selectedClient ? (
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">
+                            {selectedClient.business_name || selectedClient.full_name}
+                          </span>
+                          {selectedClient.phone && (
+                            <span className="text-sm text-muted-foreground">
+                              (+961-{selectedClient.phone})
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">Search and select client...</span>
+                      )}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput 
+                        placeholder="Search by name or phone..." 
+                        value={clientSearchValue}
+                        onValueChange={setClientSearchValue}
+                      />
+                      <CommandEmpty>No clients found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandList>
+                          {filteredClients.map((client) => (
+                            <CommandItem
+                              key={client.id}
+                              value={client.id}
+                              onSelect={() => {
+                                setSelectedClientId(client.id);
+                                setClientSearchOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedClientId === client.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <div className="flex flex-col">
+                                <span className="font-medium">
+                                  {client.business_name || client.full_name}
+                                </span>
+                                {client.phone && (
+                                  <span className="text-sm text-muted-foreground">
+                                    (+961-{client.phone})
+                                  </span>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandList>
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
 
-                <LocationSelector
-                  value={selectedLocation}
-                  onChange={setSelectedLocation}
-                  label="Zone (Optional)"
-                  placeholder="Any location"
-                  allowEmpty={true}
-                />
+              <Separator />
 
-                <div className="space-y-2">
-                  <Label>Package Type (Optional)</Label>
-                  <Select value={selectedPackageType} onValueChange={setSelectedPackageType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Any package type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Any Package Type</SelectItem>
-                      <SelectItem value="Parcel">Parcel</SelectItem>
-                      <SelectItem value="Document">Document</SelectItem>
-                      <SelectItem value="Bulky">Bulky</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Fee (USD)</Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                    <Input
-                      type="number"
-                      step="0.5"
-                      min="0"
-                      placeholder="0.00"
-                      value={feeUsd}
-                      onChange={(e) => setFeeUsd(e.target.value)}
-                      className={`pl-9 ${!validateUsd(feeUsd) && feeUsd ? 'border-destructive' : ''}`}
-                    />
-                  </div>
-                  {!validateUsd(feeUsd) && feeUsd && (
-                    <div className="flex items-center gap-1 text-xs text-destructive">
-                      <AlertTriangle className="h-3 w-3" />
-                      Must be in 0.5 increments (e.g., 2.0, 2.5, 3.0)
+              {/* Default Delivery Fees */}
+              <div className="space-y-4">
+                <Label className="text-base font-medium">2. Default Delivery Fee (Fallback) *</Label>
+                <p className="text-sm text-muted-foreground">
+                  This fee will be used when no governorate-specific pricing is defined
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Fee (USD)</Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                      <Input
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        placeholder="5.00"
+                        value={defaultFeeUsd}
+                        onChange={(e) => setDefaultFeeUsd(e.target.value)}
+                        className={`pl-9 ${!validateUsd(defaultFeeUsd) && defaultFeeUsd ? 'border-destructive' : ''}`}
+                      />
                     </div>
-                  )}
-                  <p className="text-xs text-muted-foreground">Leave empty for $0.00</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Fee (LBP)</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground z-10">
-                      L.L.
-                    </span>
-                    <Input
-                      type="text"
-                      placeholder="0"
-                      value={feeLbp ? parseInt(feeLbp.replace(/,/g, '')).toLocaleString() : ''}
-                      onChange={(e) => handleLbpChange(e.target.value)}
-                      className={`pl-12 ${!validateLbp(feeLbp) && feeLbp ? 'border-destructive' : ''}`}
-                    />
+                    {!validateUsd(defaultFeeUsd) && defaultFeeUsd && (
+                      <div className="flex items-center gap-1 text-xs text-destructive">
+                        <AlertTriangle className="h-3 w-3" />
+                        Must be in 0.5 increments
+                      </div>
+                    )}
                   </div>
-                  {!validateLbp(feeLbp) && feeLbp && (
-                    <div className="flex items-center gap-1 text-xs text-destructive">
-                      <AlertTriangle className="h-3 w-3" />
-                      Must be in thousands (e.g., 1,000, 150,000)
+
+                  <div className="space-y-2">
+                    <Label>Fee (LBP)</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground z-10">
+                        L.L.
+                      </span>
+                      <Input
+                        type="text"
+                        placeholder="150,000"
+                        value={formatLbpInput(defaultFeeLbp)}
+                        onChange={(e) => setDefaultFeeLbp(e.target.value.replace(/,/g, ''))}
+                        className={`pl-12 ${!validateLbp(defaultFeeLbp) && defaultFeeLbp ? 'border-destructive' : ''}`}
+                      />
                     </div>
-                  )}
-                  <p className="text-xs text-muted-foreground">Leave empty for L.L. 0</p>
+                    {!validateLbp(defaultFeeLbp) && defaultFeeLbp && (
+                      <div className="flex items-center gap-1 text-xs text-destructive">
+                        <AlertTriangle className="h-3 w-3" />
+                        Must be in thousands
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
+              <Separator />
+
+              {/* Governorate-Based Pricing */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-base font-medium">3. Governorate-Based Pricing (Optional)</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Override delivery fees for specific governorates
+                    </p>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={addGovernorateOverride}
+                    disabled={availableGovernorates.length === 0}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Governorate
+                  </Button>
+                </div>
+
+                {governorateOverrides.map((override) => (
+                  <Card key={override.id} className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                      <div className="space-y-2">
+                        <Label>Governorate</Label>
+                        <Select 
+                          value={override.governorateId} 
+                          onValueChange={(value) => updateGovernorateOverride(override.id, 'governorateId', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select governorate" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {governorates?.map((gov) => (
+                              <SelectItem 
+                                key={gov.id} 
+                                value={gov.id}
+                                disabled={governorateOverrides.some(o => o.governorateId === gov.id && o.id !== override.id)}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4" />
+                                  {gov.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Fee (USD)</Label>
+                        <div className="relative">
+                          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                          <Input
+                            type="number"
+                            step="0.5"
+                            min="0"
+                            placeholder="7.00"
+                            value={override.feeUsd}
+                            onChange={(e) => updateGovernorateOverride(override.id, 'feeUsd', e.target.value)}
+                            className="pl-9"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Fee (LBP)</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground z-10">
+                            L.L.
+                          </span>
+                          <Input
+                            type="text"
+                            placeholder="200,000"
+                            value={formatLbpInput(override.feeLbp)}
+                            onChange={(e) => updateGovernorateOverride(override.id, 'feeLbp', e.target.value.replace(/,/g, ''))}
+                            className="pl-12"
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeGovernorateOverride(override.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+
+                {governorateOverrides.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>No governorate overrides added</p>
+                    <p className="text-sm">Add overrides to customize pricing by location</p>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Package Type Extra Fees */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-base font-medium">4. Package Type Extra Fees (Optional)</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Add extra charges for specific package types (will be added to base delivery fee)
+                    </p>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={addPackageTypeExtra}
+                    disabled={availablePackageTypes.length === 0}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Package Type
+                  </Button>
+                </div>
+
+                {packageTypeExtras.map((extra) => (
+                  <Card key={extra.id} className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                      <div className="space-y-2">
+                        <Label>Package Type</Label>
+                        <Select 
+                          value={extra.packageType} 
+                          onValueChange={(value) => updatePackageTypeExtra(extra.id, 'packageType', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select package type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {['Parcel', 'Document', 'Bulky'].map((type) => (
+                              <SelectItem 
+                                key={type} 
+                                value={type}
+                                disabled={packageTypeExtras.some(e => e.packageType === type && e.id !== extra.id)}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Package className="h-4 w-4" />
+                                  {type}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Extra Fee (USD)</Label>
+                        <div className="relative">
+                          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                          <Input
+                            type="number"
+                            step="0.5"
+                            min="0"
+                            placeholder="3.00"
+                            value={extra.extraUsd}
+                            onChange={(e) => updatePackageTypeExtra(extra.id, 'extraUsd', e.target.value)}
+                            className="pl-9"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Extra Fee (LBP)</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground z-10">
+                            L.L.
+                          </span>
+                          <Input
+                            type="text"
+                            placeholder="50,000"
+                            value={formatLbpInput(extra.extraLbp)}
+                            onChange={(e) => updatePackageTypeExtra(extra.id, 'extraLbp', e.target.value.replace(/,/g, ''))}
+                            className="pl-12"
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removePackageTypeExtra(extra.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+
+                {packageTypeExtras.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>No package type extras added</p>
+                    <p className="text-sm">Add extras to charge more for specific package types</p>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Submit Actions */}
               <div className="flex items-center gap-3">
                 <Button 
                   onClick={handleSubmit}
-                  disabled={!isFormValid || createOverride.isPending || updateOverride.isPending}
+                  disabled={!isFormValid || createOverride.isPending}
+                  className="min-w-[140px]"
                 >
-                  {(createOverride.isPending || updateOverride.isPending) ? (
+                  {createOverride.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : (
                     <Plus className="h-4 w-4 mr-2" />
                   )}
-                  {editingId ? 'Update Override' : 'Create Override'}
+                  Save Configuration
                 </Button>
                 <Button variant="outline" onClick={resetForm}>
                   Cancel
