@@ -23,14 +23,12 @@ const ZonePricingSection = () => {
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [selectedClientId, setSelectedClientId] = useState('');
-  const [selectedGovernorateId, setSelectedGovernorateId] = useState('');
+  const [selectedGovernorateIds, setSelectedGovernorateIds] = useState<string[]>([]);
   const [feeUsd, setFeeUsd] = useState('');
   const [feeLbp, setFeeLbp] = useState('');
 
   const resetForm = () => {
-    setSelectedClientId('');
-    setSelectedGovernorateId('');
+    setSelectedGovernorateIds([]);
     setFeeUsd('');
     setFeeLbp('');
     setEditingId(null);
@@ -38,8 +36,7 @@ const ZonePricingSection = () => {
   };
 
   const handleEdit = (rule: any) => {
-    setSelectedClientId(rule.client_id || '');
-    setSelectedGovernorateId(rule.governorate_id || '');
+    setSelectedGovernorateIds(rule.governorate_id ? [rule.governorate_id] : []);
     setFeeUsd(rule.fee_usd.toString());
     setFeeLbp(rule.fee_lbp.toString());
     setEditingId(rule.id);
@@ -47,28 +44,33 @@ const ZonePricingSection = () => {
   };
 
   const handleSubmit = () => {
-    if (!selectedGovernorateId || !selectedClientId || (!feeUsd && !feeLbp)) {
+    if (selectedGovernorateIds.length === 0 || (!feeUsd && !feeLbp)) {
       return;
     }
 
-    const data = {
-      governorate_id: selectedGovernorateId,
-      fee_usd: feeUsd ? parseFloat(feeUsd) : 0,
-      fee_lbp: feeLbp ? parseFloat(feeLbp.replace(/,/g, '')) : 0,
-      client_id: selectedClientId,
-    };
+    const feeUsdValue = feeUsd ? parseFloat(feeUsd) : 0;
+    const feeLbpValue = feeLbp ? parseFloat(feeLbp.replace(/,/g, '')) : 0;
 
     if (editingId) {
+      // Update existing rule
       updateRule.mutate(
-        { id: editingId, updates: { fee_usd: data.fee_usd, fee_lbp: data.fee_lbp } },
+        { id: editingId, updates: { fee_usd: feeUsdValue, fee_lbp: feeLbpValue } },
         { onSuccess: resetForm }
       );
     } else {
-      createRule.mutate(data, { onSuccess: resetForm });
+      // Create new rules for each selected governorate
+      selectedGovernorateIds.forEach(governorateId => {
+        const data = {
+          governorate_id: governorateId,
+          fee_usd: feeUsdValue,
+          fee_lbp: feeLbpValue,
+        };
+        createRule.mutate(data, { onSuccess: resetForm });
+      });
     }
   };
 
-  const isFormValid = selectedGovernorateId && selectedClientId && (feeUsd || feeLbp) && 
+  const isFormValid = selectedGovernorateIds.length > 0 && (feeUsd || feeLbp) && 
     ((feeUsd && parseFloat(feeUsd) > 0) || (feeLbp && parseFloat(feeLbp.replace(/,/g, '')) > 0));
 
   if (isLoading) {
@@ -94,7 +96,7 @@ const ZonePricingSection = () => {
               Zone-Based Pricing
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Set custom pricing for specific governorates per client
+              Set global pricing rules for specific governorates
             </p>
           </div>
           <Button onClick={() => setShowForm(true)}>
@@ -112,40 +114,35 @@ const ZonePricingSection = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Client *</Label>
-                  <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select client" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {clients?.map((client) => (
-                        <SelectItem key={client.id} value={client.id}>
-                          {client.business_name || client.full_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Governorates *</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Select one or more governorates to apply the same pricing rule
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto border rounded-lg p-3">
+                    {governorates?.map((gov) => (
+                      <label key={gov.id} className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedGovernorateIds.includes(gov.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedGovernorateIds([...selectedGovernorateIds, gov.id]);
+                            } else {
+                              setSelectedGovernorateIds(selectedGovernorateIds.filter(id => id !== gov.id));
+                            }
+                          }}
+                          className="rounded border-gray-300"
+                        />
+                        <span className="text-sm">{gov.name}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Governorate *</Label>
-                  <Select value={selectedGovernorateId} onValueChange={setSelectedGovernorateId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select governorate" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {governorates?.map((gov) => (
-                        <SelectItem key={gov.id} value={gov.id}>
-                          {gov.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
                   <Label>Fee (USD)</Label>
                   <div className="relative">
                     <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -176,6 +173,7 @@ const ZonePricingSection = () => {
                       className="pl-12"
                     />
                   </div>
+                  </div>
                 </div>
               </div>
 
@@ -205,7 +203,6 @@ const ZonePricingSection = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Governorate</TableHead>
-                  <TableHead>Client</TableHead>
                   <TableHead>Fee (USD)</TableHead>
                   <TableHead>Fee (LBP)</TableHead>
                   <TableHead>Status</TableHead>
@@ -217,18 +214,6 @@ const ZonePricingSection = () => {
                   <TableRow key={rule.id}>
                     <TableCell>
                       <div className="font-medium">{rule.governorate_name}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">
-                          {rule.business_name || rule.client_name}
-                        </div>
-                        {rule.business_name && rule.client_name && (
-                          <div className="text-sm text-muted-foreground">
-                            {rule.client_name}
-                          </div>
-                        )}
-                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary">
