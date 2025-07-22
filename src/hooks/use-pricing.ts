@@ -72,6 +72,10 @@ export const useCreateClientPricingOverride = () => {
     onError: (error: any) => {
       toast.error(`Error creating client pricing override: ${error.message}`);
     },
+    onSettled: () => {
+      // Always refresh data after mutation attempt
+      queryClient.invalidateQueries({ queryKey: ['pricing'] });
+    }
   });
 };
 

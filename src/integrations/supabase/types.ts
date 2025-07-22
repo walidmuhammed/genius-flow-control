@@ -605,7 +605,7 @@ export type Database = {
           {
             foreignKeyName: "pricing_client_overrides_client_id_fkey"
             columns: ["client_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },

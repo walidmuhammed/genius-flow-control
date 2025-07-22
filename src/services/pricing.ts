@@ -189,6 +189,20 @@ export const getClientPricingOverrides = async (): Promise<ClientPricingOverride
 export const createClientPricingOverride = async (
   override: Pick<ClientPricingOverride, 'client_id' | 'fee_usd' | 'fee_lbp' | 'governorate_id' | 'city_id' | 'package_type'>
 ): Promise<ClientPricingOverride> => {
+  // Check for existing override with same combination
+  const { data: existing } = await supabase
+    .from('pricing_client_overrides')
+    .select('id')
+    .eq('client_id', override.client_id)
+    .eq('governorate_id', override.governorate_id || null)
+    .eq('city_id', override.city_id || null)
+    .eq('package_type', override.package_type || null)
+    .maybeSingle();
+
+  if (existing) {
+    throw new Error('A pricing override with this combination already exists. Please edit the existing rule instead.');
+  }
+
   const { data, error } = await supabase
     .from('pricing_client_overrides')
     .insert({
@@ -203,7 +217,10 @@ export const createClientPricingOverride = async (
 
   if (error) {
     console.error('Error creating client pricing override:', error);
-    throw error;
+    if (error.code === '23505') {
+      throw new Error('A pricing override with this combination already exists. Please edit the existing rule instead.');
+    }
+    throw new Error(`Failed to create client pricing override: ${error.message}`);
   }
 
   return data;

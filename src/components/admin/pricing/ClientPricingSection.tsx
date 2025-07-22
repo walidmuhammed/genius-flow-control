@@ -141,11 +141,10 @@ const ClientPricingSection = () => {
         {
           onSuccess: () => {
             resetForm();
-            toast.success("Client pricing updated successfully");
           },
           onError: (error) => {
             console.error('Update error:', error);
-            toast.error("Failed to update client pricing");
+            // Error handling is done in the mutation's onError callback
           }
         }
       );
@@ -154,15 +153,10 @@ const ClientPricingSection = () => {
       createOverride.mutate(data, {
         onSuccess: () => {
           resetForm();
-          toast.success("Client pricing override created successfully");
         },
         onError: (error) => {
           console.error('Create error:', error);
-          if (error.message.includes('duplicate key')) {
-            toast.error("Client already has pricing override. Please edit the existing rule instead.");
-          } else {
-            toast.error("Failed to create client pricing override");
-          }
+          // Error handling is done in the mutation's onError callback
         }
       });
     }
