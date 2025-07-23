@@ -557,6 +557,44 @@ export type Database = {
           },
         ]
       }
+      pricing_client_defaults: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          default_fee_lbp: number | null
+          default_fee_usd: number | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          default_fee_lbp?: number | null
+          default_fee_usd?: number | null
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          default_fee_lbp?: number | null
+          default_fee_usd?: number | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_client_defaults_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pricing_client_overrides: {
         Row: {
           city_id: string | null
@@ -621,6 +659,91 @@ export type Database = {
             columns: ["governorate_id"]
             isOneToOne: false
             referencedRelation: "governorates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_client_package_extras: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          extra_fee_lbp: number | null
+          extra_fee_usd: number | null
+          id: string
+          package_type: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          extra_fee_lbp?: number | null
+          extra_fee_usd?: number | null
+          id?: string
+          package_type: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          extra_fee_lbp?: number | null
+          extra_fee_usd?: number | null
+          id?: string
+          package_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_client_package_extras_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_client_zone_rules: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          fee_lbp: number | null
+          fee_usd: number | null
+          governorate_ids: string[]
+          id: string
+          rule_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          fee_lbp?: number | null
+          fee_usd?: number | null
+          governorate_ids: string[]
+          id?: string
+          rule_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          fee_lbp?: number | null
+          fee_usd?: number | null
+          governorate_ids?: string[]
+          id?: string
+          rule_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_client_zone_rules_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
