@@ -39,9 +39,45 @@ const ClientPricingSection = () => {
   const [governorateId, setGovernorateId] = useState('');
   const [packageType, setPackageType] = useState<'Parcel' | 'Document' | 'Bulky' | ''>('');
   
-  // Fees
-  const [feeUsd, setFeeUsd] = useState('');
-  const [feeLbp, setFeeLbp] = useState('');
+  // Separate fees for each rule type to prevent cross-contamination
+  const [defaultFeeUsd, setDefaultFeeUsd] = useState('');
+  const [defaultFeeLbp, setDefaultFeeLbp] = useState('');
+  const [zoneFeeUsd, setZoneFeeUsd] = useState('');
+  const [zoneFeeLbp, setZoneFeeLbp] = useState('');
+  const [packageFeeUsd, setPackageFeeUsd] = useState('');
+  const [packageFeeLbp, setPackageFeeLbp] = useState('');
+
+  // Get current fees based on rule type
+  const getCurrentFees = () => {
+    switch (ruleType) {
+      case 'default':
+        return { feeUsd: defaultFeeUsd, feeLbp: defaultFeeLbp };
+      case 'zone':
+        return { feeUsd: zoneFeeUsd, feeLbp: zoneFeeLbp };
+      case 'package':
+        return { feeUsd: packageFeeUsd, feeLbp: packageFeeLbp };
+      default:
+        return { feeUsd: '', feeLbp: '' };
+    }
+  };
+
+  // Set current fees based on rule type
+  const setCurrentFees = (feeUsd: string, feeLbp: string) => {
+    switch (ruleType) {
+      case 'default':
+        setDefaultFeeUsd(feeUsd);
+        setDefaultFeeLbp(feeLbp);
+        break;
+      case 'zone':
+        setZoneFeeUsd(feeUsd);
+        setZoneFeeLbp(feeLbp);
+        break;
+      case 'package':
+        setPackageFeeUsd(feeUsd);
+        setPackageFeeLbp(feeLbp);
+        break;
+    }
+  };
 
   // Validation functions
   const validateUsd = (value: string) => {
@@ -125,26 +161,35 @@ const ClientPricingSection = () => {
     setRuleType('default');
     setGovernorateId('');
     setPackageType('');
-    setFeeUsd('');
-    setFeeLbp('');
+    // Reset all fee states
+    setDefaultFeeUsd('');
+    setDefaultFeeLbp('');
+    setZoneFeeUsd('');
+    setZoneFeeLbp('');
+    setPackageFeeUsd('');
+    setPackageFeeLbp('');
     setEditingId(null);
     setShowForm(false);
   };
 
   const handleEdit = (override: any) => {
     setSelectedClientId(override.client_id);
-    setFeeUsd(override.fee_usd ? override.fee_usd.toString() : '');
-    setFeeLbp(override.fee_lbp ? override.fee_lbp.toString() : '');
     
-    // Determine rule type based on override data
+    // Determine rule type and set appropriate fields
     if (override.governorate_id) {
       setRuleType('zone');
       setGovernorateId(override.governorate_id);
+      setZoneFeeUsd(override.fee_usd ? override.fee_usd.toString() : '');
+      setZoneFeeLbp(override.fee_lbp ? override.fee_lbp.toString() : '');
     } else if (override.package_type) {
       setRuleType('package');
       setPackageType(override.package_type);
+      setPackageFeeUsd(override.fee_usd ? override.fee_usd.toString() : '');
+      setPackageFeeLbp(override.fee_lbp ? override.fee_lbp.toString() : '');
     } else {
       setRuleType('default');
+      setDefaultFeeUsd(override.fee_usd ? override.fee_usd.toString() : '');
+      setDefaultFeeLbp(override.fee_lbp ? override.fee_lbp.toString() : '');
     }
     
     setEditingId(override.id);
@@ -156,6 +201,8 @@ const ClientPricingSection = () => {
       toast.error("Please select a client");
       return;
     }
+
+    const { feeUsd, feeLbp } = getCurrentFees();
 
     // Validate rule-specific fields
     if (ruleType === 'zone' && !governorateId) {
@@ -223,6 +270,7 @@ const ClientPricingSection = () => {
     }
   };
 
+  const { feeUsd, feeLbp } = getCurrentFees();
   const isFormValid = selectedClientId && (feeUsd || feeLbp) && 
     (ruleType === 'default' || 
      (ruleType === 'zone' && governorateId) || 
@@ -251,12 +299,12 @@ const ClientPricingSection = () => {
               Client-Specific Pricing
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Set default, zone-specific, and package-specific delivery fees for clients
+              Configure layered pricing rules: Default fees, zone overrides, and package extras for specific clients
             </p>
           </div>
           <Button onClick={() => setShowForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Override
+            Add Rule
           </Button>
         </div>
       </CardHeader>
@@ -265,10 +313,10 @@ const ClientPricingSection = () => {
           <Card className="mb-6 border-dashed">
             <CardHeader>
               <CardTitle className="text-lg">
-                {editingId ? 'Edit Client Pricing' : 'Add Client Pricing Override'}
+                {editingId ? 'Edit Client Pricing Rule' : 'Add Client Pricing Rule'}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Configure default, zone-specific, or package-specific pricing rules for a client
+                Create rules for default pricing, zone-specific overrides, or package-type extras
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -352,33 +400,49 @@ const ClientPricingSection = () => {
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="default" className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4" />
-                      Default
+                      Default Fee
                     </TabsTrigger>
                     <TabsTrigger value="zone" className="flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
-                      Zone-Specific
+                      Zone Override
                     </TabsTrigger>
                     <TabsTrigger value="package" className="flex items-center gap-2">
                       <Package className="h-4 w-4" />
-                      Package-Specific
+                      Package Extra
                     </TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="default" className="space-y-3">
-                    <div className="p-4 border rounded-lg bg-muted/20">
-                      <h4 className="font-medium text-sm mb-2">Default Client Pricing</h4>
-                      <p className="text-xs text-muted-foreground">
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20">
+                      <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-blue-600" />
+                        Client Default Pricing
+                      </h4>
+                      <p className="text-xs text-muted-foreground mb-3">
                         Sets the base delivery fee for this client. Used when no zone or package-specific rules match.
                       </p>
+                      <div className="text-xs space-y-1">
+                        <div><strong>Priority:</strong> 5th (lowest)</div>
+                        <div><strong>Applies to:</strong> All orders from this client</div>
+                        <div><strong>Overrides:</strong> Global default pricing</div>
+                      </div>
                     </div>
                   </TabsContent>
                   
                   <TabsContent value="zone" className="space-y-3">
-                    <div className="p-4 border rounded-lg bg-muted/20">
-                      <h4 className="font-medium text-sm mb-2">Zone-Specific Pricing</h4>
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+                      <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-green-600" />
+                        Zone-Specific Override
+                      </h4>
                       <p className="text-xs text-muted-foreground mb-3">
-                        Override delivery fees for specific governorates. Takes priority over default client pricing.
+                        Override delivery fees for specific governorates. Takes priority over client default pricing.
                       </p>
+                      <div className="text-xs space-y-1 mb-3">
+                        <div><strong>Priority:</strong> 3rd (high)</div>
+                        <div><strong>Applies to:</strong> Orders to the selected governorate</div>
+                        <div><strong>Overrides:</strong> Client default & global pricing</div>
+                      </div>
                       <div className="space-y-2">
                         <Label className="text-sm">Governorate *</Label>
                         <Select value={governorateId} onValueChange={setGovernorateId}>
@@ -398,11 +462,19 @@ const ClientPricingSection = () => {
                   </TabsContent>
                   
                   <TabsContent value="package" className="space-y-3">
-                    <div className="p-4 border rounded-lg bg-muted/20">
-                      <h4 className="font-medium text-sm mb-2">Package-Specific Pricing</h4>
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20">
+                      <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                        <Package className="h-4 w-4 text-purple-600" />
+                        Package-Specific Pricing
+                      </h4>
                       <p className="text-xs text-muted-foreground mb-3">
-                        Set extra fees or overrides for specific package types. Can be combined with zone pricing.
+                        Set total delivery fees for specific package types. Overrides default and zone pricing.
                       </p>
+                      <div className="text-xs space-y-1 mb-3">
+                        <div><strong>Priority:</strong> 4th (medium)</div>
+                        <div><strong>Applies to:</strong> Orders with the selected package type</div>
+                        <div><strong>Overrides:</strong> Client default & global pricing</div>
+                      </div>
                       <div className="space-y-2">
                         <Label className="text-sm">Package Type *</Label>
                         <Select value={packageType} onValueChange={(value) => setPackageType(value as 'Parcel' | 'Document' | 'Bulky')}>
@@ -425,10 +497,7 @@ const ClientPricingSection = () => {
               <div className="space-y-4">
                 <Label className="text-base font-medium">Delivery Fees *</Label>
                 <p className="text-sm text-muted-foreground">
-                  {ruleType === 'package' ? 
-                    'Set the total delivery fee for this package type (not an additional fee)' :
-                    'Set the delivery fees for this rule (at least one currency required)'
-                  }
+                  Set the delivery fees for this rule (at least one currency required)
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -441,7 +510,7 @@ const ClientPricingSection = () => {
                         min="0"
                         placeholder="5.00"
                         value={feeUsd}
-                        onChange={(e) => setFeeUsd(e.target.value)}
+                        onChange={(e) => setCurrentFees(e.target.value, feeLbp)}
                         className={`pl-9 ${!validateUsd(feeUsd) && feeUsd ? 'border-destructive' : ''}`}
                       />
                     </div>
@@ -463,7 +532,7 @@ const ClientPricingSection = () => {
                         type="text"
                         placeholder="150,000"
                         value={formatLbpInput(feeLbp)}
-                        onChange={(e) => setFeeLbp(e.target.value.replace(/,/g, ''))}
+                        onChange={(e) => setCurrentFees(feeUsd, e.target.value.replace(/,/g, ''))}
                         className={`pl-12 ${!validateLbp(feeLbp) && feeLbp ? 'border-destructive' : ''}`}
                       />
                     </div>
@@ -487,7 +556,7 @@ const ClientPricingSection = () => {
                   ) : (
                     <Plus className="h-4 w-4 mr-2" />
                   )}
-                  {editingId ? 'Update Override' : 'Create Override'}
+                  {editingId ? 'Update Rule' : 'Create Rule'}
                 </Button>
                 <Button variant="outline" onClick={resetForm}>
                   Cancel
@@ -539,19 +608,19 @@ const ClientPricingSection = () => {
                     </TableCell>
                     <TableCell>
                       {override.governorate_id ? (
-                        <Badge variant="default" className="text-xs">
+                        <Badge variant="default" className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
                           <MapPin className="h-3 w-3 mr-1" />
-                          Zone
+                          Zone Override
                         </Badge>
                       ) : override.package_type ? (
-                        <Badge variant="default" className="text-xs">
+                        <Badge variant="default" className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
                           <Package className="h-3 w-3 mr-1" />
-                          Package
+                          Package Extra
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
                           <DollarSign className="h-3 w-3 mr-1" />
-                          Default
+                          Default Fee
                         </Badge>
                       )}
                     </TableCell>
@@ -566,7 +635,7 @@ const ClientPricingSection = () => {
                         </span>
                       ) : (
                         <span className="text-sm text-muted-foreground">
-                          All areas
+                          All areas & packages
                         </span>
                       )}
                     </TableCell>
@@ -597,9 +666,9 @@ const ClientPricingSection = () => {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Client Pricing Override</AlertDialogTitle>
+                              <AlertDialogTitle>Delete Client Pricing Rule</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete this pricing override? This action cannot be undone.
+                                Are you sure you want to delete this pricing rule? This action cannot be undone and may affect delivery fee calculations.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -608,7 +677,7 @@ const ClientPricingSection = () => {
                                 onClick={() => deleteOverride.mutate(override.id)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
-                                Delete
+                                Delete Rule
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -623,24 +692,30 @@ const ClientPricingSection = () => {
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No client pricing overrides configured</p>
-            <p className="text-sm">Add overrides to set custom pricing for specific clients</p>
+            <p>No client pricing rules configured</p>
+            <p className="text-sm">Create rules to set custom pricing for specific clients, zones, or package types</p>
           </div>
         )}
 
         {/* Pricing Logic Explanation */}
         {groupedOverrides && groupedOverrides.length > 0 && (
-          <div className="mt-6 p-4 bg-muted/20 rounded-lg border">
+          <div className="mt-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
             <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-primary" />
-              Pricing Logic Priority
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              Pricing Logic Priority (Client-Specific System)
             </h4>
             <div className="text-xs text-muted-foreground space-y-1">
-              <div>1. <strong>Zone + Package rules</strong> take highest priority</div>
-              <div>2. <strong>Zone-specific rules</strong> override client defaults for that area</div>
-              <div>3. <strong>Package-specific rules</strong> override client defaults for that type</div>
-              <div>4. <strong>Client default rules</strong> override global pricing</div>
-              <div>5. <strong>Global default</strong> applies when no other rule matches</div>
+              <div className="font-medium text-amber-800 dark:text-amber-300 mb-2">
+                If client is in Client-Specific Pricing, ONLY these rules apply:
+              </div>
+              <div>1. <strong className="text-green-700 dark:text-green-400">Zone + Package rules</strong> - Highest priority (not yet implemented)</div>
+              <div>2. <strong className="text-green-700 dark:text-green-400">Zone Override rules</strong> - Override client defaults for specific areas</div>
+              <div>3. <strong className="text-purple-700 dark:text-purple-400">Package Extra rules</strong> - Override client defaults for specific package types</div>
+              <div>4. <strong className="text-blue-700 dark:text-blue-400">Client Default rules</strong> - Base fallback for this client</div>
+              <div>5. <strong className="text-gray-600 dark:text-gray-400">Global Default</strong> - System fallback (if no client rules exist)</div>
+              <div className="mt-2 p-2 bg-amber-100 dark:bg-amber-900/30 rounded text-amber-800 dark:text-amber-300 text-xs">
+                <strong>Important:</strong> Global Zone & Package pricing does NOT apply to clients with custom rules.
+              </div>
             </div>
           </div>
         )}
