@@ -74,8 +74,8 @@ const ClientPricingSection = () => {
   React.useEffect(() => {
     if (selectedClientConfig) {
       // Load default pricing
-      setDefaultFeeUsd(selectedClientConfig.default_fee_usd?.toString() || '');
-      setDefaultFeeLbp(selectedClientConfig.default_fee_lbp?.toString() || '');
+      setDefaultFeeUsd(selectedClientConfig.default_pricing?.default_fee_usd?.toString() || '');
+      setDefaultFeeLbp(selectedClientConfig.default_pricing?.default_fee_lbp?.toString() || '');
       
       // Load package extras
       const parcelExtra = selectedClientConfig.package_extras?.find(e => e.package_type === 'Parcel');
@@ -778,10 +778,10 @@ const ClientPricingSection = () => {
                     <div className="p-3 bg-background rounded border">
                       <div className="text-sm font-medium text-blue-600">Default Pricing</div>
                       <div className="text-sm text-muted-foreground">
-                        {selectedClientConfig.default_fee_usd > 0 && `$${selectedClientConfig.default_fee_usd}`}
-                        {selectedClientConfig.default_fee_usd > 0 && selectedClientConfig.default_fee_lbp > 0 && ' / '}
-                        {selectedClientConfig.default_fee_lbp > 0 && `${selectedClientConfig.default_fee_lbp.toLocaleString()} LBP`}
-                        {!selectedClientConfig.default_fee_usd && !selectedClientConfig.default_fee_lbp && 'Not set'}
+                        {selectedClientConfig.default_pricing?.default_fee_usd > 0 && `$${selectedClientConfig.default_pricing.default_fee_usd}`}
+                        {selectedClientConfig.default_pricing?.default_fee_usd > 0 && selectedClientConfig.default_pricing?.default_fee_lbp > 0 && ' / '}
+                        {selectedClientConfig.default_pricing?.default_fee_lbp > 0 && `${selectedClientConfig.default_pricing.default_fee_lbp.toLocaleString()} LBP`}
+                        {!selectedClientConfig.default_pricing?.default_fee_usd && !selectedClientConfig.default_pricing?.default_fee_lbp && 'Not set'}
                       </div>
                     </div>
                     <div className="p-3 bg-background rounded border">
