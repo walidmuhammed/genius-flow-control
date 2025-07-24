@@ -27,6 +27,7 @@ import { useGovernorates } from '@/hooks/use-governorates';
 import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const ClientPricingSection = () => {
   const { data: allConfigurations, isLoading } = useAllClientPricingConfigurations();
@@ -512,26 +513,73 @@ const ClientPricingSection = () => {
                       
                       <div className="space-y-2">
                         <Label>Select Governorates</Label>
-                        <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2 border rounded">
-                          {governorates?.map((gov) => (
-                            <div key={gov.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={gov.id}
-                                checked={selectedGovernorateIds.includes(gov.id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedGovernorateIds([...selectedGovernorateIds, gov.id]);
-                                  } else {
-                                    setSelectedGovernorateIds(selectedGovernorateIds.filter(id => id !== gov.id));
-                                  }
-                                }}
-                              />
-                              <Label htmlFor={gov.id} className="text-sm">
-                                {gov.name}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={`w-full justify-between ${selectedGovernorateIds.length === 0 ? 'text-muted-foreground' : ''}`}
+                            >
+                              {selectedGovernorateIds.length === 0
+                                ? 'Select governorates...'
+                                : governorates
+                                    ?.filter(gov => selectedGovernorateIds.includes(gov.id))
+                                    .map(gov => gov.name)
+                                    .join(', ')
+                              }
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72 p-0">
+                            <Command>
+                              <CommandInput placeholder="Search governorates..." className="h-9" />
+                              <CommandList>
+                                <CommandEmpty>No governorate found.</CommandEmpty>
+                                <CommandGroup>
+                                  {governorates?.map((gov) => {
+                                    // Compute used governorate IDs (except when editing)
+                                    const usedGovernorateIds = selectedClientConfig?.zone_rules
+                                      ? selectedClientConfig.zone_rules
+                                          .filter(rule => !editingZoneId || rule.id !== editingZoneId)
+                                          .flatMap(rule => rule.governorate_ids)
+                                      : [];
+                                    const isUsed = usedGovernorateIds.includes(gov.id);
+                                    return (
+                                      <CommandItem
+                                        key={gov.id}
+                                        onSelect={() => {
+                                          if (isUsed) return;
+                                          if (selectedGovernorateIds.includes(gov.id)) {
+                                            setSelectedGovernorateIds(selectedGovernorateIds.filter(id => id !== gov.id));
+                                          } else {
+                                            setSelectedGovernorateIds([...selectedGovernorateIds, gov.id]);
+                                          }
+                                        }}
+                                        className={`cursor-pointer ${isUsed ? 'opacity-50 pointer-events-none' : ''}`}
+                                        disabled={isUsed}
+                                      >
+                                        <Checkbox
+                                          checked={selectedGovernorateIds.includes(gov.id)}
+                                          onCheckedChange={() => {
+                                            if (isUsed) return;
+                                            if (selectedGovernorateIds.includes(gov.id)) {
+                                              setSelectedGovernorateIds(selectedGovernorateIds.filter(id => id !== gov.id));
+                                            } else {
+                                              setSelectedGovernorateIds([...selectedGovernorateIds, gov.id]);
+                                            }
+                                          }}
+                                          className="mr-2"
+                                          disabled={isUsed}
+                                        />
+                                        <span>{gov.name}</span>
+                                      </CommandItem>
+                                    );
+                                  })}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       
                       <div className="grid md:grid-cols-2 gap-4">
