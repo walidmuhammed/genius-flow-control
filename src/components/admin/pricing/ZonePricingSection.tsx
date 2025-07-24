@@ -6,12 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { MapPin, Plus, Pencil, Trash2, DollarSign, Loader2 } from 'lucide-react';
+import { MapPin, Plus, Pencil, Trash2, DollarSign, Loader2, ChevronDown } from 'lucide-react';
 import { useZonePricingRules, useCreateZonePricingRule, useUpdateZonePricingRule, useDeleteZonePricingRule } from '@/hooks/use-pricing';
 import { useAdminClients } from '@/hooks/use-admin-clients';
 import { useGovernorates } from '@/hooks/use-governorates';
 import { formatCurrency } from '@/utils/format';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const ZonePricingSection = () => {
   const { data: rules, isLoading } = useZonePricingRules();
@@ -73,6 +76,14 @@ const ZonePricingSection = () => {
   const isFormValid = selectedGovernorateIds.length > 0 && (feeUsd || feeLbp) && 
     ((feeUsd && parseFloat(feeUsd) > 0) || (feeLbp && parseFloat(feeLbp.replace(/,/g, '')) > 0));
 
+  // Compute governorate IDs already used in rules (except when editing)
+  const usedGovernorateIds = rules
+    ? rules
+        .filter(rule => !editingId || rule.id !== editingId)
+        .map(rule => rule.governorate_id)
+        .filter(Boolean)
+    : [];
+
   if (isLoading) {
     return (
       <Card className="mb-8">
@@ -120,25 +131,70 @@ const ZonePricingSection = () => {
                   <p className="text-sm text-muted-foreground">
                     Select one or more governorates to apply the same pricing rule
                   </p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto border rounded-lg p-3">
-                    {governorates?.map((gov) => (
-                      <label key={gov.id} className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={selectedGovernorateIds.includes(gov.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedGovernorateIds([...selectedGovernorateIds, gov.id]);
-                            } else {
-                              setSelectedGovernorateIds(selectedGovernorateIds.filter(id => id !== gov.id));
-                            }
-                          }}
-                          className="rounded border-gray-300"
-                        />
-                        <span className="text-sm">{gov.name}</span>
-                      </label>
-                    ))}
-                  </div>
+                  {/* Dropdown checklist for governorates */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className={
+                          `w-full justify-between ${selectedGovernorateIds.length === 0 ? 'text-muted-foreground' : ''}`
+                        }
+                      >
+                        {selectedGovernorateIds.length === 0
+                          ? 'Select governorates...'
+                          : governorates
+                              ?.filter(gov => selectedGovernorateIds.includes(gov.id))
+                              .map(gov => gov.name)
+                              .join(', ')
+                        }
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 p-0">
+                      <Command>
+                        <CommandInput placeholder="Search governorates..." className="h-9" />
+                        <CommandList>
+                          <CommandEmpty>No governorate found.</CommandEmpty>
+                          <CommandGroup>
+                            {governorates?.map((gov) => {
+                              const isUsed = usedGovernorateIds.includes(gov.id);
+                              return (
+                                <CommandItem
+                                  key={gov.id}
+                                  onSelect={() => {
+                                    if (isUsed) return;
+                                    if (selectedGovernorateIds.includes(gov.id)) {
+                                      setSelectedGovernorateIds(selectedGovernorateIds.filter(id => id !== gov.id));
+                                    } else {
+                                      setSelectedGovernorateIds([...selectedGovernorateIds, gov.id]);
+                                    }
+                                  }}
+                                  className={`cursor-pointer ${isUsed ? 'opacity-50 pointer-events-none' : ''}`}
+                                  disabled={isUsed}
+                                >
+                                  <Checkbox
+                                    checked={selectedGovernorateIds.includes(gov.id)}
+                                    onCheckedChange={() => {
+                                      if (isUsed) return;
+                                      if (selectedGovernorateIds.includes(gov.id)) {
+                                        setSelectedGovernorateIds(selectedGovernorateIds.filter(id => id !== gov.id));
+                                      } else {
+                                        setSelectedGovernorateIds([...selectedGovernorateIds, gov.id]);
+                                      }
+                                    }}
+                                    className="mr-2"
+                                    disabled={isUsed}
+                                  />
+                                  <span>{gov.name}</span>
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
