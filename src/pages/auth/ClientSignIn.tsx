@@ -43,9 +43,10 @@ const ClientSignIn = () => {
 
     try {
       // For now, we'll sign in with email. Phone authentication can be added later
-      const signInData = isEmail(emailOrPhone) 
-        ? { email: emailOrPhone, password }
-        : { email: emailOrPhone, password }; // Assume it's email for now
+      const sanitizedEmail = emailOrPhone.trim().toLowerCase();
+      const signInData = isEmail(sanitizedEmail) 
+        ? { email: sanitizedEmail, password }
+        : { email: sanitizedEmail, password }; // Assume it's email for now
 
       const { data, error: signInError } = await supabase.auth.signInWithPassword(signInData);
 
