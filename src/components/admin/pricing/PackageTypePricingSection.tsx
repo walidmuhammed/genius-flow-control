@@ -294,11 +294,13 @@ const PackageTypePricingSection = () => {
             </Table>
           </div>
         ) : (
-          <div className="text-center py-12 text-muted-foreground">
-            <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No package type pricing rules configured</p>
-            <p className="text-sm">Add rules to set extra fees for specific package types</p>
-          </div>
+          !isAdding && (
+            <div className="text-center py-12 text-muted-foreground">
+              <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No package type pricing rules configured</p>
+              <p className="text-sm">Add rules to set extra fees for specific package types</p>
+            </div>
+          )
         )}
       </CardContent>
     </Card>
