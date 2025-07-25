@@ -144,7 +144,11 @@ const AdminClientsTable: React.FC<AdminClientsTableProps> = ({
           </TableHeader>
           <TableBody>
             {filteredClients.map((client) => (
-              <TableRow key={client.id} className="hover:bg-muted/50">
+              <TableRow 
+                key={client.id} 
+                className="hover:bg-muted/50 cursor-pointer transition-colors"
+                onClick={() => onViewClient(client)}
+              >
                 <TableCell className="font-medium">
                   <div>
                     <div className="font-semibold">{client.business_name || 'No Business Name'}</div>
@@ -159,7 +163,7 @@ const AdminClientsTable: React.FC<AdminClientsTableProps> = ({
                 <TableCell className="text-center">{client.total_invoices || 0}</TableCell>
                 <TableCell>{formatDate(new Date(client.created_at))}</TableCell>
                 <TableCell>{getStatusBadge(client.status)}</TableCell>
-                <TableCell>
+                <TableCell onClick={e => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm">
