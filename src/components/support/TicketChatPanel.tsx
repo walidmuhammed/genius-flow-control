@@ -94,7 +94,7 @@ export const TicketChatPanel: React.FC<TicketChatPanelProps> = ({
 
   if (!ticket) {
     return (
-      <Card className="h-full flex flex-col">
+      <Card className="h-full flex flex-col flex-1 min-h-0">
         <CardContent className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -109,7 +109,7 @@ export const TicketChatPanel: React.FC<TicketChatPanelProps> = ({
   }
 
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col flex-1 min-h-0">
       <CardHeader className="border-b">
         <div className="flex items-center gap-3">
           {isMobile && (
@@ -135,9 +135,9 @@ export const TicketChatPanel: React.FC<TicketChatPanelProps> = ({
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
+      <CardContent className="flex-1 overflow-hidden p-0 flex flex-col min-h-0"> {/* min-h-0 for flex children */}
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"> {/* Only this area scrolls */}
           {/* Initial Ticket Message */}
           <div className="bg-gray-100 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2">
