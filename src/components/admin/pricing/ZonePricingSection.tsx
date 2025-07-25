@@ -327,11 +327,13 @@ const ZonePricingSection = () => {
             </Table>
           </div>
         ) : (
-          <div className="text-center py-12 text-muted-foreground">
-            <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No zone pricing rules configured</p>
-            <p className="text-sm">Add rules to set governorate-specific pricing for clients</p>
-          </div>
+          !showForm && (
+            <div className="text-center py-12 text-muted-foreground">
+              <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No zone pricing rules configured</p>
+              <p className="text-sm">Add rules to set governorate-specific pricing for clients</p>
+            </div>
+          )
         )}
       </CardContent>
     </Card>
