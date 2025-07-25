@@ -3,7 +3,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Download, Truck } from 'lucide-react';
+import { Search, Download, Truck, Package, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { 
   useAdminPickupStats, 
   useAdminPickupsWithClients, 
@@ -84,12 +84,12 @@ const AdminPickupsContent = () => {
   }, [pickups, statusFilter]);
 
   const statusFilters = useMemo(() => [
-    { value: 'all', label: 'All', count: stats?.totalPickups || 0 },
-    { value: 'scheduled', label: 'Scheduled', count: stats?.totalScheduled || 0 },
-    { value: 'assigned', label: 'Assigned', count: stats?.totalAssigned || 0 },
-    { value: 'in progress', label: 'In Progress', count: stats?.totalInProgress || 0 },
-    { value: 'completed', label: 'Completed', count: stats?.totalCompleted || 0 },
-    { value: 'canceled', label: 'Canceled', count: stats?.totalCanceled || 0 },
+    { value: 'all', label: 'All', count: stats?.totalPickups || 0, icon: Package },
+    { value: 'scheduled', label: 'Scheduled', count: stats?.totalScheduled || 0, icon: Clock },
+    { value: 'assigned', label: 'Assigned', count: stats?.totalAssigned || 0, icon: Truck },
+    { value: 'in progress', label: 'In Progress', count: stats?.totalInProgress || 0, icon: Clock },
+    { value: 'completed', label: 'Completed', count: stats?.totalCompleted || 0, icon: CheckCircle },
+    { value: 'canceled', label: 'Canceled', count: stats?.totalCanceled || 0, icon: XCircle },
   ], [stats]);
 
   const activeFilterCount = useMemo(() => {
@@ -149,23 +149,32 @@ const AdminPickupsContent = () => {
 
           {/* Filter Buttons */}
           <div className="flex flex-wrap gap-2">
-            {statusFilters.map((filter) => (
-              <Button
-                key={filter.value}
-                variant={statusFilter === filter.value ? "destructive" : "outline"}
-                size="sm"
-                onClick={() => setStatusFilter(filter.value)}
-                className="transition-all duration-200"
-                disabled={pickupsLoading}
-              >
-                {filter.label}
-                {statusFilter === filter.value && (
-                  <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-destructive-foreground/20 text-destructive-foreground">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </Button>
-            ))}
+            {statusFilters.map((filter) => {
+              const isActive = statusFilter === filter.value;
+              const Icon = filter.icon;
+              return (
+                <Button
+                  key={filter.value}
+                  variant={isActive ? undefined : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter(filter.value)}
+                  className={
+                    isActive
+                      ? "bg-[#DB271E] text-white hover:bg-[#c0211a] border-none shadow-sm shadow-[#DB271E]/10"
+                      : "border border-input bg-background/80 backdrop-blur-sm hover:bg-accent hover:text-accent-foreground"
+                  }
+                  disabled={pickupsLoading}
+                >
+                  <Icon className={`h-4 w-4 mr-1 ${isActive ? 'text-white' : 'text-[#DB271E]'}`} />
+                  {filter.label}
+                  {isActive && (
+                    <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-white/20 text-white">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </Button>
+              );
+            })}
           </div>
 
           {/* Table */}
