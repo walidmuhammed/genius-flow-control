@@ -8,6 +8,7 @@ import { useOrders } from '@/hooks/use-orders';
 import { usePickups } from '@/hooks/use-pickups';
 import { useInvoices } from '@/hooks/use-invoices';
 import { formatDate } from '@/utils/format';
+import { OrdersTable } from '@/components/orders/OrdersTable';
 
 interface EntitySelectionStepProps {
   category: string;
@@ -99,34 +100,57 @@ export const EntitySelectionStep: React.FC<EntitySelectionStepProps> = ({
         />
       </div>
 
-      {/* Entity List */}
-      <div className="max-h-96 overflow-y-auto space-y-2">
-        {entities.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No {entityType}s found</p>
-          </div>
-        ) : (
-          entities.map((entity) => (
-            <Card
-              key={entity.id}
-              className="cursor-pointer transition-all hover:bg-gray-50 border-gray-200 hover:border-gray-300"
-              onClick={() => onSelect(entity)}
-            >
-              <CardContent className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-medium text-gray-900">{entity.name}</h3>
-                    <p className="text-sm text-gray-600">{entity.subtitle}</p>
+      {/* Entity List/Table */}
+      {entityType === 'order' ? (
+        <div className="max-h-96 overflow-y-auto">
+          <OrdersTable
+            orders={orders.filter(order => {
+              const query = searchQuery.toLowerCase();
+              return (
+                order.order_id?.toString().toLowerCase().includes(query) ||
+                order.customer?.name?.toLowerCase().includes(query) ||
+                order.status?.toLowerCase().includes(query)
+              );
+            })}
+            selectionMode={true}
+            selectedOrderIds={[]}
+            onOrderSelection={(ids) => {
+              const selected = orders.find(order => order.id === ids[0]);
+              if (selected) {
+                onSelect({ type: 'order', id: selected.id, name: `Order #${selected.order_id}` });
+              }
+            }}
+          />
+        </div>
+      ) : (
+        <div className="max-h-96 overflow-y-auto space-y-2">
+          {entities.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No {entityType}s found</p>
+            </div>
+          ) : (
+            entities.map((entity) => (
+              <Card
+                key={entity.id}
+                className="cursor-pointer transition-all hover:bg-gray-50 border-gray-200 hover:border-gray-300"
+                onClick={() => onSelect(entity)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium text-gray-900">{entity.name}</h3>
+                      <p className="text-sm text-gray-600">{entity.subtitle}</p>
+                    </div>
+                    <span className="text-xs text-gray-500">
+                      {formatDate(new Date(entity.date))}
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-500">
-                    {formatDate(new Date(entity.date))}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
 
       {/* Skip Option */}
       <div className="pt-4 border-t">
