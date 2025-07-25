@@ -9,6 +9,9 @@ import { CreateTicketModal } from '@/components/support/CreateTicketModal';
 import { TicketListPanel } from '@/components/support/TicketListPanel';
 import { TicketChatPanel } from '@/components/support/TicketChatPanel';
 import { Ticket } from '@/services/tickets';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const Support: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -65,6 +68,16 @@ const Support: React.FC = () => {
               Get help and manage your support tickets
             </p>
           </div>
+          <Button
+            className={cn(
+              "bg-[#DC291E] hover:bg-[#c0211a] text-white rounded-xl shadow-sm",
+              isMobile && "w-full"
+            )}
+            onClick={() => setCreateTicketOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create Ticket
+          </Button>
         </motion.div>
 
         {/* Main Content - Two Panel Layout */}
