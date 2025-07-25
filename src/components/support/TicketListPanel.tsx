@@ -68,7 +68,7 @@ export const TicketListPanel: React.FC<TicketListPanelProps> = ({
     };
   };
   const counts = getTicketCounts();
-  return <Card className="h-full flex flex-col">
+  return <Card className="h-full flex flex-col flex-1 min-h-0"> {/* Ensure panel fills parent */}
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Support Tickets</h2>
@@ -82,13 +82,13 @@ export const TicketListPanel: React.FC<TicketListPanelProps> = ({
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-hidden p-0">
-        <Tabs value={activeFilter} onValueChange={value => onFilterChange(value as any)} className="h-full flex flex-col">
+      <CardContent className="flex-1 overflow-hidden p-0 min-h-0 flex flex-col"> {/* min-h-0 for flex children */}
+        <Tabs value={activeFilter} onValueChange={value => onFilterChange(value as any)} className="h-full flex flex-col min-h-0">
           <div className="px-4 pb-2">
             
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 pb-4">
+          <div className="flex-1 overflow-y-auto px-4 pb-4 min-h-0"> {/* Only this area scrolls */}
             {filteredTickets.length === 0 ? <div className="text-center py-8">
                 <p className="text-gray-500 text-sm">No tickets found</p>
               </div> : <div className="space-y-3">
