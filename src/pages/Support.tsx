@@ -52,10 +52,10 @@ const Support: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="h-full flex flex-col">
+      <div className="flex flex-col h-[calc(100vh-0px)] min-h-0 flex-1"> {/* Ensure full viewport height, min-h-0 for flex children */}
         {/* Header */}
         <motion.div 
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6"
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 shrink-0"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -69,13 +69,13 @@ const Support: React.FC = () => {
 
         {/* Main Content - Two Panel Layout */}
         <motion.div 
-          className="flex-1 flex gap-6 min-h-0"
+          className="flex-1 flex gap-6 min-h-0" // flex-1 and min-h-0 for proper flexbox height
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
           {/* Left Panel - Ticket List */}
-          <div className={`${isMobile ? 'w-full' : 'w-1/3'} flex flex-col min-h-0`}>
+          <div className={`${isMobile ? 'w-full' : 'w-1/3'} flex flex-col min-h-0 h-full`}> {/* h-full for flex child */}
             <TicketListPanel
               tickets={tickets}
               selectedTicket={selectedTicket}
@@ -90,7 +90,7 @@ const Support: React.FC = () => {
 
           {/* Right Panel - Chat View */}
           {!isMobile && (
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 h-full flex flex-col"> {/* h-full for flex child */}
               <TicketChatPanel
                 ticket={selectedTicket}
                 onClose={() => setSelectedTicket(null)}
