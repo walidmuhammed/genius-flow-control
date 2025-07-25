@@ -1,11 +1,12 @@
 import React from 'react';
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -63,31 +64,32 @@ const ClientDetailsPanel: React.FC<ClientDetailsPanelProps> = ({
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-full sm:max-w-4xl overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-3">
-            <Building className="h-5 w-5" />
-            {client.business_name || 'No Business Name'}
-          </SheetTitle>
-          <SheetDescription>
-            Complete business information and account details
-          </SheetDescription>
-        </SheetHeader>
-
-        <div className="mt-6">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="fixed top-1/2 left-1/2 max-w-3xl w-full h-[80vh] p-0 z-50 flex flex-col translate-x-[-50%] translate-y-[-50%]">
+        <div className="pt-8 px-8">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3 text-2xl font-extrabold mb-4 pt-2">
+              <Building className="h-6 w-6" />
+              {client.business_name || 'No Business Name'}
+            </DialogTitle>
+            <DialogDescription>
+              Complete business information and account details
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+        <div className="flex-1 overflow-y-auto px-8 pb-8 mt-2">
           <Tabs defaultValue="business" className="w-full">
             <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="business">Business</TabsTrigger>
-              <TabsTrigger value="account">Account</TabsTrigger>
-              <TabsTrigger value="orders">Orders</TabsTrigger>
-              <TabsTrigger value="invoices">Invoices</TabsTrigger>
-              <TabsTrigger value="activity">Activity</TabsTrigger>
+              <TabsTrigger value="business" className="data-[state=active]:bg-[#DB271E] data-[state=active]:text-white">Business</TabsTrigger>
+              <TabsTrigger value="account" className="data-[state=active]:bg-[#DB271E] data-[state=active]:text-white">Account</TabsTrigger>
+              <TabsTrigger value="orders" className="data-[state=active]:bg-[#DB271E] data-[state=active]:text-white">Orders</TabsTrigger>
+              <TabsTrigger value="invoices" className="data-[state=active]:bg-[#DB271E] data-[state=active]:text-white">Invoices</TabsTrigger>
+              <TabsTrigger value="activity" className="data-[state=active]:bg-[#DB271E] data-[state=active]:text-white">Activity</TabsTrigger>
             </TabsList>
 
             {/* Business Information Tab */}
             <TabsContent value="business" className="space-y-4">
-              <Card>
+              <Card className="mt-4">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Building className="h-4 w-4" />
@@ -306,8 +308,8 @@ const ClientDetailsPanel: React.FC<ClientDetailsPanelProps> = ({
             </TabsContent>
           </Tabs>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 };
 
