@@ -74,6 +74,7 @@ const AdminTickets = () => {
             <TicketChatPanel
               ticket={selectedTicket}
               onClose={() => setSelectedTicket(null)}
+              isAdmin={true}
             />
           </div>
         </motion.div>
