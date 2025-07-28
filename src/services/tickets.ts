@@ -203,21 +203,49 @@ export async function updateTicketStatus(ticketId: string, status: TicketStatus)
  */
 export async function getAdminTickets() {
   try {
-    const { data, error } = await supabase
+    // First get all tickets
+    const { data: tickets, error: ticketsError } = await supabase
       .from('tickets')
-      .select(`
-        *,
-        profiles:created_by(full_name, business_name)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching admin tickets:', error);
+    if (ticketsError) {
+      console.error('Error fetching tickets:', ticketsError);
       toast.error('Failed to load support tickets');
       return [];
     }
 
-    return data || [];
+    if (!tickets || tickets.length === 0) {
+      return [];
+    }
+
+    // Get unique user IDs
+    const userIds = [...new Set(tickets.map(t => t.created_by).filter(Boolean))];
+    
+    if (userIds.length === 0) {
+      return tickets.map(ticket => ({ ...ticket, profiles: null }));
+    }
+
+    // Get profiles for these users
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, full_name, business_name')
+      .in('id', userIds);
+
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
+      // Return tickets without profile data if profiles fail
+      return tickets.map(ticket => ({ ...ticket, profiles: null }));
+    }
+
+    // Create a map for quick lookup
+    const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+    // Merge tickets with profile data
+    return tickets.map(ticket => ({
+      ...ticket,
+      profiles: ticket.created_by ? profilesMap.get(ticket.created_by) || null : null
+    }));
   } catch (error) {
     console.error('Unexpected error fetching admin tickets:', error);
     toast.error('Failed to load support tickets');
