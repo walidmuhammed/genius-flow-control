@@ -205,7 +205,10 @@ export async function getAdminTickets() {
   try {
     const { data, error } = await supabase
       .from('tickets')
-      .select(`*, profiles:created_by (full_name, business_name)`)
+      .select(`
+        *,
+        profiles!inner(full_name, business_name)
+      `)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -214,7 +217,6 @@ export async function getAdminTickets() {
       return [];
     }
 
-    // Each ticket will have a 'profiles' field with client info
     return data || [];
   } catch (error) {
     console.error('Unexpected error fetching admin tickets:', error);
