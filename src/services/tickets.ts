@@ -207,7 +207,7 @@ export async function getAdminTickets() {
       .from('tickets')
       .select(`
         *,
-        profiles!inner(full_name, business_name)
+        profiles:created_by(full_name, business_name)
       `)
       .order('created_at', { ascending: false });
 
