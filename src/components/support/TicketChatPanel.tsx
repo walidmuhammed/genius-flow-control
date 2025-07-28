@@ -14,12 +14,14 @@ interface TicketChatPanelProps {
   ticket: Ticket | null;
   onClose?: () => void;
   isMobile?: boolean;
+  isAdmin?: boolean;
 }
 
 export const TicketChatPanel: React.FC<TicketChatPanelProps> = ({
   ticket,
   onClose,
-  isMobile = false
+  isMobile = false,
+  isAdmin = false
 }) => {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -42,7 +44,7 @@ export const TicketChatPanel: React.FC<TicketChatPanelProps> = ({
     try {
       await addMessageMutation.mutateAsync({
         ticket_id: ticket.id,
-        sender: 'client',
+        sender: isAdmin ? 'admin' : 'client',
         content: newMessage.trim()
       });
       
@@ -166,12 +168,12 @@ export const TicketChatPanel: React.FC<TicketChatPanelProps> = ({
                 className={`max-w-[70%] rounded-lg p-3 ${
                   message.sender === 'client' 
                     ? 'bg-[#DC291E] text-white' 
-                    : 'bg-gray-100 text-gray-900'
+                    : 'bg-blue-100 text-blue-900'
                 }`}
               >
                 <p className="text-sm">{message.content}</p>
                 <span className={`text-xs ${
-                  message.sender === 'client' ? 'text-red-100' : 'text-gray-500'
+                  message.sender === 'client' ? 'text-red-100' : 'text-blue-500'
                 }`}>
                   {formatDate(new Date(message.created_at))}
                 </span>
