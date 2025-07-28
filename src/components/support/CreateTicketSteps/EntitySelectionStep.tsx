@@ -112,8 +112,8 @@ export const EntitySelectionStep: React.FC<EntitySelectionStepProps> = ({
                 order.status?.toLowerCase().includes(query)
               );
             })}
-            selectionMode={true}
-            selectedOrderIds={[]}
+            singleSelectRowClickOnly={true}
+            fitModalWidth={true}
             onOrderSelection={(ids) => {
               const selected = orders.find(order => order.id === ids[0]);
               if (selected) {
