@@ -196,3 +196,29 @@ export async function updateTicketStatus(ticketId: string, status: TicketStatus)
     return false;
   }
 }
+
+/**
+ * Fetch all tickets with client info (for admin)
+ * Joins tickets.created_by with profiles.id to get full_name and business_name
+ */
+export async function getAdminTickets() {
+  try {
+    const { data, error } = await supabase
+      .from('tickets')
+      .select(`*, profiles:created_by (full_name, business_name)`)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching admin tickets:', error);
+      toast.error('Failed to load support tickets');
+      return [];
+    }
+
+    // Each ticket will have a 'profiles' field with client info
+    return data || [];
+  } catch (error) {
+    console.error('Unexpected error fetching admin tickets:', error);
+    toast.error('Failed to load support tickets');
+    return [];
+  }
+}

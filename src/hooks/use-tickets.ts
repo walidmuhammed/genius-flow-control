@@ -7,6 +7,7 @@ import {
   createTicket,
   addTicketMessage,
   updateTicketStatus,
+  getAdminTickets, // <-- add import
   type Ticket,
   type TicketMessage,
   type TicketStatus,
@@ -90,5 +91,14 @@ export function useUpdateTicketStatus() {
       toast.error('Failed to update ticket status');
       console.error('Error updating ticket status:', error);
     }
+  });
+}
+
+export function useAdminTickets() {
+  return useQuery({
+    queryKey: ['admin-tickets'],
+    queryFn: getAdminTickets,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30000 // Refetch every 30 seconds
   });
 }

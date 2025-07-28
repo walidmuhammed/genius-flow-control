@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatNumber } from '@/utils/format';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface KpiCardProps {
   title: string;
@@ -132,3 +132,43 @@ export default function KpiCard({
     </motion.div>
   );
 }
+
+interface AdminKpiCardProps {
+  title: string;
+  value: number | string;
+  icon: React.ReactNode;
+  // bgGradient: string;
+  // iconBg: string;
+  textColor: string;
+  subtitle?: string;
+}
+
+export const AdminKpiCard: React.FC<AdminKpiCardProps> = ({
+  title,
+  value,
+  icon,
+  textColor,
+  subtitle
+}) => (
+  <div
+    className={cn(
+      'bg-white',
+      'rounded-xl',
+      'border border-gray-100',
+      'p-5',
+      'flex flex-col min-w-0 relative',
+      'gap-0'
+    )}
+    style={{ minHeight: 90, minWidth: 0 }}
+  >
+    {/* Icon in top-right */}
+    <div className="absolute top-4 right-4">
+      <span className="inline-flex items-center justify-center rounded-full w-7 h-7 bg-blue-50">
+        {icon}
+      </span>
+    </div>
+    <span className="text-xs text-gray-500 font-medium mb-1">{title}</span>
+    <div className="text-2xl font-bold text-gray-900 mt-2">{value}</div>
+    {subtitle && <div className="text-xs text-gray-400 mt-1">{subtitle}</div>}
+  </div>
+);
