@@ -1,7 +1,6 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogPortal, DialogOverlay, DialogDescription } from '@/components/ui/dialog';
+import { AnimatedModal } from '@/components/ui/animated-modal';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetPortal, SheetOverlay } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -77,16 +76,14 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
         </DrawerContent>
       </Drawer>
     ) : (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full" style={{ zIndex: 60 }}>
-          <DialogHeader>
-            <DialogTitle>Order Details</DialogTitle>
-          </DialogHeader>
-          <div className="p-4 text-center text-gray-500">
+      <AnimatedModal open={open} onOpenChange={onOpenChange} className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full">
+        <div className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Order Details</h2>
+          <div className="text-center text-gray-500">
             No order selected
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </AnimatedModal>
     );
   }
 
@@ -570,26 +567,26 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
     );
   }
 
-  // Desktop: Dialog implementation
+  // Desktop: AnimatedModal implementation
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[95vh] w-[95vw] sm:w-full overflow-hidden" style={{ zIndex: 60 }}>
-        <DialogHeader className="flex-row items-center justify-between pb-4">
-          <div className="flex-1 min-w-0">
-            <DialogTitle className="text-2xl font-semibold">
-              Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-            </DialogTitle>
-            <div className="mt-3">
-              <StatusTypeBadges />
-            </div>
+    <AnimatedModal open={open} onOpenChange={onOpenChange} className="max-w-4xl max-h-[95vh] w-[95vw] sm:w-full overflow-hidden" showCloseButton={false}>
+      <div className="flex flex-row items-center justify-between pb-4 p-6 border-b">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-2xl font-semibold">
+            Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+          </h2>
+          <div className="mt-3">
+            <StatusTypeBadges />
           </div>
-          <HeaderActions />
-        </DialogHeader>
-        <ScrollArea className="flex-1 pr-6">
+        </div>
+        <HeaderActions />
+      </div>
+      <ScrollArea className="flex-1 pr-6">
+        <div className="p-6 pt-4">
           <OrderContent />
-          <div className="h-6" />
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
+        </div>
+        <div className="h-6" />
+      </ScrollArea>
+    </AnimatedModal>
   );
 };

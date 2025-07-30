@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AnimatedModal } from '@/components/ui/animated-modal';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -48,14 +48,9 @@ const PickupDetailsDialog: React.FC<PickupDetailsDialogProps> = ({
 }) => {
   if (!pickup) return null;
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          {/* Title moved to PickupDetailsContent for reuse */}
-        </DialogHeader>
-        <PickupDetailsContent pickup={pickup} />
-      </DialogContent>
-    </Dialog>
+    <AnimatedModal open={open} onOpenChange={onOpenChange} className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+      <PickupDetailsContent pickup={pickup} />
+    </AnimatedModal>
   );
 };
 

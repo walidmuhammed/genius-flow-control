@@ -1,7 +1,6 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogPortal, DialogOverlay, DialogDescription } from '@/components/ui/dialog';
+import { AnimatedModal } from '@/components/ui/animated-modal';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetPortal, SheetOverlay } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -57,7 +56,7 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
   };
 
   if (!order) {
-    // Mobile: Drawer, Desktop: Dialog fallback for no order
+    // Mobile: Drawer, Desktop: AnimatedModal fallback for no order
     return isMobile ? <Drawer open={open} onOpenChange={onOpenChange}>
         <DrawerContent className="max-h-[90vh]">
           <DrawerHeader>
@@ -67,18 +66,14 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
             No order selected
           </div>
         </DrawerContent>
-      </Drawer> : <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full" style={{
-        zIndex: 60
-      }}>
-          <DialogHeader>
-            <DialogTitle>Order Details</DialogTitle>
-          </DialogHeader>
-          <div className="p-4 text-center text-gray-500">
-            No order selected
+      </Drawer> : <AnimatedModal open={open} onOpenChange={onOpenChange} className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full">
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Order Details</h2>
+            <div className="text-center text-gray-500">
+              No order selected
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>;
+        </AnimatedModal>;
   }
 
   const getStatusColor = (status: string) => {
@@ -522,27 +517,17 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
     );
   };
 
-  // DESKTOP: fix dialog constraints, add DialogDescription
+  // DESKTOP: Use AnimatedModal instead of Dialog
   if (!isMobile) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[95vh] w-[95vw] sm:w-full shadow-lg border bg-background p-0" style={{
-          zIndex: 60,
-          overflow: 'hidden'
-        }}>
-          <DialogHeader className="sr-only">
-            <DialogTitle>Order Details</DialogTitle>
-            <DialogDescription>
-              Full details of order and customer package information
-            </DialogDescription>
-          </DialogHeader>
-          {/* ACTUAL header UI */}
-          <div className="border-b p-6 pt-4 pb-4 bg-background z-10 relative">
-            <div className="flex items-center justify-between w-full flex-wrap gap-y-2">
-              <div className="flex items-center gap-3 min-w-0 flex-wrap flex-1">
-                <Package className="h-6 w-6 text-[#DB271E] flex-shrink-0" />
-                <span className="text-xl font-semibold text-gray-900 truncate shrink-0 leading-tight tracking-tight">
-                  Order #{order.order_id?.toString().padStart(3, "0") || order.id.slice(0, 8)}
+      <AnimatedModal open={open} onOpenChange={onOpenChange} className="max-w-4xl max-h-[95vh] w-[95vw] sm:w-full" showCloseButton={false}>
+        {/* ACTUAL header UI */}
+        <div className="border-b p-6 pt-4 pb-4 bg-background z-10 relative">
+          <div className="flex items-center justify-between w-full flex-wrap gap-y-2">
+            <div className="flex items-center gap-3 min-w-0 flex-wrap flex-1">
+              <Package className="h-6 w-6 text-[#DB271E] flex-shrink-0" />
+              <span className="text-xl font-semibold text-gray-900 truncate shrink-0 leading-tight tracking-tight">
+                Order #{order.order_id?.toString().padStart(3, "0") || order.id.slice(0, 8)}
                 </span>
                 {order.reference_number && (
                   <span
@@ -561,17 +546,16 @@ const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
                 <StatusTypeBadges />
                 <HeaderActions />
               </div>
-            </div>
           </div>
-          <ScrollArea className="max-h-[calc(95vh-140px)]" style={{
-            padding: 0
-          }}>
-            <div className="p-6 pt-4">
-              <OrderContent />
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+        </div>
+        <ScrollArea className="max-h-[calc(95vh-140px)]" style={{
+          padding: 0
+        }}>
+          <div className="p-6 pt-4">
+            <OrderContent />
+          </div>
+        </ScrollArea>
+      </AnimatedModal>
     );
   }
 
