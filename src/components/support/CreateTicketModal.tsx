@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { AnimatedModal } from '@/components/ui/animated-modal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Package, Truck, CreditCard, HelpCircle } from 'lucide-react';
@@ -112,45 +112,47 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
   };
 
   return (
-    <AnimatedModal open={open} onOpenChange={onOpenChange} className="sm:max-w-2xl max-h-[90vh] overflow-hidden" showCloseButton={false}>
-      <div className="px-6 py-4 border-b">
-        <div className="flex items-center gap-3">
-          {currentStep > 1 && (
-            <Button variant="ghost" size="sm" onClick={handleBack}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            {currentStep > 1 && (
+              <Button variant="ghost" size="sm" onClick={handleBack}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <DialogTitle>{getStepTitle()}</DialogTitle>
+          </div>
+        </DialogHeader>
+
+        <div className="overflow-y-auto">
+          {currentStep === 1 && (
+            <TicketCategoryStep onSelect={handleCategorySelect} />
           )}
-          <h2 className="text-xl font-semibold">{getStepTitle()}</h2>
+
+          {currentStep === 2 && (
+            <EntitySelectionStep
+              category={flowData.category}
+              onSelect={handleEntitySelect}
+            />
+          )}
+
+          {currentStep === 3 && (
+            <IssueSelectionStep
+              category={flowData.category}
+              onSelect={handleIssueSelect}
+            />
+          )}
+
+          {currentStep === 4 && (
+            <FinalMessageStep
+              flowData={flowData}
+              onSubmit={handleSubmit}
+              isLoading={createTicketMutation.isPending}
+            />
+          )}
         </div>
-      </div>
-
-      <div className="overflow-y-auto">
-        {currentStep === 1 && (
-          <TicketCategoryStep onSelect={handleCategorySelect} />
-        )}
-
-        {currentStep === 2 && (
-          <EntitySelectionStep
-            category={flowData.category}
-            onSelect={handleEntitySelect}
-          />
-        )}
-
-        {currentStep === 3 && (
-          <IssueSelectionStep
-            category={flowData.category}
-            onSelect={handleIssueSelect}
-          />
-        )}
-
-        {currentStep === 4 && (
-          <FinalMessageStep
-            flowData={flowData}
-            onSubmit={handleSubmit}
-            isLoading={createTicketMutation.isPending}
-          />
-        )}
-      </div>
-    </AnimatedModal>
+      </DialogContent>
+    </Dialog>
   );
 };

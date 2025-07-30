@@ -1,6 +1,6 @@
 
 import React from "react";
-import { AnimatedModal } from "@/components/ui/animated-modal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useScreenSize } from "@/hooks/useScreenSize";
 
@@ -38,19 +38,18 @@ export default function CustomerDetailsModal({
     );
   }
   return (
-    <AnimatedModal 
-      open={open} 
-      onOpenChange={onOpenChange}
-      className={`${
-        isEditing ? "max-w-4xl" : "sm:max-w-[600px]"
-      } p-0 rounded-xl w-full max-h-[80vh] flex flex-col`}
-      showCloseButton={false}
-    >
-      <div className="px-6 py-4 border-b flex flex-row items-center justify-between flex-shrink-0">
-        <h2 className="text-xl font-semibold">{title}</h2>
-        {headerActions && <div className="flex items-center gap-2">{headerActions}</div>}
-      </div>
-      <div className={`${isEditing ? "p-8 bg-white" : "p-6"} overflow-y-auto flex-1`}>{children}</div>
-    </AnimatedModal>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className={`${
+          isEditing ? "max-w-4xl" : "sm:max-w-[600px]"
+        } p-0 rounded-xl w-full max-h-[80vh] flex flex-col`}
+      >
+        <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between flex-shrink-0">
+          <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
+          {headerActions && <div className="flex items-center gap-2">{headerActions}</div>}
+        </DialogHeader>
+        <div className={`${isEditing ? "p-8 bg-white" : "p-6"} overflow-y-auto flex-1`}>{children}</div>
+      </DialogContent>
+    </Dialog>
   );
 }
