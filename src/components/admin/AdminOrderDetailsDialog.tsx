@@ -602,8 +602,8 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[90vh]">
-          <DrawerHeader className="flex-row items-center justify-between pb-4">
+        <DrawerContent className="h-[90vh] flex flex-col">
+          <DrawerHeader className="flex-row items-center justify-between pb-4 flex-shrink-0 border-b">
             <div className="flex-1 min-w-0">
               <DrawerTitle className="text-xl font-semibold">
                 Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
@@ -614,10 +614,13 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
             </div>
             <HeaderActions />
           </DrawerHeader>
-          <ScrollArea className="flex-1 px-4">
-            <OrderContent />
-            <div className="h-6" />
-          </ScrollArea>
+          <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full px-4 pb-4">
+              <div className="py-4">
+                <OrderContent />
+              </div>
+            </ScrollArea>
+          </div>
         </DrawerContent>
       </Drawer>
     );
@@ -626,22 +629,23 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
   // Desktop: Dialog implementation
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[95vh] w-[95vw] sm:w-full p-0 overflow-hidden" style={{ zIndex: 60 }}>
-        <div className="flex flex-col h-full">
-          <DialogHeader className="flex-row items-center justify-between pb-4 px-6 pt-6 flex-shrink-0">
-            <div className="flex-1 min-w-0">
-              <DialogTitle className="text-2xl font-semibold">
-                Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-              </DialogTitle>
-              <div className="mt-3">
-                <StatusTypeBadges />
-              </div>
+      <DialogContent className="max-w-4xl w-[95vw] sm:w-full h-[95vh] p-0 flex flex-col" style={{ zIndex: 60 }}>
+        <DialogHeader className="flex-row items-center justify-between pb-4 px-6 pt-6 flex-shrink-0 border-b">
+          <div className="flex-1 min-w-0">
+            <DialogTitle className="text-2xl font-semibold">
+              Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+            </DialogTitle>
+            <div className="mt-3">
+              <StatusTypeBadges />
             </div>
-            <HeaderActions />
-          </DialogHeader>
-          <ScrollArea className="flex-1 px-6 pb-6">
-            <OrderContent />
-            <div className="h-6" />
+          </div>
+          <HeaderActions />
+        </DialogHeader>
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full px-6 pb-6">
+            <div className="py-4">
+              <OrderContent />
+            </div>
           </ScrollArea>
         </div>
       </DialogContent>

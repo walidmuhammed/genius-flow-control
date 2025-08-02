@@ -298,7 +298,10 @@ const AdminOrders: React.FC = () => {
               {/* Filter Tabs */}
               <AdminOrdersFilterTabs
                 activeTab={activeTab}
-                onTabChange={setActiveTab}
+                onTabChange={(newTab) => {
+                  console.log('Changing tab from', activeTab, 'to', newTab);
+                  setActiveTab(newTab);
+                }}
                 tabs={tabs}
               />
               
