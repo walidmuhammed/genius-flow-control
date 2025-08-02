@@ -17,6 +17,8 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import OrderNoteTooltip from '@/components/orders/OrderNoteTooltip';
 import { useNavigate } from 'react-router-dom';
+import { useAdminClients } from '@/hooks/use-admin-clients';
+import ClientDetailsPanel from '@/components/admin/ClientDetailsPanel';
 
 interface AdminEnhancedOrdersTableProps {
   orders: OrderWithCustomer[];
@@ -37,6 +39,10 @@ export const AdminEnhancedOrdersTable: React.FC<AdminEnhancedOrdersTableProps> =
 }) => {
   const navigate = useNavigate();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
+  const [clientPanelOpen, setClientPanelOpen] = useState(false);
+  
+  const { data: clients } = useAdminClients();
 
   const handleSelectAll = (checked: boolean) => {
     onOrderSelection(checked ? orders.map((order) => order.id) : []);
@@ -94,15 +100,20 @@ export const AdminEnhancedOrdersTable: React.FC<AdminEnhancedOrdersTableProps> =
     }
   };
 
-  // Get shop name from order (placeholder for now)
+  // Get shop name from order
   const getShopName = (order: OrderWithCustomer) => {
-    // TODO: Get actual shop name from order.client_id
-    return 'Shop Name'; // Placeholder
+    if (!order.client_id || !clients) return 'Unknown Shop';
+    const client = clients.find(c => c.id === order.client_id);
+    return client?.business_name || client?.full_name || 'Unknown Shop';
   };
 
   const handleShopClick = (order: OrderWithCustomer) => {
-    if (order.client_id) {
-      navigate(`/dashboard/admin/clients?id=${order.client_id}`);
+    if (order.client_id && clients) {
+      const client = clients.find(c => c.id === order.client_id);
+      if (client) {
+        setSelectedClient(client);
+        setClientPanelOpen(true);
+      }
     }
   };
 
@@ -274,6 +285,15 @@ export const AdminEnhancedOrdersTable: React.FC<AdminEnhancedOrdersTableProps> =
           })}
         </TableBody>
       </Table>
+      
+      <ClientDetailsPanel
+        client={selectedClient}
+        isOpen={clientPanelOpen}
+        onClose={() => {
+          setClientPanelOpen(false);
+          setSelectedClient(null);
+        }}
+      />
     </div>
   );
 };

@@ -7,12 +7,14 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle as AlertDialogTitlePrimitive, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDate } from '@/utils/format';
-import { OrderWithCustomer } from '@/services/orders';
+import { OrderWithCustomer, OrderStatus } from '@/services/orders';
 import OrderProgressBar from '@/components/orders/OrderProgressBar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
-import { useDeleteOrder } from '@/hooks/use-orders';
+import { useDeleteOrder, useUpdateOrder } from '@/hooks/use-orders';
+import { useAdminClients } from '@/hooks/use-admin-clients';
 import { toast } from 'sonner';
 import { MapPin, Phone, User, Package, DollarSign, Clock, FileText, Truck, Edit, Trash2, History, Map, Building, AlertTriangle, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -36,6 +38,8 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const deleteOrder = useDeleteOrder();
+  const updateOrder = useUpdateOrder();
+  const { data: clients } = useAdminClients();
 
   const handleEditOrder = () => {
     if (order) {
@@ -133,10 +137,23 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
   // Check if order can be edited/deleted (admins can edit any order except "Paid")
   const canEditDelete = order?.status !== 'Paid';
 
-  // Get shop name (placeholder for now)
-  const getShopName = () => {
-    // TODO: Get actual shop name from order.client_id
-    return 'Shop Name'; // Placeholder
+  // Get shop information
+  const getShopInfo = () => {
+    if (!order.client_id || !clients) return null;
+    return clients.find(c => c.id === order.client_id);
+  };
+
+  const handleStatusChange = async (newStatus: OrderStatus) => {
+    if (!order) return;
+    
+    try {
+      await updateOrder.mutateAsync({
+        id: order.id,
+        updates: { status: newStatus }
+      });
+    } catch (error) {
+      toast.error("Failed to update order status");
+    }
   };
 
   const formatDateShort = (dateString?: string) => {
@@ -180,9 +197,21 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
   // STATUS BADGE + TYPE BADGE
   const StatusTypeBadges = () => (
     <div className="flex items-center gap-3 flex-wrap min-w-0">
-      <Badge className={`px-3 py-1.5 text-sm font-medium ${getStatusColor(order.status)}`}>
-        {order.status}
-      </Badge>
+      <Select value={order.status} onValueChange={handleStatusChange}>
+        <SelectTrigger className={`w-auto px-3 py-1.5 text-sm font-medium border-none ${getStatusColor(order.status)}`}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="New">New</SelectItem>
+          <SelectItem value="Pending Pickup">Pending Pickup</SelectItem>
+          <SelectItem value="In Progress">In Progress</SelectItem>
+          <SelectItem value="Successful">Successful</SelectItem>
+          <SelectItem value="Unsuccessful">Unsuccessful</SelectItem>
+          <SelectItem value="Returned">Returned</SelectItem>
+          <SelectItem value="Awaiting Action">Awaiting Action</SelectItem>
+          <SelectItem value="Paid">Paid</SelectItem>
+        </SelectContent>
+      </Select>
       <Badge className={`px-3 py-1.5 text-sm font-medium ${getTypeColor(order.type)}`}>
         {order.type}
       </Badge>
@@ -324,17 +353,41 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-4">
-              <div>
-                <span className="font-semibold text-lg text-gray-900">{getShopName()}</span>
-              </div>
-              <Button
-                onClick={handleViewShop}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Store className="h-4 w-4" />
-                View Shop Details
-              </Button>
+              {getShopInfo() ? (
+                <>
+                  <div>
+                    <span className="font-semibold text-lg text-gray-900">
+                      {getShopInfo()?.business_name || getShopInfo()?.full_name}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {getShopInfo()?.phone && (
+                      <div className="flex items-center gap-3">
+                        <Phone className="h-5 w-5 text-gray-500" />
+                        <span className="text-base text-gray-700">{getShopInfo()?.phone}</span>
+                      </div>
+                    )}
+                    {getShopInfo()?.email && (
+                      <div className="flex items-center gap-3">
+                        <User className="h-5 w-5 text-gray-500" />
+                        <span className="text-base text-gray-700">{getShopInfo()?.email}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Button
+                    onClick={handleViewShop}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Store className="h-4 w-4" />
+                    View Shop Details
+                  </Button>
+                </>
+              ) : (
+                <div className="text-gray-500">Shop information not available</div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -573,22 +626,24 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
   // Desktop: Dialog implementation
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[95vh] w-[95vw] sm:w-full overflow-hidden" style={{ zIndex: 60 }}>
-        <DialogHeader className="flex-row items-center justify-between pb-4">
-          <div className="flex-1 min-w-0">
-            <DialogTitle className="text-2xl font-semibold">
-              Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-            </DialogTitle>
-            <div className="mt-3">
-              <StatusTypeBadges />
+      <DialogContent className="max-w-4xl max-h-[95vh] w-[95vw] sm:w-full p-0 overflow-hidden" style={{ zIndex: 60 }}>
+        <div className="flex flex-col h-full">
+          <DialogHeader className="flex-row items-center justify-between pb-4 px-6 pt-6 flex-shrink-0">
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-2xl font-semibold">
+                Order #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+              </DialogTitle>
+              <div className="mt-3">
+                <StatusTypeBadges />
+              </div>
             </div>
-          </div>
-          <HeaderActions />
-        </DialogHeader>
-        <ScrollArea className="flex-1 pr-6">
-          <OrderContent />
-          <div className="h-6" />
-        </ScrollArea>
+            <HeaderActions />
+          </DialogHeader>
+          <ScrollArea className="flex-1 px-6 pb-6">
+            <OrderContent />
+            <div className="h-6" />
+          </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
