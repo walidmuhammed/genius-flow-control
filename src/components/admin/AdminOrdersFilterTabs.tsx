@@ -97,14 +97,20 @@ export const AdminOrdersFilterTabs: React.FC<AdminOrdersFilterTabsProps> = ({
             <motion.button
               key={tab.key}
               className={cn(
-                "relative px-3 lg:px-4 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap rounded-xl flex items-center gap-2 border flex-shrink-0",
+                "relative px-3 lg:px-4 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap rounded-xl flex items-center gap-2 border flex-shrink-0 cursor-pointer",
                 isActive
                   ? 'text-white bg-[#DB271E] border-[#DB271E] shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
               )}
-              onClick={() => onTabChange(tab.key)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Tab clicked:', tab.key, 'Current active:', activeTab);
+                onTabChange(tab.key);
+              }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              style={{ pointerEvents: 'auto' }}
             >
               <Icon className="h-4 w-4" />
               <span>{tab.label}</span>
