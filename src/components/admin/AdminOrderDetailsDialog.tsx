@@ -198,18 +198,18 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
   const StatusTypeBadges = () => (
     <div className="flex items-center gap-3 flex-wrap min-w-0">
       <Select value={order.status} onValueChange={handleStatusChange}>
-        <SelectTrigger className={`w-auto px-3 py-1.5 text-sm font-medium border-none ${getStatusColor(order.status)}`}>
+        <SelectTrigger className={`w-auto px-3 py-1.5 text-sm font-medium border-none cursor-pointer ${getStatusColor(order.status)}`}>
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="New">New</SelectItem>
-          <SelectItem value="Pending Pickup">Pending Pickup</SelectItem>
-          <SelectItem value="In Progress">In Progress</SelectItem>
-          <SelectItem value="Successful">Successful</SelectItem>
-          <SelectItem value="Unsuccessful">Unsuccessful</SelectItem>
-          <SelectItem value="Returned">Returned</SelectItem>
-          <SelectItem value="Awaiting Action">Awaiting Action</SelectItem>
-          <SelectItem value="Paid">Paid</SelectItem>
+        <SelectContent className="z-[70] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
+          <SelectItem value="New" className="cursor-pointer">New</SelectItem>
+          <SelectItem value="Pending Pickup" className="cursor-pointer">Pending Pickup</SelectItem>
+          <SelectItem value="In Progress" className="cursor-pointer">In Progress</SelectItem>
+          <SelectItem value="Successful" className="cursor-pointer">Successful</SelectItem>
+          <SelectItem value="Unsuccessful" className="cursor-pointer">Unsuccessful</SelectItem>
+          <SelectItem value="Returned" className="cursor-pointer">Returned</SelectItem>
+          <SelectItem value="Awaiting Action" className="cursor-pointer">Awaiting Action</SelectItem>
+          <SelectItem value="Paid" className="cursor-pointer">Paid</SelectItem>
         </SelectContent>
       </Select>
       <Badge className={`px-3 py-1.5 text-sm font-medium ${getTypeColor(order.type)}`}>
