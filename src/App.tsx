@@ -77,6 +77,7 @@ function App() {
               <Route path="/dashboard/client/support" element={<Support />} />
               <Route path="/dashboard/client/analytics" element={<Analytics />} />
               <Route path="/dashboard/client/settings" element={<Settings />} />
+              <Route path="/dashboard/client/settings/:section" element={<Settings />} />
             </Route>
 
             {/* Backward compatibility redirects with search params preserved */}
@@ -91,6 +92,7 @@ function App() {
               <Route path="/support" element={<Navigate to="/dashboard/client/support" replace />} />
               <Route path="/analytics" element={<Navigate to="/dashboard/client/analytics" replace />} />
               <Route path="/settings" element={<Navigate to="/dashboard/client/settings" replace />} />
+              <Route path="/settings/:section" element={<RedirectWithParams to="/dashboard/client/settings" />} />
             </Route>
 
             {/* Protected admin routes */}

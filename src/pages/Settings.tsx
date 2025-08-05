@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { User, Lock, Building2, Receipt, Users, ServerCog, Plug, FileCheck, ShieldAlert, MapPin, Menu, ChevronDown } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -10,9 +11,20 @@ import BusinessInfoSection from '@/components/settings/BusinessInfoSection';
 import BusinessLocationsSection from '@/components/settings/BusinessLocationsSection';
 import SecuritySection from '@/components/settings/SecuritySection';
 const Settings: React.FC = () => {
+  const { section } = useParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('personal');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Update active tab based on URL parameter
+  useEffect(() => {
+    if (section) {
+      setActiveTab(section);
+    } else {
+      setActiveTab('personal');
+    }
+  }, [section]);
   const menuItems = [{
     icon: <User className="h-5 w-5" />,
     label: 'Personal Info',
@@ -58,6 +70,11 @@ const Settings: React.FC = () => {
     label: 'Plugins',
     value: 'plugins'
   }];
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    navigate(`/dashboard/client/settings/${value}`, { replace: true });
+  };
   const getCurrentTabLabel = () => {
     return menuItems.find(item => item.value === activeTab)?.label || 'Settings';
   };
@@ -71,7 +88,7 @@ const Settings: React.FC = () => {
       <div className="py-4">
         <nav className="space-y-1 px-2">
           {menuItems.map(item => <button key={item.value} onClick={() => {
-          setActiveTab(item.value);
+          handleTabChange(item.value);
           if (isMobile) setSidebarOpen(false);
         }} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all w-full text-left ${activeTab === item.value ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
               {item.icon}
@@ -121,7 +138,7 @@ const Settings: React.FC = () => {
                 <CollapsibleContent className="mt-2">
                   <div className="bg-background border rounded-lg shadow-sm">
                     {menuItems.map(item => <button key={item.value} onClick={() => {
-                    setActiveTab(item.value);
+                    handleTabChange(item.value);
                     setMobileMenuOpen(false);
                   }} className={`flex items-center gap-3 w-full px-3 py-2 text-sm text-left transition-all first:rounded-t-lg last:rounded-b-lg hover:bg-muted ${activeTab === item.value ? 'bg-muted text-foreground' : 'text-muted-foreground'}`}>
                         {item.icon}
@@ -134,7 +151,7 @@ const Settings: React.FC = () => {
           </div>
           
           <div className="p-4 lg:p-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsContent value="personal">
                 <PersonalInfoSection />
               </TabsContent>

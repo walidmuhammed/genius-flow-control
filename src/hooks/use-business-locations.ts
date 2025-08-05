@@ -4,7 +4,6 @@ import { useAuth } from '@/hooks/useAuth';
 export interface BusinessLocation {
   id: string;
   name: string;
-  country: string;
   governorate: string;
   area: string;
   address: string;

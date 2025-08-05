@@ -13,11 +13,11 @@ import { PhoneInput } from '@/components/ui/phone-input';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { AreaSelector } from '@/components/orders/AreaSelector';
 
 interface BusinessLocation {
   id: string;
   name: string;
-  country: string;
   governorate: string;
   area: string;
   address: string;
@@ -38,7 +38,6 @@ const BusinessLocationsSection = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    country: '',
     governorate: '',
     area: '',
     address: '',
@@ -47,9 +46,6 @@ const BusinessLocationsSection = () => {
     isDefault: false
   });
 
-  const countries = ['Lebanon', 'United Arab Emirates', 'Saudi Arabia', 'Egypt', 'Jordan'];
-  const governorates = ['Beirut', 'Mount Lebanon', 'North Lebanon', 'South Lebanon', 'Bekaa', 'Nabatieh'];
-  const areas = ['Achrafieh', 'Hamra', 'Verdun', 'Kaslik', 'Jounieh', 'Tripoli', 'Sidon', 'Tyre', 'Zahle', 'Baalbek'];
 
   useEffect(() => {
     if (user) {
@@ -78,7 +74,7 @@ const BusinessLocationsSection = () => {
   };
 
   const handleSubmit = () => {
-    if (!formData.name || !formData.country || !formData.contactPerson || !formData.contactPhone) {
+    if (!formData.name || !formData.contactPerson || !formData.contactPhone) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -116,7 +112,6 @@ const BusinessLocationsSection = () => {
   const resetForm = () => {
     setFormData({
       name: '',
-      country: '',
       governorate: '',
       area: '',
       address: '',
@@ -131,7 +126,6 @@ const BusinessLocationsSection = () => {
   const handleEdit = (location: BusinessLocation) => {
     setFormData({
       name: location.name,
-      country: location.country,
       governorate: location.governorate,
       area: location.area,
       address: location.address,
@@ -166,6 +160,14 @@ const BusinessLocationsSection = () => {
     setIsDetailsOpen(true);
   };
 
+  const handleAreaSelected = (governorate: string, area: string) => {
+    setFormData(prev => ({
+      ...prev,
+      governorate,
+      area
+    }));
+  };
+
   const LocationForm = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-2">
@@ -179,51 +181,12 @@ const BusinessLocationsSection = () => {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="country">Country *</Label>
-        <Select value={formData.country} onValueChange={(value) => setFormData(prev => ({ ...prev, country: value }))}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select country" />
-          </SelectTrigger>
-          <SelectContent>
-            {countries.map((country) => (
-              <SelectItem key={country} value={country}>
-                {country}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="governorate">Governorate</Label>
-        <Select value={formData.governorate} onValueChange={(value) => setFormData(prev => ({ ...prev, governorate: value }))}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select governorate" />
-          </SelectTrigger>
-          <SelectContent>
-            {governorates.map((gov) => (
-              <SelectItem key={gov} value={gov}>
-                {gov}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="area">Area</Label>
-        <Select value={formData.area} onValueChange={(value) => setFormData(prev => ({ ...prev, area: value }))}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select area" />
-          </SelectTrigger>
-          <SelectContent>
-            {areas.map((area) => (
-              <SelectItem key={area} value={area}>
-                {area}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Label>Location (Governorate & Area)</Label>
+        <AreaSelector
+          selectedArea={formData.area}
+          selectedGovernorate={formData.governorate}
+          onAreaSelected={handleAreaSelected}
+        />
       </div>
       
       <div className="md:col-span-2 space-y-2">

@@ -18,7 +18,7 @@ import { useOrdersByStatus } from '@/hooks/use-orders';
 import { useCreatePickup } from '@/hooks/use-pickups';
 import { useUpdateOrder } from '@/hooks/use-orders';
 import { useBusinessLocations, BusinessLocation } from '@/hooks/use-business-locations';
-import LocationAreaSelector from '@/components/forms/LocationAreaSelector';
+import { AreaSelector } from '@/components/orders/AreaSelector';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -57,7 +57,6 @@ const SchedulePickup: React.FC = () => {
   const [showNewLocationForm, setShowNewLocationForm] = useState(false);
   const [newLocationForm, setNewLocationForm] = useState({
     name: '',
-    country: 'Lebanon',
     governorate: '',
     area: '',
     address: '',
@@ -196,7 +195,6 @@ const SchedulePickup: React.FC = () => {
       setSelectedLocationId(newLocation.id);
       setNewLocationForm({
         name: '',
-        country: 'Lebanon',
         governorate: '',
         area: '',
         address: '',
@@ -209,21 +207,12 @@ const SchedulePickup: React.FC = () => {
     }
   };
 
-  const handleLocationAreaChange = (value: string) => {
-    const parts = value.split(' — ');
-    if (parts.length === 2) {
-      setNewLocationForm(prev => ({
-        ...prev,
-        governorate: parts[0],
-        area: parts[1]
-      }));
-    } else {
-      setNewLocationForm(prev => ({
-        ...prev,
-        governorate: value,
-        area: ''
-      }));
-    }
+  const handleLocationAreaSelected = (governorate: string, area: string) => {
+    setNewLocationForm(prev => ({
+      ...prev,
+      governorate,
+      area
+    }));
   };
 
   const handleSubmit = async () => {
@@ -573,31 +562,34 @@ const SchedulePickup: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   {vehicleOptions.map((option) => {
                     const IconComponent = option.icon;
                     return (
                       <div 
                         key={option.value}
                         className={cn(
-                          "flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-all",
+                          "flex flex-col items-center space-y-3 p-4 border rounded-lg cursor-pointer transition-all hover:scale-105",
                           vehicleType === option.value 
-                            ? "border-[#DB271E] bg-[#DB271E]/5" 
-                            : "border-gray-200 hover:border-gray-300"
+                            ? "border-[#DB271E] bg-[#DB271E] text-white shadow-lg" 
+                            : "border-gray-200 hover:border-gray-300 bg-white"
                         )}
                         onClick={() => setVehicleType(option.value as 'small' | 'medium' | 'large')}
                       >
-                        <IconComponent className="h-6 w-6" />
-                        <div className="flex-1">
-                          <p className="font-medium">{option.label}</p>
-                          <p className="text-sm text-gray-500">{option.description}</p>
-                        </div>
-                        <div className={cn(
-                          "w-4 h-4 rounded-full border-2",
-                          vehicleType === option.value 
-                            ? "border-[#DB271E] bg-[#DB271E]" 
-                            : "border-gray-300"
+                        <IconComponent className={cn(
+                          "h-8 w-8",
+                          vehicleType === option.value ? "text-white" : "text-gray-600"
                         )} />
+                        <div className="text-center">
+                          <p className={cn(
+                            "font-medium text-sm",
+                            vehicleType === option.value ? "text-white" : "text-gray-900"
+                          )}>{option.label}</p>
+                          <p className={cn(
+                            "text-xs",
+                            vehicleType === option.value ? "text-white/80" : "text-gray-500"
+                          )}>{option.description}</p>
+                        </div>
                       </div>
                     );
                   })}
@@ -712,33 +704,14 @@ const SchedulePickup: React.FC = () => {
                           />
                         </div>
                         
-                        <div className="space-y-2">
-                          <Label>Country *</Label>
-                          <Select 
-                            value={newLocationForm.country} 
-                            onValueChange={(value) => setNewLocationForm(prev => ({ ...prev, country: value }))}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Lebanon">Lebanon</SelectItem>
-                              <SelectItem value="United Arab Emirates">United Arab Emirates</SelectItem>
-                              <SelectItem value="Saudi Arabia">Saudi Arabia</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        
-                        <div className="md:col-span-2">
-                          <LocationAreaSelector
-                            value={newLocationForm.governorate && newLocationForm.area 
-                              ? `${newLocationForm.governorate} — ${newLocationForm.area}` 
-                              : newLocationForm.governorate}
-                            onChange={handleLocationAreaChange}
-                            label="Location"
-                            placeholder="Select governorate and area..."
-                          />
-                        </div>
+                         <div className="space-y-2">
+                           <Label>Location (Governorate & Area)</Label>
+                           <AreaSelector
+                             selectedArea={newLocationForm.area}
+                             selectedGovernorate={newLocationForm.governorate}
+                             onAreaSelected={handleLocationAreaSelected}
+                           />
+                         </div>
                         
                         <div className="md:col-span-2 space-y-2">
                           <Label>Full Address</Label>
