@@ -111,23 +111,52 @@ export const createOrUpdateClientDefault = async (
 ): Promise<ClientPricingDefault> => {
   const { data: user } = await supabase.auth.getUser();
   
-  const { data, error } = await supabase
+  // First check if a record exists
+  const { data: existing } = await supabase
     .from('pricing_client_defaults')
-    .upsert({
-      client_id: clientId,
-      default_fee_usd: pricing.default_fee_usd || 0,
-      default_fee_lbp: pricing.default_fee_lbp || 0,
-      created_by: user.user?.id,
-    })
-    .select()
-    .single();
+    .select('id')
+    .eq('client_id', clientId)
+    .maybeSingle();
+  
+  if (existing) {
+    // Update existing record
+    const { data, error } = await supabase
+      .from('pricing_client_defaults')
+      .update({
+        default_fee_usd: pricing.default_fee_usd || 0,
+        default_fee_lbp: pricing.default_fee_lbp || 0,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('client_id', clientId)
+      .select()
+      .single();
 
-  if (error) {
-    console.error('Error creating/updating client default:', error);
-    throw error;
+    if (error) {
+      console.error('Error updating client default:', error);
+      throw error;
+    }
+
+    return data;
+  } else {
+    // Create new record
+    const { data, error } = await supabase
+      .from('pricing_client_defaults')
+      .insert({
+        client_id: clientId,
+        default_fee_usd: pricing.default_fee_usd || 0,
+        default_fee_lbp: pricing.default_fee_lbp || 0,
+        created_by: user.user?.id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating client default:', error);
+      throw error;
+    }
+
+    return data;
   }
-
-  return data;
 };
 
 export const deleteClientDefault = async (clientId: string): Promise<void> => {
@@ -293,29 +322,65 @@ export const createOrUpdateClientPackageExtra = async (
 ): Promise<ClientPackageExtra> => {
   const { data: user } = await supabase.auth.getUser();
   
-  const { data, error } = await supabase
+  // First check if a record exists
+  const { data: existing } = await supabase
     .from('pricing_client_package_extras')
-    .upsert({
-      client_id: clientId,
-      package_type: packageType,
-      extra_fee_usd: pricing.extra_fee_usd || 0,
-      extra_fee_lbp: pricing.extra_fee_lbp || 0,
-      created_by: user.user?.id,
-    })
-    .select()
-    .single();
+    .select('id')
+    .eq('client_id', clientId)
+    .eq('package_type', packageType)
+    .maybeSingle();
+  
+  if (existing) {
+    // Update existing record
+    const { data, error } = await supabase
+      .from('pricing_client_package_extras')
+      .update({
+        extra_fee_usd: pricing.extra_fee_usd || 0,
+        extra_fee_lbp: pricing.extra_fee_lbp || 0,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('client_id', clientId)
+      .eq('package_type', packageType)
+      .select()
+      .single();
 
-  if (error) {
-    console.error('Error creating/updating client package extra:', error);
-    throw error;
+    if (error) {
+      console.error('Error updating client package extra:', error);
+      throw error;
+    }
+
+    return {
+      ...data,
+      package_type: data.package_type as 'Parcel' | 'Document' | 'Bulky',
+      extra_fee_usd: data.extra_fee_usd || 0,
+      extra_fee_lbp: data.extra_fee_lbp || 0,
+    };
+  } else {
+    // Create new record
+    const { data, error } = await supabase
+      .from('pricing_client_package_extras')
+      .insert({
+        client_id: clientId,
+        package_type: packageType,
+        extra_fee_usd: pricing.extra_fee_usd || 0,
+        extra_fee_lbp: pricing.extra_fee_lbp || 0,
+        created_by: user.user?.id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating client package extra:', error);
+      throw error;
+    }
+
+    return {
+      ...data,
+      package_type: data.package_type as 'Parcel' | 'Document' | 'Bulky',
+      extra_fee_usd: data.extra_fee_usd || 0,
+      extra_fee_lbp: data.extra_fee_lbp || 0,
+    };
   }
-
-  return {
-    ...data,
-    package_type: data.package_type as 'Parcel' | 'Document' | 'Bulky',
-    extra_fee_usd: data.extra_fee_usd || 0,
-    extra_fee_lbp: data.extra_fee_lbp || 0,
-  };
 };
 
 export const deleteClientPackageExtra = async (clientId: string, packageType: string): Promise<void> => {

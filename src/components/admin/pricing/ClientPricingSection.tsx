@@ -192,6 +192,14 @@ const ClientPricingSection = () => {
         default_fee_usd: defaultFeeUsd ? parseFloat(defaultFeeUsd) : 0,
         default_fee_lbp: defaultFeeLbp ? parseInt(defaultFeeLbp.replace(/,/g, '')) : 0,
       }
+    }, {
+      onSuccess: () => {
+        toast.success("Default pricing saved successfully!");
+      },
+      onError: (error: any) => {
+        console.error('Error saving default pricing:', error);
+        toast.error(`Failed to save default pricing: ${error.message}`);
+      }
     });
   };
 
@@ -290,6 +298,14 @@ const ClientPricingSection = () => {
       pricing: {
         extra_fee_usd: feeUsd ? parseFloat(feeUsd) : 0,
         extra_fee_lbp: feeLbp ? parseInt(feeLbp.replace(/,/g, '')) : 0,
+      }
+    }, {
+      onSuccess: () => {
+        toast.success(`${packageType} extra fee saved successfully!`);
+      },
+      onError: (error: any) => {
+        console.error(`Error saving ${packageType} extra:`, error);
+        toast.error(`Failed to save ${packageType} extra: ${error.message}`);
       }
     });
   };
