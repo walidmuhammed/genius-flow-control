@@ -124,6 +124,11 @@ const ClientPricingSection = () => {
     return '';
   };
 
+  // Get configured client IDs
+  const configuredClientIds = useMemo(() => {
+    return allConfigurations?.map(config => config.client_id) || [];
+  }, [allConfigurations]);
+
   // Client search functionality
   const filteredClients = useMemo(() => {
     if (!clients) return [];
@@ -280,6 +285,7 @@ const ClientPricingSection = () => {
 
       if (hasAnyData) {
         toast.success("Pricing configuration saved successfully!");
+        resetClientSelection(); // Clear form after successful save
       } else {
         toast.warning("No pricing data provided. Please enter at least one fee amount.");
       }
@@ -289,6 +295,63 @@ const ClientPricingSection = () => {
       toast.error(`Failed to save configuration: ${error.message}`);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Handle edit configuration
+  const handleEditConfiguration = (clientId: string) => {
+    setSelectedClientId(clientId);
+    setClientSearchValue('');
+    setClientSearchOpen(false);
+  };
+
+  // Handle delete configuration
+  const handleDeleteConfiguration = async (clientId: string) => {
+    try {
+      const config = allConfigurations?.find(c => c.client_id === clientId);
+      if (!config) return;
+
+      // Delete default pricing if exists
+      if (config.default_pricing) {
+        await new Promise((resolve, reject) => {
+          deleteDefault.mutate(config.default_pricing.id, {
+            onSuccess: resolve,
+            onError: reject
+          });
+        });
+      }
+
+      // Delete package extras if exist
+      if (config.package_extras) {
+        for (const extra of config.package_extras) {
+          await new Promise((resolve, reject) => {
+            deletePackageExtra.mutate({
+              clientId: clientId,
+              packageType: extra.package_type
+            }, {
+              onSuccess: resolve,
+              onError: reject
+            });
+          });
+        }
+      }
+
+      // Delete zone rules if exist
+      if (config.zone_rules) {
+        for (const rule of config.zone_rules) {
+          await new Promise((resolve, reject) => {
+            deleteZoneRule.mutate(rule.id, {
+              onSuccess: resolve,
+              onError: reject
+            });
+          });
+        }
+      }
+
+      toast.success("Client pricing configuration deleted successfully!");
+    } catch (error: any) {
+      console.error('Error deleting pricing configuration:', error);
+      toast.error(`Failed to delete configuration: ${error.message}`);
     }
   };
 
@@ -433,33 +496,47 @@ const ClientPricingSection = () => {
                   <CommandEmpty>No clients found.</CommandEmpty>
                   <CommandGroup>
                     <CommandList>
-                      {filteredClients.map((client) => (
-                        <CommandItem
-                          key={client.id}
-                          value={client.id}
-                          onSelect={() => {
-                            setSelectedClientId(client.id);
-                            setClientSearchOpen(false);
-                          }}
-                        >
-                          <Check
+                      {filteredClients.map((client) => {
+                        const isConfigured = configuredClientIds.includes(client.id);
+                        return (
+                          <CommandItem
+                            key={client.id}
+                            value={client.id}
+                            onSelect={() => {
+                              if (!isConfigured) {
+                                setSelectedClientId(client.id);
+                                setClientSearchOpen(false);
+                              }
+                            }}
                             className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedClientId === client.id ? "opacity-100" : "opacity-0"
+                              isConfigured && "opacity-50 cursor-not-allowed"
                             )}
-                          />
-                          <div className="flex flex-col">
-                            <span className="font-medium">
-                              {client.business_name || client.full_name}
-                            </span>
-                            {client.phone && (
-                              <span className="text-sm text-muted-foreground">
-                                (+961-{client.phone})
+                            disabled={isConfigured}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedClientId === client.id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div className="flex flex-col flex-1">
+                              <span className="font-medium">
+                                {client.business_name || client.full_name}
                               </span>
-                            )}
-                          </div>
-                        </CommandItem>
-                      ))}
+                              {client.phone && (
+                                <span className="text-sm text-muted-foreground">
+                                  (+961-{client.phone})
+                                </span>
+                              )}
+                              {isConfigured && (
+                                <span className="text-xs text-amber-600">
+                                  Already configured — edit from list below
+                                </span>
+                              )}
+                            </div>
+                          </CommandItem>
+                        );
+                      })}
                     </CommandList>
                   </CommandGroup>
                 </Command>
@@ -884,6 +961,104 @@ const ClientPricingSection = () => {
               </Card>
             )}
           </div>
+        )}
+
+        {/* Configured Clients List */}
+        {allConfigurations && allConfigurations.length > 0 && (
+          <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Users className="h-5 w-5 text-green-600" />
+                Configured Clients ({allConfigurations.length})
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Clients with active pricing configurations. Click edit to modify or delete to remove.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {allConfigurations.map((config) => {
+                  const client = clients?.find(c => c.id === config.client_id);
+                  if (!client) return null;
+
+                  return (
+                    <Card key={config.client_id} className="p-4 bg-white">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <div className="font-medium text-base">
+                            {client.business_name || client.full_name}
+                          </div>
+                          {client.phone && (
+                            <div className="text-sm text-muted-foreground">
+                              (+961-{client.phone})
+                            </div>
+                          )}
+                          <div className="flex gap-4 text-xs text-muted-foreground">
+                            {config.default_pricing && (
+                              <span className="flex items-center gap-1">
+                                <DollarSign className="h-3 w-3" />
+                                Default: {config.default_pricing.default_fee_usd > 0 && `$${config.default_pricing.default_fee_usd}`}
+                                {config.default_pricing.default_fee_usd > 0 && config.default_pricing.default_fee_lbp > 0 && ' / '}
+                                {config.default_pricing.default_fee_lbp > 0 && `${config.default_pricing.default_fee_lbp.toLocaleString()} LBP`}
+                              </span>
+                            )}
+                            {config.zone_rules && config.zone_rules.length > 0 && (
+                              <span className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {config.zone_rules.length} Zone rule(s)
+                              </span>
+                            )}
+                            {config.package_extras && config.package_extras.length > 0 && (
+                              <span className="flex items-center gap-1">
+                                <Package className="h-3 w-3" />
+                                {config.package_extras.length} Package extra(s)
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditConfiguration(config.client_id)}
+                          >
+                            <Pencil className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground">
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Delete
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Pricing Configuration</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to remove all pricing rules for {client.business_name || client.full_name}? 
+                                  This will delete their default pricing, zone overrides, and package extras. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteConfiguration(config.client_id)}
+                                  className="bg-destructive hover:bg-destructive/90"
+                                >
+                                  Delete Configuration
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Instructions when no client selected */}
