@@ -263,6 +263,17 @@ export const deleteClientPricingOverride = async (id: string): Promise<void> => 
   }
 };
 
+export const deleteAllClientPricingOverrides = async (clientId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('pricing_client_overrides')
+    .delete()
+    .eq('client_id', clientId);
+  if (error) {
+    console.error('Error deleting all client pricing overrides:', error);
+    throw error;
+  }
+};
+
 // Zone pricing rule functions
 export const getZonePricingRules = async (): Promise<ZonePricingRule[]> => {
   const { data, error } = await supabase
@@ -346,6 +357,17 @@ export const deleteZonePricingRule = async (id: string): Promise<void> => {
   }
 };
 
+export const deleteAllClientZoneRules = async (clientId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('pricing_zone_rules')
+    .delete()
+    .eq('client_id', clientId);
+  if (error) {
+    console.error('Error deleting all client zone rules:', error);
+    throw error;
+  }
+};
+
 // Package type pricing functions
 export const getPackageTypePricing = async (): Promise<PackageTypePricing[]> => {
   const { data, error } = await supabase
@@ -425,6 +447,17 @@ export const deletePackageTypePricing = async (id: string): Promise<void> => {
 
   if (error) {
     console.error('Error deleting package type pricing:', error);
+    throw error;
+  }
+};
+
+export const deleteAllClientPackageTypePricing = async (clientId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('pricing_package_types')
+    .delete()
+    .eq('client_id', clientId);
+  if (error) {
+    console.error('Error deleting all client package type pricing:', error);
     throw error;
   }
 };
@@ -537,4 +570,15 @@ export const calculateDeliveryFee = async (
   }
 
   return result;
+};
+
+export const deleteAllClientPackageExtras = async (clientId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('pricing_client_package_extras')
+    .delete()
+    .eq('client_id', clientId);
+  if (error) {
+    console.error('Error deleting all client package extras:', error);
+    throw error;
+  }
 };

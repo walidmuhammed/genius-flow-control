@@ -28,6 +28,9 @@ import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { deleteAllClientPricingOverrides, deleteAllClientZoneRules, deleteAllClientPackageTypePricing, deleteAllClientPackageExtras } from '@/services/pricing';
+import { deleteClientDefault } from '@/services/client-pricing';
+import { useQueryClient } from '@tanstack/react-query';
 
 const ClientPricingSection = () => {
   const { data: allConfigurations, isLoading } = useAllClientPricingConfigurations();
@@ -42,6 +45,8 @@ const ClientPricingSection = () => {
   const deleteZoneRule = useDeleteClientZoneRule();
   const createOrUpdatePackageExtra = useCreateOrUpdateClientPackageExtra();
   const deletePackageExtra = useDeleteClientPackageExtra();
+
+  const queryClient = useQueryClient();
 
   // Client selection state
   const [selectedClientId, setSelectedClientId] = useState('');
@@ -308,47 +313,17 @@ const ClientPricingSection = () => {
   // Handle delete configuration
   const handleDeleteConfiguration = async (clientId: string) => {
     try {
-      const config = allConfigurations?.find(c => c.client_id === clientId);
-      if (!config) return;
-
-      // Delete default pricing if exists
-      if (config.default_pricing) {
-        await new Promise((resolve, reject) => {
-          deleteDefault.mutate(config.default_pricing.id, {
-            onSuccess: resolve,
-            onError: reject
-          });
-        });
-      }
-
-      // Delete package extras if exist
-      if (config.package_extras) {
-        for (const extra of config.package_extras) {
-          await new Promise((resolve, reject) => {
-            deletePackageExtra.mutate({
-              clientId: clientId,
-              packageType: extra.package_type
-            }, {
-              onSuccess: resolve,
-              onError: reject
-            });
-          });
-        }
-      }
-
-      // Delete zone rules if exist
-      if (config.zone_rules) {
-        for (const rule of config.zone_rules) {
-          await new Promise((resolve, reject) => {
-            deleteZoneRule.mutate(rule.id, {
-              onSuccess: resolve,
-              onError: reject
-            });
-          });
-        }
-      }
-
+      // Delete all pricing overrides for this client
+      await Promise.all([
+        deleteAllClientPricingOverrides(clientId),
+        deleteAllClientZoneRules(clientId),
+        deleteAllClientPackageTypePricing(clientId),
+        deleteAllClientPackageExtras(clientId),
+        deleteClientDefault(clientId),
+      ]);
       toast.success("Client pricing configuration deleted successfully!");
+      resetClientSelection();
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'client-configurations'] });
     } catch (error: any) {
       console.error('Error deleting pricing configuration:', error);
       toast.error(`Failed to delete configuration: ${error.message}`);
