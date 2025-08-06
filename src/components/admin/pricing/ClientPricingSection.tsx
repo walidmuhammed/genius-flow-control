@@ -164,46 +164,135 @@ const ClientPricingSection = () => {
     resetZoneForm();
   };
 
-  // Handle default pricing save
-  const handleSaveDefault = () => {
+  // Unified save configuration handler
+  const [isSaving, setIsSaving] = useState(false);
+
+  const validateAllInputs = () => {
+    // Validate default pricing
+    if (defaultFeeUsd && !validateUsd(defaultFeeUsd)) {
+      toast.error("Invalid default USD amount");
+      return false;
+    }
+    if (defaultFeeLbp && !validateLbp(defaultFeeLbp)) {
+      toast.error("Invalid default LBP amount");
+      return false;
+    }
+
+    // Validate zone rules
+    if (zoneFeeUsd && !validateUsd(zoneFeeUsd)) {
+      toast.error("Invalid zone USD amount");
+      return false;
+    }
+    if (zoneFeeLbp && !validateLbp(zoneFeeLbp)) {
+      toast.error("Invalid zone LBP amount");
+      return false;
+    }
+
+    // Validate package extras
+    if (packageParcelUsd && !validateUsd(packageParcelUsd)) {
+      toast.error("Invalid parcel USD amount");
+      return false;
+    }
+    if (packageParcelLbp && !validateLbp(packageParcelLbp)) {
+      toast.error("Invalid parcel LBP amount");
+      return false;
+    }
+    if (packageDocumentUsd && !validateUsd(packageDocumentUsd)) {
+      toast.error("Invalid document USD amount");
+      return false;
+    }
+    if (packageDocumentLbp && !validateLbp(packageDocumentLbp)) {
+      toast.error("Invalid document LBP amount");
+      return false;
+    }
+    if (packageBulkyUsd && !validateUsd(packageBulkyUsd)) {
+      toast.error("Invalid bulky USD amount");
+      return false;
+    }
+    if (packageBulkyLbp && !validateLbp(packageBulkyLbp)) {
+      toast.error("Invalid bulky LBP amount");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSaveConfiguration = async () => {
     if (!selectedClientId) {
       toast.error("Please select a client first");
       return;
     }
 
-    if (!defaultFeeUsd && !defaultFeeLbp) {
-      toast.error("Please provide at least one fee amount");
+    if (!validateAllInputs()) {
       return;
     }
 
-    if (defaultFeeUsd && !validateUsd(defaultFeeUsd)) {
-      toast.error("Invalid USD amount");
-      return;
-    }
+    setIsSaving(true);
+    let hasAnyData = false;
 
-    if (defaultFeeLbp && !validateLbp(defaultFeeLbp)) {
-      toast.error("Invalid LBP amount");
-      return;
-    }
-
-    createOrUpdateDefault.mutate({
-      clientId: selectedClientId,
-      pricing: {
-        default_fee_usd: defaultFeeUsd ? parseFloat(defaultFeeUsd) : 0,
-        default_fee_lbp: defaultFeeLbp ? parseInt(defaultFeeLbp.replace(/,/g, '')) : 0,
+    try {
+      // 1. Save default pricing if provided
+      if (defaultFeeUsd || defaultFeeLbp) {
+        await new Promise((resolve, reject) => {
+          createOrUpdateDefault.mutate({
+            clientId: selectedClientId,
+            pricing: {
+              default_fee_usd: defaultFeeUsd ? parseFloat(defaultFeeUsd) : 0,
+              default_fee_lbp: defaultFeeLbp ? parseInt(defaultFeeLbp.replace(/,/g, '')) : 0,
+            }
+          }, {
+            onSuccess: () => {
+              hasAnyData = true;
+              resolve(void 0);
+            },
+            onError: reject
+          });
+        });
       }
-    }, {
-      onSuccess: () => {
-        toast.success("Default pricing saved successfully!");
-      },
-      onError: (error: any) => {
-        console.error('Error saving default pricing:', error);
-        toast.error(`Failed to save default pricing: ${error.message}`);
+
+      // 2. Save package extras if provided
+      const packageTypes = [
+        { type: 'Parcel' as const, usd: packageParcelUsd, lbp: packageParcelLbp },
+        { type: 'Document' as const, usd: packageDocumentUsd, lbp: packageDocumentLbp },
+        { type: 'Bulky' as const, usd: packageBulkyUsd, lbp: packageBulkyLbp }
+      ];
+
+      for (const pkg of packageTypes) {
+        if (pkg.usd || pkg.lbp) {
+          await new Promise((resolve, reject) => {
+            createOrUpdatePackageExtra.mutate({
+              clientId: selectedClientId,
+              packageType: pkg.type,
+              pricing: {
+                extra_fee_usd: pkg.usd ? parseFloat(pkg.usd) : 0,
+                extra_fee_lbp: pkg.lbp ? parseInt(pkg.lbp.replace(/,/g, '')) : 0,
+              }
+            }, {
+              onSuccess: () => {
+                hasAnyData = true;
+                resolve(void 0);
+              },
+              onError: reject
+            });
+          });
+        }
       }
-    });
+
+      if (hasAnyData) {
+        toast.success("Pricing configuration saved successfully!");
+      } else {
+        toast.warning("No pricing data provided. Please enter at least one fee amount.");
+      }
+
+    } catch (error: any) {
+      console.error('Error saving pricing configuration:', error);
+      toast.error(`Failed to save configuration: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  // Handle zone rule save
+  // Handle zone rule save (separate from main config since it's add/edit based)
   const handleSaveZoneRule = () => {
     if (!selectedClientId) {
       toast.error("Please select a client first");
@@ -250,64 +339,6 @@ const ClientPricingSection = () => {
         onSuccess: () => resetZoneForm()
       });
     }
-  };
-
-  // Handle package extra save
-  const handleSavePackageExtra = (packageType: 'Parcel' | 'Document' | 'Bulky') => {
-    if (!selectedClientId) {
-      toast.error("Please select a client first");
-      return;
-    }
-
-    let feeUsd = '';
-    let feeLbp = '';
-
-    switch (packageType) {
-      case 'Parcel':
-        feeUsd = packageParcelUsd;
-        feeLbp = packageParcelLbp;
-        break;
-      case 'Document':
-        feeUsd = packageDocumentUsd;
-        feeLbp = packageDocumentLbp;
-        break;
-      case 'Bulky':
-        feeUsd = packageBulkyUsd;
-        feeLbp = packageBulkyLbp;
-        break;
-    }
-
-    if (!feeUsd && !feeLbp) {
-      toast.error("Please provide at least one fee amount");
-      return;
-    }
-
-    if (feeUsd && !validateUsd(feeUsd)) {
-      toast.error("Invalid USD amount");
-      return;
-    }
-
-    if (feeLbp && !validateLbp(feeLbp)) {
-      toast.error("Invalid LBP amount");
-      return;
-    }
-
-    createOrUpdatePackageExtra.mutate({
-      clientId: selectedClientId,
-      packageType,
-      pricing: {
-        extra_fee_usd: feeUsd ? parseFloat(feeUsd) : 0,
-        extra_fee_lbp: feeLbp ? parseInt(feeLbp.replace(/,/g, '')) : 0,
-      }
-    }, {
-      onSuccess: () => {
-        toast.success(`${packageType} extra fee saved successfully!`);
-      },
-      onError: (error: any) => {
-        console.error(`Error saving ${packageType} extra:`, error);
-        toast.error(`Failed to save ${packageType} extra: ${error.message}`);
-      }
-    });
   };
 
   // Handle edit zone rule
@@ -474,14 +505,6 @@ const ClientPricingSection = () => {
                     />
                   </div>
                 </div>
-                <Button 
-                  onClick={handleSaveDefault}
-                  disabled={createOrUpdateDefault.isPending || (!defaultFeeUsd && !defaultFeeLbp)}
-                  className="w-full"
-                >
-                  {createOrUpdateDefault.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save Default Pricing
-                </Button>
               </CardContent>
             </Card>
 
@@ -737,15 +760,6 @@ const ClientPricingSection = () => {
                       />
                     </div>
                   </div>
-                  <Button 
-                    onClick={() => handleSavePackageExtra('Parcel')}
-                    disabled={createOrUpdatePackageExtra.isPending}
-                    size="sm"
-                    className="w-full"
-                  >
-                    {createOrUpdatePackageExtra.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Parcel Extra
-                  </Button>
                 </div>
 
                 <Separator />
@@ -776,15 +790,6 @@ const ClientPricingSection = () => {
                       />
                     </div>
                   </div>
-                  <Button 
-                    onClick={() => handleSavePackageExtra('Document')}
-                    disabled={createOrUpdatePackageExtra.isPending}
-                    size="sm"
-                    className="w-full"
-                  >
-                    {createOrUpdatePackageExtra.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Document Extra
-                  </Button>
                 </div>
 
                 <Separator />
@@ -815,14 +820,28 @@ const ClientPricingSection = () => {
                       />
                     </div>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Unified Save Configuration Button */}
+            <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-center sm:text-left">
+                    <h3 className="text-lg font-semibold">Save Pricing Configuration</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Apply all pricing rules for {selectedClient?.business_name || selectedClient?.full_name}
+                    </p>
+                  </div>
                   <Button 
-                    onClick={() => handleSavePackageExtra('Bulky')}
-                    disabled={createOrUpdatePackageExtra.isPending}
-                    size="sm"
-                    className="w-full"
+                    onClick={handleSaveConfiguration}
+                    disabled={isSaving}
+                    size="lg"
+                    className="min-w-48"
                   >
-                    {createOrUpdatePackageExtra.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Bulky Extra
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    💾 Save Pricing Configuration
                   </Button>
                 </div>
               </CardContent>
@@ -832,9 +851,9 @@ const ClientPricingSection = () => {
             {selectedClientConfig && (
               <Card className="bg-muted/30">
                 <CardHeader>
-                  <CardTitle className="text-lg">Pricing Summary</CardTitle>
+                  <CardTitle className="text-lg">Current Configuration</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Current pricing configuration for {selectedClient?.business_name || selectedClient?.full_name}
+                    Active pricing rules for {selectedClient?.business_name || selectedClient?.full_name}
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
