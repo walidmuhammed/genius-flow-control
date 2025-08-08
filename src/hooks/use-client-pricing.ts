@@ -18,6 +18,8 @@ import {
   type ClientZoneRule,
   type ClientPackageExtra,
 } from '@/services/client-pricing';
+import { supabase } from '@/integrations/supabase/client';
+
 
 // Client Default Pricing Hooks
 export const useClientDefaults = () => {
@@ -199,5 +201,30 @@ export const useAllClientPricingConfigurations = () => {
   return useQuery({
     queryKey: ['pricing', 'client-configurations'],
     queryFn: getAllClientPricingConfigurations,
+  });
+};
+
+// Atomic delete for entire client pricing configuration (calls RPC)
+export const useDeleteClientPricingConfiguration = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (clientId: string) => {
+      const { error } = await supabase.rpc('delete_client_pricing_configuration', { p_client_id: clientId });
+      if (error) throw error;
+    },
+    onSuccess: (_data, clientId) => {
+      queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'client-configuration', clientId] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'client-configurations'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'client-default', clientId] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'client-zone-rules'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'client-package-extras'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
+      toast.success('Client pricing configuration deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(`Error deleting client pricing configuration: ${error.message}`);
+    },
   });
 };

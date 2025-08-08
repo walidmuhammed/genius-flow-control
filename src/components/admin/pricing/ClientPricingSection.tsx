@@ -20,7 +20,8 @@ import {
   useUpdateClientZoneRule,
   useDeleteClientZoneRule,
   useCreateOrUpdateClientPackageExtra,
-  useDeleteClientPackageExtra
+  useDeleteClientPackageExtra,
+  useDeleteClientPricingConfiguration
 } from '@/hooks/use-client-pricing';
 import { useAdminClients } from '@/hooks/use-admin-clients';
 import { useGovernorates } from '@/hooks/use-governorates';
@@ -28,8 +29,6 @@ import { formatCurrency } from '@/utils/format';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { deleteAllClientPricingOverrides, deleteAllClientZoneRules, deleteAllClientPackageTypePricing, deleteAllClientPackageExtras } from '@/services/pricing';
-import { deleteClientDefault } from '@/services/client-pricing';
 import { useQueryClient } from '@tanstack/react-query';
 
 const ClientPricingSection = () => {
@@ -37,7 +36,7 @@ const ClientPricingSection = () => {
   const { data: clients } = useAdminClients();
   const { data: governorates } = useGovernorates();
   
-  // Mutations
+// Mutations
   const createOrUpdateDefault = useCreateOrUpdateClientDefault();
   const deleteDefault = useDeleteClientDefault();
   const createZoneRule = useCreateClientZoneRule();
@@ -45,6 +44,7 @@ const ClientPricingSection = () => {
   const deleteZoneRule = useDeleteClientZoneRule();
   const createOrUpdatePackageExtra = useCreateOrUpdateClientPackageExtra();
   const deletePackageExtra = useDeleteClientPackageExtra();
+  const deleteClientConfig = useDeleteClientPricingConfiguration();
 
   const queryClient = useQueryClient();
 
@@ -310,24 +310,19 @@ const ClientPricingSection = () => {
     setClientSearchOpen(false);
   };
 
-  // Handle delete configuration
+// Handle delete configuration
   const handleDeleteConfiguration = async (clientId: string) => {
-    try {
-      // Delete all pricing overrides for this client
-      await Promise.all([
-        deleteAllClientPricingOverrides(clientId),
-        deleteAllClientZoneRules(clientId),
-        deleteAllClientPackageTypePricing(clientId),
-        deleteAllClientPackageExtras(clientId),
-        deleteClientDefault(clientId),
-      ]);
-      toast.success("Client pricing configuration deleted successfully!");
-      resetClientSelection();
-      queryClient.invalidateQueries({ queryKey: ['pricing', 'client-configurations'] });
-    } catch (error: any) {
-      console.error('Error deleting pricing configuration:', error);
-      toast.error(`Failed to delete configuration: ${error.message}`);
-    }
+    deleteClientConfig.mutate(clientId, {
+      onSuccess: () => {
+        resetClientSelection();
+        // Ensure the configured clients list refreshes immediately
+        queryClient.invalidateQueries({ queryKey: ['pricing', 'client-configurations'] });
+      },
+      onError: (error: any) => {
+        console.error('Error deleting pricing configuration:', error);
+        toast.error(`Failed to delete configuration: ${error.message}`);
+      }
+    });
   };
 
   // Handle zone rule save (separate from main config since it's add/edit based)
