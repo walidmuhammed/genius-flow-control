@@ -559,8 +559,48 @@ export const calculateDeliveryFee = async (
   const result = data[0];
   console.log('✅ RPC returned result:', result);
 
-  // If RPC returns zero values but says it's global, that's wrong - use actual global pricing
-  if (result.rule_type === 'global' && (result.fee_usd === 0 || result.fee_lbp === 0)) {
+  // If RPC says "global", verify client-specific config and recover if needed
+  if (result.rule_type === 'global') {
+    try {
+      const { data: clientDefault } = await supabase
+        .from('pricing_client_defaults')
+        .select('default_fee_usd, default_fee_lbp')
+        .eq('client_id', clientId)
+        .maybeSingle();
+
+      if (clientDefault) {
+        // Try to apply package extra if provided
+        if (packageType) {
+          const { data: pkgExtra } = await supabase
+            .from('pricing_client_package_extras')
+            .select('extra_fee_usd, extra_fee_lbp, package_type')
+            .eq('client_id', clientId)
+            .ilike('package_type', packageType);
+
+          if (pkgExtra && pkgExtra.length > 0) {
+            const extra = pkgExtra[0];
+            return {
+              fee_usd: (clientDefault.default_fee_usd || 0) + (extra.extra_fee_usd || 0),
+              fee_lbp: (clientDefault.default_fee_lbp || 0) + (extra.extra_fee_lbp || 0),
+              rule_type: 'client_package_recovered'
+            };
+          }
+        }
+
+        // Fall back to client default recovered
+        return {
+          fee_usd: clientDefault.default_fee_usd || 0,
+          fee_lbp: clientDefault.default_fee_lbp || 0,
+          rule_type: 'client_default_recovered'
+        };
+      }
+    } catch (e) {
+      console.warn('⚠️ Client pricing recovery check failed:', e);
+    }
+  }
+
+  // If RPC returns zero values for both currencies under global, correct to actual global pricing
+  if (result.rule_type === 'global' && (Number(result.fee_usd) === 0 && Number(result.fee_lbp) === 0)) {
     console.log('🔧 RPC returned zero for global rule, using actual global pricing:', globalPricing);
     return {
       fee_usd: globalPricing?.default_fee_usd || 0,
