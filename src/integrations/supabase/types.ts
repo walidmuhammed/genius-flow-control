@@ -1059,6 +1059,10 @@ export type Database = {
           rule_type: string
         }[]
       }
+      delete_client_pricing_configuration: {
+        Args: { p_client_id: string }
+        Returns: undefined
+      }
       generate_invoice_id: {
         Args: Record<PropertyKey, never>
         Returns: string
