@@ -39,6 +39,13 @@ import AdminClients from '@/pages/admin/AdminClients';
 import AdminWallet from '@/pages/admin/AdminWallet';
 import AdminCreateOrder from '@/pages/admin/AdminCreateOrder';
 
+// Import courier pages
+import CourierDashboard from '@/pages/courier/CourierDashboard';
+import CourierOrders from '@/pages/courier/CourierOrders';
+import CourierWallet from '@/pages/courier/CourierWallet';
+import CourierSupport from '@/pages/courier/CourierSupport';
+import CourierSignIn from '@/pages/auth/CourierSignIn';
+
 // Import protected route component
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
@@ -64,6 +71,7 @@ function App() {
             <Route path="/auth/client-signin" element={<ClientSignIn />} />
             <Route path="/auth/client-signup" element={<ClientSignUp />} />
             <Route path="/auth/admin-signin" element={<AdminSignIn />} />
+            <Route path="/auth/courier-signin" element={<CourierSignIn />} />
 
             {/* Protected client routes */}
             <Route element={<ProtectedRoute requiredRole="client" />}>
@@ -110,6 +118,14 @@ function App() {
               <Route path="/dashboard/admin/settings" element={<AdminSettings />} />
               <Route path="/dashboard/admin/dispatch" element={<AdminDispatch />} />
               <Route path="/dashboard/admin/clients" element={<AdminClients />} />
+            </Route>
+
+            {/* Protected courier routes */}
+            <Route element={<ProtectedRoute requiredRole="courier" />}>
+              <Route path="/dashboard/courier" element={<CourierDashboard />} />
+              <Route path="/dashboard/courier/orders" element={<CourierOrders />} />
+              <Route path="/dashboard/courier/wallet" element={<CourierWallet />} />
+              <Route path="/dashboard/courier/support" element={<CourierSupport />} />
             </Route>
 
             {/* 404 route */}

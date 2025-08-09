@@ -7,7 +7,7 @@ interface UserProfile {
   id: string;
   email: string;
   full_name: string;
-  user_type: 'client' | 'admin';
+  user_type: 'client' | 'admin' | 'courier';
   phone?: string;
   business_name?: string;
   business_type?: string;
@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         id: data.id,
         email: user?.email || '',
         full_name: data.full_name || '',
-        user_type: data.user_type as 'client' | 'admin',
+        user_type: data.user_type as 'client' | 'admin' | 'courier',
         phone: data.phone,
         business_name: data.business_name,
         business_type: data.business_type,
