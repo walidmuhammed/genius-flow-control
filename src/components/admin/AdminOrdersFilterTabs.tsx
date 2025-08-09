@@ -88,6 +88,9 @@ export const AdminOrdersFilterTabs: React.FC<AdminOrdersFilterTabsProps> = ({
           msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch'
         }}
+        onWheel={(e) => {
+          e.currentTarget.scrollLeft += e.deltaY;
+        }}
       >
         <style dangerouslySetInnerHTML={{
           __html: `
