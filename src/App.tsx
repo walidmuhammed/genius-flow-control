@@ -7,8 +7,11 @@ import { AuthProvider } from '@/hooks/useAuth';
 // Import public pages
 import Index from '@/pages/Index';
 import SignIn from '@/pages/SignIn';
+import SignUp from '@/pages/SignUp';
+import ClientSignUp from '@/pages/ClientSignUp';
+import AdminSignUp from '@/pages/AdminSignUp';
+import CourierSignUp from '@/pages/CourierSignUp';
 import ClientSignIn from '@/pages/auth/ClientSignIn';
-import ClientSignUp from '@/pages/auth/ClientSignUp';
 import AdminSignIn from '@/pages/auth/AdminSignIn';
 import NotFound from '@/pages/NotFound';
 
@@ -66,12 +69,14 @@ function App() {
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Navigate to="/auth/client-signup" replace />} />
-            <Route path="/auth/signin" element={<ClientSignIn />} />
-            <Route path="/auth/client-signin" element={<ClientSignIn />} />
+            <Route path="/auth" element={<Navigate to="/auth/signup" replace />} />
+            <Route path="/auth/signin" element={<SignIn />} />
+            <Route path="/auth/signup" element={<SignUp />} />
             <Route path="/auth/client-signup" element={<ClientSignUp />} />
-            <Route path="/auth/admin-signin" element={<AdminSignIn />} />
-            <Route path="/auth/courier-signin" element={<CourierSignIn />} />
+            <Route path="/auth/admin-signup" element={<AdminSignUp />} />
+            <Route path="/auth/courier-signup" element={<CourierSignUp />} />
+            <Route path="/auth/admin" element={<AdminSignIn />} />
+            <Route path="/auth/courier" element={<CourierSignIn />} />
 
             {/* Protected client routes */}
             <Route element={<ProtectedRoute requiredRole="client" />}>

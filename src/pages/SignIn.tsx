@@ -1,320 +1,238 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Truck, User, Shield, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, Mail, Lock, Eye, EyeOff, Shield, Store, Truck } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const roles = [
+  { value: 'client', label: 'Client', icon: Store, description: 'Business owner sending packages' },
+  { value: 'admin', label: 'Admin', icon: Shield, description: 'Platform administrator' },
+  { value: 'courier', label: 'Courier', icon: Truck, description: 'Delivery person' }
+];
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [businessName, setBusinessName] = useState('');
-  const [businessType, setBusinessType] = useState('');
-  const [selectedRole, setSelectedRole] = useState<'client' | 'admin'>('client');
+  const [selectedRole, setSelectedRole] = useState<'client' | 'admin' | 'courier'>('client');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('signin');
-  
+  const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { user, profile, signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
 
   useEffect(() => {
-    document.title = "Authentication - Topspeed";
-    
-    // Redirect if already signed in
-    if (user && profile) {
-      const redirectPath = profile.user_type === 'admin' ? '/dashboard/admin' : '/dashboard/client';
-      navigate(redirectPath);
-    }
-  }, [navigate, user, profile]);
+    document.title = "Sign In - Topspeed";
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError('Please fill in all fields');
+    if (!selectedRole) {
+      setError('Please select your role');
       return;
     }
 
     setLoading(true);
     setError('');
 
-    const { error } = await signIn(email, password);
-    
-    if (error) {
-      setError(error.message || 'Failed to sign in');
+    try {
+      const { error: signInError } = await signIn(email, password);
+
+      if (signInError) {
+        throw signInError;
+      }
+
+      // Wait a moment for auth state to update, then navigate
+      setTimeout(() => {
+        switch (selectedRole) {
+          case 'admin':
+            navigate('/dashboard/admin');
+            break;
+          case 'courier':
+            navigate('/dashboard/courier');
+            break;
+          default:
+            navigate('/dashboard/client');
+        }
+      }, 100);
+    } catch (err: any) {
+      setError(err.message || 'Sign in failed. Please check your credentials.');
+    } finally {
       setLoading(false);
-    } else {
-      // Navigation will be handled by the useEffect when user state updates
-    }
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password || !name) {
-      setError('Please fill in all required fields');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    const { error } = await signUp(email, password, {
-      full_name: name,
-      user_type: selectedRole,
-      phone,
-      business_name: businessName,
-      business_type: businessType,
-    });
-    
-    if (error) {
-      setError(error.message || 'Failed to sign up');
-      setLoading(false);
-    } else {
-      setError('');
-      // Show success message or redirect to check email
-      setActiveTab('signin');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-md"
+      >
         {/* Logo/Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#DB271E] rounded-2xl mb-4">
-            <Truck className="h-8 w-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Topspeed</h1>
-          <p className="text-gray-600">Secure access to your dashboard</p>
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4"
+          >
+            <Truck className="h-8 w-8 text-primary-foreground" />
+          </motion.div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Welcome Back</h1>
+          <p className="text-muted-foreground">Sign in to your Topspeed account</p>
         </div>
 
-        <Card className="shadow-xl border-0 bg-white">
+        <Card className="shadow-2xl border-0 bg-card/95 backdrop-blur-sm">
           <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-xl font-semibold text-center">Authentication</CardTitle>
+            <CardTitle className="text-xl font-semibold text-center">
+              Sign In
+            </CardTitle>
             <CardDescription className="text-center">
-              Sign in to your account or create a new one
+              Enter your credentials to access your dashboard
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
+            <form onSubmit={handleSignIn} className="space-y-4">
+              {/* Role Selector */}
+              <div className="space-y-2">
+                <Label htmlFor="role" className="text-sm font-medium">
+                  Sign in as *
+                </Label>
+                <Select value={selectedRole} onValueChange={(value: 'client' | 'admin' | 'courier') => setSelectedRole(value)}>
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.map((role) => {
+                      const IconComponent = role.icon;
+                      return (
+                        <SelectItem key={role.value} value={role.value} className="p-3">
+                          <div className="flex items-center gap-3">
+                            <IconComponent className="h-4 w-4" />
+                            <div>
+                              <div className="font-medium">{role.label}</div>
+                              <div className="text-xs text-muted-foreground">{role.description}</div>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
 
+              {/* Email */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  Email Address
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="h-11"
+                />
+              </div>
+
+              {/* Password */}
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="h-11 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Forgot Password */}
+              <div className="text-right">
+                <button
+                  type="button"
+                  className="text-sm text-primary hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
+
+              {/* Error Message */}
               {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
+                <Alert className="border-destructive/50 bg-destructive/10">
+                  <AlertDescription className="text-destructive text-sm">
+                    {error}
+                  </AlertDescription>
                 </Alert>
               )}
 
-              <TabsContent value="signin" className="space-y-4">
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
-                    <Input
-                      id="signin-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="h-11"
-                      required
-                    />
-                  </div>
+              {/* Sign In Button */}
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-11 font-medium transition-all duration-200"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing In...
+                  </>
+                ) : (
+                  <>
+                    {selectedRole === 'admin' && <Shield className="mr-2 h-4 w-4" />}
+                    {selectedRole === 'client' && <Store className="mr-2 h-4 w-4" />}
+                    {selectedRole === 'courier' && <Truck className="mr-2 h-4 w-4" />}
+                    Sign In
+                  </>
+                )}
+              </Button>
+            </form>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="signin-password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="h-11 pr-10"
-                        required
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-11 w-10"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full h-11 bg-[#DB271E] hover:bg-[#c0211a] text-white font-medium"
-                    disabled={loading}
-                  >
-                    {loading ? 'Signing In...' : 'Sign In'}
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="signup" className="space-y-4">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name *</Label>
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="h-11"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email *</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="h-11"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password *</Label>
-                    <div className="relative">
-                      <Input
-                        id="signup-password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password (min 6 characters)"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="h-11 pr-10"
-                        required
-                        minLength={6}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-11 w-10"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="Enter your phone number"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="h-11"
-                    />
-                  </div>
-
-                  {/* Role Selection */}
-                  <div className="space-y-3">
-                    <Label>Account Type *</Label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedRole('client')}
-                        className={`p-4 border-2 rounded-lg transition-all duration-200 ${
-                          selectedRole === 'client'
-                            ? 'border-[#DB271E] bg-[#DB271E]/5 text-[#DB271E]'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <User className="h-6 w-6 mx-auto mb-2" />
-                        <div className="font-medium">Client</div>
-                        <div className="text-xs text-gray-500">Business Account</div>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setSelectedRole('admin')}
-                        className={`p-4 border-2 rounded-lg transition-all duration-200 ${
-                          selectedRole === 'admin'
-                            ? 'border-[#DB271E] bg-[#DB271E]/5 text-[#DB271E]'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <Shield className="h-6 w-6 mx-auto mb-2" />
-                        <div className="font-medium">Admin</div>
-                        <div className="text-xs text-gray-500">Management</div>
-                      </button>
-                    </div>
-                  </div>
-
-                  {selectedRole === 'client' && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="business-name">Business Name</Label>
-                        <Input
-                          id="business-name"
-                          type="text"
-                          placeholder="Enter your business name"
-                          value={businessName}
-                          onChange={(e) => setBusinessName(e.target.value)}
-                          className="h-11"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="business-type">Business Type</Label>
-                        <Input
-                          id="business-type"
-                          type="text"
-                          placeholder="e.g., E-commerce, Restaurant, etc."
-                          value={businessType}
-                          onChange={(e) => setBusinessType(e.target.value)}
-                          className="h-11"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  <Button
-                    type="submit"
-                    className="w-full h-11 bg-[#DB271E] hover:bg-[#c0211a] text-white font-medium"
-                    disabled={loading}
-                  >
-                    {loading ? 'Creating Account...' : 'Create Account'}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
+            {/* Footer */}
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Don't have an account?{' '}
+                <Link to="/auth/signup" className="text-primary hover:underline font-medium">
+                  Sign up here
+                </Link>
+              </p>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Footer */}
-        <div className="mt-6 text-center text-xs text-gray-500">
+        {/* Additional Info */}
+        <div className="mt-6 text-center text-xs text-muted-foreground">
           <p>© 2024 Topspeed. All rights reserved.</p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
