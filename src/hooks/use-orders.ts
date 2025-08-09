@@ -26,6 +26,19 @@ export function useOrdersByStatus(status: Order['status'] | undefined) {
   });
 }
 
+// Add hooks for new statuses
+export function useAssignedOrders() {
+  return useOrdersByStatus('Assigned');
+}
+
+export function useAwaitingPaymentOrders() {
+  return useOrdersByStatus('Awaiting Payment');
+}
+
+export function useOnHoldOrders() {
+  return useOrdersByStatus('On Hold');
+}
+
 export function useOrder(id: string | undefined) {
   return useQuery({
     queryKey: ['order', id],

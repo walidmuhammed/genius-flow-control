@@ -5,7 +5,7 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import { ImportOrdersModal } from '@/components/orders/ImportOrdersModal';
-import { useOrders, useOrdersByStatus, useDeleteOrder } from '@/hooks/use-orders';
+import { useOrders, useOrdersByStatus, useDeleteOrder, useAssignedOrders, useAwaitingPaymentOrders, useOnHoldOrders } from '@/hooks/use-orders';
 import { toast } from 'sonner';
 import { OrderWithCustomer } from '@/services/orders';
 import { motion } from 'framer-motion';
@@ -38,11 +38,14 @@ const AdminOrders: React.FC = () => {
   const { data: allOrders, isLoading: isLoadingAllOrders, error: ordersError } = useOrders();
   const { data: newOrders } = useOrdersByStatus('New');
   const { data: pendingOrders } = useOrdersByStatus('Pending Pickup');
+  const { data: assignedOrders } = useAssignedOrders();
   const { data: inProgressOrders } = useOrdersByStatus('In Progress');
   const { data: successfulOrders } = useOrdersByStatus('Successful');
   const { data: unsuccessfulOrders } = useOrdersByStatus('Unsuccessful');
   const { data: returnedOrders } = useOrdersByStatus('Returned');
+  const { data: awaitingPaymentOrders } = useAwaitingPaymentOrders();
   const { data: paidOrders } = useOrdersByStatus('Paid');
+  const { data: onHoldOrders } = useOnHoldOrders();
   
   // FIX: Call useDeleteOrder
   const deleteOrderMutation = useDeleteOrder();
@@ -144,11 +147,11 @@ const AdminOrders: React.FC = () => {
       case 'paid':
         return paidOrders || [];
       case 'assigned':
-        return allOrders.filter(order => order.status === 'Assigned');
+        return assignedOrders || [];
       case 'awaitingPayment':
-        return allOrders.filter(order => order.status === 'Awaiting Payment');
+        return awaitingPaymentOrders || [];
       case 'onHold':
-        return allOrders.filter(order => order.status === 'On Hold');
+        return onHoldOrders || [];
       default:
         return allOrders;
     }
@@ -165,7 +168,8 @@ const AdminOrders: React.FC = () => {
     // Finally filter by search query
     return searchOrders(dateFiltered, searchQuery);
   }, [activeTab, searchQuery, dateRange.from, dateRange.to, allOrders, newOrders, pendingOrders, 
-      inProgressOrders, successfulOrders, unsuccessfulOrders, returnedOrders, paidOrders]);
+      assignedOrders, inProgressOrders, successfulOrders, unsuccessfulOrders, returnedOrders, 
+      awaitingPaymentOrders, paidOrders, onHoldOrders]);
   
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -212,14 +216,14 @@ const AdminOrders: React.FC = () => {
     { key: 'all', label: 'All Orders', count: allOrders?.length },
     { key: 'new', label: 'New', count: newOrders?.length },
     { key: 'pending', label: 'Pending Pickup', count: pendingOrders?.length },
-    { key: 'assigned', label: 'Assigned', count: undefined },
+    { key: 'assigned', label: 'Assigned', count: assignedOrders?.length },
     { key: 'inProgress', label: 'In Progress', count: inProgressOrders?.length },
     { key: 'successful', label: 'Successful', count: successfulOrders?.length },
     { key: 'unsuccessful', label: 'Unsuccessful', count: unsuccessfulOrders?.length },
     { key: 'returned', label: 'Returned', count: returnedOrders?.length },
-    { key: 'awaitingPayment', label: 'Awaiting Payment', count: undefined },
+    { key: 'awaitingPayment', label: 'Awaiting Payment', count: awaitingPaymentOrders?.length },
     { key: 'paid', label: 'Paid', count: paidOrders?.length },
-    { key: 'onHold', label: 'On Hold', count: undefined }
+    { key: 'onHold', label: 'On Hold', count: onHoldOrders?.length }
   ];
 
   // Transform orders for mobile display

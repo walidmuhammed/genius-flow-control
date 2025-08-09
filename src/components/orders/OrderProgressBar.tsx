@@ -11,21 +11,35 @@ interface OrderProgressBarProps {
 }
 
 const OrderProgressBar: React.FC<OrderProgressBarProps> = ({ status, type }) => {
-  // Define the steps based on order type
-  const defaultSteps = ['New', 'Pending Pickup', 'In Progress', 'Successful', 'Paid'];
-  const unsuccessfulSteps = ['New', 'Pending Pickup', 'In Progress', 'Unsuccessful', 'Returned', 'Paid'];
-  const exchangeSteps = ['New', 'Pending Pickup', 'In Progress', 'Successful', 'Returned', 'Paid'];
-  const onHoldSteps = ['New', 'Pending Pickup', 'In Progress', 'On Hold', 'Successful', 'Paid'];
+  // Define the steps based on order type and status
+  const getSteps = () => {
+    // Handle special statuses first
+    if (status === 'Unsuccessful') {
+      return ['New', 'Pending Pickup', 'Assigned', 'In Progress', 'Unsuccessful'];
+    }
+    if (status === 'Returned') {
+      return ['New', 'Pending Pickup', 'Assigned', 'In Progress', 'Returned'];
+    }
+    if (status === 'On Hold') {
+      return ['New', 'Pending Pickup', 'On Hold'];
+    }
+    if (status === 'Awaiting Payment') {
+      return ['New', 'Pending Pickup', 'Assigned', 'In Progress', 'Awaiting Payment'];
+    }
+    if (status === 'Paid') {
+      return ['New', 'Pending Pickup', 'Assigned', 'In Progress', 'Successful', 'Paid'];
+    }
+    
+    // Exchange type special flow
+    if (type === 'Exchange') {
+      return ['New', 'Pending Pickup', 'Assigned', 'In Progress', 'Successful'];
+    }
+    
+    // Default flow with new Assigned status
+    return ['New', 'Pending Pickup', 'Assigned', 'In Progress', 'Successful'];
+  };
 
-  // Select the steps based on the status and type
-  let steps: string[] = defaultSteps;
-  if (status === 'Unsuccessful' || status === 'Returned') {
-    steps = unsuccessfulSteps;
-  } else if (type === 'Exchange') {
-    steps = exchangeSteps;
-  } else if (status === 'On Hold') {
-    steps = onHoldSteps;
-  }
+  const steps = getSteps();
 
   // Calculate current step index
   const currentStepIndex = steps.findIndex(step => step === status);
@@ -43,15 +57,16 @@ const OrderProgressBar: React.FC<OrderProgressBarProps> = ({ status, type }) => 
       case 'New':
         return <PackageIcon className={className} />;
       case 'Pending Pickup':
+        return <AlertCircleIcon className={className} />;
+      case 'Assigned':
       case 'In Progress':
         return <TruckIcon className={className} />;
       case 'Successful':
         return <CheckIcon className={className} />;
       case 'Unsuccessful':
-      case 'Assigned':
-      case 'Awaiting Payment':
       case 'On Hold':
         return <AlertCircleIcon className={className} />;
+      case 'Awaiting Payment':
       case 'Paid':
         return <CircleDollarSignIcon className={className} />;
       default:

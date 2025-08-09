@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileFilterSheet } from './MobileFilterSheet';
 import { Package, Clock, Truck, CheckCircle, XCircle, RotateCcw, AlertTriangle, DollarSign, FileText, Filter } from 'lucide-react';
+import { useUserRole } from '@/hooks/use-user-role';
 interface FilterTab {
   key: string;
   label: string;
@@ -41,10 +42,19 @@ export const OrdersFilterTabs: React.FC<OrdersFilterTabsProps> = ({
 }) => {
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { isAdmin, isCourier } = useUserRole();
+
+  // Filter tabs based on user role - hide "Awaiting Payment" from clients
+  const filteredTabs = tabs.filter(tab => {
+    if (tab.key === 'awaitingPayment' && !isAdmin && !isCourier) {
+      return false;
+    }
+    return true;
+  });
 
   // Mobile view - show Filters button
   if (isMobile) {
-    const activeTabData = tabs.find(tab => tab.key === activeTab);
+    const activeTabData = filteredTabs.find(tab => tab.key === activeTab);
     return <>
         <div className="px-4 sm:px-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30">
           <Button variant="outline" onClick={() => setIsMobileSheetOpen(true)} className="w-full justify-between h-11 border-gray-200/60 dark:border-gray-700/40 rounded-xl bg-white dark:bg-gray-800">
@@ -58,7 +68,7 @@ export const OrdersFilterTabs: React.FC<OrdersFilterTabsProps> = ({
           </Button>
         </div>
 
-        <MobileFilterSheet isOpen={isMobileSheetOpen} onClose={() => setIsMobileSheetOpen(false)} activeTab={activeTab} onTabChange={onTabChange} tabs={tabs} />
+        <MobileFilterSheet isOpen={isMobileSheetOpen} onClose={() => setIsMobileSheetOpen(false)} activeTab={activeTab} onTabChange={onTabChange} tabs={filteredTabs} />
       </>;
   }
 
@@ -75,7 +85,7 @@ export const OrdersFilterTabs: React.FC<OrdersFilterTabsProps> = ({
           }
         `}</style>
         
-        {tabs.map(tab => {
+        {filteredTabs.map(tab => {
         const Icon = getTabIcon(tab.key);
         const isActive = activeTab === tab.key;
         return <motion.button key={tab.key} className={cn("relative px-3 lg:px-4 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap rounded-xl flex items-center gap-2 border flex-shrink-0", isActive ? 'text-white bg-[#DB271E] border-[#DB271E] shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600')} onClick={() => onTabChange(tab.key)} whileHover={{

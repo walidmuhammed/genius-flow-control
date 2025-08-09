@@ -80,8 +80,13 @@ export const AdminOrdersFilterTabs: React.FC<AdminOrdersFilterTabsProps> = ({
 
   // Desktop/Tablet view - single row, no "More" button
   return (
-    <div className="px-4 sm:px-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30 py-[16px]">
-      <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+    <div className="px-4 sm:px-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30 py-[16px] overflow-hidden">
+      <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide"
+           style={{ 
+             scrollbarWidth: 'none', 
+             msOverflowStyle: 'none',
+             WebkitOverflowScrolling: 'touch'
+           }}>
         <style>{`
           .scrollbar-hide {
             scrollbar-width: none;
