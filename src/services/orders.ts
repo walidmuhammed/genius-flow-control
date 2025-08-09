@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerWithLocation } from "./customers";
 
-export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid';
+export type OrderStatus = 'New' | 'Pending Pickup' | 'Assigned' | 'In Progress' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Awaiting Payment' | 'Paid' | 'On Hold';
 export type OrderType = 'Shipment' | 'Exchange' | 'Cash Collection' | 'Return';
 export type PackageType = 'parcel' | 'document' | 'bulky';
 
@@ -80,13 +80,14 @@ const transformOrderData = (order: any): OrderWithCustomer => {
   let statusType = order.status;
   if (statusType !== 'New' && 
       statusType !== 'Pending Pickup' && 
+      statusType !== 'Assigned' && 
       statusType !== 'In Progress' && 
-      statusType !== 'Heading to Customer' && 
-      statusType !== 'Heading to You' && 
       statusType !== 'Successful' && 
       statusType !== 'Unsuccessful' && 
       statusType !== 'Returned' && 
-      statusType !== 'Paid') {
+      statusType !== 'Awaiting Payment' && 
+      statusType !== 'Paid' && 
+      statusType !== 'On Hold') {
     statusType = 'New';
   }
   

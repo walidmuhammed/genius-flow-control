@@ -12,7 +12,7 @@ import OrderDetailsDialog from './OrderDetailsDialog';
 import { formatDate } from '@/utils/format';
 import { OrderWithCustomer } from '@/services/orders';
 
-export type OrderStatus = 'New' | 'Pending Pickup' | 'In Progress' | 'Heading to Customer' | 'Heading to You' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Paid' | 'Awaiting Action';
+export type OrderStatus = 'New' | 'Pending Pickup' | 'Assigned' | 'In Progress' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Awaiting Payment' | 'Paid' | 'On Hold';
 export type OrderType = 'Shipment' | 'Exchange' | 'Cash Collection' | 'Return';
 
 export interface Order {

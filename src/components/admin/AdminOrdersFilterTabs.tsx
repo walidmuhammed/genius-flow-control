@@ -24,12 +24,14 @@ const getTabIcon = (key: string) => {
     all: FileText,
     new: Package,
     pending: Clock,
+    assigned: Truck,
     inProgress: Truck,
     successful: CheckCircle,
     unsuccessful: XCircle,
     returned: RotateCcw,
-    awaitingAction: AlertTriangle,
-    paid: DollarSign,
+    awaitingPayment: DollarSign,
+    paid: CheckCircle,
+    onHold: AlertTriangle,
   };
   return iconMap[key] || FileText;
 };

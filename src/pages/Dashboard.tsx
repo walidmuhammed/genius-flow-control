@@ -51,8 +51,8 @@ const Dashboard: React.FC = () => {
   // Filter orders with "In Progress" status
   const inProgressOrders = allOrders.filter(order => order.status === 'In Progress');
 
-  // Filter orders with "Awaiting Action" status (this is new - we'll consider certain statuses as awaiting action)
-  const awaitingActionOrders = allOrders.filter(order => order.status === 'New' || order.status === 'Pending Pickup' || order.status === 'Unsuccessful');
+  // Filter orders that need attention 
+  const awaitingActionOrders = allOrders.filter(order => order.status === 'New' || order.status === 'Pending Pickup' || order.status === 'Unsuccessful' || order.status === 'On Hold');
 
   // Calculate total expected cash from today's orders
   const todayTotalCash = todayOrders.reduce((total, order) => {

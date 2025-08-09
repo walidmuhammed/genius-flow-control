@@ -100,20 +100,22 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
         return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'pending pickup':
         return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'assigned':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'in progress':
         return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-      case 'heading to customer':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'heading to you':
-        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
       case 'successful':
         return 'bg-green-50 text-green-700 border-green-200';
       case 'unsuccessful':
         return 'bg-red-50 text-red-700 border-red-200';
       case 'returned':
         return 'bg-gray-50 text-gray-700 border-gray-200';
+      case 'awaiting payment':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'paid':
         return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'on hold':
+        return 'bg-gray-100 text-gray-800 border-gray-300';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
@@ -208,7 +210,9 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
           <SelectItem value="Successful" className="cursor-pointer">Successful</SelectItem>
           <SelectItem value="Unsuccessful" className="cursor-pointer">Unsuccessful</SelectItem>
           <SelectItem value="Returned" className="cursor-pointer">Returned</SelectItem>
-          <SelectItem value="Awaiting Action" className="cursor-pointer">Awaiting Action</SelectItem>
+          <SelectItem value="Assigned" className="cursor-pointer">Assigned</SelectItem>
+          <SelectItem value="Awaiting Payment" className="cursor-pointer">Awaiting Payment</SelectItem>
+          <SelectItem value="On Hold" className="cursor-pointer">On Hold</SelectItem>
           <SelectItem value="Paid" className="cursor-pointer">Paid</SelectItem>
         </SelectContent>
       </Select>

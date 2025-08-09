@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Filter, Search, Download, ChevronDown, X, Calendar, Info, Check, Clock, Wallet, AlertCircle, Package, Truck } from 'lucide-react';
+import { Filter, Search, Download, ChevronDown, X, Calendar, Info, Check, Clock, Wallet, AlertCircle, Package, Truck, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -55,7 +55,9 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
     handleStatusFilterChange('Delayed');
     handleStatusFilterChange('Pending');
     handleStatusFilterChange('In Progress');
-    handleStatusFilterChange('Awaiting Action');
+    handleStatusFilterChange('Assigned');
+    handleStatusFilterChange('Awaiting Payment');
+    handleStatusFilterChange('On Hold');
   };
 
   return (
@@ -192,7 +194,9 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
                         handleStatusFilterChange('Delayed');
                         handleStatusFilterChange('Pending');
                         handleStatusFilterChange('In Progress');
-                        handleStatusFilterChange('Awaiting Action');
+                        handleStatusFilterChange('Assigned');
+                        handleStatusFilterChange('Awaiting Payment');
+                        handleStatusFilterChange('On Hold');
                       }}
                     >
                       Clear
@@ -262,14 +266,38 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox 
-                      id="awaitingAction" 
-                      checked={statusFilter.includes('Awaiting Action')}
-                      onCheckedChange={() => handleStatusFilterChange('Awaiting Action')}
-                      className="rounded-sm data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
+                      id="assigned" 
+                      checked={statusFilter.includes('Assigned')}
+                      onCheckedChange={() => handleStatusFilterChange('Assigned')}
+                      className="rounded-sm data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"
                     />
                     <div className="flex items-center gap-1.5">
-                      <AlertCircle className="h-3 w-3 text-[#DB271E]" />
-                      <label htmlFor="awaitingAction" className="text-sm cursor-pointer">Awaiting Action</label>
+                      <Truck className="h-3 w-3 text-purple-500" />
+                      <label htmlFor="assigned" className="text-sm cursor-pointer">Assigned</label>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="awaitingPayment" 
+                      checked={statusFilter.includes('Awaiting Payment')}
+                      onCheckedChange={() => handleStatusFilterChange('Awaiting Payment')}
+                      className="rounded-sm data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+                    />
+                    <div className="flex items-center gap-1.5">
+                      <DollarSign className="h-3 w-3 text-amber-500" />
+                      <label htmlFor="awaitingPayment" className="text-sm cursor-pointer">Awaiting Payment</label>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="onHold" 
+                      checked={statusFilter.includes('On Hold')}
+                      onCheckedChange={() => handleStatusFilterChange('On Hold')}
+                      className="rounded-sm data-[state=checked]:bg-gray-600 data-[state=checked]:border-gray-600"
+                    />
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle className="h-3 w-3 text-gray-600" />
+                      <label htmlFor="onHold" className="text-sm cursor-pointer">On Hold</label>
                     </div>
                   </div>
                 </div>
@@ -347,7 +375,9 @@ const OrdersFilter: React.FC<OrdersFilterProps> = ({
                     handleStatusFilterChange('Delayed');
                     handleStatusFilterChange('Pending');
                     handleStatusFilterChange('In Progress');
-                    handleStatusFilterChange('Awaiting Action');
+                    handleStatusFilterChange('Assigned');
+                    handleStatusFilterChange('Awaiting Payment');
+                    handleStatusFilterChange('On Hold');
                   }}
                 >
                   <X className="h-3 w-3" />

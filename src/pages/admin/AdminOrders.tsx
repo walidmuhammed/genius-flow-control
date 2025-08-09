@@ -143,9 +143,12 @@ const AdminOrders: React.FC = () => {
         return returnedOrders || [];
       case 'paid':
         return paidOrders || [];
-      case 'awaitingAction':
-        // Filter orders with status 'Awaiting Action'
-        return allOrders.filter(order => order.status === 'New' || order.status === 'Pending Pickup' || order.status === 'Unsuccessful');
+      case 'assigned':
+        return allOrders.filter(order => order.status === 'Assigned');
+      case 'awaitingPayment':
+        return allOrders.filter(order => order.status === 'Awaiting Payment');
+      case 'onHold':
+        return allOrders.filter(order => order.status === 'On Hold');
       default:
         return allOrders;
     }
@@ -209,12 +212,14 @@ const AdminOrders: React.FC = () => {
     { key: 'all', label: 'All Orders', count: allOrders?.length },
     { key: 'new', label: 'New', count: newOrders?.length },
     { key: 'pending', label: 'Pending Pickup', count: pendingOrders?.length },
+    { key: 'assigned', label: 'Assigned', count: undefined },
     { key: 'inProgress', label: 'In Progress', count: inProgressOrders?.length },
     { key: 'successful', label: 'Successful', count: successfulOrders?.length },
     { key: 'unsuccessful', label: 'Unsuccessful', count: unsuccessfulOrders?.length },
     { key: 'returned', label: 'Returned', count: returnedOrders?.length },
-    { key: 'awaitingAction', label: 'Awaiting Action', count: undefined },
-    { key: 'paid', label: 'Paid', count: paidOrders?.length }
+    { key: 'awaitingPayment', label: 'Awaiting Payment', count: undefined },
+    { key: 'paid', label: 'Paid', count: paidOrders?.length },
+    { key: 'onHold', label: 'On Hold', count: undefined }
   ];
 
   // Transform orders for mobile display

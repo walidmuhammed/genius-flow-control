@@ -15,7 +15,7 @@ const OrderProgressBar: React.FC<OrderProgressBarProps> = ({ status, type }) => 
   const defaultSteps = ['New', 'Pending Pickup', 'In Progress', 'Successful', 'Paid'];
   const unsuccessfulSteps = ['New', 'Pending Pickup', 'In Progress', 'Unsuccessful', 'Returned', 'Paid'];
   const exchangeSteps = ['New', 'Pending Pickup', 'In Progress', 'Successful', 'Returned', 'Paid'];
-  const awaitingActionSteps = ['New', 'Pending Pickup', 'In Progress', 'Awaiting Action', 'Successful', 'Paid'];
+  const onHoldSteps = ['New', 'Pending Pickup', 'In Progress', 'On Hold', 'Successful', 'Paid'];
 
   // Select the steps based on the status and type
   let steps: string[] = defaultSteps;
@@ -23,8 +23,8 @@ const OrderProgressBar: React.FC<OrderProgressBarProps> = ({ status, type }) => 
     steps = unsuccessfulSteps;
   } else if (type === 'Exchange') {
     steps = exchangeSteps;
-  } else if (status === 'Awaiting Action') {
-    steps = awaitingActionSteps;
+  } else if (status === 'On Hold') {
+    steps = onHoldSteps;
   }
 
   // Calculate current step index
@@ -48,7 +48,9 @@ const OrderProgressBar: React.FC<OrderProgressBarProps> = ({ status, type }) => 
       case 'Successful':
         return <CheckIcon className={className} />;
       case 'Unsuccessful':
-      case 'Awaiting Action':
+      case 'Assigned':
+      case 'Awaiting Payment':
+      case 'On Hold':
         return <AlertCircleIcon className={className} />;
       case 'Paid':
         return <CircleDollarSignIcon className={className} />;
@@ -78,8 +80,12 @@ const OrderProgressBar: React.FC<OrderProgressBarProps> = ({ status, type }) => 
         return 'bg-sky-500';
       case 'Paid':
         return 'bg-indigo-500';
-      case 'Awaiting Action':
+      case 'Assigned':
+        return 'bg-purple-500';
+      case 'Awaiting Payment':
         return 'bg-amber-600';
+      case 'On Hold':
+        return 'bg-gray-600';
       default:
         return 'bg-gray-400';
     }

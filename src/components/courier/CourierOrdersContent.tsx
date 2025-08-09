@@ -65,16 +65,19 @@ const CourierOrdersContent = () => {
     assigned: orders.filter(o => o.status === 'Assigned').length,
     inProgress: orders.filter(o => o.status === 'In Progress').length,
     successful: orders.filter(o => o.status === 'Successful').length,
-    unsuccessful: orders.filter(o => o.status === 'Unsuccessful').length
+    unsuccessful: orders.filter(o => o.status === 'Unsuccessful').length,
+    awaitingPayment: orders.filter(o => o.status === 'Awaiting Payment').length
   };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       'New': 'bg-yellow-100 text-yellow-800',
-      'Assigned': 'bg-blue-100 text-blue-800',
-      'In Progress': 'bg-purple-100 text-purple-800',
+      'Assigned': 'bg-purple-100 text-purple-800',
+      'In Progress': 'bg-blue-100 text-blue-800',
       'Successful': 'bg-green-100 text-green-800',
-      'Unsuccessful': 'bg-red-100 text-red-800'
+      'Unsuccessful': 'bg-red-100 text-red-800',
+      'Awaiting Payment': 'bg-amber-100 text-amber-800',
+      'On Hold': 'bg-gray-100 text-gray-800'
     };
     return statusConfig[status as keyof typeof statusConfig] || 'bg-gray-100 text-gray-800';
   };
@@ -85,7 +88,7 @@ const CourierOrdersContent = () => {
                          order.refNo.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesTab = selectedTab === 'all' || 
-                      order.status.toLowerCase().replace(' ', '') === selectedTab.toLowerCase();
+                      order.status.toLowerCase().replace(' ', '').replace('awaiting', 'awaiting') === selectedTab.toLowerCase();
     
     return matchesSearch && matchesTab;
   });
@@ -121,7 +124,7 @@ const CourierOrdersContent = () => {
 
       {/* Status Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="all" className="text-xs">
             All ({statusCounts.all})
           </TabsTrigger>
@@ -139,6 +142,9 @@ const CourierOrdersContent = () => {
           </TabsTrigger>
           <TabsTrigger value="unsuccessful" className="text-xs">
             Unsuccessful ({statusCounts.unsuccessful})
+          </TabsTrigger>
+          <TabsTrigger value="awaitingpayment" className="text-xs">
+            Awaiting Payment ({statusCounts.awaitingPayment})
           </TabsTrigger>
         </TabsList>
 

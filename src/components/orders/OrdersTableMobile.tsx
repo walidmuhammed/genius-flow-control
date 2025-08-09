@@ -49,8 +49,12 @@ const OrdersTableMobile: React.FC<OrdersTableMobileProps> = ({
         return <Badge className={`${baseClasses} bg-yellow-50 text-yellow-700 border-yellow-200`}>{status}</Badge>;
       case 'paid':
         return <Badge className={`${baseClasses} bg-teal-50 text-teal-700 border-teal-200`}>{status}</Badge>;
-      case 'awaiting action':
+      case 'assigned':
+        return <Badge className={`${baseClasses} bg-purple-50 text-purple-700 border-purple-200`}>{status}</Badge>;
+      case 'awaiting payment':
         return <Badge className={`${baseClasses} bg-amber-50 text-amber-700 border-amber-200`}>{status}</Badge>;
+      case 'on hold':
+        return <Badge className={`${baseClasses} bg-gray-100 text-gray-800 border-gray-300`}>{status}</Badge>;
       default:
         return <Badge className={`${baseClasses} bg-gray-50 text-gray-700 border-gray-200`}>{status}</Badge>;
     }
