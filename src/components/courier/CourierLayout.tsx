@@ -26,7 +26,7 @@ const CourierLayout: React.FC<CourierLayoutProps> = ({ children, className }) =>
       {/* Mobile Sidebar as Sheet */}
       {isMobile && (
         <Sheet open={sidebarOpen} onOpenChange={closeSidebar}>
-          <SheetContent side="left" className="p-0 sm:max-w-[260px] w-[85vw]">
+          <SheetContent side="left" className="p-0 w-[260px] border-0">
             <CourierSidebar />
           </SheetContent>
         </Sheet>
@@ -43,11 +43,14 @@ const CourierLayout: React.FC<CourierLayoutProps> = ({ children, className }) =>
           className
         )}>
           <motion.div 
-            className="w-full max-w-[1600px] mx-auto space-y-4 md:space-y-8"
+            className={cn(
+              "w-full mx-auto space-y-4",
+              !isMobile && !isTablet && "max-w-[1600px] md:space-y-8"
+            )}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
-              duration: 0.4,
+              duration: 0.3,
               ease: [0.4, 0.0, 0.2, 1]
             }}
           >
@@ -60,13 +63,17 @@ const CourierLayout: React.FC<CourierLayoutProps> = ({ children, className }) =>
       </div>
       
       <Toaster 
-        position="top-right" 
+        position={isMobile ? "top-center" : "top-right"}
         toastOptions={{
           classNames: {
-            toast: "group border-border shadow-sm bg-white dark:bg-gray-900",
+            toast: cn(
+              "group border-border shadow-lg rounded-xl",
+              isMobile ? "mx-3 max-w-[calc(100vw-24px)]" : "",
+              "bg-white dark:bg-gray-900"
+            ),
             title: "font-medium text-foreground",
-            description: "text-muted-foreground",
-            actionButton: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90",
+            description: "text-muted-foreground text-sm",
+            actionButton: "bg-[#DC291E] text-white hover:bg-[#DC291E]/90 rounded-lg",
             cancelButton: "text-muted-foreground",
             error: "border-l-4 border-l-[#DC291E]",
             success: "border-l-4 border-l-green-600",
