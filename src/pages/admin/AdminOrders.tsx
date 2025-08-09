@@ -231,7 +231,7 @@ const AdminOrders: React.FC = () => {
   
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 w-full max-w-full overflow-hidden">
         {/* Header Section - Outside unified container */}
         <AdminOrdersPageHeader
           totalOrders={allOrders?.length || 0}
@@ -277,6 +277,7 @@ const AdminOrders: React.FC = () => {
         {/* Unified Container for Search + Filters + Table */}
         {!isLoadingAllOrders && !ordersError && (
           <motion.div
+            className="w-full max-w-full overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}

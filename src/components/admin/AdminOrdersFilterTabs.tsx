@@ -80,23 +80,22 @@ export const AdminOrdersFilterTabs: React.FC<AdminOrdersFilterTabsProps> = ({
 
   // Desktop/Tablet view - single row, no "More" button
   return (
-    <div className="px-4 sm:px-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30 py-[16px] overflow-hidden">
-      <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide"
-           style={{ 
-             scrollbarWidth: 'none', 
-             msOverflowStyle: 'none',
-             WebkitOverflowScrolling: 'touch'
-           }}>
-        <style>{`
-          .scrollbar-hide {
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-          }
-          .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
-        
+    <div className="px-4 sm:px-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30 py-[16px]">
+      <div 
+        className="admin-filter-tabs flex items-center gap-2 overflow-x-auto"
+        style={{
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            .admin-filter-tabs::-webkit-scrollbar {
+              display: none;
+            }
+          `
+        }} />
         {tabs.map((tab) => {
           const Icon = getTabIcon(tab.key);
           const isActive = activeTab === tab.key;
@@ -104,7 +103,7 @@ export const AdminOrdersFilterTabs: React.FC<AdminOrdersFilterTabsProps> = ({
             <motion.button
               key={tab.key}
               className={cn(
-                "relative px-3 lg:px-4 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap rounded-xl flex items-center gap-2 border flex-shrink-0 cursor-pointer",
+                "relative px-3 lg:px-4 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap rounded-xl flex items-center gap-2 border flex-shrink-0 min-w-fit",
                 isActive
                   ? 'text-white bg-[#DB271E] border-[#DB271E] shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
