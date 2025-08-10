@@ -148,9 +148,7 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
                 </TableCell>
                 <TableCell onClick={e => e.stopPropagation()}>
                   <div className="flex justify-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleViewDetails(pickup)}>
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm">
