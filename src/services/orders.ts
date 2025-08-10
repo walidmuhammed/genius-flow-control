@@ -53,7 +53,7 @@ const getCurrentUserId = async () => {
 };
 
 // Transforms raw data to match our interface
-const transformOrderData = (order: any): OrderWithCustomer => {
+export const transformOrderData = (order: any): OrderWithCustomer => {
   const customerData = order.customer as any;
   
   // Ensure type is correctly cast to one of the allowed types, map Deliver -> Shipment
