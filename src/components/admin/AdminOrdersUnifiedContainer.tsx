@@ -11,7 +11,7 @@ export const AdminOrdersUnifiedContainer: React.FC<AdminOrdersUnifiedContainerPr
 }) => {
   return (
     <motion.div 
-      className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/60 dark:border-gray-700/40 shadow-sm overflow-hidden w-full max-w-full min-w-0"
+      className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/60 dark:border-gray-700/40 shadow-sm overflow-hidden w-full min-w-0"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}

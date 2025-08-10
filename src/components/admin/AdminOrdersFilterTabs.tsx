@@ -81,10 +81,10 @@ export const AdminOrdersFilterTabs: React.FC<AdminOrdersFilterTabsProps> = ({
 
   // Desktop/Tablet view - horizontally scrollable filter tabs
   return (
-    <div className="border-b border-gray-200/30 dark:border-gray-700/30 py-4">
-      <div className="px-4 sm:px-6">
+    <div className="border-b border-gray-200/30 dark:border-gray-700/30 py-4 min-w-0">
+      <div className="px-4 sm:px-6 min-w-0">
         <div 
-          className="filter-tabs-container overflow-x-auto"
+          className="filter-tabs-container overflow-x-auto pb-2 -mb-2"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -101,7 +101,7 @@ export const AdminOrdersFilterTabs: React.FC<AdminOrdersFilterTabsProps> = ({
               }
             `
           }} />
-          <div className="flex items-center gap-2 w-max">
+          <div className="flex items-center gap-2 w-max min-w-full">
             {tabs.map((tab) => {
               const Icon = getTabIcon(tab.key);
               const isActive = activeTab === tab.key;

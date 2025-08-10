@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AlertCircle, Package } from 'lucide-react';
@@ -231,7 +232,7 @@ const AdminOrders: React.FC = () => {
   
   return (
     <AdminLayout>
-      <div className="space-y-6 w-full max-w-full min-w-0">
+      <div className="space-y-6 w-full min-w-0">
         {/* Header Section - Outside unified container */}
         <AdminOrdersPageHeader
           totalOrders={allOrders?.length || 0}
@@ -277,7 +278,7 @@ const AdminOrders: React.FC = () => {
         {/* Unified Container for Search + Filters + Table */}
         {!isLoadingAllOrders && !ordersError && (
           <motion.div
-            className="w-full max-w-full min-w-0"
+            className="w-full min-w-0"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
@@ -372,16 +373,14 @@ const AdminOrders: React.FC = () => {
                       />
                     </div>
                   ) : (
-                    <div className="min-w-0 overflow-x-auto">
-                      <AdminEnhancedOrdersTable
-                        orders={filteredOrders}
-                        selectedOrderIds={selectedOrders}
-                        onOrderSelection={setSelectedOrders}
-                        onViewOrder={handleViewOrder}
-                        onEditOrder={handleEditOrder}
-                        onDeleteOrder={handleDeleteOrder}
-                      />
-                    </div>
+                    <AdminEnhancedOrdersTable
+                      orders={filteredOrders}
+                      selectedOrderIds={selectedOrders}
+                      onOrderSelection={setSelectedOrders}
+                      onViewOrder={handleViewOrder}
+                      onEditOrder={handleEditOrder}
+                      onDeleteOrder={handleDeleteOrder}
+                    />
                   )
                 ) : (
                   <div className="py-12">

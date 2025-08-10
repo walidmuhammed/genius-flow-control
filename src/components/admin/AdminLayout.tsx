@@ -20,7 +20,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, className }) => {
   const { sidebarOpen, closeSidebar } = useLayoutStore();
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 min-w-0">
       {/* Desktop Sidebar */}
       {!isMobile && <AdminSidebar />}
       
@@ -34,17 +34,17 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, className }) => {
       )}
       
       <div className={cn(
-        "flex-1 flex flex-col",
+        "flex-1 flex flex-col min-w-0",
         !isMobile && "ml-[260px]"
       )}>
         <AdminTopBar />
         <main className={cn(
-          "flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-all",
+          "flex-1 overflow-x-hidden bg-gray-50 dark:bg-gray-900 transition-all min-w-0",
           isMobile ? "p-3 pb-6" : isTablet ? "p-4 pb-6" : "p-6",
           className
         )}>
           <motion.div 
-            className="w-full max-w-[1600px] mx-auto space-y-4 md:space-y-8"
+            className="w-full max-w-7xl mx-auto space-y-4 md:space-y-8 min-w-0"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
