@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -78,60 +79,64 @@ export const AdminOrdersFilterTabs: React.FC<AdminOrdersFilterTabsProps> = ({
     );
   }
 
-  // Desktop/Tablet view - single row, no "More" button
+  // Desktop/Tablet view - horizontally scrollable filter tabs
   return (
-    <div className="px-4 sm:px-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30 py-[16px]">
-      <div 
-        className="admin-filter-tabs flex items-center gap-2 overflow-x-auto"
-        style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          WebkitOverflowScrolling: 'touch'
-        }}
-        onWheel={(e) => {
-          e.currentTarget.scrollLeft += e.deltaY;
-        }}
-      >
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            .admin-filter-tabs::-webkit-scrollbar {
-              display: none;
-            }
-          `
-        }} />
-        {tabs.map((tab) => {
-          const Icon = getTabIcon(tab.key);
-          const isActive = activeTab === tab.key;
-          return (
-            <motion.button
-              key={tab.key}
-              className={cn(
-                "relative px-3 lg:px-4 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap rounded-xl flex items-center gap-2 border flex-shrink-0 min-w-fit",
-                isActive
-                  ? 'text-white bg-[#DB271E] border-[#DB271E] shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-              )}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('Tab clicked:', tab.key, 'Current active:', activeTab);
-                onTabChange(tab.key);
-              }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              style={{ pointerEvents: 'auto' }}
-            >
-              <Icon className="h-4 w-4" />
-              <span>{tab.label}</span>
-              {/* Only show count badge for active tab */}
-              {isActive && tab.count !== undefined && (
-                <Badge className="h-5 px-2 py-0 text-xs font-semibold border-0 bg-white/20 text-white ml-1">
-                  {tab.count}
-                </Badge>
-              )}
-            </motion.button>
-          );
-        })}
+    <div className="border-b border-gray-200/30 dark:border-gray-700/30 py-4">
+      <div className="px-4 sm:px-6">
+        <div 
+          className="filter-tabs-container overflow-x-auto"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+          onWheel={(e) => {
+            e.preventDefault();
+            e.currentTarget.scrollLeft += e.deltaY;
+          }}
+        >
+          <style dangerouslySetInnerHTML={{
+            __html: `
+              .filter-tabs-container::-webkit-scrollbar {
+                display: none;
+              }
+            `
+          }} />
+          <div className="flex items-center gap-2 w-max">
+            {tabs.map((tab) => {
+              const Icon = getTabIcon(tab.key);
+              const isActive = activeTab === tab.key;
+              return (
+                <motion.button
+                  key={tab.key}
+                  className={cn(
+                    "relative px-3 lg:px-4 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap rounded-xl flex items-center gap-2 border flex-shrink-0",
+                    isActive
+                      ? 'text-white bg-[#DB271E] border-[#DB271E] shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  )}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Tab clicked:', tab.key, 'Current active:', activeTab);
+                    onTabChange(tab.key);
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{ pointerEvents: 'auto' }}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{tab.label}</span>
+                  {/* Only show count badge for active tab */}
+                  {isActive && tab.count !== undefined && (
+                    <Badge className="h-5 px-2 py-0 text-xs font-semibold border-0 bg-white/20 text-white ml-1">
+                      {tab.count}
+                    </Badge>
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

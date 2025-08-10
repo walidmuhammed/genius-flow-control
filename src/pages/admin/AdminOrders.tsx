@@ -231,7 +231,7 @@ const AdminOrders: React.FC = () => {
   
   return (
     <AdminLayout>
-      <div className="space-y-6 w-full max-w-full overflow-hidden">
+      <div className="space-y-6 w-full max-w-full min-w-0">
         {/* Header Section - Outside unified container */}
         <AdminOrdersPageHeader
           totalOrders={allOrders?.length || 0}
@@ -277,7 +277,7 @@ const AdminOrders: React.FC = () => {
         {/* Unified Container for Search + Filters + Table */}
         {!isLoadingAllOrders && !ordersError && (
           <motion.div
-            className="w-full max-w-full overflow-hidden"
+            className="w-full max-w-full min-w-0"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
@@ -316,10 +316,10 @@ const AdminOrders: React.FC = () => {
               />
               
               {/* Orders Content */}
-              <div className="p-4 sm:p-6">
+              <div className="p-4 sm:p-6 min-w-0">
                 {filteredOrders.length > 0 ? (
                   isMobile ? (
-                    <div className="w-full space-y-4">
+                    <div className="w-full space-y-4 min-w-0">
                       <OrdersTableMobile
                         orders={filteredOrdersForMobile}
                         selectedOrders={selectedOrders}
@@ -346,7 +346,7 @@ const AdminOrders: React.FC = () => {
                       />
                     </div>
                   ) : isTablet ? (
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 min-w-0">
                       <OrdersTableMobile
                         orders={filteredOrdersForMobile}
                         selectedOrders={selectedOrders}
@@ -372,14 +372,16 @@ const AdminOrders: React.FC = () => {
                       />
                     </div>
                   ) : (
-                    <AdminEnhancedOrdersTable
-                      orders={filteredOrders}
-                      selectedOrderIds={selectedOrders}
-                      onOrderSelection={setSelectedOrders}
-                      onViewOrder={handleViewOrder}
-                      onEditOrder={handleEditOrder}
-                      onDeleteOrder={handleDeleteOrder}
-                    />
+                    <div className="min-w-0 overflow-x-auto">
+                      <AdminEnhancedOrdersTable
+                        orders={filteredOrders}
+                        selectedOrderIds={selectedOrders}
+                        onOrderSelection={setSelectedOrders}
+                        onViewOrder={handleViewOrder}
+                        onEditOrder={handleEditOrder}
+                        onDeleteOrder={handleDeleteOrder}
+                      />
+                    </div>
                   )
                 ) : (
                   <div className="py-12">
