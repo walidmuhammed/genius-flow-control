@@ -1,33 +1,18 @@
 import React, { useState } from 'react';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Eye, MoreHorizontal, UserPlus, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { AdminPickupWithClient } from '@/services/admin-pickups';
 import { formatDate } from '@/utils/format';
 import AdminPickupDetailsDialog from './AdminPickupDetailsDialog';
-
 interface AdminPickupsTableProps {
   pickups: AdminPickupWithClient[];
   onStatusUpdate: (pickupId: string, status: string) => void;
   onCourierAssign: (pickupId: string) => void;
   isLoading?: boolean;
 }
-
 const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
   pickups,
   onStatusUpdate,
@@ -36,7 +21,6 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
 }) => {
   const [selectedPickup, setSelectedPickup] = useState<AdminPickupWithClient | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
-
   const getStatusBadge = (status: string) => {
     const statusLower = status.toLowerCase();
     switch (statusLower) {
@@ -54,66 +38,43 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
         return 'bg-gray-500/10 text-gray-600 border-gray-500/20 hover:bg-gray-500/20';
     }
   };
-
   const handleViewDetails = (pickup: AdminPickupWithClient) => {
     setSelectedPickup(pickup);
     setDetailsOpen(true);
   };
-
   const getActionButtons = (pickup: AdminPickupWithClient) => {
     const statusLower = pickup.status.toLowerCase();
     const buttons = [];
-
     if (statusLower === 'scheduled') {
-      buttons.push(
-        <DropdownMenuItem key="assign" onClick={() => onCourierAssign(pickup.id)}>
+      buttons.push(<DropdownMenuItem key="assign" onClick={() => onCourierAssign(pickup.id)}>
           <UserPlus className="h-4 w-4 mr-2" />
           Assign Courier
-        </DropdownMenuItem>
-      );
+        </DropdownMenuItem>);
     }
-
     if (statusLower === 'assigned' || statusLower === 'in progress') {
-      buttons.push(
-        <DropdownMenuItem key="complete" onClick={() => onStatusUpdate(pickup.id, 'Completed')}>
+      buttons.push(<DropdownMenuItem key="complete" onClick={() => onStatusUpdate(pickup.id, 'Completed')}>
           <CheckCircle className="h-4 w-4 mr-2" />
           Mark Complete
-        </DropdownMenuItem>
-      );
+        </DropdownMenuItem>);
     }
-
     if (statusLower !== 'completed' && statusLower !== 'canceled') {
-      buttons.push(
-        <DropdownMenuItem 
-          key="cancel" 
-          onClick={() => onStatusUpdate(pickup.id, 'Canceled')}
-          className="text-red-600"
-        >
+      buttons.push(<DropdownMenuItem key="cancel" onClick={() => onStatusUpdate(pickup.id, 'Canceled')} className="text-red-600">
           <XCircle className="h-4 w-4 mr-2" />
           Cancel Pickup
-        </DropdownMenuItem>
-      );
+        </DropdownMenuItem>);
     }
-
     return buttons;
   };
-
   if (isLoading) {
-    return (
-      <div className="rounded-lg border bg-card">
+    return <div className="rounded-lg border bg-card">
         <div className="p-6">
           <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-muted animate-pulse rounded" />
-            ))}
+            {[...Array(5)].map((_, i) => <div key={i} className="h-16 bg-muted animate-pulse rounded" />)}
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <>
+  return <>
       <div className="rounded-lg border bg-card shadow-sm">
         <Table>
           <TableHeader>
@@ -129,20 +90,13 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {pickups.map((pickup) => (
-              <TableRow 
-                key={pickup.id} 
-                className="hover:bg-muted/50 cursor-pointer transition-colors"
-                onClick={() => handleViewDetails(pickup)}
-              >
+            {pickups.map(pickup => <TableRow key={pickup.id} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => handleViewDetails(pickup)}>
                 <TableCell className="font-medium text-primary">
                   <div className="flex items-center gap-2">
                     {pickup.pickup_id}
-                    {pickup.note && (
-                      <div className="flex items-center">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full" title="Has notes" />
-                      </div>
-                    )}
+                    {pickup.note && <div className="flex items-center">
+                        
+                      </div>}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -164,11 +118,9 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
                 <TableCell>
                   <div className="flex flex-col">
                     <span className="font-medium">{pickup.total_orders} orders</span>
-                    {(pickup.total_cash_usd > 0 || pickup.total_cash_lbp > 0) && (
-                      <span className="text-sm text-muted-foreground">
+                    {(pickup.total_cash_usd > 0 || pickup.total_cash_lbp > 0) && <span className="text-sm text-muted-foreground">
                         Cash: ${pickup.total_cash_usd.toFixed(2)}
-                      </span>
-                    )}
+                      </span>}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -182,10 +134,10 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
                       {formatDate(new Date(pickup.pickup_date))}
                     </span>
                     <span className="text-sm text-muted-foreground">
-                      {new Date(pickup.pickup_date).toLocaleTimeString([], { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
+                      {new Date(pickup.pickup_date).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                     </span>
                   </div>
                 </TableCell>
@@ -194,13 +146,9 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
                     {pickup.vehicle_type || 'Small'}
                   </span>
                 </TableCell>
-                <TableCell onClick={(e) => e.stopPropagation()}>
+                <TableCell onClick={e => e.stopPropagation()}>
                   <div className="flex justify-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleViewDetails(pickup)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => handleViewDetails(pickup)}>
                       <Eye className="h-4 w-4" />
                     </Button>
                     <DropdownMenu>
@@ -220,30 +168,17 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
                     </DropdownMenu>
                   </div>
                 </TableCell>
-              </TableRow>
-            ))}
+              </TableRow>)}
           </TableBody>
         </Table>
         
-        {pickups.length === 0 && (
-          <div className="text-center py-12">
+        {pickups.length === 0 && <div className="text-center py-12">
             <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">No pickups found</p>
-          </div>
-        )}
+          </div>}
       </div>
 
-      {selectedPickup && (
-        <AdminPickupDetailsDialog
-          pickup={selectedPickup}
-          open={detailsOpen}
-          onOpenChange={setDetailsOpen}
-          onStatusUpdate={onStatusUpdate}
-          onCourierAssign={onCourierAssign}
-        />
-      )}
-    </>
-  );
+      {selectedPickup && <AdminPickupDetailsDialog pickup={selectedPickup} open={detailsOpen} onOpenChange={setDetailsOpen} onStatusUpdate={onStatusUpdate} onCourierAssign={onCourierAssign} />}
+    </>;
 };
-
 export default AdminPickupsTable;
