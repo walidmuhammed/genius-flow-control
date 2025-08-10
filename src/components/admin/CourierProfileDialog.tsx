@@ -86,11 +86,37 @@ const CourierProfileDialog = ({ courier, open, onOpenChange }: CourierProfileDia
         </DialogHeader>
 
         <Tabs defaultValue="info" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="info">Courier Info</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="pickups">Pickups</TabsTrigger>
-            <TabsTrigger value="finances">Finances</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger 
+              value="info"
+              className="data-[state=active]:bg-[#DB271E] data-[state=active]:text-white"
+            >
+              Courier Info
+            </TabsTrigger>
+            <TabsTrigger 
+              value="orders"
+              className="data-[state=active]:bg-[#DB271E] data-[state=active]:text-white"
+            >
+              Orders
+            </TabsTrigger>
+            <TabsTrigger 
+              value="pickups"
+              className="data-[state=active]:bg-[#DB271E] data-[state=active]:text-white"
+            >
+              Pickups
+            </TabsTrigger>
+            <TabsTrigger 
+              value="finances"
+              className="data-[state=active]:bg-[#DB271E] data-[state=active]:text-white"
+            >
+              Finances
+            </TabsTrigger>
+            <TabsTrigger 
+              value="account"
+              className="data-[state=active]:bg-[#DB271E] data-[state=active]:text-white"
+            >
+              Account
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="space-y-6">
@@ -245,11 +271,24 @@ const CourierProfileDialog = ({ courier, open, onOpenChange }: CourierProfileDia
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold">Orders Handled ({orders.length})</h3>
+                <p className="text-sm text-muted-foreground">Manage and assign orders to this courier</p>
+              </div>
+              <Button 
+                style={{ backgroundColor: '#DB271E', color: 'white' }}
+                className="hover:bg-[#B91C1C]"
+              >
+                <Package className="h-4 w-4 mr-2" />
+                Assign Orders
+              </Button>
+            </div>
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Package className="h-5 w-5" />
-                  Orders Handled ({orders.length})
+                  Recent Orders
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -294,11 +333,24 @@ const CourierProfileDialog = ({ courier, open, onOpenChange }: CourierProfileDia
           </TabsContent>
 
           <TabsContent value="pickups" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold">Pickups Handled ({pickups.length})</h3>
+                <p className="text-sm text-muted-foreground">Manage and assign pickups to this courier</p>
+              </div>
+              <Button 
+                style={{ backgroundColor: '#DB271E', color: 'white' }}
+                className="hover:bg-[#B91C1C]"
+              >
+                <Truck className="h-4 w-4 mr-2" />
+                Assign Pickups
+              </Button>
+            </div>
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Truck className="h-5 w-5" />
-                  Pickups Handled ({pickups.length})
+                  Recent Pickups
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -438,6 +490,98 @@ const CourierProfileDialog = ({ courier, open, onOpenChange }: CourierProfileDia
                       ))}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="account" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Account Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input 
+                      id="email"
+                      type="email" 
+                      value={courier.email || ''} 
+                      placeholder="Enter email address"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This email will be used for account login and notifications
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="newPassword">New Password</Label>
+                      <Input 
+                        id="newPassword"
+                        type="password" 
+                        placeholder="Enter new password"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <Input 
+                        id="confirmPassword"
+                        type="password" 
+                        placeholder="Confirm new password"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center pt-4">
+                    <div className="text-sm text-muted-foreground">
+                      Last login: Never
+                    </div>
+                    <div className="space-x-2">
+                      <Button variant="outline">
+                        Reset Password
+                      </Button>
+                      <Button 
+                        style={{ backgroundColor: '#DB271E', color: 'white' }}
+                        className="hover:bg-[#B91C1C]"
+                      >
+                        Update Account
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5" />
+                  Account Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span>Account Status:</span>
+                    {getStatusBadge(courier.status || 'active')}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Email Verified:</span>
+                    <Badge className="bg-green-50 text-green-700 border-green-200">
+                      Verified
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Created:</span>
+                    <span className="text-sm text-muted-foreground">
+                      {format(new Date(courier.created_at), 'MMM d, yyyy')}
+                    </span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

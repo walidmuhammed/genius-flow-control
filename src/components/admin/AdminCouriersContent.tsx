@@ -259,7 +259,11 @@ const AdminCouriersContent = () => {
               </TableHeader>
               <TableBody>
                 {filteredCouriers.map(courier => (
-                  <TableRow key={courier.id}>
+                  <TableRow 
+                    key={courier.id} 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleViewCourier(courier)}
+                  >
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
