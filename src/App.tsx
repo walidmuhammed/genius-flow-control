@@ -45,6 +45,7 @@ import AdminCreateOrder from '@/pages/admin/AdminCreateOrder';
 // Import courier pages
 import CourierDashboard from '@/pages/courier/CourierDashboard';
 import CourierOrders from '@/pages/courier/CourierOrders';
+import CourierPickups from '@/pages/courier/CourierPickups';
 import CourierWallet from '@/pages/courier/CourierWallet';
 import CourierSupport from '@/pages/courier/CourierSupport';
 import CourierSignIn from '@/pages/auth/CourierSignIn';
@@ -129,6 +130,7 @@ function App() {
             <Route element={<ProtectedRoute requiredRole="courier" />}>
               <Route path="/dashboard/courier" element={<CourierDashboard />} />
               <Route path="/dashboard/courier/orders" element={<CourierOrders />} />
+              <Route path="/dashboard/courier/pickups" element={<CourierPickups />} />
               <Route path="/dashboard/courier/wallet" element={<CourierWallet />} />
               <Route path="/dashboard/courier/support" element={<CourierSupport />} />
             </Route>
