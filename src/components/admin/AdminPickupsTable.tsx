@@ -45,45 +45,36 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
   };
   const formatScheduledDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    const dateStr = date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
+    const dateStr = date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     });
-    const timeStr = `${date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit', 
-      hour12: true 
+    const timeStr = `${date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
     })} - 5:00 PM`;
-    return { dateStr, timeStr };
+    return {
+      dateStr,
+      timeStr
+    };
   };
-
   const getActionButtons = (pickup: AdminPickupWithClient) => {
     const statusLower = pickup.status.toLowerCase();
     const buttons = [];
-    
     if (statusLower === 'scheduled') {
-      buttons.push(
-        <DropdownMenuItem key="assign" onClick={() => onCourierAssign(pickup.id)}>
+      buttons.push(<DropdownMenuItem key="assign" onClick={() => onCourierAssign(pickup.id)}>
           <UserPlus className="h-4 w-4 mr-2" />
           Assign Courier
-        </DropdownMenuItem>
-      );
+        </DropdownMenuItem>);
     }
-    
     if (statusLower !== 'completed' && statusLower !== 'canceled') {
-      buttons.push(
-        <DropdownMenuItem 
-          key="cancel" 
-          onClick={() => onStatusUpdate(pickup.id, 'Canceled')} 
-          className="text-red-600"
-        >
+      buttons.push(<DropdownMenuItem key="cancel" onClick={() => onStatusUpdate(pickup.id, 'Canceled')} className="text-red-600">
           <XCircle className="h-4 w-4 mr-2" />
           Cancel
-        </DropdownMenuItem>
-      );
+        </DropdownMenuItem>);
     }
-    
     return buttons;
   };
   if (isLoading) {
@@ -112,14 +103,11 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
           </TableHeader>
           <TableBody>
             {pickups.map(pickup => {
-              const { dateStr, timeStr } = formatScheduledDateTime(pickup.pickup_date);
-              
-              return (
-                <TableRow 
-                  key={pickup.id} 
-                  className="hover:bg-muted/50 cursor-pointer transition-colors" 
-                  onClick={() => handleViewDetails(pickup)}
-                >
+            const {
+              dateStr,
+              timeStr
+            } = formatScheduledDateTime(pickup.pickup_date);
+            return <TableRow key={pickup.id} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => handleViewDetails(pickup)}>
                   <TableCell className="font-medium text-primary">
                     <div className="flex items-center gap-2">
                       {pickup.pickup_id}
@@ -128,7 +116,7 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-bold">{pickup.client_business_name}</span>
+                      <span className="font-semibold">{pickup.client_business_name}</span>
                       <span className="text-sm text-muted-foreground">
                         {pickup.contact_phone}
                       </span>
@@ -175,9 +163,8 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
                       </DropdownMenu>
                     </div>
                   </TableCell>
-                </TableRow>
-              );
-            })}
+                </TableRow>;
+          })}
           </TableBody>
         </Table>
         
