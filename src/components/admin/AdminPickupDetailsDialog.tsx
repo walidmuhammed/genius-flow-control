@@ -106,9 +106,8 @@ const AdminPickupDetailsDialog: React.FC<AdminPickupDetailsDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[90vw] max-w-4xl max-h-[90vh] overflow-hidden">
-        <div className="max-h-full overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="w-[90vw] max-w-5xl h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center justify-between">
             <span className="text-xl font-bold">Pickup Details</span>
             <Badge variant="outline" className={getStatusBadge(pickup.status)}>
@@ -117,7 +116,8 @@ const AdminPickupDetailsDialog: React.FC<AdminPickupDetailsDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
+          <div className="space-y-6">
           {/* Pickup Information */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -275,7 +275,7 @@ const AdminPickupDetailsDialog: React.FC<AdminPickupDetailsDialogProps> = ({
           <div className="flex gap-3">
             {getActionButtons()}
           </div>
-        </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

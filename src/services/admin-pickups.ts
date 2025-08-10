@@ -201,7 +201,7 @@ export async function assignCourierToPickup(pickupId: string, courierName: strin
     .update({ 
       courier_name: courierName,
       courier_phone: courierPhone,
-      status: 'Assigned',
+      status: 'In Progress',
       updated_at: new Date().toISOString()
     })
     .eq('id', pickupId);

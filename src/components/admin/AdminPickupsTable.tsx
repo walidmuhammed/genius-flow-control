@@ -3,9 +3,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Eye, MoreHorizontal, UserPlus, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { MoreHorizontal, UserPlus, XCircle, Clock } from 'lucide-react';
 import { AdminPickupWithClient } from '@/services/admin-pickups';
 import { formatDate } from '@/utils/format';
+import OrderNoteTooltip from '@/components/orders/OrderNoteTooltip';
 import AdminPickupDetailsDialog from './AdminPickupDetailsDialog';
 interface AdminPickupsTableProps {
   pickups: AdminPickupWithClient[];
@@ -42,27 +43,47 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
     setSelectedPickup(pickup);
     setDetailsOpen(true);
   };
+  const formatScheduledDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const dateStr = date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+    const timeStr = `${date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit', 
+      hour12: true 
+    })} - 5:00 PM`;
+    return { dateStr, timeStr };
+  };
+
   const getActionButtons = (pickup: AdminPickupWithClient) => {
     const statusLower = pickup.status.toLowerCase();
     const buttons = [];
+    
     if (statusLower === 'scheduled') {
-      buttons.push(<DropdownMenuItem key="assign" onClick={() => onCourierAssign(pickup.id)}>
+      buttons.push(
+        <DropdownMenuItem key="assign" onClick={() => onCourierAssign(pickup.id)}>
           <UserPlus className="h-4 w-4 mr-2" />
           Assign Courier
-        </DropdownMenuItem>);
+        </DropdownMenuItem>
+      );
     }
-    if (statusLower === 'assigned' || statusLower === 'in progress') {
-      buttons.push(<DropdownMenuItem key="complete" onClick={() => onStatusUpdate(pickup.id, 'Completed')}>
-          <CheckCircle className="h-4 w-4 mr-2" />
-          Mark Complete
-        </DropdownMenuItem>);
-    }
+    
     if (statusLower !== 'completed' && statusLower !== 'canceled') {
-      buttons.push(<DropdownMenuItem key="cancel" onClick={() => onStatusUpdate(pickup.id, 'Canceled')} className="text-red-600">
+      buttons.push(
+        <DropdownMenuItem 
+          key="cancel" 
+          onClick={() => onStatusUpdate(pickup.id, 'Canceled')} 
+          className="text-red-600"
+        >
           <XCircle className="h-4 w-4 mr-2" />
-          Cancel Pickup
-        </DropdownMenuItem>);
+          Cancel
+        </DropdownMenuItem>
+      );
     }
+    
     return buttons;
   };
   if (isLoading) {
@@ -90,83 +111,73 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {pickups.map(pickup => <TableRow key={pickup.id} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => handleViewDetails(pickup)}>
-                <TableCell className="font-medium text-primary">
-                  <div className="flex items-center gap-2">
-                    {pickup.pickup_id}
-                    {pickup.note && <div className="flex items-center">
-                        
-                      </div>}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{pickup.client_business_name}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {pickup.contact_phone}
+            {pickups.map(pickup => {
+              const { dateStr, timeStr } = formatScheduledDateTime(pickup.pickup_date);
+              
+              return (
+                <TableRow 
+                  key={pickup.id} 
+                  className="hover:bg-muted/50 cursor-pointer transition-colors" 
+                  onClick={() => handleViewDetails(pickup)}
+                >
+                  <TableCell className="font-medium text-primary">
+                    <div className="flex items-center gap-2">
+                      {pickup.pickup_id}
+                      <OrderNoteTooltip note={pickup.note} />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-bold">{pickup.client_business_name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {pickup.contact_phone}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{pickup.location}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {pickup.address || 'No specific address'}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-medium">{pickup.total_orders}</span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={getStatusBadge(pickup.status)}>
+                      {pickup.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{dateStr}</span>
+                      <span className="text-sm text-muted-foreground">{timeStr}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-medium capitalize">
+                      {pickup.vehicle_type || 'Small'}
                     </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{pickup.location}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {pickup.address || 'No specific address'}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{pickup.total_orders} orders</span>
-                    {(pickup.total_cash_usd > 0 || pickup.total_cash_lbp > 0) && <span className="text-sm text-muted-foreground">
-                        Cash: ${pickup.total_cash_usd.toFixed(2)}
-                      </span>}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={getStatusBadge(pickup.status)}>
-                    {pickup.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span className="font-medium">
-                      {formatDate(new Date(pickup.pickup_date))}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(pickup.pickup_date).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span className="font-medium capitalize">
-                    {pickup.vehicle_type || 'Small'}
-                  </span>
-                </TableCell>
-                <TableCell onClick={e => e.stopPropagation()}>
-                  <div className="flex justify-center gap-2">
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewDetails(pickup)}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        {getActionButtons(pickup)}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </TableCell>
-              </TableRow>)}
+                  </TableCell>
+                  <TableCell onClick={e => e.stopPropagation()}>
+                    <div className="flex justify-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {getActionButtons(pickup)}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
         
