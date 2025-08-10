@@ -119,51 +119,47 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead className="font-semibold">Pickup ID</TableHead>
-              <TableHead className="font-semibold">Store / Client</TableHead>
-              <TableHead className="font-semibold">Pickup Date & Time</TableHead>
-              <TableHead className="font-semibold">Courier</TableHead>
+              <TableHead className="font-semibold">Shop Name & Phone</TableHead>
+              <TableHead className="font-semibold">Pickup Location</TableHead>
               <TableHead className="font-semibold">Orders</TableHead>
               <TableHead className="font-semibold">Status</TableHead>
+              <TableHead className="font-semibold">Scheduled Date & Time</TableHead>
+              <TableHead className="font-semibold">Vehicle Type</TableHead>
               <TableHead className="font-semibold text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {pickups.map((pickup) => (
-              <TableRow key={pickup.id} className="hover:bg-muted/50 transition-colors">
+              <TableRow 
+                key={pickup.id} 
+                className="hover:bg-muted/50 cursor-pointer transition-colors"
+                onClick={() => handleViewDetails(pickup)}
+              >
                 <TableCell className="font-medium text-primary">
-                  {pickup.pickup_id}
+                  <div className="flex items-center gap-2">
+                    {pickup.pickup_id}
+                    {pickup.note && (
+                      <div className="flex items-center">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full" title="Has notes" />
+                      </div>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col">
                     <span className="font-medium">{pickup.client_business_name}</span>
                     <span className="text-sm text-muted-foreground">
-                      {pickup.client_name} • {pickup.client_business_type}
+                      {pickup.contact_phone}
                     </span>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col">
-                    <span className="font-medium">
-                      {formatDate(new Date(pickup.pickup_date))}
-                    </span>
+                    <span className="font-medium">{pickup.location}</span>
                     <span className="text-sm text-muted-foreground">
-                      {pickup.location}
+                      {pickup.address || 'No specific address'}
                     </span>
                   </div>
-                </TableCell>
-                <TableCell>
-                  {pickup.courier_name ? (
-                    <div className="flex flex-col">
-                      <span className="font-medium">{pickup.courier_name}</span>
-                      {pickup.courier_phone && (
-                        <span className="text-sm text-muted-foreground">
-                          {pickup.courier_phone}
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">Unassigned</span>
-                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-col">
@@ -181,6 +177,24 @@ const AdminPickupsTable: React.FC<AdminPickupsTableProps> = ({
                   </Badge>
                 </TableCell>
                 <TableCell>
+                  <div className="flex flex-col">
+                    <span className="font-medium">
+                      {formatDate(new Date(pickup.pickup_date))}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(pickup.pickup_date).toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <span className="font-medium capitalize">
+                    {pickup.vehicle_type || 'Small'}
+                  </span>
+                </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <div className="flex justify-center gap-2">
                     <Button
                       variant="ghost"

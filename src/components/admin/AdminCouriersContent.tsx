@@ -41,11 +41,18 @@ const AdminCouriersContent = () => {
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   
   // Hooks
-  const { data: couriers = [], isLoading } = useCouriers();
+  const { data: couriers = [], isLoading, error } = useCouriers();
   const { data: orders = [] } = useOrders();
   const { data: pickups = [] } = usePickups();
   const updateCourierMutation = useUpdateCourier();
   const deleteCourierMutation = useDeleteCourier();
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('Couriers data:', couriers);
+    console.log('Is loading:', isLoading);
+    console.log('Error:', error);
+  }, [couriers, isLoading, error]);
 
   // Calculate KPIs
   const totalCouriers = couriers.length;
@@ -319,10 +326,18 @@ const AdminCouriersContent = () => {
                             <Eye className="h-4 w-4 mr-2" />
                             View Profile
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <MapPin className="h-4 w-4 mr-2" />
-                            Assign Zones
-                          </DropdownMenuItem>
+                           <DropdownMenuItem>
+                             <MapPin className="h-4 w-4 mr-2" />
+                             Assign Zones
+                           </DropdownMenuItem>
+                           <DropdownMenuItem>
+                             <Package className="h-4 w-4 mr-2" />
+                             Assign Orders
+                           </DropdownMenuItem>
+                           <DropdownMenuItem>
+                             <Truck className="h-4 w-4 mr-2" />
+                             Assign Pickups
+                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           {(courier.status || 'active') === 'active' ? (
                             <DropdownMenuItem onClick={() => handleUpdateCourierStatus(courier.id, 'inactive')}>

@@ -39,21 +39,57 @@ export async function getCouriers(): Promise<CourierWithStats[]> {
     throw error;
   }
   
+  console.log('Raw courier data from database:', data);
+  
+  if (!data || data.length === 0) {
+    console.log('No couriers found in database');
+    return [];
+  }
+  
   // Calculate stats for each courier
-  const couriersWithStats = await Promise.all(
+  const couriersWithStats = await Promise.allSettled(
     data.map(async (courier) => {
-      const stats = await getCourierStats(courier.id, courier.full_name);
-      return {
-        ...courier,
-        status: (courier.status || 'active') as 'active' | 'inactive' | 'suspended',
-        vehicle_type: courier.vehicle_type || 'motorcycle',
-        assigned_zones: courier.assigned_zones || [],
-        ...stats
-      };
+      try {
+        console.log(`Processing courier: ${courier.full_name} (ID: ${courier.id})`);
+        const stats = await getCourierStats(courier.id, courier.full_name);
+        return {
+          ...courier,
+          status: (courier.status || 'active') as 'active' | 'inactive' | 'suspended',
+          vehicle_type: courier.vehicle_type || 'motorcycle',
+          assigned_zones: courier.assigned_zones || [],
+          ...stats
+        };
+      } catch (error) {
+        console.error(`Error processing courier ${courier.full_name}:`, error);
+        // Return courier with default stats if error
+        return {
+          ...courier,
+          status: (courier.status || 'active') as 'active' | 'inactive' | 'suspended',
+          vehicle_type: courier.vehicle_type || 'motorcycle',
+          assigned_zones: courier.assigned_zones || [],
+          active_orders_count: 0,
+          cash_on_hand_usd: 0,
+          cash_on_hand_lbp: 0,
+          delivery_fees_usd: 0,
+          delivery_fees_lbp: 0,
+          orders_completed_today: 0,
+          pickups_completed_today: 0,
+          rating: 4.8,
+          last_activity: new Date().toISOString()
+        };
+      }
     })
   );
   
-  return couriersWithStats;
+  const successfulResults: CourierWithStats[] = [];
+  couriersWithStats.forEach(result => {
+    if (result.status === 'fulfilled') {
+      successfulResults.push(result.value);
+    }
+  });
+  
+  console.log('Processed couriers:', successfulResults);
+  return successfulResults;
 }
 
 export async function getCourierById(id: string): Promise<CourierWithStats | null> {

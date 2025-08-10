@@ -106,7 +106,8 @@ const AdminPickupDetailsDialog: React.FC<AdminPickupDetailsDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="w-[90vw] max-w-4xl max-h-[90vh] overflow-hidden">
+        <div className="max-h-full overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span className="text-xl font-bold">Pickup Details</span>
@@ -274,6 +275,7 @@ const AdminPickupDetailsDialog: React.FC<AdminPickupDetailsDialogProps> = ({
           <div className="flex gap-3">
             {getActionButtons()}
           </div>
+        </div>
         </div>
       </DialogContent>
     </Dialog>
