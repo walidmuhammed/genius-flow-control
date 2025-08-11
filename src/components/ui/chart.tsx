@@ -74,27 +74,44 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
+  // Sanitize and validate config values to prevent XSS
+  const sanitizedStyles = Object.entries(THEMES)
+    .map(([theme, prefix]) => {
+      const themeStyles = colorConfig
+        .map(([key, itemConfig]) => {
+          const color =
+            itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+            itemConfig.color
+          
+          // Validate that color is a safe CSS value
+          if (!color || typeof color !== 'string') return null
+          
+          // Allow only valid CSS color formats (hex, rgb, hsl, named colors)
+          const colorRegex = /^(#[0-9A-Fa-f]{3,8}|rgb\(.*?\)|rgba\(.*?\)|hsl\(.*?\)|hsla\(.*?\)|[a-zA-Z]+)$/
+          if (!colorRegex.test(color.trim())) return null
+          
+          // Sanitize key to prevent CSS injection
+          const sanitizedKey = key.replace(/[^a-zA-Z0-9-_]/g, '')
+          
+          return `  --color-${sanitizedKey}: ${color.trim()};`
+        })
+        .filter(Boolean)
+        .join('\n')
+      
+      if (!themeStyles) return ''
+      
+      // Sanitize chart ID to prevent CSS injection
+      const sanitizedId = id.replace(/[^a-zA-Z0-9-_]/g, '')
+      
+      return `${prefix} [data-chart=${sanitizedId}] {\n${themeStyles}\n}`
+    })
+    .filter(Boolean)
+    .join('\n')
+
   return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
-      }}
-    />
+    <style>
+      {sanitizedStyles}
+    </style>
   )
 }
 

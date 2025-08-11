@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, LogIn, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useRateLimit } from '@/hooks/useRateLimit';
+import { getGenericErrorMessage } from '@/utils/securityLogger';
 
 const ClientSignIn = () => {
   const [emailOrPhone, setEmailOrPhone] = useState('');
@@ -17,6 +19,13 @@ const ClientSignIn = () => {
   const [error, setError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+
+  // Rate limiting for security
+  const rateLimit = useRateLimit({
+    maxAttempts: 5,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    blockDurationMs: 15 * 60 * 1000, // 15 minutes block
+  });
 
   useEffect(() => {
     document.title = "Sign In - Topspeed";
@@ -38,6 +47,14 @@ const ClientSignIn = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check rate limit
+    const rateLimitCheck = rateLimit.checkRateLimit();
+    if (!rateLimitCheck.allowed) {
+      setError(rateLimitCheck.message || 'Too many attempts. Please try again later.');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -67,7 +84,8 @@ const ClientSignIn = () => {
         navigate('/');
       }
     } catch (err: any) {
-      setError(err.message || 'Sign in failed. Please check your credentials.');
+      rateLimit.recordAttempt();
+      setError(getGenericErrorMessage('auth'));
     } finally {
       setLoading(false);
     }

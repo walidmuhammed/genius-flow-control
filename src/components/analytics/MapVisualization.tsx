@@ -4,9 +4,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
-
-// Temporary: would be an ENV variable in production
-const MAPBOX_TOKEN = 'pk.eyJ1IjoiZXhhbXBsZXVzZXIiLCJhIjoiY2xrMXBsZXp0MDBxZjNmc2JveWFuZHdzeCJ9.EXAMPLE-TOKEN';
+import { supabase } from '@/integrations/supabase/client';
 
 type CourierLocation = {
   id: string;
@@ -41,14 +39,33 @@ export default function MapVisualization({
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const markersRef = useRef<{[key: string]: mapboxgl.Marker}>({});
+
+  // Fetch Mapbox token securely from edge function
+  useEffect(() => {
+    const fetchMapboxToken = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+        if (error) {
+          console.error('Error fetching Mapbox token:', error);
+          return;
+        }
+        setMapboxToken(data.token);
+      } catch (error) {
+        console.error('Error fetching Mapbox token:', error);
+      }
+    };
+
+    fetchMapboxToken();
+  }, []);
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current || !mapboxToken) return;
 
     try {
-      mapboxgl.accessToken = MAPBOX_TOKEN;
+      mapboxgl.accessToken = mapboxToken;
       
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
@@ -70,7 +87,7 @@ export default function MapVisualization({
       );
 
     } catch (error) {
-      console.error('Error initializing map:', error);
+      // Log error without exposing sensitive details
     }
 
     return () => {
@@ -79,7 +96,7 @@ export default function MapVisualization({
         map.current = null;
       }
     };
-  }, []);
+  }, [mapboxToken]);
 
   // Update courier markers
   useEffect(() => {
