@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+        // Removed sensitive logging for production security
         setSession(session);
         setUser(session?.user ?? null);
 
@@ -141,17 +141,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           await supabase.rpc('log_security_event', {
             event_type: 'login_failed',
             entity_id: null,
-            details: { email: email.trim().toLowerCase(), error: error.message }
+            details: { email: email.trim().toLowerCase(), error: 'Authentication failed' } // Generic error for security
           });
         } catch (logError) {
           // Ignore logging errors to prevent blocking authentication
         }
+        // Return generic error message to prevent user enumeration
+        return { error: { message: 'Invalid email or password' } };
       }
 
       return { error };
     } catch (error) {
-      console.error('Sign in error:', error);
-      return { error };
+      return { error: { message: 'Authentication failed' } };
     }
   };
 
@@ -204,7 +205,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           details: { 
             email: email.trim().toLowerCase(), 
             business_name: sanitizedData.business_name,
-            error: error?.message 
+            error: error ? 'Registration failed' : undefined // Generic error for security
           }
         });
       } catch (logError) {
@@ -213,8 +214,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       return { error };
     } catch (error) {
-      console.error('Sign up error:', error);
-      return { error };
+      return { error: { message: 'Registration failed. Please try again.' } };
     }
   };
 

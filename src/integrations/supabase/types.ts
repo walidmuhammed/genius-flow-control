@@ -1048,7 +1048,7 @@ export type Database = {
     Functions: {
       calculate_delivery_fee: {
         Args: {
-          p_client_id: string
+          p_client_id?: string
           p_governorate_id?: string
           p_city_id?: string
           p_package_type?: string
