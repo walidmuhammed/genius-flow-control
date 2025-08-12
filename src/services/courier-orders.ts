@@ -40,7 +40,7 @@ export async function getCurrentCourierProfile() {
 
   console.log('User is confirmed courier, fetching courier record...');
 
-  // Now get the courier record using user ID instead of email
+  // Now get the courier record using user ID
   const { data: courier, error: courierError } = await supabase
     .from('couriers')
     .select('*')
@@ -59,7 +59,7 @@ export async function getCurrentCourierProfile() {
     throw new Error('No courier record found');
   }
 
-  console.log('=== getCurrentCourierProfile: SUCCESS ===');
+  console.log('=== getCurrentCourierProfile: SUCCESS ===', courier.id);
   return courier;
 }
 

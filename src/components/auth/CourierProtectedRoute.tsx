@@ -31,17 +31,17 @@ const CourierProtectedRoute: React.FC<CourierProtectedRouteProps> = ({ children 
 
   if (!user) {
     console.log('No user, redirecting to courier signin');
-    return <Navigate to="/auth/courier-signin" state={{ from: location }} replace />;
+    return <Navigate to="/auth/courier" state={{ from: location }} replace />;
   }
 
   if (!profile) {
     console.log('No profile found, redirecting to courier signin');
-    return <Navigate to="/auth/courier-signin" state={{ from: location }} replace />;
+    return <Navigate to="/auth/courier" state={{ from: location }} replace />;
   }
 
   if (profile.user_type !== 'courier') {
     console.log('User is not a courier, user type:', profile.user_type);
-    return <Navigate to="/auth/courier-signin" state={{ from: location }} replace />;
+    return <Navigate to="/auth/courier" state={{ from: location }} replace />;
   }
 
   console.log('Courier access granted');
