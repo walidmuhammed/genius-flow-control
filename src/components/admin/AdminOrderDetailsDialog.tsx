@@ -81,7 +81,7 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
       </Drawer>
     ) : (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full" style={{ zIndex: 60 }}>
+        <DialogContent className="max-w-2xl max-h-[95vh] w-[95vw] sm:w-full z-[60]">
           <DialogHeader>
             <DialogTitle>Order Details</DialogTitle>
           </DialogHeader>
@@ -226,9 +226,8 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
     <div className="flex items-center gap-2 ml-2">
       <Button
         onClick={handleAssignOrder}
-        variant="outline"
         size="sm"
-        className="flex items-center gap-2 px-3 py-2 text-sm"
+        className="flex items-center gap-2 px-3 py-2 text-sm bg-[#DB271E] text-white hover:bg-[#DB271E]/90 border-none"
       >
         <UserPlus className="h-4 w-4" />
         Assign Order
