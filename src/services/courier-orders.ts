@@ -19,11 +19,11 @@ export async function getCurrentCourierProfile() {
     throw new Error('User is not a courier');
   }
 
-  // Now get the courier record
+  // Now get the courier record using user ID instead of email
   const { data: courier, error: courierError } = await supabase
     .from('couriers')
     .select('*')
-    .eq('email', user.email)
+    .eq('id', user.id)
     .single();
 
   if (courierError) {
