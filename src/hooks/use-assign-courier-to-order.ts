@@ -17,6 +17,7 @@ export function useAssignCourierToOrder() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['courier-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
       toast.success("Courier assigned successfully");
     },
     onError: (error: Error) => {

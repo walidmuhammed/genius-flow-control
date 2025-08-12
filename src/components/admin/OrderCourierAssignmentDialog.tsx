@@ -33,13 +33,24 @@ const OrderCourierAssignmentDialog: React.FC<OrderCourierAssignmentDialogProps> 
 }) => {
   const [selectedCourier, setSelectedCourier] = useState<string>('');
   const { data: couriers, isLoading: couriersLoading } = useCouriers();
+  
+  console.log('Couriers data:', couriers, 'Loading:', couriersLoading);
   const assignCourier = useAssignCourierToOrder();
 
   const handleAssign = () => {
     if (!selectedCourier) return;
     
     const courier = couriers?.find(c => c.id === selectedCourier);
-    if (!courier) return;
+    if (!courier) {
+      console.error('Selected courier not found:', selectedCourier);
+      return;
+    }
+
+    console.log('Assigning courier:', {
+      orderId: order.id,
+      courierId: courier.id,
+      courierName: courier.full_name
+    });
 
     assignCourier.mutate({
       orderId: order.id,
@@ -47,6 +58,7 @@ const OrderCourierAssignmentDialog: React.FC<OrderCourierAssignmentDialogProps> 
       courierName: courier.full_name
     }, {
       onSuccess: () => {
+        console.log('Courier assignment successful');
         setSelectedCourier('');
         onOpenChange(false);
       }
@@ -57,7 +69,7 @@ const OrderCourierAssignmentDialog: React.FC<OrderCourierAssignmentDialogProps> 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md z-[70]">
+      <DialogContent className="max-w-md z-[70]" style={{ zIndex: 70 }}>
         <DialogHeader>
           <DialogTitle>Assign Courier to Order</DialogTitle>
         </DialogHeader>
@@ -101,7 +113,7 @@ const OrderCourierAssignmentDialog: React.FC<OrderCourierAssignmentDialogProps> 
               <SelectTrigger>
                 <SelectValue placeholder="Choose a courier..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[80]" style={{ zIndex: 80 }}>
                 {couriersLoading ? (
                   <SelectItem value="loading" disabled>Loading couriers...</SelectItem>
                 ) : couriers?.length === 0 ? (
