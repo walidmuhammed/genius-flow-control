@@ -302,6 +302,40 @@ export async function getOrdersWithDateRange(startDate: string, endDate: string)
   return transformedData;
 }
 
+// Assigns a courier to an order
+export async function assignCourierToOrder(orderId: string, courierId: string, courierName: string): Promise<Order> {
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ 
+      courier_id: courierId,
+      courier_name: courierName,
+      status: 'Assigned',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', orderId)
+    .select('*')
+    .single();
+  
+  if (error) {
+    throw new Error(error.message);
+  }
+  
+  // Transform the raw data to ensure proper typing
+  return {
+    ...data,
+    type: data.type === 'Deliver' ? 'Shipment' : data.type,
+    package_type: data.package_type || 'parcel',
+    status: data.status || 'New',
+    edited: data.edited || false,
+    edit_history: data.edit_history || [],
+    reason_unsuccessful: data.reason_unsuccessful || null,
+    courier_id: data.courier_id || null,
+    created_by: data.created_by || null,
+    invoice_id: data.invoice_id || null,
+    pricing_source: data.pricing_source || null,
+  } as Order;
+}
+
 export async function deleteOrder(id: string) {
   // Check authentication
   const { data: { user } } = await supabase.auth.getUser();

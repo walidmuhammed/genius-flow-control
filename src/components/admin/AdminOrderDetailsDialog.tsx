@@ -16,7 +16,8 @@ import { useNavigate } from 'react-router-dom';
 import { useDeleteOrder, useUpdateOrder } from '@/hooks/use-orders';
 import { useAdminClients } from '@/hooks/use-admin-clients';
 import { toast } from 'sonner';
-import { MapPin, Phone, User, Package, DollarSign, Clock, FileText, Truck, Edit, Trash2, History, Map, Building, AlertTriangle, Store } from 'lucide-react';
+import { MapPin, Phone, User, Package, DollarSign, Clock, FileText, Truck, Edit, Trash2, History, Map, Building, AlertTriangle, UserPlus } from 'lucide-react';
+import OrderCourierAssignmentDialog from './OrderCourierAssignmentDialog';
 import { cn } from '@/lib/utils';
 import AppleOrderHeaderMobile from '@/components/orders/AppleOrderHeaderMobile';
 import CurrencyDisplay from '@/components/orders/CurrencyDisplay';
@@ -40,6 +41,7 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
   const deleteOrder = useDeleteOrder();
   const updateOrder = useUpdateOrder();
   const { data: clients } = useAdminClients();
+  const [assignmentDialogOpen, setAssignmentDialogOpen] = React.useState(false);
 
   const handleEditOrder = () => {
     if (order) {
@@ -60,11 +62,8 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
     }
   };
 
-  const handleViewShop = () => {
-    if (order?.client_id) {
-      navigate(`/dashboard/admin/clients?id=${order.client_id}`);
-      onOpenChange(false);
-    }
+  const handleAssignOrder = () => {
+    setAssignmentDialogOpen(true);
   };
 
   if (!order) {
@@ -226,13 +225,13 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
   const HeaderActions = () => (
     <div className="flex items-center gap-2 ml-2">
       <Button
-        onClick={handleViewShop}
+        onClick={handleAssignOrder}
         variant="outline"
         size="sm"
         className="flex items-center gap-2 px-3 py-2 text-sm"
       >
-        <Store className="h-4 w-4" />
-        View Shop
+        <UserPlus className="h-4 w-4" />
+        Assign Order
       </Button>
       {canEditDelete && (
         <>
@@ -350,7 +349,7 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
         {/* Shop Information Card */}
         <Card className="shadow-sm backdrop-blur-lg border border-gray-200/50">
           <CardHeader className="pb-4 flex-row items-center gap-3">
-            <Store className="h-6 w-6 text-primary" />
+            <Building className="h-6 w-6 text-primary" />
             <CardTitle className="text-xl font-semibold pl-1 flex-1">
               Shop Information
             </CardTitle>
@@ -380,14 +379,9 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
                     )}
                   </div>
                   
-                  <Button
-                    onClick={handleViewShop}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Store className="h-4 w-4" />
-                    View Shop Details
-                  </Button>
+                  <div className="text-sm text-muted-foreground">
+                    Click "View Shop Details" in the admin panel to see full shop information
+                  </div>
                 </>
               ) : (
                 <div className="text-gray-500">Shop information not available</div>
@@ -653,6 +647,13 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
           </ScrollArea>
         </div>
       </DialogContent>
+      {order && (
+        <OrderCourierAssignmentDialog
+          order={order}
+          open={assignmentDialogOpen}
+          onOpenChange={setAssignmentDialogOpen}
+        />
+      )}
     </Dialog>
   );
 };
