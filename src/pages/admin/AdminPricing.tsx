@@ -7,6 +7,7 @@ import ClientPricingSection from '@/components/admin/pricing/ClientPricingSectio
 import ZonePricingSection from '@/components/admin/pricing/ZonePricingSection';
 import PackageTypePricingSection from '@/components/admin/pricing/PackageTypePricingSection';
 import PricingChangeLogsSection from '@/components/admin/pricing/PricingChangeLogsSection';
+import { ClientPricingTestPanel } from '@/components/admin/pricing/ClientPricingTestPanel';
 
 const AdminPricing = () => {
   document.title = "Pricing Management - Admin Panel";
@@ -29,8 +30,7 @@ const AdminPricing = () => {
         <ZonePricingSection />
         <PackageTypePricingSection />
         <PricingChangeLogsSection />
-        
-        {/* Package Type Pricing and Change Logs sections can be added here */}
+        <ClientPricingTestPanel />
       </div>
     </AdminLayout>
   );

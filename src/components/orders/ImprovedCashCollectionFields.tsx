@@ -122,15 +122,7 @@ export function ImprovedCashCollectionFields({
             {errors?.lbpAmount && <p className="text-topspeed-600 text-xs mt-1.5">{errors.lbpAmount}</p>}
           </div>
           
-          {/* Delivery Fees */}
-          <div className="flex items-center justify-between mt-5 p-3 rounded-md bg-gray-50 border border-gray-100">
-            <span className="text-sm font-medium">Delivery Fee:</span>
-            <div className="text-sm">
-              <span className="font-medium">${deliveryFees.usd}</span> 
-              <span className="mx-1 text-muted-foreground">|</span> 
-              <span className="font-medium">{deliveryFees.lbp.toLocaleString()} LBP</span>
-            </div>
-          </div>
+          {/* Note: Delivery fees are now shown in the enhanced display above */}
         </div>
       )}
     </div>

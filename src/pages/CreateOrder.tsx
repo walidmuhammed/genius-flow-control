@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import OrderTypeSelector from '@/components/dashboard/OrderTypeSelector';
 import { useScreenSize } from '@/hooks/useScreenSize';
+import { EnhancedDeliveryFeeDisplay } from '@/components/orders/EnhancedDeliveryFeeDisplay';
 
 // Create a unique form key for forcing re-render
 const getUniqueFormKey = () => `order-form-${Date.now()}`;
@@ -842,6 +843,13 @@ const CreateOrder = () => {
                 </CardContent>
               </Card>
               
+              {/* Enhanced Delivery Fee Display */}
+              <EnhancedDeliveryFeeDisplay 
+                fees={calculatedFees}
+                isLoading={feesLoading}
+                className="mb-4"
+              />
+
               {/* Cash Collection */}
               <Card className="border border-gray-200 shadow-sm">
                 <CardHeader className="pb-4">

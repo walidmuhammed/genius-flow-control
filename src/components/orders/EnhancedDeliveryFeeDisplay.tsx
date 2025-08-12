@@ -1,0 +1,177 @@
+import React from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Info, CheckCircle, Settings, Globe, MapPin, Package } from 'lucide-react';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+
+interface EnhancedDeliveryFeeDisplayProps {
+  fees: {
+    fee_usd: number;
+    fee_lbp: number;
+    rule_type: string;
+  } | null;
+  isLoading: boolean;
+  className?: string;
+}
+
+const getRuleTypeInfo = (ruleType: string) => {
+  switch (ruleType) {
+    case 'client_zone':
+      return {
+        label: 'Client Zone Rule',
+        description: 'Custom zone-specific pricing for this client',
+        icon: MapPin,
+        badgeVariant: 'default' as const,
+        color: 'text-blue-600'
+      };
+    case 'client_package':
+      return {
+        label: 'Client Package Extra',
+        description: 'Client default pricing plus package type extra fee',
+        icon: Package,
+        badgeVariant: 'secondary' as const,
+        color: 'text-purple-600'
+      };
+    case 'client_default':
+      return {
+        label: 'Client Default',
+        description: 'Custom default pricing for this client',
+        icon: Settings,
+        badgeVariant: 'outline' as const,
+        color: 'text-green-600'
+      };
+    case 'client_legacy':
+      return {
+        label: 'Client Legacy',
+        description: 'Legacy client-specific pricing override',
+        icon: Settings,
+        badgeVariant: 'outline' as const,
+        color: 'text-orange-600'
+      };
+    case 'global':
+      return {
+        label: 'Global Default',
+        description: 'Standard global pricing (no client-specific rules)',
+        icon: Globe,
+        badgeVariant: 'secondary' as const,
+        color: 'text-gray-600'
+      };
+    case 'loading':
+      return {
+        label: 'Calculating...',
+        description: 'Calculating delivery fees...',
+        icon: Info,
+        badgeVariant: 'outline' as const,
+        color: 'text-gray-500'
+      };
+    default:
+      return {
+        label: 'Unknown',
+        description: 'Unknown pricing rule type',
+        icon: Info,
+        badgeVariant: 'destructive' as const,
+        color: 'text-red-600'
+      };
+  }
+};
+
+export function EnhancedDeliveryFeeDisplay({ fees, isLoading, className }: EnhancedDeliveryFeeDisplayProps) {
+  if (isLoading) {
+    return (
+      <div className={cn("space-y-3 p-4 rounded-lg border bg-card", className)}>
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-muted-foreground">Delivery Fee</span>
+          <Skeleton className="h-5 w-24" />
+        </div>
+        <Skeleton className="h-8 w-full" />
+      </div>
+    );
+  }
+
+  if (!fees) {
+    return (
+      <div className={cn("space-y-3 p-4 rounded-lg border bg-card border-destructive/20", className)}>
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-destructive">Delivery Fee</span>
+          <Badge variant="destructive">Error</Badge>
+        </div>
+        <p className="text-sm text-muted-foreground">Unable to calculate delivery fees</p>
+      </div>
+    );
+  }
+
+  const ruleInfo = getRuleTypeInfo(fees.rule_type);
+  const IconComponent = ruleInfo.icon;
+
+  return (
+    <div className={cn("space-y-3 p-4 rounded-lg border bg-card shadow-sm", className)}>
+      {/* Header with pricing source */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-foreground">Delivery Fee</span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1 cursor-help">
+                  <IconComponent className={cn("h-3.5 w-3.5", ruleInfo.color)} />
+                  <Badge variant={ruleInfo.badgeVariant} className="text-xs">
+                    {ruleInfo.label}
+                  </Badge>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                <p>{ruleInfo.description}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <div className="flex items-center gap-1">
+          <CheckCircle className="h-4 w-4 text-green-500" />
+          <span className="text-xs text-muted-foreground">Applied</span>
+        </div>
+      </div>
+
+      {/* Fee amounts */}
+      <div className="flex items-center justify-between p-3 rounded-md bg-muted/20">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-semibold text-foreground">
+              ${fees.fee_usd.toFixed(2)}
+            </span>
+            <span className="text-sm text-muted-foreground">USD</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-foreground">
+              {fees.fee_lbp.toLocaleString()}
+            </span>
+            <span className="text-xs text-muted-foreground">LBP</span>
+          </div>
+        </div>
+        
+        {/* Visual indicator for custom pricing */}
+        {fees.rule_type.startsWith('client_') && (
+          <div className="flex flex-col items-end">
+            <Badge variant="default" className="text-xs bg-primary/10 text-primary border-primary/20">
+              Custom Rate
+            </Badge>
+            <span className="text-xs text-muted-foreground mt-1">Client-specific</span>
+          </div>
+        )}
+      </div>
+
+      {/* Additional info for complex rules */}
+      {fees.rule_type === 'client_package' && (
+        <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded border-l-2 border-blue-200">
+          <span className="font-medium">Package Extra Applied:</span> This includes the client's default rate plus additional package type fee.
+        </div>
+      )}
+      
+      {fees.rule_type === 'client_zone' && (
+        <div className="text-xs text-muted-foreground bg-green-50 p-2 rounded border-l-2 border-green-200">
+          <span className="font-medium">Zone Rule Applied:</span> Special pricing for this delivery location.
+        </div>
+      )}
+    </div>
+  );
+}
