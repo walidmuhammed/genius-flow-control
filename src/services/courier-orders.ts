@@ -3,21 +3,42 @@ import { OrderWithCustomer, OrderStatus, transformOrderData } from "./orders";
 
 // Get current courier's profile from the database
 export async function getCurrentCourierProfile() {
+  console.log('=== getCurrentCourierProfile: Starting authentication check ===');
+  
   const { data: { user } } = await supabase.auth.getUser();
+  console.log('Auth user:', user ? { id: user.id, email: user.email } : 'No user found');
+  
   if (!user) {
+    console.error('No authenticated user found');
     throw new Error('User not authenticated');
   }
 
   // First get the user's profile to check if they're a courier
+  console.log('Fetching profile for user ID:', user.id);
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('user_type')
+    .select('user_type, full_name')
     .eq('id', user.id)
     .single();
 
-  if (profileError || !profile || profile.user_type !== 'courier') {
-    throw new Error('User is not a courier');
+  console.log('Profile query result:', { profile, profileError });
+
+  if (profileError) {
+    console.error('Profile error:', profileError);
+    throw new Error(`Profile lookup failed: ${profileError.message}`);
   }
+
+  if (!profile) {
+    console.error('No profile found for user');
+    throw new Error('No profile found for user');
+  }
+
+  if (profile.user_type !== 'courier') {
+    console.error('User is not a courier. User type:', profile.user_type);
+    throw new Error(`User is not a courier. User type: ${profile.user_type}`);
+  }
+
+  console.log('User is confirmed courier, fetching courier record...');
 
   // Now get the courier record using user ID instead of email
   const { data: courier, error: courierError } = await supabase
@@ -26,22 +47,35 @@ export async function getCurrentCourierProfile() {
     .eq('id', user.id)
     .single();
 
+  console.log('Courier query result:', { courier: courier ? { id: courier.id, full_name: courier.full_name } : null, courierError });
+
   if (courierError) {
-    throw new Error('Courier profile not found');
+    console.error('Courier error:', courierError);
+    throw new Error(`Courier profile not found: ${courierError.message}`);
   }
 
+  if (!courier) {
+    console.error('No courier record found');
+    throw new Error('No courier record found');
+  }
+
+  console.log('=== getCurrentCourierProfile: SUCCESS ===');
   return courier;
 }
 
 // Get orders assigned to the current courier
 export async function getCourierOrders() {
+  console.log('=== getCourierOrders: Starting ===');
+  
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
+    console.error('No authenticated user in getCourierOrders');
     throw new Error('User not authenticated');
   }
 
   try {
     const courier = await getCurrentCourierProfile();
+    console.log('Got courier profile, fetching orders for courier ID:', courier.id);
     
     const { data, error } = await supabase
       .from('orders')
@@ -61,12 +95,21 @@ export async function getCourierOrders() {
       .eq('archived', false)
       .order('created_at', { ascending: false });
 
+    console.log('Orders query result:', { 
+      orderCount: data?.length || 0, 
+      error: error ? error.message : 'No error',
+      courierIdUsed: courier.id
+    });
+
     if (error) {
       console.error('Error fetching courier orders:', error);
       throw error;
     }
 
-    return data.map(transformOrderData);
+    const transformedOrders = data.map(transformOrderData);
+    console.log('=== getCourierOrders: SUCCESS - Returning', transformedOrders.length, 'orders ===');
+    
+    return transformedOrders;
   } catch (error) {
     console.error('Error getting courier orders:', error);
     throw error;
