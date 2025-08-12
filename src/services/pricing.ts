@@ -509,7 +509,7 @@ export const getPricingKPIs = async (): Promise<PricingKPIs> => {
   };
 };
 
-// Calculate delivery fee function with enhanced debugging
+// Calculate delivery fee function implementing the business logic directly
 export const calculateDeliveryFee = async (
   clientId: string,
   governorateId?: string,
@@ -523,93 +523,152 @@ export const calculateDeliveryFee = async (
     packageType
   });
 
-  // First, let's get the global pricing to see what we should expect
-  const globalPricing = await getGlobalPricing();
-  console.log('🌍 Global pricing from DB:', globalPricing);
+  try {
+    let baseFeeUsd = 0;
+    let baseFeeLbp = 0;
+    let extraFeeUsd = 0;
+    let extraFeeLbp = 0;
+    let ruleType = 'global';
 
-  // Try the RPC call
-  const { data, error } = await supabase.rpc('calculate_delivery_fee', {
-    p_client_id: clientId,
-    p_governorate_id: governorateId || null,
-    p_city_id: cityId || null,
-    p_package_type: packageType || null,
-  });
-
-  console.log('📞 RPC call result:', { data, error });
-
-  if (error) {
-    console.error('❌ Error calculating delivery fee with RPC:', error);
-    console.log('🔄 Falling back to global pricing:', globalPricing);
-    return { 
-      fee_usd: globalPricing?.default_fee_usd || 0, 
-      fee_lbp: globalPricing?.default_fee_lbp || 0, 
-      rule_type: 'global_fallback' 
-    };
-  }
-
-  if (!data || data.length === 0) {
-    console.log('⚠️ RPC returned no data, falling back to global pricing:', globalPricing);
-    return { 
-      fee_usd: globalPricing?.default_fee_usd || 0, 
-      fee_lbp: globalPricing?.default_fee_lbp || 0, 
-      rule_type: 'global_fallback' 
-    };
-  }
-
-  const result = data[0];
-  console.log('✅ RPC returned result:', result);
-
-  // If RPC says "global", verify client-specific config and recover if needed
-  if (result.rule_type === 'global') {
-    try {
-      const { data: clientDefault } = await supabase
-        .from('pricing_client_defaults')
-        .select('default_fee_usd, default_fee_lbp')
+    // Step 1: Determine base fee (client-specific zone rule → client default → zone → global)
+    
+    // 1.1 Check for client-specific zone rules first (using existing zone rules table)
+    if (clientId && governorateId) {
+      const { data: clientZoneRules } = await supabase
+        .from('pricing_zone_rules')
+        .select('fee_usd, fee_lbp, governorate_id')
         .eq('client_id', clientId)
-        .maybeSingle();
+        .eq('governorate_id', governorateId)
+        .eq('is_active', true);
 
-      if (clientDefault) {
-        // Try to apply package extra if provided
-        if (packageType) {
-          const { data: pkgExtra } = await supabase
-            .from('pricing_client_package_extras')
-            .select('extra_fee_usd, extra_fee_lbp, package_type')
-            .eq('client_id', clientId)
-            .ilike('package_type', packageType);
-
-          if (pkgExtra && pkgExtra.length > 0) {
-            const extra = pkgExtra[0];
-            return {
-              fee_usd: (clientDefault.default_fee_usd || 0) + (extra.extra_fee_usd || 0),
-              fee_lbp: (clientDefault.default_fee_lbp || 0) + (extra.extra_fee_lbp || 0),
-              rule_type: 'client_package_recovered'
-            };
-          }
-        }
-
-        // Fall back to client default recovered
-        return {
-          fee_usd: clientDefault.default_fee_usd || 0,
-          fee_lbp: clientDefault.default_fee_lbp || 0,
-          rule_type: 'client_default_recovered'
-        };
+      if (clientZoneRules && clientZoneRules.length > 0) {
+        const rule = clientZoneRules[0];
+        baseFeeUsd = rule.fee_usd || 0;
+        baseFeeLbp = rule.fee_lbp || 0;
+        ruleType = 'client_specific';
+        console.log('✅ Using client zone rule:', { baseFeeUsd, baseFeeLbp });
       }
-    } catch (e) {
-      console.warn('⚠️ Client pricing recovery check failed:', e);
+    }
+
+    // 1.2 If no client zone rule found, check client-specific overrides
+    if (ruleType === 'global' && clientId) {
+      const { data: clientOverrides } = await supabase
+        .from('pricing_client_overrides')
+        .select('fee_usd, fee_lbp')
+        .eq('client_id', clientId)
+        .is('governorate_id', null)
+        .is('city_id', null)
+        .is('package_type', null);
+
+      if (clientOverrides && clientOverrides.length > 0) {
+        const override = clientOverrides[0];
+        baseFeeUsd = override.fee_usd || 0;
+        baseFeeLbp = override.fee_lbp || 0;
+        ruleType = 'client_specific';
+        console.log('✅ Using client default override:', { baseFeeUsd, baseFeeLbp });
+      }
+    }
+
+    // 1.3 If no client-specific pricing, check zone pricing rules (global)
+    if (ruleType === 'global' && governorateId) {
+      const { data: zonePricing } = await supabase
+        .from('pricing_zone_rules')
+        .select('fee_usd, fee_lbp')
+        .eq('governorate_id', governorateId)
+        .is('client_id', null)
+        .eq('is_active', true);
+
+      if (zonePricing && zonePricing.length > 0) {
+        const zone = zonePricing[0];
+        baseFeeUsd = zone.fee_usd || 0;
+        baseFeeLbp = zone.fee_lbp || 0;
+        ruleType = 'zone';
+        console.log('✅ Using zone pricing:', { baseFeeUsd, baseFeeLbp });
+      }
+    }
+
+    // 1.4 Fall back to global pricing
+    if (ruleType === 'global') {
+      const globalPricing = await getGlobalPricing();
+      if (globalPricing) {
+        baseFeeUsd = globalPricing.default_fee_usd || 0;
+        baseFeeLbp = globalPricing.default_fee_lbp || 0;
+        console.log('✅ Using global pricing:', { baseFeeUsd, baseFeeLbp });
+      }
+    }
+
+    // Step 2: Add package type extras using existing package_types table
+    if (packageType) {
+      // 2.1 Check for client-specific package extra first
+      if (clientId) {
+        const { data: clientPackageExtra } = await supabase
+          .from('pricing_package_types')
+          .select('fee_usd, fee_lbp')
+          .eq('client_id', clientId)
+          .ilike('package_type', packageType)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (clientPackageExtra) {
+          extraFeeUsd = clientPackageExtra.fee_usd || 0;
+          extraFeeLbp = clientPackageExtra.fee_lbp || 0;
+          console.log('✅ Using client package extra:', { extraFeeUsd, extraFeeLbp });
+        }
+      }
+
+      // 2.2 Fall back to global package extra if no client-specific extra found
+      if (extraFeeUsd === 0 && extraFeeLbp === 0) {
+        const { data: globalPackageExtra } = await supabase
+          .from('pricing_package_types')
+          .select('fee_usd, fee_lbp')
+          .is('client_id', null)
+          .ilike('package_type', packageType)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (globalPackageExtra) {
+          extraFeeUsd = globalPackageExtra.fee_usd || 0;
+          extraFeeLbp = globalPackageExtra.fee_lbp || 0;
+          console.log('✅ Using global package extra:', { extraFeeUsd, extraFeeLbp });
+        }
+      }
+    }
+
+    // Calculate final fees
+    const totalFeeUsd = baseFeeUsd + extraFeeUsd;
+    const totalFeeLbp = baseFeeLbp + extraFeeLbp;
+
+    const result = {
+      fee_usd: totalFeeUsd,
+      fee_lbp: totalFeeLbp,
+      rule_type: ruleType
+    };
+
+    console.log('✅ Final calculation result:', result);
+    return result;
+
+  } catch (error) {
+    console.error('❌ Error in calculateDeliveryFee:', error);
+    
+    // Fallback to global pricing
+    try {
+      const globalPricing = await getGlobalPricing();
+      console.log('🔄 Falling back to global pricing:', globalPricing);
+      
+      return { 
+        fee_usd: globalPricing?.default_fee_usd || 0, 
+        fee_lbp: globalPricing?.default_fee_lbp || 0, 
+        rule_type: 'global' 
+      };
+    } catch (fallbackError) {
+      console.error('❌ Even global pricing fallback failed:', fallbackError);
+      return { 
+        fee_usd: 0, 
+        fee_lbp: 0, 
+        rule_type: 'error' 
+      };
     }
   }
-
-  // If RPC returns zero values for both currencies under global, correct to actual global pricing
-  if (result.rule_type === 'global' && (Number(result.fee_usd) === 0 && Number(result.fee_lbp) === 0)) {
-    console.log('🔧 RPC returned zero for global rule, using actual global pricing:', globalPricing);
-    return {
-      fee_usd: globalPricing?.default_fee_usd || 0,
-      fee_lbp: globalPricing?.default_fee_lbp || 0,
-      rule_type: 'global_corrected'
-    };
-  }
-
-  return result;
 };
 
 export const deleteAllClientPackageExtras = async (clientId: string): Promise<void> => {
