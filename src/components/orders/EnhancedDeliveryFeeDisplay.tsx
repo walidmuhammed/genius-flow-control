@@ -7,20 +7,16 @@ import { cn } from '@/lib/utils';
 
 interface EnhancedDeliveryFeeDisplayProps {
   fees: {
-    total_fee_usd: number;
-    total_fee_lbp: number;
-    pricing_source: string;
-    base_fee_usd?: number;
-    base_fee_lbp?: number;
-    extra_fee_usd?: number;
-    extra_fee_lbp?: number;
+    fee_usd: number;
+    fee_lbp: number;
+    rule_type: string;
   } | null;
   isLoading: boolean;
   className?: string;
 }
 
-const getRuleTypeInfo = (pricingSource: string) => {
-  switch (pricingSource) {
+const getRuleTypeInfo = (ruleType: string) => {
+  switch (ruleType) {
     case 'client_zone':
       return {
         label: 'Client Zone Rule',
@@ -105,7 +101,7 @@ export function EnhancedDeliveryFeeDisplay({ fees, isLoading, className }: Enhan
     );
   }
 
-  const ruleInfo = getRuleTypeInfo(fees.pricing_source);
+  const ruleInfo = getRuleTypeInfo(fees.rule_type);
   const IconComponent = ruleInfo.icon;
 
   return (
@@ -141,27 +137,20 @@ export function EnhancedDeliveryFeeDisplay({ fees, isLoading, className }: Enhan
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <span className="text-lg font-semibold text-foreground">
-              ${fees.total_fee_usd?.toFixed(2) || '0.00'}
+              ${fees.fee_usd.toFixed(2)}
             </span>
             <span className="text-sm text-muted-foreground">USD</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-foreground">
-              {fees.total_fee_lbp?.toLocaleString() || '0'}
+              {fees.fee_lbp.toLocaleString()}
             </span>
             <span className="text-xs text-muted-foreground">LBP</span>
           </div>
-          
-          {/* Show breakdown if available */}
-          {fees.base_fee_usd !== undefined && fees.extra_fee_usd !== undefined && (
-            <div className="text-xs text-muted-foreground mt-1">
-              Base: ${fees.base_fee_usd.toFixed(2)} + Extra: ${fees.extra_fee_usd.toFixed(2)}
-            </div>
-          )}
         </div>
         
         {/* Visual indicator for custom pricing */}
-        {fees.pricing_source === 'client_specific' && (
+        {fees.rule_type.startsWith('client_') && (
           <div className="flex flex-col items-end">
             <Badge variant="default" className="text-xs bg-primary/10 text-primary border-primary/20">
               Custom Rate
@@ -171,16 +160,16 @@ export function EnhancedDeliveryFeeDisplay({ fees, isLoading, className }: Enhan
         )}
       </div>
 
-      {/* Additional info for pricing source */}
-      {fees.pricing_source === 'client_specific' && (
+      {/* Additional info for complex rules */}
+      {fees.rule_type === 'client_package' && (
         <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded border-l-2 border-blue-200">
-          <span className="font-medium">Client-Specific Pricing:</span> This order uses custom pricing configured for this client.
+          <span className="font-medium">Package Extra Applied:</span> This includes the client's default rate plus additional package type fee.
         </div>
       )}
       
-      {fees.pricing_source === 'zone' && (
+      {fees.rule_type === 'client_zone' && (
         <div className="text-xs text-muted-foreground bg-green-50 p-2 rounded border-l-2 border-green-200">
-          <span className="font-medium">Zone Pricing Applied:</span> Special pricing for this delivery location.
+          <span className="font-medium">Zone Rule Applied:</span> Special pricing for this delivery location.
         </div>
       )}
     </div>

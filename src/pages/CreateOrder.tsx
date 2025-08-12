@@ -18,7 +18,6 @@ import { useCity, useCitiesByGovernorate } from '@/hooks/use-cities';
 import { useSearchCustomersByPhone, useCreateCustomer } from '@/hooks/use-customers';
 import { useCreateOrder, useUpdateOrder, useOrder } from '@/hooks/use-orders';
 import { useCalculateDeliveryFee } from '@/hooks/use-pricing';
-import { useComprehensiveDeliveryFee } from '@/hooks/use-comprehensive-pricing';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -84,8 +83,8 @@ const CreateOrder = () => {
   const [existingCustomer, setExistingCustomer] = useState<CustomerWithLocation | null>(null);
   const [guidelinesModalOpen, setGuidelinesModalOpen] = useState<boolean>(false);
 
-  // Calculate delivery fees using comprehensive pricing system
-  const { data: calculatedFees, isLoading: feesLoading } = useComprehensiveDeliveryFee(
+  // Calculate delivery fees using pricing system
+  const { data: calculatedFees, isLoading: feesLoading } = useCalculateDeliveryFee(
     user?.id,
     selectedGovernorateId || undefined,
     selectedCityId || undefined,
@@ -101,12 +100,8 @@ const CreateOrder = () => {
     feesLoading
   });
 
-  // Delivery fees (from comprehensive pricing system)
-  const deliveryFees = calculatedFees || { 
-    total_fee_usd: 0, 
-    total_fee_lbp: 0, 
-    pricing_source: 'loading' 
-  };
+  // Delivery fees (from pricing system)
+  const deliveryFees = calculatedFees || { fee_usd: 0, fee_lbp: 0, rule_type: 'loading' };
 
   // Form validation
   const [errors, setErrors] = useState<{
@@ -397,9 +392,9 @@ const CreateOrder = () => {
         cash_collection_enabled: cashCollection,
         cash_collection_usd: cashCollection ? Number(usdAmount) || 0 : 0,
         cash_collection_lbp: cashCollection ? Number(lbpAmount) || 0 : 0,
-        delivery_fees_usd: calculatedFees?.total_fee_usd || 0,
-        delivery_fees_lbp: calculatedFees?.total_fee_lbp || 0,
-        pricing_source: calculatedFees?.pricing_source || 'global',
+        delivery_fees_usd: calculatedFees?.fee_usd || 0,
+        delivery_fees_lbp: calculatedFees?.fee_lbp || 0,
+        pricing_source: calculatedFees?.rule_type || 'global',
         note: deliveryNotes || undefined,
         status: 'New' as import('@/services/orders').OrderStatus,
         ...(orderReference.trim() && {
@@ -935,11 +930,11 @@ const CreateOrder = () => {
                             <span className="text-gray-500">Calculating...</span>
                           ) : (
                             <>
-                              <span className="font-medium">${deliveryFees.total_fee_usd || 0}</span> 
+                              <span className="font-medium">${deliveryFees.fee_usd || 0}</span> 
                               <span className="mx-1 text-gray-500">|</span> 
                               <span className="font-medium">
-                                {(deliveryFees.total_fee_lbp !== null && deliveryFees.total_fee_lbp !== undefined) 
-                                  ? deliveryFees.total_fee_lbp.toLocaleString() 
+                                {(deliveryFees.fee_lbp !== null && deliveryFees.fee_lbp !== undefined) 
+                                  ? deliveryFees.fee_lbp.toLocaleString() 
                                   : '0'} LBP
                               </span>
                             </>
@@ -948,7 +943,7 @@ const CreateOrder = () => {
                       </div>
                       <div className="text-xs text-gray-500 mt-1 flex items-center justify-end">
                         <span className="capitalize">
-                          {feesLoading ? 'Loading pricing source...' : `Source: ${deliveryFees.pricing_source || 'global'}`}
+                          {feesLoading ? 'Loading pricing source...' : `Source: ${deliveryFees.rule_type || 'global'}`}
                         </span>
                       </div>
                     </div>

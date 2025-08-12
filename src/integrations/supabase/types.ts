@@ -277,68 +277,6 @@ export type Database = {
         }
         Relationships: []
       }
-      order_price_snapshot: {
-        Row: {
-          base_fee_lbp: number | null
-          base_fee_usd: number | null
-          calculated_at: string
-          city_id: string | null
-          client_id: string | null
-          extra_fee_lbp: number | null
-          extra_fee_usd: number | null
-          governorate_id: string | null
-          id: string
-          order_id: string
-          package_type: string | null
-          pricing_source: string | null
-          rule_details: Json | null
-          total_fee_lbp: number | null
-          total_fee_usd: number | null
-        }
-        Insert: {
-          base_fee_lbp?: number | null
-          base_fee_usd?: number | null
-          calculated_at?: string
-          city_id?: string | null
-          client_id?: string | null
-          extra_fee_lbp?: number | null
-          extra_fee_usd?: number | null
-          governorate_id?: string | null
-          id?: string
-          order_id: string
-          package_type?: string | null
-          pricing_source?: string | null
-          rule_details?: Json | null
-          total_fee_lbp?: number | null
-          total_fee_usd?: number | null
-        }
-        Update: {
-          base_fee_lbp?: number | null
-          base_fee_usd?: number | null
-          calculated_at?: string
-          city_id?: string | null
-          client_id?: string | null
-          extra_fee_lbp?: number | null
-          extra_fee_usd?: number | null
-          governorate_id?: string | null
-          id?: string
-          order_id?: string
-          package_type?: string | null
-          pricing_source?: string | null
-          rule_details?: Json | null
-          total_fee_lbp?: number | null
-          total_fee_usd?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_price_snapshot_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: true
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       orders: {
         Row: {
           allow_opening: boolean | null
@@ -845,33 +783,6 @@ export type Database = {
           },
         ]
       }
-      pricing_package_extras_global: {
-        Row: {
-          created_at: string
-          extra_lbp: number | null
-          extra_usd: number | null
-          id: string
-          package_type: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          extra_lbp?: number | null
-          extra_usd?: number | null
-          id?: string
-          package_type: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          extra_lbp?: number | null
-          extra_usd?: number | null
-          id?: string
-          package_type?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       pricing_package_types: {
         Row: {
           city_id: string | null
@@ -938,41 +849,6 @@ export type Database = {
             foreignKeyName: "pricing_package_types_governorate_id_fkey"
             columns: ["governorate_id"]
             isOneToOne: false
-            referencedRelation: "governorates"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pricing_zone: {
-        Row: {
-          created_at: string
-          fee_lbp: number | null
-          fee_usd: number | null
-          governorate_id: string
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          fee_lbp?: number | null
-          fee_usd?: number | null
-          governorate_id: string
-          id?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          fee_lbp?: number | null
-          fee_usd?: number | null
-          governorate_id?: string
-          id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pricing_zone_governorate_id_fkey"
-            columns: ["governorate_id"]
-            isOneToOne: true
             referencedRelation: "governorates"
             referencedColumns: ["id"]
           },
@@ -1170,24 +1046,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      calculate_comprehensive_delivery_fee: {
-        Args: {
-          p_client_id?: string
-          p_governorate_id?: string
-          p_city_id?: string
-          p_package_type?: string
-        }
-        Returns: {
-          base_fee_usd: number
-          base_fee_lbp: number
-          extra_fee_usd: number
-          extra_fee_lbp: number
-          total_fee_usd: number
-          total_fee_lbp: number
-          pricing_source: string
-          rule_details: Json
-        }[]
-      }
       calculate_delivery_fee: {
         Args: {
           p_client_id?: string
