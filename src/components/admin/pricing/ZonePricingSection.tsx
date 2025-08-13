@@ -4,93 +4,129 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { MapPin, Plus, Pencil, Trash2, DollarSign, Loader2, ChevronDown } from 'lucide-react';
-import { useZonePricingRules, useCreateZonePricingRule, useUpdateZonePricingRule, useDeleteZonePricingRule } from '@/hooks/use-pricing';
-import { useAdminClients } from '@/hooks/use-admin-clients';
-import { useGovernorates } from '@/hooks/use-governorates';
-import { formatCurrency } from '@/utils/format';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Trash2, Edit3, Save, X, MapPin, Plus } from 'lucide-react';
+import { useZonePricing, useBatchUpdateZonePricing, useDeleteZonePricing } from '@/hooks/use-comprehensive-pricing';
+import { useGovernorates } from '@/hooks/use-governorates';
+import { toast } from 'sonner';
 
-const ZonePricingSection = () => {
-  const { data: rules, isLoading } = useZonePricingRules();
-  const { data: clients } = useAdminClients();
+function ZonePricingSection() {
+  const [editingRows, setEditingRows] = useState<Set<string>>(new Set());
+  const [editValues, setEditValues] = useState<Record<string, { fee_usd: string; fee_lbp: string }>>({});
+  const [newZone, setNewZone] = useState({ governorate_id: '', fee_usd: '', fee_lbp: '' });
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const { data: zonePricing, isLoading } = useZonePricing();
   const { data: governorates } = useGovernorates();
-  const createRule = useCreateZonePricingRule();
-  const updateRule = useUpdateZonePricingRule();
-  const deleteRule = useDeleteZonePricingRule();
+  const batchUpdateMutation = useBatchUpdateZonePricing();
+  const deleteMutation = useDeleteZonePricing();
 
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [selectedGovernorateIds, setSelectedGovernorateIds] = useState<string[]>([]);
-  const [feeUsd, setFeeUsd] = useState('');
-  const [feeLbp, setFeeLbp] = useState('');
-
-  const resetForm = () => {
-    setSelectedGovernorateIds([]);
-    setFeeUsd('');
-    setFeeLbp('');
-    setEditingId(null);
-    setShowForm(false);
+  const handleEdit = (zoneId: string, currentValues: { fee_usd: number; fee_lbp: number }) => {
+    setEditingRows(prev => new Set([...prev, zoneId]));
+    setEditValues(prev => ({
+      ...prev,
+      [zoneId]: {
+        fee_usd: currentValues.fee_usd.toString(),
+        fee_lbp: currentValues.fee_lbp.toString()
+      }
+    }));
   };
 
-  const handleEdit = (rule: any) => {
-    setSelectedGovernorateIds(rule.governorate_id ? [rule.governorate_id] : []);
-    setFeeUsd(rule.fee_usd.toString());
-    setFeeLbp(rule.fee_lbp.toString());
-    setEditingId(rule.id);
-    setShowForm(true);
+  const handleSave = async (zone: any) => {
+    const values = editValues[zone.id];
+    if (!values) return;
+
+    try {
+      await batchUpdateMutation.mutateAsync([{
+        governorate_id: zone.governorate_id,
+        fee_usd: parseFloat(values.fee_usd) || 0,
+        fee_lbp: parseInt(values.fee_lbp) || 0
+      }]);
+
+      setEditingRows(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(zone.id);
+        return newSet;
+      });
+      
+      setEditValues(prev => {
+        const newValues = { ...prev };
+        delete newValues[zone.id];
+        return newValues;
+      });
+    } catch (error) {
+      console.error('Error saving zone pricing:', error);
+    }
   };
 
-  const handleSubmit = () => {
-    if (selectedGovernorateIds.length === 0 || (!feeUsd && !feeLbp)) {
+  const handleCancel = (zoneId: string) => {
+    setEditingRows(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(zoneId);
+      return newSet;
+    });
+    
+    setEditValues(prev => {
+      const newValues = { ...prev };
+      delete newValues[zoneId];
+      return newValues;
+    });
+  };
+
+  const handleDelete = async (zoneId: string) => {
+    if (confirm('Are you sure you want to delete this zone pricing?')) {
+      try {
+        await deleteMutation.mutateAsync(zoneId);
+      } catch (error) {
+        console.error('Error deleting zone pricing:', error);
+      }
+    }
+  };
+
+  const handleAddZone = async () => {
+    if (!newZone.governorate_id) {
+      toast.error('Please select a governorate');
       return;
     }
 
-    const feeUsdValue = feeUsd ? parseFloat(feeUsd) : 0;
-    const feeLbpValue = feeLbp ? parseFloat(feeLbp.replace(/,/g, '')) : 0;
+    try {
+      await batchUpdateMutation.mutateAsync([{
+        governorate_id: newZone.governorate_id,
+        fee_usd: parseFloat(newZone.fee_usd) || 0,
+        fee_lbp: parseInt(newZone.fee_lbp) || 0
+      }]);
 
-    if (editingId) {
-      // Update existing rule
-      updateRule.mutate(
-        { id: editingId, updates: { fee_usd: feeUsdValue, fee_lbp: feeLbpValue } },
-        { onSuccess: resetForm }
-      );
-    } else {
-      // Create new rules for each selected governorate
-      selectedGovernorateIds.forEach(governorateId => {
-        const data = {
-          governorate_id: governorateId,
-          fee_usd: feeUsdValue,
-          fee_lbp: feeLbpValue,
-        };
-        createRule.mutate(data, { onSuccess: resetForm });
-      });
+      setNewZone({ governorate_id: '', fee_usd: '', fee_lbp: '' });
+      setShowAddForm(false);
+      toast.success('Zone pricing added successfully');
+    } catch (error) {
+      console.error('Error adding zone pricing:', error);
+      toast.error('Failed to add zone pricing');
     }
   };
 
-  const isFormValid = selectedGovernorateIds.length > 0 && (feeUsd || feeLbp) && 
-    ((feeUsd && parseFloat(feeUsd) > 0) || (feeLbp && parseFloat(feeLbp.replace(/,/g, '')) > 0));
-
-  // Compute governorate IDs already used in rules (except when editing)
-  const usedGovernorateIds = rules
-    ? rules
-        .filter(rule => !editingId || rule.id !== editingId)
-        .map(rule => rule.governorate_id)
-        .filter(Boolean)
-    : [];
+  const getAvailableGovernorates = () => {
+    if (!governorates || !zonePricing) return governorates || [];
+    
+    const usedGovernorateIds = new Set(zonePricing.map(z => z.governorate_id));
+    return governorates.filter(g => !usedGovernorateIds.has(g.id));
+  };
 
   if (isLoading) {
     return (
-      <Card className="mb-8">
-        <CardContent className="p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Zone-Based Pricing
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-muted rounded w-1/3"></div>
-            <div className="h-32 bg-muted rounded"></div>
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-12 bg-gray-200 rounded" />
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -98,246 +134,204 @@ const ZonePricingSection = () => {
   }
 
   return (
-    <Card className="mb-8">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-primary" />
-              Zone-Based Pricing
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Set global pricing rules for specific governorates
-            </p>
-          </div>
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Zone Rule
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Zone-Based Pricing
+          </CardTitle>
+          <Button
+            onClick={() => setShowAddForm(true)}
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add Zone
           </Button>
         </div>
+        <p className="text-sm text-muted-foreground">
+          Set custom delivery fees for specific governorates. These override global pricing.
+        </p>
       </CardHeader>
       <CardContent>
-        {showForm && (
+        {showAddForm && (
           <Card className="mb-6 border-dashed">
-            <CardHeader>
-              <CardTitle className="text-lg">
-                {editingId ? 'Edit Zone Pricing' : 'Add Zone Pricing Rule'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Governorates *</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Select one or more governorates to apply the same pricing rule
-                  </p>
-                  {/* Dropdown checklist for governorates */}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className={
-                          `w-full justify-between ${selectedGovernorateIds.length === 0 ? 'text-muted-foreground' : ''}`
-                        }
-                      >
-                        {selectedGovernorateIds.length === 0
-                          ? 'Select governorates...'
-                          : governorates
-                              ?.filter(gov => selectedGovernorateIds.includes(gov.id))
-                              .map(gov => gov.name)
-                              .join(', ')
-                        }
-                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-72 p-0">
-                      <Command>
-                        <CommandInput placeholder="Search governorates..." className="h-9" />
-                        <CommandList>
-                          <CommandEmpty>No governorate found.</CommandEmpty>
-                          <CommandGroup>
-                            {governorates?.map((gov) => {
-                              const isUsed = usedGovernorateIds.includes(gov.id);
-                              return (
-                                <CommandItem
-                                  key={gov.id}
-                                  onSelect={() => {
-                                    if (isUsed) return;
-                                    if (selectedGovernorateIds.includes(gov.id)) {
-                                      setSelectedGovernorateIds(selectedGovernorateIds.filter(id => id !== gov.id));
-                                    } else {
-                                      setSelectedGovernorateIds([...selectedGovernorateIds, gov.id]);
-                                    }
-                                  }}
-                                  className={`cursor-pointer ${isUsed ? 'opacity-50 pointer-events-none' : ''}`}
-                                  disabled={isUsed}
-                                >
-                                  <Checkbox
-                                    checked={selectedGovernorateIds.includes(gov.id)}
-                                    onCheckedChange={() => {
-                                      if (isUsed) return;
-                                      if (selectedGovernorateIds.includes(gov.id)) {
-                                        setSelectedGovernorateIds(selectedGovernorateIds.filter(id => id !== gov.id));
-                                      } else {
-                                        setSelectedGovernorateIds([...selectedGovernorateIds, gov.id]);
-                                      }
-                                    }}
-                                    className="mr-2"
-                                    disabled={isUsed}
-                                  />
-                                  <span>{gov.name}</span>
-                                </CommandItem>
-                              );
-                            })}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <Label htmlFor="new-governorate">Governorate</Label>
+                  <Select 
+                    value={newZone.governorate_id} 
+                    onValueChange={(value) => setNewZone(prev => ({ ...prev, governorate_id: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select governorate" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getAvailableGovernorates().map(gov => (
+                        <SelectItem key={gov.id} value={gov.id}>
+                          {gov.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                  <Label>Fee (USD)</Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="number"
-                      step="0.5"
-                      min="0"
-                      placeholder="4.00"
-                      value={feeUsd}
-                      onChange={(e) => setFeeUsd(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">Enter either USD or LBP (or both)</p>
+                <div>
+                  <Label htmlFor="new-fee-usd">USD Fee</Label>
+                  <Input
+                    id="new-fee-usd"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={newZone.fee_usd}
+                    onChange={(e) => setNewZone(prev => ({ ...prev, fee_usd: e.target.value }))}
+                  />
                 </div>
-
-                <div className="space-y-2">
-                  <Label>Fee (LBP)</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">
-                      L.L.
-                    </span>
-                    <Input
-                      type="text"
-                      placeholder="150,000"
-                      value={feeLbp ? parseInt(feeLbp.replace(/,/g, '')).toLocaleString() : ''}
-                      onChange={(e) => setFeeLbp(e.target.value.replace(/,/g, ''))}
-                      className="pl-12"
-                    />
-                  </div>
-                  </div>
+                <div>
+                  <Label htmlFor="new-fee-lbp">LBP Fee</Label>
+                  <Input
+                    id="new-fee-lbp"
+                    type="number"
+                    placeholder="0"
+                    value={newZone.fee_lbp}
+                    onChange={(e) => setNewZone(prev => ({ ...prev, fee_lbp: e.target.value }))}
+                  />
                 </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Button 
-                  onClick={handleSubmit}
-                  disabled={!isFormValid || createRule.isPending || updateRule.isPending}
-                >
-                  {(createRule.isPending || updateRule.isPending) ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Plus className="h-4 w-4 mr-2" />
-                  )}
-                  {editingId ? 'Update Rule' : 'Create Rule'}
-                </Button>
-                <Button variant="outline" onClick={resetForm}>
-                  Cancel
-                </Button>
+                <div className="flex items-end gap-2">
+                  <Button onClick={handleAddZone} size="sm" className="flex items-center gap-2">
+                    <Save className="h-4 w-4" />
+                    Save
+                  </Button>
+                  <Button 
+                    onClick={() => setShowAddForm(false)} 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <X className="h-4 w-4" />
+                    Cancel
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {rules && rules.length > 0 ? (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Governorate</TableHead>
-                  <TableHead>Fee (USD)</TableHead>
-                  <TableHead>Fee (LBP)</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rules.map((rule) => (
-                  <TableRow key={rule.id}>
-                    <TableCell>
-                      <div className="font-medium">{rule.governorate_name}</div>
+        {zonePricing && zonePricing.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Governorate</TableHead>
+                <TableHead>USD Fee</TableHead>
+                <TableHead>LBP Fee</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {zonePricing.map((zone) => {
+                const isEditing = editingRows.has(zone.id);
+                const editValue = editValues[zone.id];
+
+                return (
+                  <TableRow key={zone.id}>
+                    <TableCell className="font-medium">
+                      {zone.governorate_name || 'Unknown'}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">
-                        {formatCurrency(rule.fee_usd, 'USD')}
-                      </Badge>
+                      {isEditing ? (
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={editValue?.fee_usd || '0'}
+                          onChange={(e) => setEditValues(prev => ({
+                            ...prev,
+                            [zone.id]: { ...prev[zone.id], fee_usd: e.target.value }
+                          }))}
+                          className="w-24"
+                        />
+                      ) : (
+                        `$${zone.fee_usd.toFixed(2)}`
+                      )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">
-                        {formatCurrency(rule.fee_lbp, 'LBP')}
-                      </Badge>
+                      {isEditing ? (
+                        <Input
+                          type="number"
+                          value={editValue?.fee_lbp || '0'}
+                          onChange={(e) => setEditValues(prev => ({
+                            ...prev,
+                            [zone.id]: { ...prev[zone.id], fee_lbp: e.target.value }
+                          }))}
+                          className="w-32"
+                        />
+                      ) : (
+                        `${zone.fee_lbp.toLocaleString()} LBP`
+                      )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={rule.is_active ? "default" : "secondary"}>
-                        {rule.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <Badge variant="secondary">Active</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleEdit(rule)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="ghost" className="text-destructive">
+                        {isEditing ? (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => handleSave(zone)}
+                              disabled={batchUpdateMutation.isPending}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Save className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleCancel(zone.id)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(zone.id, { fee_usd: zone.fee_usd, fee_lbp: zone.fee_lbp })}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(zone.id)}
+                              disabled={deleteMutation.isPending}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Zone Pricing Rule</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete this zone pricing rule? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteRule.mutate(rule.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                );
+              })}
+            </TableBody>
+          </Table>
         ) : (
-          !showForm && (
-            <div className="text-center py-12 text-muted-foreground">
-              <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No zone pricing rules configured</p>
-              <p className="text-sm">Add rules to set governorate-specific pricing for clients</p>
-            </div>
-          )
+          <div className="text-center py-8 text-muted-foreground">
+            <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No zone pricing configured</p>
+            <p className="text-sm">Add zone-specific pricing to override global rates</p>
+          </div>
         )}
       </CardContent>
     </Card>
   );
-};
+}
 
 export default ZonePricingSection;

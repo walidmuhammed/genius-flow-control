@@ -3,8 +3,9 @@ import React from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import PricingKPICards from '@/components/admin/pricing/PricingKPICards';
 import GlobalPricingSection from '@/components/admin/pricing/GlobalPricingSection';
-import ClientPricingSection from '@/components/admin/pricing/ClientPricingSection';
 import ZonePricingSection from '@/components/admin/pricing/ZonePricingSection';
+import { GlobalPackageExtrasSection } from '@/components/admin/pricing/GlobalPackageExtrasSection';
+import ClientPricingSection from '@/components/admin/pricing/ClientPricingSection';
 import PackageTypePricingSection from '@/components/admin/pricing/PackageTypePricingSection';
 import PricingChangeLogsSection from '@/components/admin/pricing/PricingChangeLogsSection';
 import { ClientPricingTestPanel } from '@/components/admin/pricing/ClientPricingTestPanel';
@@ -26,8 +27,9 @@ const AdminPricing = () => {
         
         <PricingKPICards />
         <GlobalPricingSection />
-        <ClientPricingSection />
         <ZonePricingSection />
+        <GlobalPackageExtrasSection />
+        <ClientPricingSection />
         <PackageTypePricingSection />
         <PricingChangeLogsSection />
         <ClientPricingTestPanel />
