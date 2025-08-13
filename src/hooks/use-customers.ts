@@ -5,6 +5,7 @@ import {
   createCustomer, 
   updateCustomer, 
   searchCustomersByPhone,
+  findCustomerByExactPhone,
   Customer 
 } from "@/services/customers";
 import { toast } from "sonner";
@@ -83,5 +84,50 @@ export function useSearchCustomersByPhone(phone: string) {
     queryFn: () => isCompleteNumber ? searchCustomersByPhone(phone) : Promise.resolve([]),
     enabled: isCompleteNumber,
     staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export function useFindCustomerByExactPhone(phone: string) {
+  return useQuery({
+    queryKey: ['customers', 'exact', phone],
+    queryFn: () => findCustomerByExactPhone(phone),
+    enabled: isValidLebaneseMobileNumber(phone),
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+}
+
+export function useCreateOrUpdateCustomer() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (customerData: any) => {
+      // First, try to find an existing customer with the exact phone number
+      const existingCustomer = await findCustomerByExactPhone(customerData.phone);
+      
+      if (existingCustomer) {
+        // Update existing customer with new information
+        return await updateCustomer(existingCustomer.id, {
+          name: customerData.name,
+          secondary_phone: customerData.secondary_phone,
+          address: customerData.address,
+          city_id: customerData.city_id,
+          governorate_id: customerData.governorate_id,
+          is_work_address: customerData.is_work_address
+        });
+      } else {
+        // Create new customer
+        return await createCustomer(customerData);
+      }
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      queryClient.invalidateQueries({ queryKey: ['customers', 'search'] });
+      queryClient.invalidateQueries({ queryKey: ['customers', 'exact'] });
+      
+      toast.success("Customer saved successfully");
+    },
+    onError: (error: any) => {
+      toast.error(`Error with customer: ${error.message}`);
+    }
   });
 }

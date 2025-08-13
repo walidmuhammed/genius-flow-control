@@ -15,7 +15,7 @@ import { AreaSelector } from '@/components/orders/AreaSelector';
 import { PackageGuidelinesModal } from '@/components/orders/PackageGuidelinesModal';
 import { useGovernorates } from '@/hooks/use-governorates';
 import { useCity, useCitiesByGovernorate } from '@/hooks/use-cities';
-import { useSearchCustomersByPhone, useCreateCustomer } from '@/hooks/use-customers';
+import { useSearchCustomersByPhone, useCreateOrUpdateCustomer } from '@/hooks/use-customers';
 import { useCreateOrder, useUpdateOrder, useOrder } from '@/hooks/use-orders';
 import { useCalculateDeliveryFee } from '@/hooks/use-pricing';
 import { useComprehensiveDeliveryFee } from '@/hooks/use-comprehensive-pricing';
@@ -125,7 +125,7 @@ const CreateOrder = () => {
     isLoading: searchingCustomers,
     refetch: refetchCustomers
   } = useSearchCustomersByPhone(phone);
-  const createCustomer = useCreateCustomer();
+  const createOrUpdateCustomer = useCreateOrUpdateCustomer();
   const createOrder = useCreateOrder();
   const updateOrder = useUpdateOrder();
 
@@ -375,8 +375,18 @@ const CreateOrder = () => {
           secondary_phone: isSecondaryPhone ? secondaryPhone : undefined,
           ...fullAddressData
         };
-        const newCustomer = await createCustomer.mutateAsync(customerData);
-        customerId = newCustomer.id;
+        
+        try {
+          const customer = await createOrUpdateCustomer.mutateAsync(customerData);
+          customerId = customer.id;
+        } catch (error: any) {
+          // If there's still a conflict even with our smart logic, show user-friendly error
+          if (error.message?.includes('phone number already exists')) {
+            toast.error("A customer with this phone number already exists. Please check your customer list.");
+            return;
+          }
+          throw error; // Re-throw other errors
+        }
       }
 
       // Backend expects these type strings

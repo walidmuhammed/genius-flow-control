@@ -97,6 +97,12 @@ export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at
   
   if (error) {
     console.error('Error creating customer:', error);
+    
+    // Handle duplicate phone constraint violation
+    if (error.code === '23505' && error.message?.includes('customers_phone_key')) {
+      throw new Error('A customer with this phone number already exists. Please check your customer list or use a different phone number.');
+    }
+    
     throw error;
   }
   
@@ -149,4 +155,40 @@ export async function searchCustomersByPhone(phone: string) {
   }));
   
   return customers;
+}
+
+export async function findCustomerByExactPhone(phone: string) {
+  // Get current user for proper tenant isolation
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  const { data, error } = await supabase
+    .from('customers')
+    .select(`
+      *,
+      cities:city_id(name),
+      governorates:governorate_id(name)
+    `)
+    .eq('created_by', user.id)
+    .eq('phone', phone)
+    .maybeSingle();
+  
+  if (error) {
+    console.error(`Error finding customer with exact phone ${phone}:`, error);
+    throw error;
+  }
+  
+  if (!data) {
+    return null;
+  }
+  
+  const customer: CustomerWithLocation = {
+    ...data,
+    city_name: data.cities?.name,
+    governorate_name: data.governorates?.name
+  };
+  
+  return customer;
 }
