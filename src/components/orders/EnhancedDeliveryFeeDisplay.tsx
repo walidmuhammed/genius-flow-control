@@ -159,7 +159,7 @@ export function EnhancedDeliveryFeeDisplay({
   } : effectivePricing ? {
     total_fee_usd: effectivePricing.base + effectivePricing.extras,
     total_fee_lbp: 0, // Not used in new system
-    pricing_source: currentDebugInfo?.pricingResult.pricing_source === 'client_specific' ? 'client_specific' : fees?.pricing_source || 'global',
+    pricing_source: effectivePricing.source?.base === 'Client Default' || effectivePricing.source?.base === 'Client Zone' ? 'client_specific' : fees?.pricing_source || 'global',
     base_fee_usd: effectivePricing.base,
     base_fee_lbp: 0,
     extra_fee_usd: effectivePricing.extras,
