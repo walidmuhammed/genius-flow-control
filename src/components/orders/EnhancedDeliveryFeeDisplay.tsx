@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Info, CheckCircle, Settings, Globe, MapPin, Package, Bug, Eye, EyeOff }
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { usePricingDebug } from '@/hooks/use-pricing-debug';
+import { getEffectivePricingForOrder, type EffectivePricingResult } from '@/lib/pricing/effectivePricing';
 
 interface EnhancedDeliveryFeeDisplayProps {
   fees: {
@@ -115,6 +116,8 @@ export function EnhancedDeliveryFeeDisplay({
   showDebug = process.env.NODE_ENV === 'development'
 }: EnhancedDeliveryFeeDisplayProps) {
   const [debugVisible, setDebugVisible] = useState(false);
+  const [effectivePricing, setEffectivePricing] = useState<EffectivePricingResult | null>(null);
+  const [pricingLoading, setPricingLoading] = useState(false);
   
   // Initialize pricing debug hook
   const { debugLogs, currentDebugInfo, clearLogs } = usePricingDebug(
@@ -123,7 +126,42 @@ export function EnhancedDeliveryFeeDisplay({
     cityId,
     packageType
   );
-  if (isLoading) {
+
+  // Fetch effective pricing when parameters change
+  useEffect(() => {
+    if (clientId || governorateId || packageType) {
+      setPricingLoading(true);
+      
+      getEffectivePricingForOrder({
+        clientId,
+        governorateId,
+        packageType,
+        currency: 'USD'
+      }).then(result => {
+        setEffectivePricing(result);
+        console.debug('[component] Effective pricing received:', result);
+      }).catch(error => {
+        console.error('[component] Failed to fetch effective pricing:', error);
+      }).finally(() => {
+        setPricingLoading(false);
+      });
+    }
+  }, [clientId, governorateId, packageType]);
+  // Use effective pricing if available, fallback to legacy fees
+  const displayFees = effectivePricing ? {
+    total_fee_usd: effectivePricing.base + effectivePricing.extras,
+    total_fee_lbp: 0, // Not used in new system
+    pricing_source: effectivePricing.source.base === 'Client Default' || effectivePricing.source.base === 'Client Zone' ? 'client_specific' : fees?.pricing_source || 'global',
+    base_fee_usd: effectivePricing.base,
+    base_fee_lbp: 0,
+    extra_fee_usd: effectivePricing.extras,
+    extra_fee_lbp: 0
+  } : fees;
+
+  const isClientOverride = effectivePricing?.source.base === 'Client Default' || 
+                          effectivePricing?.source.base === 'Client Zone';
+
+  if (isLoading || pricingLoading) {
     return (
       <div className={cn("space-y-3 p-4 rounded-lg border bg-card", className)}>
         <div className="flex items-center justify-between">
@@ -135,7 +173,7 @@ export function EnhancedDeliveryFeeDisplay({
     );
   }
 
-  if (!fees) {
+  if (!displayFees && !effectivePricing) {
     return (
       <div className={cn("space-y-3 p-4 rounded-lg border bg-card border-destructive/20", className)}>
         <div className="flex items-center justify-between">
@@ -147,7 +185,7 @@ export function EnhancedDeliveryFeeDisplay({
     );
   }
 
-  const ruleInfo = getRuleTypeInfo(fees.pricing_source);
+  const ruleInfo = getRuleTypeInfo(displayFees?.pricing_source || 'global');
   const IconComponent = ruleInfo.icon;
 
   return (
@@ -161,13 +199,13 @@ export function EnhancedDeliveryFeeDisplay({
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1 cursor-help">
                   <IconComponent className={cn("h-3.5 w-3.5", ruleInfo.color)} />
-                  <Badge variant={ruleInfo.badgeVariant} className="text-xs">
-                    {ruleInfo.label}
+                  <Badge variant={isClientOverride ? "default" : ruleInfo.badgeVariant} className="text-xs">
+                    {isClientOverride ? "Client Override" : ruleInfo.label}
                   </Badge>
                 </div>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
-                <p>{ruleInfo.description}</p>
+                <p>{isClientOverride ? "Custom pricing configured specifically for this client" : ruleInfo.description}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -183,27 +221,32 @@ export function EnhancedDeliveryFeeDisplay({
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <span className="text-lg font-semibold text-foreground">
-              ${fees.total_fee_usd?.toFixed(2) || '0.00'}
+              ${(displayFees?.total_fee_usd || 0).toFixed(2)}
             </span>
             <span className="text-sm text-muted-foreground">USD</span>
           </div>
+          
+          {/* Show breakdown with effective pricing details */}
+          {effectivePricing && (
+            <div className="text-xs text-muted-foreground mt-1">
+              Base: ${effectivePricing.base.toFixed(2)} + Extra: ${effectivePricing.extras.toFixed(2)}
+              <span className="ml-2 text-xs">
+                ({effectivePricing.source.base}
+                {effectivePricing.source.extras !== 'None' ? ` + ${effectivePricing.source.extras}` : ''})
+              </span>
+            </div>
+          )}
+          
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-foreground">
-              {fees.total_fee_lbp?.toLocaleString() || '0'}
+              {(displayFees?.total_fee_lbp || 0).toLocaleString()}
             </span>
             <span className="text-xs text-muted-foreground">LBP</span>
           </div>
-          
-          {/* Show breakdown if available */}
-          {fees.base_fee_usd !== undefined && fees.extra_fee_usd !== undefined && (
-            <div className="text-xs text-muted-foreground mt-1">
-              Base: ${fees.base_fee_usd.toFixed(2)} + Extra: ${fees.extra_fee_usd.toFixed(2)}
-            </div>
-          )}
         </div>
         
         {/* Visual indicator for custom pricing */}
-        {(fees.pricing_source.startsWith('client_') || fees.pricing_source === 'client_specific') && (
+        {isClientOverride && (
           <div className="flex flex-col items-end">
             <Badge variant="default" className="text-xs bg-primary/10 text-primary border-primary/20">
               Custom Rate
@@ -214,13 +257,13 @@ export function EnhancedDeliveryFeeDisplay({
       </div>
 
       {/* Additional info for pricing source */}
-      {(fees.pricing_source.startsWith('client_') || fees.pricing_source === 'client_specific') && (
+      {isClientOverride && (
         <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded border-l-2 border-blue-200">
           <span className="font-medium">Client-Specific Pricing:</span> This order uses custom pricing configured for this client.
         </div>
       )}
       
-      {fees.pricing_source === 'zone' && (
+      {displayFees?.pricing_source === 'zone' && (
         <div className="text-xs text-muted-foreground bg-green-50 p-2 rounded border-l-2 border-green-200">
           <span className="font-medium">Zone Pricing Applied:</span> Special pricing for this delivery location.
         </div>
