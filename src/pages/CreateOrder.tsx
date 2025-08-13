@@ -853,6 +853,10 @@ const CreateOrder = () => {
                 fees={calculatedFees}
                 isLoading={feesLoading}
                 className="mb-4"
+                clientId={user?.id}
+                governorateId={selectedGovernorateId || undefined}
+                cityId={selectedCityId || undefined}
+                packageType={packageType === 'parcel' ? 'Parcel' : packageType === 'document' ? 'Document' : 'Bulky'}
               />
 
               {/* Cash Collection */}
