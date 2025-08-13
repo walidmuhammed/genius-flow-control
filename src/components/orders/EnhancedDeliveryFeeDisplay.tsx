@@ -21,6 +21,14 @@ interface EnhancedDeliveryFeeDisplayProps {
 
 const getRuleTypeInfo = (pricingSource: string) => {
   switch (pricingSource) {
+    case 'client_specific':
+      return {
+        label: 'Client Specific',
+        description: 'Custom pricing configured specifically for this client',
+        icon: Settings,
+        badgeVariant: 'default' as const,
+        color: 'text-blue-600'
+      };
     case 'client_zone':
       return {
         label: 'Client Zone Rule',
@@ -52,6 +60,14 @@ const getRuleTypeInfo = (pricingSource: string) => {
         icon: Settings,
         badgeVariant: 'outline' as const,
         color: 'text-orange-600'
+      };
+    case 'zone':
+      return {
+        label: 'Zone Pricing',
+        description: 'Zone-based pricing applied for this delivery location',
+        icon: MapPin,
+        badgeVariant: 'secondary' as const,
+        color: 'text-green-600'
       };
     case 'global':
       return {
@@ -161,7 +177,7 @@ export function EnhancedDeliveryFeeDisplay({ fees, isLoading, className }: Enhan
         </div>
         
         {/* Visual indicator for custom pricing */}
-        {fees.pricing_source === 'client_specific' && (
+        {(fees.pricing_source.startsWith('client_') || fees.pricing_source === 'client_specific') && (
           <div className="flex flex-col items-end">
             <Badge variant="default" className="text-xs bg-primary/10 text-primary border-primary/20">
               Custom Rate
@@ -172,7 +188,7 @@ export function EnhancedDeliveryFeeDisplay({ fees, isLoading, className }: Enhan
       </div>
 
       {/* Additional info for pricing source */}
-      {fees.pricing_source === 'client_specific' && (
+      {(fees.pricing_source.startsWith('client_') || fees.pricing_source === 'client_specific') && (
         <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded border-l-2 border-blue-200">
           <span className="font-medium">Client-Specific Pricing:</span> This order uses custom pricing configured for this client.
         </div>
