@@ -49,24 +49,6 @@ export interface ZonePricingRule {
   business_name?: string;
 }
 
-export interface PackageTypePricing {
-  id: string;
-  package_type: string;
-  fee_usd: number;
-  fee_lbp: number;
-  client_id?: string | null;
-  governorate_id?: string | null;
-  city_id?: string | null;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  created_by?: string | null;
-  // Joined data
-  client_name?: string;
-  business_name?: string;
-  governorate_name?: string;
-  city_name?: string;
-}
 
 export interface PricingChangeLog {
   id: string;
@@ -368,99 +350,6 @@ export const deleteAllClientZoneRules = async (clientId: string): Promise<void> 
   }
 };
 
-// Package type pricing functions
-export const getPackageTypePricing = async (): Promise<PackageTypePricing[]> => {
-  const { data, error } = await supabase
-    .from('pricing_package_types')
-    .select(`
-      *,
-      governorates (name),
-      cities (name),
-      profiles!client_id (
-        full_name,
-        business_name
-      )
-    `)
-    .order('package_type', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching package type pricing:', error);
-    throw error;
-  }
-
-  return data.map(item => ({
-    ...item,
-    governorate_name: item.governorates?.name,
-    city_name: item.cities?.name,
-    client_name: item.profiles?.full_name,
-    business_name: item.profiles?.business_name,
-  }));
-};
-
-export const createPackageTypePricing = async (
-  pricing: Pick<PackageTypePricing, 'package_type' | 'fee_usd' | 'fee_lbp' | 'client_id' | 'governorate_id' | 'city_id'>
-): Promise<PackageTypePricing> => {
-  const { data, error } = await supabase
-    .from('pricing_package_types')
-    .insert({
-      ...pricing,
-      created_by: (await supabase.auth.getUser()).data.user?.id,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating package type pricing:', error);
-    throw error;
-  }
-
-  return data;
-};
-
-export const updatePackageTypePricing = async (
-  id: string,
-  updates: Partial<Pick<PackageTypePricing, 'fee_usd' | 'fee_lbp' | 'is_active'>>
-): Promise<PackageTypePricing> => {
-  const { data, error } = await supabase
-    .from('pricing_package_types')
-    .update({
-      ...updates,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating package type pricing:', error);
-    throw error;
-  }
-
-  return data;
-};
-
-export const deletePackageTypePricing = async (id: string): Promise<void> => {
-  const { error } = await supabase
-    .from('pricing_package_types')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error('Error deleting package type pricing:', error);
-    throw error;
-  }
-};
-
-export const deleteAllClientPackageTypePricing = async (clientId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('pricing_package_types')
-    .delete()
-    .eq('client_id', clientId);
-  if (error) {
-    console.error('Error deleting all client package type pricing:', error);
-    throw error;
-  }
-};
 
 // Change logs function
 export const getPricingChangeLogs = async (limit: number = 50): Promise<PricingChangeLog[]> => {

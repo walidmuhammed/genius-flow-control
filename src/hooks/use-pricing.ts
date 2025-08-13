@@ -11,17 +11,13 @@ import {
   createZonePricingRule,
   updateZonePricingRule,
   deleteZonePricingRule,
-  getPackageTypePricing,
-  createPackageTypePricing,
-  updatePackageTypePricing,
-  deletePackageTypePricing,
   getPricingChangeLogs,
   getPricingKPIs,
   calculateDeliveryFee,
   type GlobalPricing,
   type ClientPricingOverride,
   type ZonePricingRule,
-  type PackageTypePricing,
+  
 } from '@/services/pricing';
 
 // Global Pricing Hooks
@@ -173,64 +169,6 @@ export const useDeleteZonePricingRule = () => {
   });
 };
 
-// Package Type Pricing Hooks
-export const usePackageTypePricing = () => {
-  return useQuery({
-    queryKey: ['pricing', 'package-types'],
-    queryFn: getPackageTypePricing,
-  });
-};
-
-export const useCreatePackageTypePricing = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: createPackageTypePricing,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pricing'] });
-      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
-      toast.success('Package type pricing created successfully');
-    },
-    onError: (error: any) => {
-      toast.error(`Error creating package type pricing: ${error.message}`);
-    },
-  });
-};
-
-export const useUpdatePackageTypePricing = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ id, updates }: { 
-      id: string; 
-      updates: Partial<Pick<PackageTypePricing, 'fee_usd' | 'fee_lbp' | 'is_active'>> 
-    }) => updatePackageTypePricing(id, updates),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pricing'] });
-      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
-      toast.success('Package type pricing updated successfully');
-    },
-    onError: (error: any) => {
-      toast.error(`Error updating package type pricing: ${error.message}`);
-    },
-  });
-};
-
-export const useDeletePackageTypePricing = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: deletePackageTypePricing,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pricing'] });
-      queryClient.invalidateQueries({ queryKey: ['pricing', 'calculate'] });
-      toast.success('Package type pricing deleted successfully');
-    },
-    onError: (error: any) => {
-      toast.error(`Error deleting package type pricing: ${error.message}`);
-    },
-  });
-};
 
 // Change Logs Hook
 export const usePricingChangeLogs = (limit: number = 50) => {
