@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Info, CheckCircle, Settings, Globe, MapPin, Package } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Info, CheckCircle, Settings, Globe, MapPin, Package, Bug, Eye, EyeOff } from 'lucide-react';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { usePricingDebug } from '@/hooks/use-pricing-debug';
 
 interface EnhancedDeliveryFeeDisplayProps {
   fees: {
@@ -17,6 +19,12 @@ interface EnhancedDeliveryFeeDisplayProps {
   } | null;
   isLoading: boolean;
   className?: string;
+  // Debug props
+  clientId?: string;
+  governorateId?: string;
+  cityId?: string;
+  packageType?: 'Parcel' | 'Document' | 'Bulky';
+  showDebug?: boolean;
 }
 
 const getRuleTypeInfo = (pricingSource: string) => {
@@ -96,7 +104,25 @@ const getRuleTypeInfo = (pricingSource: string) => {
   }
 };
 
-export function EnhancedDeliveryFeeDisplay({ fees, isLoading, className }: EnhancedDeliveryFeeDisplayProps) {
+export function EnhancedDeliveryFeeDisplay({ 
+  fees, 
+  isLoading, 
+  className,
+  clientId,
+  governorateId,
+  cityId,
+  packageType,
+  showDebug = process.env.NODE_ENV === 'development'
+}: EnhancedDeliveryFeeDisplayProps) {
+  const [debugVisible, setDebugVisible] = useState(false);
+  
+  // Initialize pricing debug hook
+  const { debugLogs, currentDebugInfo, clearLogs } = usePricingDebug(
+    clientId,
+    governorateId,
+    cityId,
+    packageType
+  );
   if (isLoading) {
     return (
       <div className={cn("space-y-3 p-4 rounded-lg border bg-card", className)}>
@@ -197,6 +223,115 @@ export function EnhancedDeliveryFeeDisplay({ fees, isLoading, className }: Enhan
       {fees.pricing_source === 'zone' && (
         <div className="text-xs text-muted-foreground bg-green-50 p-2 rounded border-l-2 border-green-200">
           <span className="font-medium">Zone Pricing Applied:</span> Special pricing for this delivery location.
+        </div>
+      )}
+
+      {/* Debug Panel */}
+      {showDebug && (
+        <div className="border-t pt-3 mt-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Bug className="h-4 w-4 text-orange-500" />
+              <span className="text-xs font-medium text-orange-700">Pricing Debug</span>
+            </div>
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDebugVisible(!debugVisible)}
+                className="h-6 px-2 text-xs"
+              >
+                {debugVisible ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                {debugVisible ? 'Hide' : 'Show'}
+              </Button>
+              <Button
+                variant="ghost" 
+                size="sm"
+                onClick={clearLogs}
+                className="h-6 px-2 text-xs"
+              >
+                Clear
+              </Button>
+            </div>
+          </div>
+          
+          {debugVisible && currentDebugInfo && (
+            <div className="bg-gray-50 rounded p-3 text-xs space-y-2 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="font-semibold text-gray-700 mb-1">Input Parameters</div>
+                  <div className="space-y-1 text-gray-600">
+                    <div><span className="font-medium">Client ID:</span> {clientId || 'null'}</div>
+                    <div><span className="font-medium">Governorate:</span> {governorateId || 'null'}</div>
+                    <div><span className="font-medium">City:</span> {cityId || 'null'}</div>
+                    <div><span className="font-medium">Package:</span> {packageType || 'null'}</div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="font-semibold text-gray-700 mb-1">Current User</div>
+                  <div className="space-y-1 text-gray-600">
+                    <div><span className="font-medium">ID:</span> {currentDebugInfo.currentUser?.id || 'null'}</div>
+                    <div><span className="font-medium">Type:</span> {currentDebugInfo.currentUser?.user_metadata?.user_type || 'null'}</div>
+                    <div><span className="font-medium">Email:</span> {currentDebugInfo.currentUser?.email || 'null'}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <div className="font-semibold text-gray-700 mb-1">Query Status</div>
+                <div className="space-y-1 text-gray-600">
+                  <div><span className="font-medium">Enabled:</span> {currentDebugInfo.queryEnabled ? 'Yes' : 'No'}</div>
+                  <div><span className="font-medium">Loading:</span> {currentDebugInfo.isLoading ? 'Yes' : 'No'}</div>
+                  <div><span className="font-medium">Error:</span> {currentDebugInfo.error ? JSON.stringify(currentDebugInfo.error) : 'None'}</div>
+                </div>
+              </div>
+              
+              {currentDebugInfo.pricingResult && (
+                <div>
+                  <div className="font-semibold text-gray-700 mb-1">Pricing Result</div>
+                  <div className="bg-white rounded p-2 text-xs font-mono">
+                    <pre className="whitespace-pre-wrap">
+                      {JSON.stringify(currentDebugInfo.pricingResult, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              )}
+              
+              <div className="text-xs text-gray-500 pt-2 border-t">
+                Last Updated: {new Date(currentDebugInfo.timestamp).toLocaleString()}
+              </div>
+            </div>
+          )}
+          
+          {debugVisible && debugLogs.length > 1 && (
+            <div className="mt-2">
+              <div className="font-semibold text-xs text-gray-700 mb-1">
+                Debug History ({debugLogs.length} entries)
+              </div>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {debugLogs.slice(-5).reverse().map((log, index) => (
+                  <div key={index} className="text-xs p-2 bg-gray-100 rounded">
+                    <div className="flex justify-between items-center">
+                      <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        log.pricingResult?.pricing_source?.startsWith('client_') 
+                          ? 'bg-blue-100 text-blue-700' 
+                          : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {log.pricingResult?.pricing_source || 'No result'}
+                      </span>
+                    </div>
+                    <div className="text-gray-600 mt-1">
+                      Client: {log.clientId || 'null'} | 
+                      Governorate: {log.governorateId || 'null'} | 
+                      Result: ${log.pricingResult?.total_fee_usd || 'N/A'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
