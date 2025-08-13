@@ -147,8 +147,16 @@ export function EnhancedDeliveryFeeDisplay({
       });
     }
   }, [clientId, governorateId, packageType]);
-  // Use effective pricing if available, fallback to legacy fees
-  const displayFees = effectivePricing ? {
+  // Use pricing from debug hook first (most accurate), then effective pricing, then fallback to legacy fees
+  const displayFees = currentDebugInfo?.pricingResult ? {
+    total_fee_usd: currentDebugInfo.pricingResult.total_fee_usd,
+    total_fee_lbp: currentDebugInfo.pricingResult.total_fee_lbp,
+    pricing_source: currentDebugInfo.pricingResult.pricing_source,
+    base_fee_usd: currentDebugInfo.pricingResult.base_fee_usd,
+    base_fee_lbp: currentDebugInfo.pricingResult.base_fee_lbp,
+    extra_fee_usd: currentDebugInfo.pricingResult.extra_fee_usd,
+    extra_fee_lbp: currentDebugInfo.pricingResult.extra_fee_lbp
+  } : effectivePricing ? {
     total_fee_usd: effectivePricing.base + effectivePricing.extras,
     total_fee_lbp: 0, // Not used in new system
     pricing_source: effectivePricing.source.base === 'Client Default' || effectivePricing.source.base === 'Client Zone' ? 'client_specific' : fees?.pricing_source || 'global',
@@ -158,7 +166,8 @@ export function EnhancedDeliveryFeeDisplay({
     extra_fee_lbp: 0
   } : fees;
 
-  const isClientOverride = effectivePricing?.source.base === 'Client Default' || 
+  const isClientOverride = displayFees?.pricing_source?.startsWith('client_') || 
+                          effectivePricing?.source.base === 'Client Default' || 
                           effectivePricing?.source.base === 'Client Zone';
 
   if (isLoading || pricingLoading) {

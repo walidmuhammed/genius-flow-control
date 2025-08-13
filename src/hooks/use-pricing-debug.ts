@@ -44,7 +44,7 @@ export function usePricingDebug(
       packageType,
       pricingResult: pricingQuery.data,
       timestamp: new Date().toISOString(),
-      queryEnabled: !!(clientId && governorateId),
+      queryEnabled: !!(clientId || governorateId),
       isLoading: pricingQuery.isLoading,
       error: pricingQuery.error
     };
@@ -61,7 +61,7 @@ export function usePricingDebug(
         packageType
       });
       console.log('Current User:', user?.id, user?.user_metadata?.user_type);
-      console.log('Query Enabled:', !!(clientId && governorateId));
+      console.log('Query Enabled:', !!(clientId || governorateId));
       console.log('Loading:', pricingQuery.isLoading);
       console.log('Error:', pricingQuery.error);
       console.log('Result:', pricingQuery.data);
