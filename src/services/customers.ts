@@ -98,9 +98,9 @@ export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at
   if (error) {
     console.error('Error creating customer:', error);
     
-    // Handle duplicate phone constraint violation
-    if (error.code === '23505' && error.message?.includes('customers_phone_key')) {
-      throw new Error('A customer with this phone number already exists. Please check your customer list or use a different phone number.');
+    // Handle duplicate phone constraint violation per client
+    if (error.code === '23505' && error.message?.includes('customers_created_by_phone_key')) {
+      throw new Error('You already have a customer with this phone number. Please check your customer list or use a different phone number.');
     }
     
     throw error;
