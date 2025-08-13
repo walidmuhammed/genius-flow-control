@@ -8,7 +8,6 @@ import { GlobalPackageExtrasSection } from '@/components/admin/pricing/GlobalPac
 import ClientPricingSection from '@/components/admin/pricing/ClientPricingSection';
 
 import PricingChangeLogsSection from '@/components/admin/pricing/PricingChangeLogsSection';
-import { ClientPricingTestPanel } from '@/components/admin/pricing/ClientPricingTestPanel';
 
 const AdminPricing = () => {
   document.title = "Pricing Management - Admin Panel";
@@ -32,7 +31,6 @@ const AdminPricing = () => {
         <ClientPricingSection />
         
         <PricingChangeLogsSection />
-        <ClientPricingTestPanel />
       </div>
     </AdminLayout>
   );
