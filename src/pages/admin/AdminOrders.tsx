@@ -231,48 +231,54 @@ const AdminOrders: React.FC = () => {
   const filteredOrdersForMobile = useMemo(() => mapOrdersToTableFormat(filteredOrders), [filteredOrders]);
   
   return (
-    <AdminLayout>
+    <AdminLayout className="!p-0">
       <div className="space-y-6 w-full min-w-0">
         {/* Header Section - Outside unified container */}
-        <AdminOrdersPageHeader
-          totalOrders={allOrders?.length || 0}
-          searchQuery={searchQuery}
-          onSearchChange={handleSearch}
-          dateRange={dateRange}
-          onDateRangeChange={handleDateChange}
-          onImport={() => setImportModalOpen(true)}
-          onExport={() => console.log('Export')}
-          selectedCount={selectedOrders.length}
-        />
+        <div className="px-3 sm:px-4 lg:px-6">
+          <AdminOrdersPageHeader
+            totalOrders={allOrders?.length || 0}
+            searchQuery={searchQuery}
+            onSearchChange={handleSearch}
+            dateRange={dateRange}
+            onDateRangeChange={handleDateChange}
+            onImport={() => setImportModalOpen(true)}
+            onExport={() => console.log('Export')}
+            selectedCount={selectedOrders.length}
+          />
+        </div>
         
         {/* Loading State */}
         {isLoadingAllOrders && (
-          <motion.div 
-            className="flex justify-center py-12"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="text-center">
-              <div className="w-8 h-8 border-2 border-[#DB271E] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Loading orders...</p>
-            </div>
-          </motion.div>
+          <div className="px-3 sm:px-4 lg:px-6">
+            <motion.div 
+              className="flex justify-center py-12"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <div className="text-center">
+                <div className="w-8 h-8 border-2 border-[#DB271E] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-gray-600 dark:text-gray-400">Loading orders...</p>
+              </div>
+            </motion.div>
+          </div>
         )}
 
         {/* Error State */}
         {ordersError && (
-          <motion.div 
-            className="flex justify-center py-12"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <div className="text-center">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+          <div className="px-3 sm:px-4 lg:px-6">
+            <motion.div 
+              className="flex justify-center py-12"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <div className="text-center">
+                <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                </div>
+                <p className="text-red-600 dark:text-red-400">Failed to load orders. Please try again later.</p>
               </div>
-              <p className="text-red-600 dark:text-red-400">Failed to load orders. Please try again later.</p>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         )}
         
         {/* Unified Container for Search + Filters + Table */}
@@ -284,14 +290,16 @@ const AdminOrders: React.FC = () => {
             transition={{ duration: 0.4 }}
           >
             {/* Bulk Actions Bar - Outside container */}
-            <AdminBulkActionsBar
-              selectedCount={selectedOrders.length}
-              onClearSelection={() => setSelectedOrders([])}
-              onBulkPrint={handleBulkActions.print}
-              onBulkExport={handleBulkActions.export}
-              onBulkDelete={handleBulkActions.delete}
-              canDelete={canDeleteSelected}
-            />
+            <div className="px-3 sm:px-4 lg:px-6">
+              <AdminBulkActionsBar
+                selectedCount={selectedOrders.length}
+                onClearSelection={() => setSelectedOrders([])}
+                onBulkPrint={handleBulkActions.print}
+                onBulkExport={handleBulkActions.export}
+                onBulkDelete={handleBulkActions.delete}
+                canDelete={canDeleteSelected}
+              />
+            </div>
 
             {/* Unified Container */}
             <AdminOrdersUnifiedContainer>
