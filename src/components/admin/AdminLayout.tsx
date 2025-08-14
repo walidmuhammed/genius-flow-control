@@ -13,9 +13,10 @@ import useLayoutStore from '@/stores/layoutStore';
 interface AdminLayoutProps {
   children: React.ReactNode;
   className?: string;
+  fullWidth?: boolean;
 }
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ children, className }) => {
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children, className, fullWidth = false }) => {
   const { isMobile, isTablet } = useScreenSize();
   const { sidebarOpen, closeSidebar } = useLayoutStore();
 
@@ -44,7 +45,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, className }) => {
           className
         )}>
           <motion.div 
-            className="w-full max-w-7xl mx-auto space-y-4 md:space-y-8 min-w-0"
+            className={cn(
+              "w-full space-y-4 md:space-y-8 min-w-0",
+              !fullWidth && "max-w-7xl mx-auto"
+            )}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ 
