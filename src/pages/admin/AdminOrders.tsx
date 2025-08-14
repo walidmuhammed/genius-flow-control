@@ -231,7 +231,7 @@ const AdminOrders: React.FC = () => {
   const filteredOrdersForMobile = useMemo(() => mapOrdersToTableFormat(filteredOrders), [filteredOrders]);
   
   return (
-    <AdminLayout fullWidth>
+    <AdminLayout className="!p-0">
       <div className="space-y-6 w-full min-w-0">
         {/* Header Section - Outside unified container */}
         <div className="px-3 sm:px-4 lg:px-6">
