@@ -47,7 +47,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, className, fullWidt
           <motion.div 
             className={cn(
               "w-full space-y-4 md:space-y-8 min-w-0",
-              !fullWidth && "max-w-7xl mx-auto"
+              fullWidth ? "max-w-none px-4" : "max-w-7xl mx-auto"
             )}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
