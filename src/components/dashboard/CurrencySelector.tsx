@@ -38,6 +38,20 @@ const CurrencySelector: React.FC<CurrencySelectorProps> = ({
           {displayType}
           <ChevronDown className="ml-1 h-4 w-4" />
         </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        {onChange && currencies.map((currency) => (
+          <DropdownMenuItem
+            key={currency}
+            onClick={() => onChange(currency)}
+            className="flex justify-between"
+          >
+            {currency === 'usd' ? 'USD' : 'LBP'}
+            {value === currency && <Check className="h-4 w-4" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
