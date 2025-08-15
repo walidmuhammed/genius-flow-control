@@ -28,7 +28,7 @@ import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import OrderTypeSelector from '@/components/dashboard/OrderTypeSelector';
 import { useScreenSize } from '@/hooks/useScreenSize';
-import { EnhancedDeliveryFeeDisplay } from '@/components/orders/EnhancedDeliveryFeeDisplay';
+import IntegratedCashCollectionFields from '@/components/orders/IntegratedCashCollectionFields';
 
 // Create a unique form key for forcing re-render
 const getUniqueFormKey = () => `order-form-${Date.now()}`;
@@ -858,116 +858,22 @@ const CreateOrder = () => {
                 </CardContent>
               </Card>
               
-              {/* Enhanced Delivery Fee Display */}
-              <EnhancedDeliveryFeeDisplay 
-                fees={calculatedFees}
-                isLoading={feesLoading}
-                className="mb-4"
+              {/* Integrated Cash Collection with Delivery Fee Display */}
+              <IntegratedCashCollectionFields
+                enabled={cashCollection}
+                onEnabledChange={setCashCollection}
+                usdAmount={usdAmount}
+                lbpAmount={lbpAmount}
+                onUsdAmountChange={setUsdAmount}
+                onLbpAmountChange={setLbpAmount}
+                deliveryFees={calculatedFees}
+                isFeesLoading={feesLoading}
+                errors={errors}
                 clientId={user?.id}
                 governorateId={selectedGovernorateId || undefined}
                 cityId={selectedCityId || undefined}
                 packageType={packageType === 'parcel' ? 'Parcel' : packageType === 'document' ? 'Document' : 'Bulky'}
               />
-
-              {/* Cash Collection */}
-              <Card className="border border-gray-200 shadow-sm">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-semibold text-gray-900">Cash Collection</CardTitle>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="cash-collection" checked={cashCollection} onCheckedChange={checked => {
-                      if (typeof checked === 'boolean') {
-                        setCashCollection(checked);
-                      }
-                    }} className="border-gray-300" />
-                    </div>
-                  </div>
-                </CardHeader>
-                {cashCollection && <CardContent className="space-y-4">
-                    {/* USD and LBP Side by Side with Enhanced Icons */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="usd-amount" className={cn("text-sm font-medium", errors.usdAmount ? "text-red-600" : "text-gray-700")}>
-                          USD Amount
-                        </Label>
-                        <div className="relative">
-                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 font-semibold text-sm pointer-events-none z-10">
-                            $
-                          </span>
-                          <Input id="usd-amount" type="text" value={usdAmount} onChange={e => {
-                        const value = e.target.value.replace(/[^0-9.]/g, '');
-                        const decimalParts = value.split('.');
-                        if (decimalParts.length > 1) {
-                          const wholeNumber = decimalParts[0];
-                          const decimal = decimalParts.slice(1).join('').slice(0, 2);
-                          setUsdAmount(`${wholeNumber}.${decimal}`);
-                        } else {
-                          setUsdAmount(value);
-                        }
-                        if (errors.usdAmount || errors.lbpAmount) {
-                          setErrors(prev => ({
-                            ...prev,
-                            usdAmount: undefined,
-                            lbpAmount: undefined
-                          }));
-                        }
-                      }} className={cn("h-10 pl-8 bg-white", errors.usdAmount ? "border-red-300" : "border-gray-300")} placeholder="0.00" />
-                        </div>
-                        {errors.usdAmount && <p className="text-xs text-red-600">{errors.usdAmount}</p>}
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="lbp-amount" className={cn("text-sm font-medium", errors.lbpAmount ? "text-red-600" : "text-gray-700")}>
-                          LBP Amount
-                        </Label>
-                        <div className="relative">
-                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 font-semibold text-xs pointer-events-none z-10">
-                            LBP
-                          </span>
-                          <Input id="lbp-amount" type="text" value={lbpAmount ? parseInt(lbpAmount).toLocaleString('en-US') : ''} onChange={e => {
-                        const rawValue = e.target.value.replace(/\D/g, '');
-                        setLbpAmount(rawValue);
-                        if (errors.usdAmount || errors.lbpAmount) {
-                          setErrors(prev => ({
-                            ...prev,
-                            usdAmount: undefined,
-                            lbpAmount: undefined
-                          }));
-                        }
-                      }} className={cn("h-10 pl-12 bg-white", errors.lbpAmount ? "border-red-300" : "border-gray-300")} placeholder="0" />
-                        </div>
-                        {errors.lbpAmount && <p className="text-xs text-red-600">{errors.lbpAmount}</p>}
-                      </div>
-                    </div>
-                    
-                    {/* Delivery Fees */}
-                    <div className="flex flex-col p-3 rounded-md bg-gray-50 border border-gray-100">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Delivery Fee:</span>
-                        <div className="text-sm">
-                          {feesLoading ? (
-                            <span className="text-gray-500">Calculating...</span>
-                          ) : (
-                            <>
-                              <span className="font-medium">${deliveryFees.total_fee_usd || 0}</span> 
-                              <span className="mx-1 text-gray-500">|</span> 
-                              <span className="font-medium">
-                                {(deliveryFees.total_fee_lbp !== null && deliveryFees.total_fee_lbp !== undefined) 
-                                  ? deliveryFees.total_fee_lbp.toLocaleString() 
-                                  : '0'} LBP
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1 flex items-center justify-end">
-                        <span className="capitalize">
-                          {feesLoading ? 'Loading pricing source...' : `Source: ${deliveryFees.pricing_source || 'global'}`}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>}
-              </Card>
 
               {/* Package Type */}
               <Card className="border border-gray-200 shadow-sm">
