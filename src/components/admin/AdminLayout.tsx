@@ -41,13 +41,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, className, wideCont
         <AdminTopBar />
         <main className={cn(
           "flex-1 overflow-x-hidden bg-gray-50 dark:bg-gray-900 transition-all min-w-0",
-          isMobile ? "p-3 pb-6" : isTablet ? "p-4 pb-6" : "p-6",
+          isMobile ? "p-2" : isTablet ? "p-3" : wideContent ? "p-4" : "p-6",
           className
         )}>
           <motion.div 
             className={cn(
               "w-full mx-auto space-y-4 md:space-y-8 min-w-0",
-              wideContent ? "max-w-[95%]" : "max-w-7xl"
+              wideContent ? "max-w-[98%]" : "max-w-7xl"
             )}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

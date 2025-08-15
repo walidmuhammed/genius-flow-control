@@ -133,8 +133,8 @@ export const AdminEnhancedOrdersTable: React.FC<AdminEnhancedOrdersTableProps> =
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-              {/* Selection column */}
-              <TableHead className="w-12 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider pl-6">
+              {/* Selection column - Reduced width */}
+              <TableHead className="w-8 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider pl-4">
                 <Checkbox
                   checked={isAllSelected}
                   ref={(el) => {
@@ -152,15 +152,15 @@ export const AdminEnhancedOrdersTable: React.FC<AdminEnhancedOrdersTableProps> =
                   aria-hidden={!anySelected}
                 />
               </TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">ORDER ID</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">REFERENCE</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[180px]">CUSTOMER</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[150px]">LOCATION</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">TYPE</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">AMOUNT</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">STATUS</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">DATE</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[150px]">SHOP</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-20">ID</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-24">REF</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-36">CUSTOMER</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-28">LOCATION</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-20">TYPE</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-20">AMOUNT</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-24">STATUS</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-20">DATE</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-28">SHOP</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -186,7 +186,7 @@ export const AdminEnhancedOrdersTable: React.FC<AdminEnhancedOrdersTableProps> =
                 >
                   {/* Selection cell */}
                   <TableCell
-                    className="pl-6 w-12"
+                    className="pl-4 w-8"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Checkbox
@@ -200,9 +200,9 @@ export const AdminEnhancedOrdersTable: React.FC<AdminEnhancedOrdersTableProps> =
                       aria-hidden={!showCheckbox}
                     />
                   </TableCell>
-                  <TableCell className="font-semibold text-[#DB271E]">
-                    <div className="flex items-center gap-2">
-                      <span>
+                  <TableCell className="font-semibold text-[#DB271E] w-20">
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm">
                         #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
                       </span>
                       {order.note && order.note.trim() !== "" && (
@@ -210,62 +210,62 @@ export const AdminEnhancedOrdersTable: React.FC<AdminEnhancedOrdersTableProps> =
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="w-24">
                     {order.reference_number ? (
-                      <span className="font-medium text-gray-900 dark:text-gray-100">{order.reference_number}</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate block">{order.reference_number}</span>
                     ) : (
                       <span className="text-gray-400">-</span>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="w-36">
                     <div>
-                      <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{order.customer?.name}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{order.customer?.phone}</div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 truncate text-sm">{order.customer?.name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{order.customer?.phone}</div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="w-28">
                     <div>
-                      <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{order.customer?.city_name}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{order.customer?.governorate_name}</div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 truncate text-sm">{order.customer?.city_name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{order.customer?.governorate_name}</div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="w-20">
                     <div>
                       <span
-                        className={`inline-flex px-3 py-1 text-xs font-medium rounded-full border ${getTypeColor(order.type)}`}
+                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${getTypeColor(order.type)}`}
                       >
                         {order.type}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="w-20">
                     <div>
                       {order.cash_collection_usd > 0 && (
-                        <div className="font-semibold text-gray-900 dark:text-gray-100">${order.cash_collection_usd}</div>
+                        <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">${order.cash_collection_usd}</div>
                       )}
                       {order.cash_collection_lbp > 0 && (
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{(order.cash_collection_lbp / 1000).toFixed(0)}K</div>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border", getStatusColor(order.status))}>
+                  <TableCell className="w-24">
+                    <Badge className={cn("px-2 py-1 text-xs font-medium rounded-full border", getStatusColor(order.status))}>
                       {order.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <div className="text-sm text-gray-900 dark:text-gray-100">
+                  <TableCell className="w-20">
+                    <div className="text-xs text-gray-900 dark:text-gray-100">
                       {formatDate(new Date(order.created_at))}
                     </div>
                   </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
+                  <TableCell className="w-28" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleShopClick(order)}
-                      className="flex items-center gap-2 text-sm text-[#DB271E] hover:text-[#c0211a] hover:bg-[#DB271E]/10 truncate max-w-[140px]"
+                      className="flex items-center gap-1 text-xs text-[#DB271E] hover:text-[#c0211a] hover:bg-[#DB271E]/10 truncate max-w-[100px] px-2 py-1 h-7"
                     >
-                      <Store className="h-4 w-4 flex-shrink-0" />
+                      <Store className="h-3 w-3 flex-shrink-0" />
                       <span className="truncate">{getShopName(order)}</span>
                     </Button>
                   </TableCell>
@@ -280,7 +280,7 @@ export const AdminEnhancedOrdersTable: React.FC<AdminEnhancedOrdersTableProps> =
         client={selectedClient}
         isOpen={clientPanelOpen}
         onClose={() => {
-          setClientPanelOpen(false);
+          setClientPanelOpen(false);  
           setSelectedClient(null);
         }}
       />
