@@ -65,7 +65,7 @@ const CreateOrder = () => {
   const [isSecondaryPhone, setIsSecondaryPhone] = useState<boolean>(false);
   const [name, setName] = useState<string>('');
   const [isWorkAddress, setIsWorkAddress] = useState<boolean>(false);
-  const [packageType, setPackageType] = useState<'Parcel' | 'Document' | 'Bulky'>('Parcel');
+  const [packageType, setPackageType] = useState<'parcel' | 'document' | 'bulky'>('parcel');
   const [selectedGovernorateId, setSelectedGovernorateId] = useState<string>('');
   const [selectedCityId, setSelectedCityId] = useState<string>('');
   const [selectedGovernorateName, setSelectedGovernorateName] = useState<string>('');
@@ -137,7 +137,7 @@ const CreateOrder = () => {
       
       // Pre-fill form with existing order data
       setOrderType(editOrder.type === 'Exchange' ? 'exchange' : 'shipment');
-      setPackageType((editOrder.package_type || 'Parcel') as 'Parcel' | 'Document' | 'Bulky');
+      setPackageType((editOrder.package_type || 'parcel') as 'parcel' | 'document' | 'bulky');
       setDescription(editOrder.package_description || '');
       setItemsCount(editOrder.items_count || 1);
       setAllowOpening(editOrder.allow_opening || false);
@@ -233,7 +233,7 @@ const CreateOrder = () => {
       setIsSecondaryPhone(false);
       setName('');
       setIsWorkAddress(false);
-      setPackageType('Parcel');
+      setPackageType('parcel');
       setSelectedGovernorateId('');
       setSelectedCityId('');
       setSelectedGovernorateName('');
@@ -391,7 +391,7 @@ const CreateOrder = () => {
 
       // Use the dynamically calculated delivery fees from the pricing system
       const orderPayload = {
-        type: orderType === "exchange" ? "Exchange" : "Deliver",
+        type: (orderType === "exchange" ? "Exchange" : "Deliver") as import('@/services/orders').OrderType,
         customer_id: customerId,
         package_type: packageType,
         package_description: description || undefined,
@@ -720,27 +720,17 @@ const CreateOrder = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <AreaSelector
-                  onSelectGovernorate={(govId, govName) => {
-                    setSelectedGovernorateId(govId);
-                    setSelectedGovernorateName(govName);
-                    setSelectedCityId('');
-                    setSelectedCityName('');
+                  selectedArea={selectedCityName}
+                  selectedGovernorate={selectedGovernorateName}
+                  onAreaSelected={(governorate, area, governorateId, areaId) => {
+                    setSelectedGovernorateId(governorateId || '');
+                    setSelectedGovernorateName(governorate);
+                    setSelectedCityId(areaId || '');
+                    setSelectedCityName(area);
                     if (errors.area) {
                       setErrors({...errors, area: undefined});
                     }
                   }}
-                  onSelectCity={(cityId, cityName) => {
-                    setSelectedCityId(cityId);
-                    setSelectedCityName(cityName);
-                    if (errors.area) {
-                      setErrors({...errors, area: undefined});
-                    }
-                  }}
-                  selectedGovernorateId={selectedGovernorateId}
-                  selectedCityId={selectedCityId}
-                  selectedGovernorateName={selectedGovernorateName}
-                  selectedCityName={selectedCityName}
-                  error={errors.area}
                 />
                 
                 <div className="space-y-2">
@@ -806,12 +796,12 @@ const CreateOrder = () => {
                     </TooltipProvider>
                   </Label>
                   <div className="grid grid-cols-3 gap-2">
-                    {['parcel', 'document', 'bulky'].map((type) => (
+                    {(['parcel', 'document', 'bulky'] as const).map((type) => (
                       <Button
                         key={type}
                         type="button"
                         variant={packageType === type ? 'default' : 'outline'}
-                        onClick={() => setPackageType(type as 'parcel' | 'document' | 'bulky')}
+                        onClick={() => setPackageType(type)}
                         className="capitalize"
                       >
                         {type}
@@ -872,31 +862,30 @@ const CreateOrder = () => {
               <CardContent>
                 <OrderTypeSelector
                   value={orderType}
-                  onChange={setOrderType}
-                  isMobile={isMobile}
+                  onChange={(value) => {
+                    if (value === 'shipment' || value === 'exchange') {
+                      setOrderType(value);
+                    }
+                  }}
                 />
               </CardContent>
             </Card>
 
             {/* Cash Collection & Order Summary */}
             <IntegratedCashCollectionFields
-              cashCollection={cashCollection}
-              setCashCollection={setCashCollection}
+              enabled={cashCollection}
+              onEnabledChange={setCashCollection}
               usdAmount={usdAmount}
-              setUsdAmount={setUsdAmount}
               lbpAmount={lbpAmount}
-              setLbpAmount={setLbpAmount}
-              errors={errors}
-              setErrors={setErrors}
+              onUsdAmountChange={setUsdAmount}
+              onLbpAmountChange={setLbpAmount}
               deliveryFees={deliveryFees}
-              feesLoading={feesLoading}
-              calculatedFees={calculatedFees}
+              isFeesLoading={feesLoading}
+              errors={errors}
+              clientId={user?.id}
               governorateId={selectedGovernorateId}
               cityId={selectedCityId}
-              governorateName={selectedGovernorateName}
-              cityName={selectedCityName}
-              packageType={packageType}
-              userId={user?.id}
+              packageType={packageType === 'parcel' ? 'Parcel' : packageType === 'document' ? 'Document' : 'Bulky'}
             />
 
             {/* Additional Information */}
