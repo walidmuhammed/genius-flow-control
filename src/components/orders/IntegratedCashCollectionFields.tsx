@@ -200,18 +200,9 @@ const IntegratedCashCollectionFields: React.FC<IntegratedCashCollectionFieldsPro
                   type="text" 
                   value={usdAmount} 
                   onChange={handleUsdInputChange}
-                  className={`w-full pl-8 pr-12 py-2.5 border ${errors?.usdAmount ? 'border-topspeed-600 ring-1 ring-topspeed-600/20' : 'border-input'} rounded-lg bg-background shadow-sm focus:ring-2 focus:ring-topspeed-600/10 focus:border-topspeed-300 focus:outline-none transition-all`} 
+                  className={`w-full pl-8 pr-3 py-2.5 border ${errors?.usdAmount ? 'border-topspeed-600 ring-1 ring-topspeed-600/20' : 'border-input'} rounded-lg bg-background shadow-sm focus:ring-2 focus:ring-topspeed-600/10 focus:border-topspeed-300 focus:outline-none transition-all`} 
                   placeholder="0.00" 
                 />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <button 
-                    type="button" 
-                    onClick={() => onUsdAmountChange('')} 
-                    className="text-muted-foreground hover:text-topspeed-600 rounded-full h-5 w-5 flex items-center justify-center transition-colors"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
               </div>
               {errors?.usdAmount && <p className="text-topspeed-600 text-xs mt-1.5">{errors.usdAmount}</p>}
             </div>
@@ -225,18 +216,9 @@ const IntegratedCashCollectionFields: React.FC<IntegratedCashCollectionFieldsPro
                   type="text" 
                   value={lbpAmount} 
                   onChange={handleLbpInputChange}
-                  className={`w-full pl-3.5 pr-12 py-2.5 border ${errors?.lbpAmount ? 'border-topspeed-600 ring-1 ring-topspeed-600/20' : 'border-input'} rounded-lg bg-background shadow-sm focus:ring-2 focus:ring-topspeed-600/10 focus:border-topspeed-300 focus:outline-none transition-all`} 
+                  className={`w-full pl-3.5 pr-3 py-2.5 border ${errors?.lbpAmount ? 'border-topspeed-600 ring-1 ring-topspeed-600/20' : 'border-input'} rounded-lg bg-background shadow-sm focus:ring-2 focus:ring-topspeed-600/10 focus:border-topspeed-300 focus:outline-none transition-all`} 
                   placeholder="0" 
                 />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <button 
-                    type="button" 
-                    onClick={() => onLbpAmountChange('')} 
-                    className="text-muted-foreground hover:text-topspeed-600 rounded-full h-5 w-5 flex items-center justify-center transition-colors"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
               </div>
               {errors?.lbpAmount && <p className="text-topspeed-600 text-xs mt-1.5">{errors.lbpAmount}</p>}
             </div>
