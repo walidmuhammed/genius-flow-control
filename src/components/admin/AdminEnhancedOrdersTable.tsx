@@ -244,7 +244,7 @@ export const AdminEnhancedOrdersTable: React.FC<AdminEnhancedOrdersTableProps> =
                         <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">${order.cash_collection_usd}</div>
                       )}
                       {order.cash_collection_lbp > 0 && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
+                        <div className="text-small text-gray-600 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
                       )}
                     </div>
                   </TableCell>
