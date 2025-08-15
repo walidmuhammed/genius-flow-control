@@ -130,7 +130,7 @@ const AdminTopBar: React.FC = () => {
             align="end"
           >
             <div className="flex flex-col py-1">
-              <Link to="/admin/create-order" className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-2 text-sm transition-colors rounded-md mx-1 my-0.5">
+              <Link to="/dashboard/admin/create-order" className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-2 text-sm transition-colors rounded-md mx-1 my-0.5">
                 <Plus className="h-4 w-4 text-[#DC291E]" />
                 <span>Create Order</span>
               </Link>
