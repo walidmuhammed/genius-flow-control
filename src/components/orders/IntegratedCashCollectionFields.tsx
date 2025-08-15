@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import CurrencyDisplay from '@/components/dashboard/CurrencyDisplay';
-import CurrencySelector from '@/components/dashboard/CurrencySelector';
+
 import { cn } from '@/lib/utils';
 import { usePricingDebug } from '@/hooks/use-pricing-debug';
 
@@ -191,9 +191,8 @@ const IntegratedCashCollectionFields: React.FC<IntegratedCashCollectionFieldsPro
         <div className="space-y-4 pt-2 animate-slide-up">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2">
                 <span className="text-sm font-medium text-foreground/90">USD Amount</span>
-                <CurrencySelector type="usd" />
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">$</div>
@@ -218,9 +217,8 @@ const IntegratedCashCollectionFields: React.FC<IntegratedCashCollectionFieldsPro
             </div>
             
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2">
                 <span className="text-sm font-medium text-foreground/90">LBP Amount</span>
-                <CurrencySelector type="lbp" />
               </div>
               <div className="relative">
                 <input 

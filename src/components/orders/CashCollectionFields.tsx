@@ -4,7 +4,7 @@ import { Check, Info, X } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import CurrencyDisplay from '@/components/dashboard/CurrencyDisplay';
-import CurrencySelector from '@/components/dashboard/CurrencySelector';
+
 
 interface CashCollectionFieldsProps {
   enabled: boolean;
@@ -81,9 +81,8 @@ const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
       {enabled && (
         <div className="space-y-4 pt-2 animate-slide-up">
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2">
               <span className="text-sm font-medium text-foreground/90">USD Amount</span>
-              <CurrencySelector type="usd" />
             </div>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">$</div>
@@ -108,9 +107,8 @@ const CashCollectionFields: React.FC<CashCollectionFieldsProps> = ({
           </div>
           
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2">
               <span className="text-sm font-medium text-foreground/90">LBP Amount</span>
-              <CurrencySelector type="lbp" />
             </div>
             <div className="relative">
               <input 
