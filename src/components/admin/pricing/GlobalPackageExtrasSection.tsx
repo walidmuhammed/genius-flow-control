@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Package, Save, Edit3, X, Trash2 } from 'lucide-react';
 import { useGlobalPackageExtras, useUpdateGlobalPackageExtra } from '@/hooks/use-comprehensive-pricing';
+import { toast } from 'sonner';
 
 export function GlobalPackageExtrasSection() {
   const [editingPackage, setEditingPackage] = useState<string | null>(null);
@@ -53,6 +54,7 @@ export function GlobalPackageExtrasSection() {
       setEditValues({ extra_usd: '', extra_lbp: '' });
     } catch (error) {
       console.error('Error saving package extra:', error);
+      toast.error('Failed to update package extra. Please try again.');
     }
   };
 
@@ -66,6 +68,7 @@ export function GlobalPackageExtrasSection() {
       setClearingPackage(null);
     } catch (error) {
       console.error('Error clearing package extra:', error);
+      toast.error('Failed to clear package extra. Please try again.');
     }
   };
 

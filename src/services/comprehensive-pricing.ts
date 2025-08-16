@@ -133,6 +133,8 @@ export const updateGlobalPackageExtra = async (
       package_type: packageType,
       extra_usd: extraUsd,
       extra_lbp: extraLbp
+    }, {
+      onConflict: 'package_type'
     })
     .select('*')
     .single();
