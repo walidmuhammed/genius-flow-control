@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Package, Save, Edit3, X } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Package, Save, Edit3, X, Trash2 } from 'lucide-react';
 import { useGlobalPackageExtras, useUpdateGlobalPackageExtra } from '@/hooks/use-comprehensive-pricing';
 
 export function GlobalPackageExtrasSection() {
@@ -14,6 +15,7 @@ export function GlobalPackageExtrasSection() {
     extra_usd: '',
     extra_lbp: ''
   });
+  const [clearingPackage, setClearingPackage] = useState<string | null>(null);
 
   const { data: packageExtras, isLoading } = useGlobalPackageExtras();
   const updateMutation = useUpdateGlobalPackageExtra();
@@ -28,16 +30,42 @@ export function GlobalPackageExtrasSection() {
 
   const handleSave = async (packageType: 'Parcel' | 'Document' | 'Bulky') => {
     try {
+      // Handle empty values properly - convert empty strings to 0
+      const extraUsd = editValues.extra_usd.trim() === '' ? 0 : parseFloat(editValues.extra_usd);
+      const extraLbp = editValues.extra_lbp.trim() === '' ? 0 : parseInt(editValues.extra_lbp);
+
+      // Validate numeric values
+      if (isNaN(extraUsd) || isNaN(extraLbp)) {
+        throw new Error('Please enter valid numeric values');
+      }
+
+      if (extraUsd < 0 || extraLbp < 0) {
+        throw new Error('Values cannot be negative');
+      }
+
       await updateMutation.mutateAsync({
         packageType,
-        extraUsd: parseFloat(editValues.extra_usd) || 0,
-        extraLbp: parseInt(editValues.extra_lbp) || 0
+        extraUsd,
+        extraLbp
       });
 
       setEditingPackage(null);
       setEditValues({ extra_usd: '', extra_lbp: '' });
     } catch (error) {
       console.error('Error saving package extra:', error);
+    }
+  };
+
+  const handleClear = async (packageType: 'Parcel' | 'Document' | 'Bulky') => {
+    try {
+      await updateMutation.mutateAsync({
+        packageType,
+        extraUsd: 0,
+        extraLbp: 0
+      });
+      setClearingPackage(null);
+    } catch (error) {
+      console.error('Error clearing package extra:', error);
     }
   };
 
@@ -181,14 +209,25 @@ export function GlobalPackageExtrasSection() {
                             </Button>
                           </>
                         ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(pkg.package_type, { extra_usd: pkg.extra_usd, extra_lbp: pkg.extra_lbp })}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit3 className="h-4 w-4" />
-                          </Button>
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(pkg.package_type, { extra_usd: pkg.extra_usd, extra_lbp: pkg.extra_lbp })}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setClearingPackage(pkg.package_type)}
+                              disabled={updateMutation.isPending || (pkg.extra_usd === 0 && pkg.extra_lbp === 0)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
                         )}
                       </div>
                     </TableCell>
@@ -205,6 +244,30 @@ export function GlobalPackageExtrasSection() {
           </div>
         )}
       </CardContent>
+
+      {/* Clear Confirmation Dialog */}
+      <AlertDialog open={!!clearingPackage} onOpenChange={() => setClearingPackage(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear Package Extra Fees</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to clear the values for <strong>{clearingPackage}</strong>? 
+              This will set both USD and LBP extras to $0.00 and 0 LBP respectively.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setClearingPackage(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => clearingPackage && handleClear(clearingPackage as 'Parcel' | 'Document' | 'Bulky')}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Clear Values
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
