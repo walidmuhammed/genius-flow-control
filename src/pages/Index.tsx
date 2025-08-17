@@ -3,12 +3,16 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
-import { HeroSection } from '@/components/landing/HeroSection';
-import { ProblemSolutionSection } from '@/components/landing/ProblemSolutionSection';
-import { PlatformShowcase } from '@/components/landing/PlatformShowcase';
-import { SpeedMetrics } from '@/components/landing/SpeedMetrics';
-import { MarketExpansion } from '@/components/landing/MarketExpansion';
-import { CallToAction } from '@/components/landing/CallToAction';
+import { RevolutionHero } from '@/components/landing/RevolutionHero';
+import { TrustedBySection } from '@/components/landing/TrustedBySection';
+import { RevolutionMetrics } from '@/components/landing/RevolutionMetrics';
+import { PlatformShowcaseNew } from '@/components/landing/PlatformShowcaseNew';
+import { CompetitiveEdge } from '@/components/landing/CompetitiveEdge';
+import { GlobalExpansion } from '@/components/landing/GlobalExpansion';
+import { TechStackShowcase } from '@/components/landing/TechStackShowcase';
+import { SocialProofSection } from '@/components/landing/SocialProofSection';
+import { PricingSection } from '@/components/landing/PricingSection';
+import { FinalCTA } from '@/components/landing/FinalCTA';
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
@@ -40,24 +44,36 @@ const Index = () => {
 
   // Show landing page for unauthenticated users
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background dark">
       {/* Hero Section */}
-      <HeroSection />
+      <RevolutionHero />
       
-      {/* Problem-Solution Section */}
-      <ProblemSolutionSection />
+      {/* Trusted By Section */}
+      <TrustedBySection />
+      
+      {/* Revolution Metrics */}
+      <RevolutionMetrics />
       
       {/* Platform Showcase */}
-      <PlatformShowcase />
+      <PlatformShowcaseNew />
       
-      {/* Speed & Efficiency Metrics */}
-      <SpeedMetrics />
+      {/* Competitive Edge */}
+      <CompetitiveEdge />
       
-      {/* Market Expansion Vision */}
-      <MarketExpansion />
+      {/* Global Expansion */}
+      <GlobalExpansion />
       
-      {/* Call to Action */}
-      <CallToAction />
+      {/* Technology Stack */}
+      <TechStackShowcase />
+      
+      {/* Social Proof */}
+      <SocialProofSection />
+      
+      {/* Pricing */}
+      <PricingSection />
+      
+      {/* Final CTA */}
+      <FinalCTA />
     </div>
   );
 };
