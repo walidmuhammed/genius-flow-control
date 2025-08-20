@@ -20,7 +20,7 @@ export function PremiumHero() {
   }));
 
   return (
-    <section className="relative min-h-screen bg-background flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen pt-20 bg-background flex items-center justify-center overflow-hidden">
       {/* Animated dot matrix background */}
       <div className="absolute inset-0">
         <div className="pattern-matrix opacity-30 w-full h-full" />
