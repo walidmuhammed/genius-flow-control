@@ -59,77 +59,90 @@ const LocationForm: React.FC<LocationFormProps> = ({
   handleAreaSelected,
   handleSubmit,
   resetForm
-}) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div className="space-y-2">
-      <Label htmlFor="name">Location Name *</Label>
-      <Input 
-        id="name"
-        value={formData.name}
-        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-        placeholder="e.g. Main Office, Warehouse"
-      />
+}) => {
+  // Add null check and default values to prevent errors
+  const safeFormData = formData || {
+    name: '',
+    governorate: '',
+    area: '',
+    address: '',
+    contactPerson: '',
+    contactPhone: '',
+    isDefault: false
+  };
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="name">Location Name *</Label>
+        <Input 
+          id="name"
+          value={safeFormData.name}
+          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+          placeholder="e.g. Main Office, Warehouse"
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label>Location (Governorate & Area)</Label>
+        <AreaSelector
+          selectedArea={safeFormData.area}
+          selectedGovernorate={safeFormData.governorate}
+          onAreaSelected={handleAreaSelected}
+        />
+      </div>
+      
+      <div className="md:col-span-2 space-y-2">
+        <Label htmlFor="address">Full Address</Label>
+        <Input 
+          id="address"
+          value={safeFormData.address}
+          onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+          placeholder="Building, street, district"
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="contactPerson">Contact Person *</Label>
+        <Input 
+          id="contactPerson"
+          value={safeFormData.contactPerson}
+          onChange={(e) => setFormData(prev => ({ ...prev, contactPerson: e.target.value }))}
+          placeholder="Full name"
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="contactPhone">Contact Phone *</Label>
+        <PhoneInput
+          value={safeFormData.contactPhone}
+          onChange={(value) => setFormData(prev => ({ ...prev, contactPhone: value }))}
+          defaultCountry="LB"
+        />
+      </div>
+      
+      <div className="md:col-span-2 flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="isDefault"
+          checked={safeFormData.isDefault}
+          onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
+          className="rounded"
+        />
+        <Label htmlFor="isDefault">Set as default location</Label>
+      </div>
+      
+      <div className="md:col-span-2 flex gap-2 justify-end pt-4">
+        <Button variant="outline" onClick={resetForm}>
+          Cancel
+        </Button>
+        <Button onClick={handleSubmit}>
+          {editingLocation ? 'Update Location' : 'Add Location'}
+        </Button>
+      </div>
     </div>
-    
-    <div className="space-y-2">
-      <Label>Location (Governorate & Area)</Label>
-      <AreaSelector
-        selectedArea={formData.area}
-        selectedGovernorate={formData.governorate}
-        onAreaSelected={handleAreaSelected}
-      />
-    </div>
-    
-    <div className="md:col-span-2 space-y-2">
-      <Label htmlFor="address">Full Address</Label>
-      <Input 
-        id="address"
-        value={formData.address}
-        onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-        placeholder="Building, street, district"
-      />
-    </div>
-    
-    <div className="space-y-2">
-      <Label htmlFor="contactPerson">Contact Person *</Label>
-      <Input 
-        id="contactPerson"
-        value={formData.contactPerson}
-        onChange={(e) => setFormData(prev => ({ ...prev, contactPerson: e.target.value }))}
-        placeholder="Full name"
-      />
-    </div>
-    
-    <div className="space-y-2">
-      <Label htmlFor="contactPhone">Contact Phone *</Label>
-      <PhoneInput
-        value={formData.contactPhone}
-        onChange={(value) => setFormData(prev => ({ ...prev, contactPhone: value }))}
-        defaultCountry="LB"
-      />
-    </div>
-    
-    <div className="md:col-span-2 flex items-center space-x-2">
-      <input
-        type="checkbox"
-        id="isDefault"
-        checked={formData.isDefault}
-        onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
-        className="rounded"
-      />
-      <Label htmlFor="isDefault">Set as default location</Label>
-    </div>
-    
-    <div className="md:col-span-2 flex gap-2 justify-end pt-4">
-      <Button variant="outline" onClick={resetForm}>
-        Cancel
-      </Button>
-      <Button onClick={handleSubmit}>
-        {editingLocation ? 'Update Location' : 'Add Location'}
-      </Button>
-    </div>
-  </div>
-);
+  );
+};
 
 const BusinessLocationsSection = () => {
   const { user } = useAuth();
