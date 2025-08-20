@@ -9,14 +9,16 @@ import { OrderWithCustomer } from '@/services/orders';
 import { cn } from '@/lib/utils';
 import { CheckCircle, Truck, XCircle, MessageCircle, Phone, MapPin, Package, DollarSign } from 'lucide-react';
 import { useAddDeliveryNote } from '@/hooks/use-courier-orders';
+import MarkAsDeliveredModal from './MarkAsDeliveredModal';
+import MarkAsUnsuccessfulModal from './MarkAsUnsuccessfulModal';
 
 interface CourierOrderDetailsDialogProps {
   order: OrderWithCustomer | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onMarkPickedUp: (order: OrderWithCustomer) => void;
-  onMarkDelivered: (order: OrderWithCustomer) => void;
-  onMarkUnsuccessful: (order: OrderWithCustomer) => void;
+  onMarkPickedUp?: (orderId: string) => void;
+  onMarkDelivered?: (orderId: string, data: any) => void;
+  onMarkUnsuccessful?: (orderId: string, data: any) => void;
 }
 
 export const CourierOrderDetailsDialog: React.FC<CourierOrderDetailsDialogProps> = ({
@@ -28,6 +30,8 @@ export const CourierOrderDetailsDialog: React.FC<CourierOrderDetailsDialogProps>
   onMarkUnsuccessful
 }) => {
   const [deliveryNote, setDeliveryNote] = useState('');
+  const [showDeliveredModal, setShowDeliveredModal] = useState(false);
+  const [showUnsuccessfulModal, setShowUnsuccessfulModal] = useState(false);
   const addDeliveryNoteMutation = useAddDeliveryNote();
 
   if (!order) return null;
@@ -72,6 +76,40 @@ export const CourierOrderDetailsDialog: React.FC<CourierOrderDetailsDialogProps>
       setDeliveryNote('');
     } catch (error) {
       console.error('Error adding delivery note:', error);
+    }
+  };
+
+  const handleMarkDelivered = async (data: {
+    collectedAmountUSD: number;
+    collectedAmountLBP: number;
+    collectedCurrency: 'USD' | 'LBP';
+    note?: string;
+  }) => {
+    if (onMarkDelivered && order) {
+      await onMarkDelivered(order.id, {
+        collected_amount_usd: data.collectedAmountUSD,
+        collected_amount_lbp: data.collectedAmountLBP,
+        collected_currency: data.collectedCurrency,
+        note: data.note
+      });
+    }
+  };
+
+  const handleMarkUnsuccessful = async (data: {
+    reason: string;
+    collectedAmountUSD?: number;
+    collectedAmountLBP?: number;
+    collectedCurrency?: 'USD' | 'LBP';
+    note?: string;
+  }) => {
+    if (onMarkUnsuccessful && order) {
+      await onMarkUnsuccessful(order.id, {
+        unsuccessful_reason: data.reason,
+        collected_amount_usd: data.collectedAmountUSD || 0,
+        collected_amount_lbp: data.collectedAmountLBP || 0,
+        collected_currency: data.collectedCurrency,
+        note: data.note
+      });
     }
   };
 
@@ -267,7 +305,7 @@ export const CourierOrderDetailsDialog: React.FC<CourierOrderDetailsDialogProps>
           {canMarkPickedUp && (
             <Button
               onClick={() => {
-                onMarkPickedUp(order);
+                onMarkPickedUp?.(order.id);
                 onOpenChange(false);
               }}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
@@ -279,10 +317,7 @@ export const CourierOrderDetailsDialog: React.FC<CourierOrderDetailsDialogProps>
           
           {canMarkDelivered && (
             <Button
-              onClick={() => {
-                onMarkDelivered(order);
-                onOpenChange(false);
-              }}
+              onClick={() => setShowDeliveredModal(true)}
               className="flex-1 bg-green-600 hover:bg-green-700"
             >
               <CheckCircle className="h-4 w-4 mr-2" />
@@ -292,10 +327,7 @@ export const CourierOrderDetailsDialog: React.FC<CourierOrderDetailsDialogProps>
           
           {canMarkUnsuccessful && (
             <Button
-              onClick={() => {
-                onMarkUnsuccessful(order);
-                onOpenChange(false);
-              }}
+              onClick={() => setShowUnsuccessfulModal(true)}
               variant="destructive"
               className="flex-1"
             >
@@ -305,6 +337,23 @@ export const CourierOrderDetailsDialog: React.FC<CourierOrderDetailsDialogProps>
           )}
         </div>
       </DialogContent>
+
+      {/* Delivery Completion Modals */}
+      <MarkAsDeliveredModal
+        open={showDeliveredModal}
+        onOpenChange={setShowDeliveredModal}
+        onConfirm={handleMarkDelivered}
+        expectedAmount={{
+          usd: order?.cash_collection_usd || 0,
+          lbp: order?.cash_collection_lbp || 0
+        }}
+      />
+
+      <MarkAsUnsuccessfulModal
+        open={showUnsuccessfulModal}
+        onOpenChange={setShowUnsuccessfulModal}
+        onConfirm={handleMarkUnsuccessful}
+      />
     </Dialog>
   );
 };
