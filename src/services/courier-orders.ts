@@ -158,7 +158,16 @@ export async function getCourierOrdersByStatus(status: OrderStatus) {
 }
 
 // Update order status (courier actions)
-export async function updateOrderStatus(orderId: string, status: OrderStatus, reason?: string) {
+export async function updateOrderStatus(
+  orderId: string, 
+  status: OrderStatus, 
+  reason?: string,
+  collected_amount_usd?: number,
+  collected_amount_lbp?: number,
+  collected_currency?: string,
+  unsuccessful_reason?: string,
+  note?: string
+) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     throw new Error('User not authenticated');
@@ -172,8 +181,14 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus, re
       updated_at: new Date().toISOString()
     };
 
-    if (reason) {
-      updates.reason_unsuccessful = reason;
+    if (reason) updates.reason_unsuccessful = reason;
+    if (unsuccessful_reason) updates.unsuccessful_reason = unsuccessful_reason;
+    if (collected_amount_usd !== undefined) updates.collected_amount_usd = collected_amount_usd;
+    if (collected_amount_lbp !== undefined) updates.collected_amount_lbp = collected_amount_lbp;
+    if (collected_currency) updates.collected_currency = collected_currency;
+    if (note) updates.note = note;
+    if (status === 'Successful' || status === 'Unsuccessful') {
+      updates.collection_timestamp = new Date().toISOString();
     }
 
     const { data, error } = await supabase

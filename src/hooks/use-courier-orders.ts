@@ -75,8 +75,35 @@ export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ orderId, status, reason }: { orderId: string, status: OrderStatus, reason?: string }) => 
-      updateOrderStatus(orderId, status, reason),
+    mutationFn: ({ 
+      orderId, 
+      status, 
+      reason,
+      collected_amount_usd,
+      collected_amount_lbp,
+      collected_currency,
+      unsuccessful_reason,
+      note
+    }: { 
+      orderId: string; 
+      status: OrderStatus; 
+      reason?: string;
+      collected_amount_usd?: number;
+      collected_amount_lbp?: number;
+      collected_currency?: string;
+      unsuccessful_reason?: string;
+      note?: string;
+    }) => 
+      updateOrderStatus(
+        orderId, 
+        status, 
+        reason,
+        collected_amount_usd,
+        collected_amount_lbp,
+        collected_currency,
+        unsuccessful_reason,
+        note
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courier-orders'] });
       toast.success("Order status updated successfully");

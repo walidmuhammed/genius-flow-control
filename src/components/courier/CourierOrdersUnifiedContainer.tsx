@@ -93,23 +93,32 @@ export const CourierOrdersUnifiedContainer: React.FC<CourierOrdersUnifiedContain
     }
   };
 
-  const handleMarkDelivered = async (order: OrderWithCustomer) => {
+  const handleMarkDelivered = async (order: OrderWithCustomer, data?: any) => {
     try {
       await updateOrderStatus.mutateAsync({
         orderId: order.id,
-        status: 'Successful' as OrderStatus
+        status: 'Successful' as OrderStatus,
+        collected_amount_usd: data?.collected_amount_usd,
+        collected_amount_lbp: data?.collected_amount_lbp,
+        collected_currency: data?.collected_currency,
+        note: data?.note
       });
     } catch (error) {
       console.error('Error marking order as delivered:', error);
     }
   };
 
-  const handleMarkUnsuccessful = async (order: OrderWithCustomer, reason?: string) => {
+  const handleMarkUnsuccessful = async (order: OrderWithCustomer, data?: any) => {
     try {
       await updateOrderStatus.mutateAsync({
         orderId: order.id,
         status: 'Unsuccessful' as OrderStatus,
-        reason
+        unsuccessful_reason: data?.unsuccessful_reason,
+        collected_amount_usd: data?.collected_amount_usd || 0,
+        collected_amount_lbp: data?.collected_amount_lbp || 0,
+        collected_currency: data?.collected_currency,
+        note: data?.note,
+        reason: data?.unsuccessful_reason
       });
     } catch (error) {
       console.error('Error marking order as unsuccessful:', error);
@@ -196,9 +205,24 @@ export const CourierOrdersUnifiedContainer: React.FC<CourierOrdersUnifiedContain
           order={selectedOrder}
           open={!!selectedOrder}
           onOpenChange={(open) => !open && setSelectedOrder(null)}
-          onMarkPickedUp={handleMarkPickedUp}
-          onMarkDelivered={handleMarkDelivered}
-          onMarkUnsuccessful={handleMarkUnsuccessful}
+        onMarkPickedUp={async (orderId: string) => {
+          const order = orders?.find(o => o.id === orderId);
+          if (order) {
+            await handleMarkPickedUp(order);
+          }
+        }}
+        onMarkDelivered={async (orderId: string, data: any) => {
+          const order = orders?.find(o => o.id === orderId);
+          if (order) {
+            await handleMarkDelivered(order, data);
+          }
+        }}
+        onMarkUnsuccessful={async (orderId: string, data: any) => {
+          const order = orders?.find(o => o.id === orderId);
+          if (order) {
+            await handleMarkUnsuccessful(order, data);
+          }
+        }}
         />
       )}
     </div>

@@ -40,6 +40,14 @@ export interface Order {
   created_by?: string | null;
   invoice_id?: string | null;
   pricing_source?: string | null;
+  // New fields for delivery completion
+  collected_amount_usd?: number;
+  collected_amount_lbp?: number;
+  collected_currency?: string;
+  unsuccessful_reason?: string;
+  delivery_photo_url?: string;
+  collection_timestamp?: string;
+  payout_status?: string;
 }
 
 export interface OrderWithCustomer extends Order {
@@ -222,7 +230,7 @@ export async function getOrderById(id: string) {
   return order;
 }
 
-export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at' | 'archived'>) {
+export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at' | 'archived' | 'collected_amount_usd' | 'collected_amount_lbp' | 'collected_currency' | 'unsuccessful_reason' | 'delivery_photo_url' | 'collection_timestamp' | 'payout_status'>) {
   // Check authentication and get current user
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -327,12 +335,19 @@ export async function assignCourierToOrder(orderId: string, courierId: string, c
     package_type: data.package_type || 'parcel',
     status: data.status || 'New',
     edited: data.edited || false,
-    edit_history: data.edit_history || [],
+    edit_history: Array.isArray(data.edit_history) ? data.edit_history : [],
     reason_unsuccessful: data.reason_unsuccessful || null,
     courier_id: data.courier_id || null,
     created_by: data.created_by || null,
     invoice_id: data.invoice_id || null,
     pricing_source: data.pricing_source || null,
+    collected_amount_usd: data.collected_amount_usd || 0,
+    collected_amount_lbp: data.collected_amount_lbp || 0,
+    collected_currency: data.collected_currency,
+    unsuccessful_reason: data.unsuccessful_reason,
+    delivery_photo_url: data.delivery_photo_url,
+    collection_timestamp: data.collection_timestamp,
+    payout_status: data.payout_status || 'Pending',
   } as Order;
 }
 
