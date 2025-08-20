@@ -27,6 +27,110 @@ interface BusinessLocation {
   userId: string;
 }
 
+interface LocationFormProps {
+  formData: {
+    name: string;
+    governorate: string;
+    area: string;
+    address: string;
+    contactPerson: string;
+    contactPhone: string;
+    isDefault: boolean;
+  };
+  setFormData: React.Dispatch<React.SetStateAction<{
+    name: string;
+    governorate: string;
+    area: string;
+    address: string;
+    contactPerson: string;
+    contactPhone: string;
+    isDefault: boolean;
+  }>>;
+  editingLocation: BusinessLocation | null;
+  handleAreaSelected: (governorate: string, area: string) => void;
+  handleSubmit: () => void;
+  resetForm: () => void;
+}
+
+const LocationForm: React.FC<LocationFormProps> = ({
+  formData,
+  setFormData,
+  editingLocation,
+  handleAreaSelected,
+  handleSubmit,
+  resetForm
+}) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-2">
+      <Label htmlFor="name">Location Name *</Label>
+      <Input 
+        id="name"
+        value={formData.name}
+        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+        placeholder="e.g. Main Office, Warehouse"
+      />
+    </div>
+    
+    <div className="space-y-2">
+      <Label>Location (Governorate & Area)</Label>
+      <AreaSelector
+        selectedArea={formData.area}
+        selectedGovernorate={formData.governorate}
+        onAreaSelected={handleAreaSelected}
+      />
+    </div>
+    
+    <div className="md:col-span-2 space-y-2">
+      <Label htmlFor="address">Full Address</Label>
+      <Input 
+        id="address"
+        value={formData.address}
+        onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+        placeholder="Building, street, district"
+      />
+    </div>
+    
+    <div className="space-y-2">
+      <Label htmlFor="contactPerson">Contact Person *</Label>
+      <Input 
+        id="contactPerson"
+        value={formData.contactPerson}
+        onChange={(e) => setFormData(prev => ({ ...prev, contactPerson: e.target.value }))}
+        placeholder="Full name"
+      />
+    </div>
+    
+    <div className="space-y-2">
+      <Label htmlFor="contactPhone">Contact Phone *</Label>
+      <PhoneInput
+        value={formData.contactPhone}
+        onChange={(value) => setFormData(prev => ({ ...prev, contactPhone: value }))}
+        defaultCountry="LB"
+      />
+    </div>
+    
+    <div className="md:col-span-2 flex items-center space-x-2">
+      <input
+        type="checkbox"
+        id="isDefault"
+        checked={formData.isDefault}
+        onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
+        className="rounded"
+      />
+      <Label htmlFor="isDefault">Set as default location</Label>
+    </div>
+    
+    <div className="md:col-span-2 flex gap-2 justify-end pt-4">
+      <Button variant="outline" onClick={resetForm}>
+        Cancel
+      </Button>
+      <Button onClick={handleSubmit}>
+        {editingLocation ? 'Update Location' : 'Add Location'}
+      </Button>
+    </div>
+  </div>
+);
+
 const BusinessLocationsSection = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
@@ -168,77 +272,7 @@ const BusinessLocationsSection = () => {
     }));
   };
 
-  const LocationForm = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Location Name *</Label>
-        <Input 
-          id="name"
-          value={formData.name}
-          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-          placeholder="e.g. Main Office, Warehouse"
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label>Location (Governorate & Area)</Label>
-        <AreaSelector
-          selectedArea={formData.area}
-          selectedGovernorate={formData.governorate}
-          onAreaSelected={handleAreaSelected}
-        />
-      </div>
-      
-      <div className="md:col-span-2 space-y-2">
-        <Label htmlFor="address">Full Address</Label>
-        <Input 
-          id="address"
-          value={formData.address}
-          onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-          placeholder="Building, street, district"
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="contactPerson">Contact Person *</Label>
-        <Input 
-          id="contactPerson"
-          value={formData.contactPerson}
-          onChange={(e) => setFormData(prev => ({ ...prev, contactPerson: e.target.value }))}
-          placeholder="Full name"
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="contactPhone">Contact Phone *</Label>
-        <PhoneInput
-          value={formData.contactPhone}
-          onChange={(value) => setFormData(prev => ({ ...prev, contactPhone: value }))}
-          defaultCountry="LB"
-        />
-      </div>
-      
-      <div className="md:col-span-2 flex items-center space-x-2">
-        <input
-          type="checkbox"
-          id="isDefault"
-          checked={formData.isDefault}
-          onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
-          className="rounded"
-        />
-        <Label htmlFor="isDefault">Set as default location</Label>
-      </div>
-      
-      <div className="md:col-span-2 flex gap-2 justify-end pt-4">
-        <Button variant="outline" onClick={resetForm}>
-          Cancel
-        </Button>
-        <Button onClick={handleSubmit}>
-          {editingLocation ? 'Update Location' : 'Add Location'}
-        </Button>
-      </div>
-    </div>
-  );
+  // LocationForm component moved outside to prevent recreation on each render
 
   const LocationDetails = ({ location }: { location: BusinessLocation }) => (
     <div className="space-y-4">
@@ -304,7 +338,14 @@ const BusinessLocationsSection = () => {
                 {editingLocation ? 'Edit Location' : 'Add New Location'}
               </DialogTitle>
             </DialogHeader>
-            <LocationForm />
+            <LocationForm 
+              formData={formData}
+              setFormData={setFormData}
+              editingLocation={editingLocation}
+              handleAreaSelected={handleAreaSelected}
+              handleSubmit={handleSubmit}
+              resetForm={resetForm}
+            />
           </DialogContent>
         </Dialog>
       </div>
