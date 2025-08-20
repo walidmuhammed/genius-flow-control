@@ -1,79 +1,105 @@
 import React, { useState } from 'react';
-import { Download, Plus, Search, Filter } from 'lucide-react';
+import { Download, Plus, Search, ChevronDown, ChevronRight, Building2, Phone, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useOrders } from '@/hooks/use-orders';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useGroupedClientPayouts, useUpdatePayoutStatus } from '@/hooks/use-client-payouts';
 import { createInvoice } from '@/services/invoices';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const ClientPayoutsTab = () => {
-  const { data: orders = [] } = useOrders();
+  const { data: groupedPayouts = [], isLoading } = useGroupedClientPayouts();
+  const updatePayoutStatus = useUpdatePayoutStatus();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedClient, setSelectedClient] = useState<string>('all');
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [selectedPayouts, setSelectedPayouts] = useState<string[]>([]);
+  const [expandedClients, setExpandedClients] = useState<Set<string>>(new Set());
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
 
-  // Filter to show only successful orders
-  const paidOrders = orders.filter(order => order.status === 'Successful');
-  
-  // Get unique clients
-  const clients = Array.from(new Set(paidOrders.map(order => order.client_id).filter(Boolean)));
-  
-  // Filter orders based on search and client selection
-  const filteredOrders = paidOrders.filter(order => {
-    const matchesSearch = !searchTerm || 
-      order.reference_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.order_id.toString().includes(searchTerm);
+  // Filter grouped payouts based on search
+  const filteredGroupedPayouts = groupedPayouts.filter(group => {
+    if (!searchTerm) return true;
     
-    const matchesClient = selectedClient === 'all' || order.client_id === selectedClient;
+    const businessName = group.client.business_name?.toLowerCase() || '';
+    const fullName = group.client.full_name?.toLowerCase() || '';
+    const hasMatchingOrder = group.payouts.some(payout => 
+      payout.order?.reference_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      payout.order?.order_id.toString().includes(searchTerm.toLowerCase())
+    );
     
-    return matchesSearch && matchesClient;
+    return businessName.includes(searchTerm.toLowerCase()) || 
+           fullName.includes(searchTerm.toLowerCase()) || 
+           hasMatchingOrder;
   });
 
-  const handleSelectOrder = (orderId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedOrders([...selectedOrders, orderId]);
+  const toggleClientExpansion = (clientId: string) => {
+    const newExpanded = new Set(expandedClients);
+    if (newExpanded.has(clientId)) {
+      newExpanded.delete(clientId);
     } else {
-      setSelectedOrders(selectedOrders.filter(id => id !== orderId));
+      newExpanded.add(clientId);
+    }
+    setExpandedClients(newExpanded);
+  };
+
+  const handleSelectPayout = (payoutId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedPayouts([...selectedPayouts, payoutId]);
+    } else {
+      setSelectedPayouts(selectedPayouts.filter(id => id !== payoutId));
     }
   };
 
-  const handleSelectAll = (checked: boolean) => {
+  const handleSelectAllForClient = (clientPayouts: any[], checked: boolean) => {
+    const payoutIds = clientPayouts.map(p => p.id);
     if (checked) {
-      setSelectedOrders(filteredOrders.map(order => order.id));
+      setSelectedPayouts([...selectedPayouts, ...payoutIds.filter(id => !selectedPayouts.includes(id))]);
     } else {
-      setSelectedOrders([]);
+      setSelectedPayouts(selectedPayouts.filter(id => !payoutIds.includes(id)));
     }
   };
 
-  const calculateNetPayout = (order: any) => {
-    const collectedUSD = order.cash_collection_usd || 0;
-    const collectedLBP = order.cash_collection_lbp || 0;
-    const deliveryFeeUSD = order.delivery_fees_usd || 0;
-    const deliveryFeeLBP = order.delivery_fees_lbp || 0;
-    
-    return {
-      usd: collectedUSD - deliveryFeeUSD,
-      lbp: collectedLBP - deliveryFeeLBP
-    };
+  const getNetPayoutDisplay = (netUSD: number, netLBP: number) => {
+    if (netUSD > 0 || netLBP > 0) {
+      return { color: 'text-green-600', prefix: '' };
+    } else if (netUSD < 0 || netLBP < 0) {
+      return { color: 'text-red-600', prefix: 'Due: ' };
+    }
+    return { color: 'text-muted-foreground', prefix: '' };
   };
 
   const handleGenerateInvoice = async () => {
-    if (selectedOrders.length === 0) {
-      toast.error('Please select orders to invoice');
+    if (selectedPayouts.length === 0) {
+      toast.error('Please select payouts to invoice');
       return;
     }
 
     try {
       setIsGeneratingInvoice(true);
-      await createInvoice(selectedOrders);
-      toast.success('Invoice generated successfully');
-      setSelectedOrders([]);
+      
+      // Create invoice for selected orders
+      const orderIds = selectedPayouts.map(payoutId => {
+        const group = filteredGroupedPayouts.find(g => 
+          g.payouts.some(p => p.id === payoutId)
+        );
+        return group?.payouts.find(p => p.id === payoutId)?.order_id;
+      }).filter(Boolean);
+
+      const invoice = await createInvoice(orderIds);
+      
+      // Update payout status to "In Progress"
+      await updatePayoutStatus.mutateAsync({
+        payoutIds: selectedPayouts,
+        status: 'In Progress',
+        invoiceId: invoice.id
+      });
+      
+      setSelectedPayouts([]);
+      toast.success('Invoice generated and payouts updated');
     } catch (error) {
       toast.error('Failed to generate invoice');
     } finally {
@@ -81,19 +107,58 @@ const ClientPayoutsTab = () => {
     }
   };
 
-  const totalSelectedPayoutUSD = selectedOrders.reduce((sum, orderId) => {
-    const order = filteredOrders.find(o => o.id === orderId);
-    return sum + (order ? calculateNetPayout(order).usd : 0);
-  }, 0);
+  const handleMarkAsPaid = async () => {
+    if (selectedPayouts.length === 0) {
+      toast.error('Please select payouts to mark as paid');
+      return;
+    }
 
-  const totalSelectedPayoutLBP = selectedOrders.reduce((sum, orderId) => {
-    const order = filteredOrders.find(o => o.id === orderId);
-    return sum + (order ? calculateNetPayout(order).lbp : 0);
-  }, 0);
+    try {
+      await updatePayoutStatus.mutateAsync({
+        payoutIds: selectedPayouts,
+        status: 'Paid'
+      });
+      setSelectedPayouts([]);
+      toast.success('Payouts marked as paid');
+    } catch (error) {
+      toast.error('Failed to mark payouts as paid');
+    }
+  };
+
+  const getTotalSelectedAmounts = () => {
+    let totalUSD = 0;
+    let totalLBP = 0;
+    
+    selectedPayouts.forEach(payoutId => {
+      const group = filteredGroupedPayouts.find(g => 
+        g.payouts.some(p => p.id === payoutId)
+      );
+      const payout = group?.payouts.find(p => p.id === payoutId);
+      if (payout) {
+        totalUSD += payout.net_payout_usd || 0;
+        totalLBP += payout.net_payout_lbp || 0;
+      }
+    });
+    
+    return { totalUSD, totalLBP };
+  };
+
+  const { totalUSD, totalLBP } = getTotalSelectedAmounts();
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading client payouts...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Filters and Actions */}
+      {/* Header and Search */}
       <Card>
         <CardHeader>
           <CardTitle>Client Payouts Management</CardTitle>
@@ -104,37 +169,23 @@ const ClientPayoutsTab = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Search by order ID or reference..."
+                  placeholder="Search by client name, order ID, or reference..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
             </div>
-            
-            <Select value={selectedClient} onValueChange={setSelectedClient}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by client" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Clients</SelectItem>
-                {clients.map(clientId => (
-                  <SelectItem key={clientId} value={clientId || ''}>
-                    Client {clientId?.slice(-8)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
-          {selectedOrders.length > 0 && (
+          {selectedPayouts.length > 0 && (
             <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg mb-4">
               <div className="space-y-1">
                 <p className="font-medium">
-                  {selectedOrders.length} orders selected
+                  {selectedPayouts.length} payouts selected
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Total Payout: ${totalSelectedPayoutUSD.toFixed(2)} / LBP {totalSelectedPayoutLBP.toLocaleString()}
+                  Total: ${totalUSD.toFixed(2)} / LBP {totalLBP.toLocaleString()}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -146,6 +197,14 @@ const ClientPayoutsTab = () => {
                   <Plus className="h-4 w-4" />
                   Generate Invoice
                 </Button>
+                <Button 
+                  onClick={handleMarkAsPaid}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <DollarSign className="h-4 w-4" />
+                  Mark as Paid
+                </Button>
                 <Button variant="outline" className="flex items-center gap-2">
                   <Download className="h-4 w-4" />
                   Export CSV
@@ -156,106 +215,175 @@ const ClientPayoutsTab = () => {
         </CardContent>
       </Card>
 
-      {/* Orders Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
+      {/* Grouped Client Payouts */}
+      <div className="space-y-4">
+        {filteredGroupedPayouts.map((group) => (
+          <Card key={group.client.id}>
+            <Collapsible 
+              open={expandedClients.has(group.client.id)}
+              onOpenChange={() => toggleClientExpansion(group.client.id)}
+            >
+              <CollapsibleTrigger asChild>
+                <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      {expandedClients.has(group.client.id) ? (
+                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      )}
+                      <div className="flex items-center gap-3">
+                        <Building2 className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <h3 className="font-semibold text-lg">
+                            {group.client.business_name || group.client.full_name || `Client ${group.client.id.slice(-8)}`}
+                          </h3>
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            <Phone className="h-3 w-3" />
+                            {group.client.phone || 'No phone'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-semibold">
+                        ${group.totalPendingUSD.toFixed(2)}
+                        {group.totalPendingLBP > 0 && (
+                          <span className="text-sm text-muted-foreground ml-2">
+                            / LBP {group.totalPendingLBP.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {group.orderCount} orders pending
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent>
+                <CardContent className="pt-0">
+                  <div className="flex items-center justify-between mb-4 p-2 bg-muted/30 rounded">
                     <Checkbox
-                      checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
-                      onCheckedChange={handleSelectAll}
+                      checked={group.payouts.length > 0 && group.payouts.every(p => selectedPayouts.includes(p.id))}
+                      onCheckedChange={(checked) => handleSelectAllForClient(group.payouts, checked as boolean)}
                     />
-                  </TableHead>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Package</TableHead>
-                  <TableHead>Amount Collected</TableHead>
-                  <TableHead>Delivery Fee</TableHead>
-                  <TableHead>Net Payout</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders.map((order) => {
-                  const netPayout = calculateNetPayout(order);
-                  return (
-                    <TableRow key={order.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedOrders.includes(order.id)}
-                          onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-medium">#{order.order_id}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {order.reference_number}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-medium">{order.customer?.name || 'N/A'}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {order.customer?.phone || 'N/A'}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="text-sm">{order.customer?.governorate_name || 'N/A'}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {order.customer?.city_name || 'N/A'}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {order.package_type || 'Standard'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-medium">${(order.cash_collection_usd || 0).toFixed(2)}</div>
-                          <div className="text-sm text-muted-foreground">
-                            LBP {(order.cash_collection_lbp || 0).toLocaleString()}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-medium">${(order.delivery_fees_usd || 0).toFixed(2)}</div>
-                          <div className="text-sm text-muted-foreground">
-                            LBP {(order.delivery_fees_lbp || 0).toLocaleString()}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-medium text-green-600">${netPayout.usd.toFixed(2)}</div>
-                          <div className="text-sm text-muted-foreground">
-                            LBP {netPayout.lbp.toLocaleString()}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={order.invoice_id ? "default" : "secondary"}>
-                          {order.invoice_id ? 'Invoiced' : 'Pending'}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                    <span className="text-sm text-muted-foreground">
+                      Select all payouts for this client
+                    </span>
+                  </div>
+                  
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12"></TableHead>
+                          <TableHead>Order</TableHead>
+                          <TableHead>Customer</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead>Package</TableHead>
+                          <TableHead>Amount Collected</TableHead>
+                          <TableHead>Delivery Fee</TableHead>
+                          <TableHead>Net Payout</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {group.payouts.map((payout) => {
+                          const netDisplay = getNetPayoutDisplay(payout.net_payout_usd || 0, payout.net_payout_lbp || 0);
+                          return (
+                            <TableRow key={payout.id}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={selectedPayouts.includes(payout.id)}
+                                  onCheckedChange={(checked) => handleSelectPayout(payout.id, checked as boolean)}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <div className="font-medium">#{payout.order?.order_id || 'N/A'}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {payout.order?.reference_number || 'N/A'}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <div className="font-medium">{payout.order?.customer?.name || 'N/A'}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {payout.order?.customer?.phone || 'N/A'}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <div className="text-sm">{payout.order?.customer?.governorate_name || 'N/A'}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {payout.order?.customer?.city_name || 'N/A'}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">
+                                  {payout.order?.package_type || 'Standard'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <div className="font-medium">${(payout.collected_amount_usd || 0).toFixed(2)}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    LBP {(payout.collected_amount_lbp || 0).toLocaleString()}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <div className="font-medium">${(payout.delivery_fee_usd || 0).toFixed(2)}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    LBP {(payout.delivery_fee_lbp || 0).toLocaleString()}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <div className={cn("font-medium", netDisplay.color)}>
+                                    {netDisplay.prefix}${Math.abs(payout.net_payout_usd || 0).toFixed(2)}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    LBP {Math.abs(payout.net_payout_lbp || 0).toLocaleString()}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={
+                                  payout.payout_status === 'Paid' ? 'default' : 
+                                  payout.payout_status === 'In Progress' ? 'secondary' : 
+                                  'outline'
+                                }>
+                                  {payout.payout_status}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
+        ))}
+        
+        {filteredGroupedPayouts.length === 0 && (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-muted-foreground">No client payouts found</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
