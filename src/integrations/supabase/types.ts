@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -69,6 +69,72 @@ export type Database = {
             columns: ["governorate_id"]
             isOneToOne: false
             referencedRelation: "governorates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_payouts: {
+        Row: {
+          client_id: string
+          collected_amount_lbp: number | null
+          collected_amount_usd: number | null
+          created_at: string
+          created_by: string | null
+          delivery_fee_lbp: number | null
+          delivery_fee_usd: number | null
+          id: string
+          invoice_id: string | null
+          net_payout_lbp: number | null
+          net_payout_usd: number | null
+          order_id: string
+          payout_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          collected_amount_lbp?: number | null
+          collected_amount_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          delivery_fee_lbp?: number | null
+          delivery_fee_usd?: number | null
+          id?: string
+          invoice_id?: string | null
+          net_payout_lbp?: number | null
+          net_payout_usd?: number | null
+          order_id: string
+          payout_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          collected_amount_lbp?: number | null
+          collected_amount_usd?: number | null
+          created_at?: string
+          created_by?: string | null
+          delivery_fee_lbp?: number | null
+          delivery_fee_usd?: number | null
+          id?: string
+          invoice_id?: string | null
+          net_payout_lbp?: number | null
+          net_payout_usd?: number | null
+          order_id?: string
+          payout_status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_payouts_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_payouts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -347,6 +413,10 @@ export type Database = {
           cash_collection_lbp: number | null
           cash_collection_usd: number | null
           client_id: string | null
+          collected_amount_lbp: number | null
+          collected_amount_usd: number | null
+          collected_currency: string | null
+          collection_timestamp: string | null
           courier_id: string | null
           courier_name: string | null
           created_at: string
@@ -354,6 +424,7 @@ export type Database = {
           customer_id: string
           delivery_fees_lbp: number | null
           delivery_fees_usd: number | null
+          delivery_photo_url: string | null
           edit_history: Json | null
           edited: boolean | null
           id: string
@@ -363,11 +434,13 @@ export type Database = {
           order_id: number
           package_description: string | null
           package_type: string | null
+          payout_status: string | null
           pricing_source: string | null
           reason_unsuccessful: string | null
           reference_number: string | null
           status: string | null
           type: string
+          unsuccessful_reason: string | null
           updated_at: string
         }
         Insert: {
@@ -377,6 +450,10 @@ export type Database = {
           cash_collection_lbp?: number | null
           cash_collection_usd?: number | null
           client_id?: string | null
+          collected_amount_lbp?: number | null
+          collected_amount_usd?: number | null
+          collected_currency?: string | null
+          collection_timestamp?: string | null
           courier_id?: string | null
           courier_name?: string | null
           created_at?: string
@@ -384,6 +461,7 @@ export type Database = {
           customer_id: string
           delivery_fees_lbp?: number | null
           delivery_fees_usd?: number | null
+          delivery_photo_url?: string | null
           edit_history?: Json | null
           edited?: boolean | null
           id?: string
@@ -393,11 +471,13 @@ export type Database = {
           order_id?: number
           package_description?: string | null
           package_type?: string | null
+          payout_status?: string | null
           pricing_source?: string | null
           reason_unsuccessful?: string | null
           reference_number?: string | null
           status?: string | null
           type: string
+          unsuccessful_reason?: string | null
           updated_at?: string
         }
         Update: {
@@ -407,6 +487,10 @@ export type Database = {
           cash_collection_lbp?: number | null
           cash_collection_usd?: number | null
           client_id?: string | null
+          collected_amount_lbp?: number | null
+          collected_amount_usd?: number | null
+          collected_currency?: string | null
+          collection_timestamp?: string | null
           courier_id?: string | null
           courier_name?: string | null
           created_at?: string
@@ -414,6 +498,7 @@ export type Database = {
           customer_id?: string
           delivery_fees_lbp?: number | null
           delivery_fees_usd?: number | null
+          delivery_photo_url?: string | null
           edit_history?: Json | null
           edited?: boolean | null
           id?: string
@@ -423,11 +508,13 @@ export type Database = {
           order_id?: number
           package_description?: string | null
           package_type?: string | null
+          payout_status?: string | null
           pricing_source?: string | null
           reason_unsuccessful?: string | null
           reference_number?: string | null
           status?: string | null
           type?: string
+          unsuccessful_reason?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1172,32 +1259,32 @@ export type Database = {
     Functions: {
       calculate_comprehensive_delivery_fee: {
         Args: {
+          p_city_id?: string
           p_client_id?: string
           p_governorate_id?: string
-          p_city_id?: string
           p_package_type?: string
         }
         Returns: {
-          base_fee_usd: number
           base_fee_lbp: number
-          extra_fee_usd: number
+          base_fee_usd: number
           extra_fee_lbp: number
-          total_fee_usd: number
-          total_fee_lbp: number
+          extra_fee_usd: number
           pricing_source: string
           rule_details: Json
+          total_fee_lbp: number
+          total_fee_usd: number
         }[]
       }
       calculate_delivery_fee: {
         Args: {
+          p_city_id?: string
           p_client_id?: string
           p_governorate_id?: string
-          p_city_id?: string
           p_package_type?: string
         }
         Returns: {
-          fee_usd: number
           fee_lbp: number
+          fee_usd: number
           rule_type: string
         }[]
       }
@@ -1229,7 +1316,7 @@ export type Database = {
         }[]
       }
       get_top_courier_today: {
-        Args: { start_date: string; end_date: string }
+        Args: { end_date: string; start_date: string }
         Returns: {
           courier_name: string
           orders_count: number
@@ -1238,12 +1325,12 @@ export type Database = {
       get_user_profile: {
         Args: { user_id: string }
         Returns: {
-          id: string
-          email: string
-          full_name: string
-          phone: string
           business_name: string
           business_type: string
+          email: string
+          full_name: string
+          id: string
+          phone: string
           user_type: string
         }[]
       }
@@ -1256,11 +1343,11 @@ export type Database = {
         Returns: boolean
       }
       log_security_event: {
-        Args: { event_type: string; entity_id: string; details?: Json }
+        Args: { details?: Json; entity_id: string; event_type: string }
         Returns: undefined
       }
       update_user_role: {
-        Args: { target_user_id: string; new_role: string }
+        Args: { new_role: string; target_user_id: string }
         Returns: boolean
       }
     }
