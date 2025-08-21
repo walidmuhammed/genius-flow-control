@@ -4,8 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
 
 interface MarkAsDeliveredModalProps {
   open: boolean;
@@ -13,10 +11,9 @@ interface MarkAsDeliveredModalProps {
   onConfirm: (data: {
     collectedAmountUSD: number;
     collectedAmountLBP: number;
-    collectedCurrency: 'USD' | 'LBP';
     note?: string;
   }) => void;
-  expectedAmount?: {
+  originalAmount: {
     usd: number;
     lbp: number;
   };
@@ -26,35 +23,24 @@ const MarkAsDeliveredModal = ({
   open, 
   onOpenChange, 
   onConfirm, 
-  expectedAmount 
+  originalAmount 
 }: MarkAsDeliveredModalProps) => {
-  const [currency, setCurrency] = useState<'USD' | 'LBP'>('USD');
-  const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount < 0) {
-      toast.error('Please enter a valid amount');
-      return;
-    }
 
     setLoading(true);
     try {
       await onConfirm({
-        collectedAmountUSD: currency === 'USD' ? numAmount : 0,
-        collectedAmountLBP: currency === 'LBP' ? numAmount : 0,
-        collectedCurrency: currency,
+        collectedAmountUSD: originalAmount.usd,
+        collectedAmountLBP: originalAmount.lbp,
         note: note.trim() || undefined
       });
       
       // Reset form
-      setAmount('');
       setNote('');
-      setCurrency('USD');
       onOpenChange(false);
     } catch (error) {
       console.error('Error marking as delivered:', error);
@@ -62,9 +48,6 @@ const MarkAsDeliveredModal = ({
       setLoading(false);
     }
   };
-
-  const expectedAmountDisplay = expectedAmount ? 
-    (currency === 'USD' ? `$${expectedAmount.usd}` : `${expectedAmount.lbp.toLocaleString()} LBP`) : '';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -75,36 +58,24 @@ const MarkAsDeliveredModal = ({
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="currency">Currency</Label>
-            <Select value={currency} onValueChange={(value: 'USD' | 'LBP') => setCurrency(value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="USD">USD ($)</SelectItem>
-                <SelectItem value="LBP">LBP (ل.ل)</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="amountUSD">Collected Amount (USD)</Label>
+            <Input
+              id="amountUSD"
+              type="text"
+              value={originalAmount.usd > 0 ? `$${originalAmount.usd}` : '$0'}
+              readOnly
+              className="bg-muted"
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">
-              Collected Amount {currency === 'USD' ? '($)' : '(LBP)'}
-              {expectedAmountDisplay && (
-                <span className="text-sm text-muted-foreground ml-2">
-                  Expected: {expectedAmountDisplay}
-                </span>
-              )}
-            </Label>
+            <Label htmlFor="amountLBP">Collected Amount (LBP)</Label>
             <Input
-              id="amount"
-              type="number"
-              step={currency === 'USD' ? '0.01' : '1'}
-              min="0"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder={currency === 'USD' ? '0.00' : '0'}
-              required
+              id="amountLBP"
+              type="text"
+              value={originalAmount.lbp > 0 ? `${originalAmount.lbp.toLocaleString()} LBP` : '0 LBP'}
+              readOnly
+              className="bg-muted"
             />
           </div>
 

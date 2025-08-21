@@ -14,7 +14,6 @@ interface MarkAsUnsuccessfulModalProps {
     reason: string;
     collectedAmountUSD?: number;
     collectedAmountLBP?: number;
-    collectedCurrency?: 'USD' | 'LBP';
     note?: string;
   }) => void;
 }
@@ -33,9 +32,8 @@ const MarkAsUnsuccessfulModal = ({
   onConfirm 
 }: MarkAsUnsuccessfulModalProps) => {
   const [reason, setReason] = useState('');
-  const [hasPartialPayment, setHasPartialPayment] = useState(false);
-  const [currency, setCurrency] = useState<'USD' | 'LBP'>('USD');
-  const [amount, setAmount] = useState('');
+  const [amountUSD, setAmountUSD] = useState('');
+  const [amountLBP, setAmountLBP] = useState('');
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -47,38 +45,28 @@ const MarkAsUnsuccessfulModal = ({
       return;
     }
 
-    let collectedAmountUSD = 0;
-    let collectedAmountLBP = 0;
-    let collectedCurrency: 'USD' | 'LBP' | undefined = undefined;
+    const numAmountUSD = parseFloat(amountUSD) || 0;
+    const numAmountLBP = parseFloat(amountLBP) || 0;
 
-    if (hasPartialPayment && amount) {
-      const numAmount = parseFloat(amount);
-      if (isNaN(numAmount) || numAmount < 0) {
-        toast.error('Please enter a valid amount');
-        return;
-      }
-      
-      collectedAmountUSD = currency === 'USD' ? numAmount : 0;
-      collectedAmountLBP = currency === 'LBP' ? numAmount : 0;
-      collectedCurrency = currency;
+    if (numAmountUSD < 0 || numAmountLBP < 0) {
+      toast.error('Please enter valid amounts');
+      return;
     }
 
     setLoading(true);
     try {
       await onConfirm({
         reason,
-        collectedAmountUSD: collectedAmountUSD || undefined,
-        collectedAmountLBP: collectedAmountLBP || undefined,
-        collectedCurrency,
+        collectedAmountUSD: numAmountUSD > 0 ? numAmountUSD : undefined,
+        collectedAmountLBP: numAmountLBP > 0 ? numAmountLBP : undefined,
         note: note.trim() || undefined
       });
       
       // Reset form
       setReason('');
-      setHasPartialPayment(false);
-      setAmount('');
+      setAmountUSD('');
+      setAmountLBP('');
       setNote('');
-      setCurrency('USD');
       onOpenChange(false);
     } catch (error) {
       console.error('Error marking as unsuccessful:', error);
@@ -112,49 +100,34 @@ const MarkAsUnsuccessfulModal = ({
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="hasPartialPayment"
-                checked={hasPartialPayment}
-                onChange={(e) => setHasPartialPayment(e.target.checked)}
-                className="rounded"
-              />
-              <Label htmlFor="hasPartialPayment">Partial payment collected</Label>
-            </div>
+            <Label>Partial payment collected</Label>
           </div>
 
-          {hasPartialPayment && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="currency">Currency</Label>
-                <Select value={currency} onValueChange={(value: 'USD' | 'LBP') => setCurrency(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="USD">USD ($)</SelectItem>
-                    <SelectItem value="LBP">LBP (ل.ل)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="space-y-2">
+            <Label htmlFor="amountUSD">Amount (USD)</Label>
+            <Input
+              id="amountUSD"
+              type="number"
+              step="0.01"
+              min="0"
+              value={amountUSD}
+              onChange={(e) => setAmountUSD(e.target.value)}
+              placeholder="$0"
+            />
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="amount">
-                  Partial Amount {currency === 'USD' ? '($)' : '(LBP)'}
-                </Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step={currency === 'USD' ? '0.01' : '1'}
-                  min="0"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder={currency === 'USD' ? '0.00' : '0'}
-                />
-              </div>
-            </>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="amountLBP">Amount (LBP)</Label>
+            <Input
+              id="amountLBP"
+              type="number"
+              step="1"
+              min="0"
+              value={amountLBP}
+              onChange={(e) => setAmountLBP(e.target.value)}
+              placeholder="0 LBP"
+            />
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="note">Additional Notes (Optional)</Label>

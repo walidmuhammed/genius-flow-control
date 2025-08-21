@@ -82,14 +82,12 @@ export const CourierOrderDetailsDialog: React.FC<CourierOrderDetailsDialogProps>
   const handleMarkDelivered = async (data: {
     collectedAmountUSD: number;
     collectedAmountLBP: number;
-    collectedCurrency: 'USD' | 'LBP';
     note?: string;
   }) => {
     if (onMarkDelivered && order) {
       await onMarkDelivered(order.id, {
         collected_amount_usd: data.collectedAmountUSD,
         collected_amount_lbp: data.collectedAmountLBP,
-        collected_currency: data.collectedCurrency,
         note: data.note
       });
     }
@@ -99,7 +97,6 @@ export const CourierOrderDetailsDialog: React.FC<CourierOrderDetailsDialogProps>
     reason: string;
     collectedAmountUSD?: number;
     collectedAmountLBP?: number;
-    collectedCurrency?: 'USD' | 'LBP';
     note?: string;
   }) => {
     if (onMarkUnsuccessful && order) {
@@ -107,7 +104,6 @@ export const CourierOrderDetailsDialog: React.FC<CourierOrderDetailsDialogProps>
         unsuccessful_reason: data.reason,
         collected_amount_usd: data.collectedAmountUSD || 0,
         collected_amount_lbp: data.collectedAmountLBP || 0,
-        collected_currency: data.collectedCurrency,
         note: data.note
       });
     }
@@ -343,7 +339,7 @@ export const CourierOrderDetailsDialog: React.FC<CourierOrderDetailsDialogProps>
         open={showDeliveredModal}
         onOpenChange={setShowDeliveredModal}
         onConfirm={handleMarkDelivered}
-        expectedAmount={{
+        originalAmount={{
           usd: order?.cash_collection_usd || 0,
           lbp: order?.cash_collection_lbp || 0
         }}
