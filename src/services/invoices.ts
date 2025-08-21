@@ -11,6 +11,7 @@ export interface Invoice {
   total_delivery_lbp: number;
   net_payout_usd: number;
   net_payout_lbp: number;
+  status: string;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -29,14 +30,15 @@ export interface InvoiceWithOrders extends Invoice {
     order_id: number;
     reference_number: string;
     type: string;
+    package_type: string;
     customer: {
       name: string;
       phone: string;
       city_name: string;
       governorate_name: string;
     };
-    cash_collection_usd: number;
-    cash_collection_lbp: number;
+    collected_amount_usd: number;
+    collected_amount_lbp: number;
     delivery_fees_usd: number;
     delivery_fees_lbp: number;
     status: string;
@@ -78,8 +80,9 @@ export async function getInvoiceWithOrders(invoiceId: string): Promise<InvoiceWi
         order_id,
         reference_number,
         type,
-        cash_collection_usd,
-        cash_collection_lbp,
+        package_type,
+        collected_amount_usd,
+        collected_amount_lbp,
         delivery_fees_usd,
         delivery_fees_lbp,
         status,
@@ -105,16 +108,17 @@ export async function getInvoiceWithOrders(invoiceId: string): Promise<InvoiceWi
       order_id: order.order_id,
       reference_number: order.reference_number,
       type: order.type,
+      package_type: order.package_type || 'Standard',
       customer: {
         name: order.customer?.name || '',
         phone: order.customer?.phone || '',
         city_name: order.customer?.cities?.name || '',
         governorate_name: order.customer?.governorates?.name || ''
       },
-      cash_collection_usd: order.cash_collection_usd,
-      cash_collection_lbp: order.cash_collection_lbp,
-      delivery_fees_usd: order.delivery_fees_usd,
-      delivery_fees_lbp: order.delivery_fees_lbp,
+      collected_amount_usd: order.collected_amount_usd || 0,
+      collected_amount_lbp: order.collected_amount_lbp || 0,
+      delivery_fees_usd: order.delivery_fees_usd || 0,
+      delivery_fees_lbp: order.delivery_fees_lbp || 0,
       status: order.status
     };
   }) || [];
@@ -125,18 +129,23 @@ export async function getInvoiceWithOrders(invoiceId: string): Promise<InvoiceWi
   } as InvoiceWithOrders;
 }
 
-export async function createInvoice(orderIds: string[], merchantName: string = 'WIXX') {
+export async function createInvoice(orderIds: string[], merchantName?: string) {
   console.log('Creating invoice for orders:', orderIds);
   
-  // First, fetch the orders to calculate totals
+  // First, fetch the orders with client info to calculate totals and get merchant name
   const { data: orders, error: ordersError } = await supabase
     .from('orders')
     .select(`
       id,
-      cash_collection_usd,
-      cash_collection_lbp,
+      client_id,
+      collected_amount_usd,
+      collected_amount_lbp,
       delivery_fees_usd,
-      delivery_fees_lbp
+      delivery_fees_lbp,
+      profiles:client_id (
+        business_name,
+        full_name
+      )
     `)
     .in('id', orderIds);
   
@@ -149,11 +158,18 @@ export async function createInvoice(orderIds: string[], merchantName: string = '
     throw new Error('No orders found for the provided IDs');
   }
 
+  // Auto-detect merchant name from first order's client if not provided
+  const firstOrder = orders[0] as any;
+  const autoMerchantName = merchantName || 
+    firstOrder.profiles?.business_name || 
+    firstOrder.profiles?.full_name || 
+    'WIXX';
+
   // Calculate totals
   const totals = orders.reduce((acc, order) => {
     return {
-      total_amount_usd: acc.total_amount_usd + (order.cash_collection_usd || 0),
-      total_amount_lbp: acc.total_amount_lbp + (order.cash_collection_lbp || 0),
+      total_amount_usd: acc.total_amount_usd + (order.collected_amount_usd || 0),
+      total_amount_lbp: acc.total_amount_lbp + (order.collected_amount_lbp || 0),
       total_delivery_usd: acc.total_delivery_usd + (order.delivery_fees_usd || 0),
       total_delivery_lbp: acc.total_delivery_lbp + (order.delivery_fees_lbp || 0)
     };
@@ -172,13 +188,14 @@ export async function createInvoice(orderIds: string[], merchantName: string = '
   const { data: invoice, error: invoiceError } = await supabase
     .from('invoices')
     .insert({
-      merchant_name: merchantName,
+      merchant_name: autoMerchantName,
       total_amount_usd: totals.total_amount_usd,
       total_amount_lbp: totals.total_amount_lbp,
       total_delivery_usd: totals.total_delivery_usd,
       total_delivery_lbp: totals.total_delivery_lbp,
       net_payout_usd,
-      net_payout_lbp
+      net_payout_lbp,
+      status: 'Pending'
     } as any)
     .select()
     .single();

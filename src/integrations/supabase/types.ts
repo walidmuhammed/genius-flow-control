@@ -307,6 +307,7 @@ export type Database = {
           merchant_name: string
           net_payout_lbp: number
           net_payout_usd: number
+          status: string | null
           total_amount_lbp: number
           total_amount_usd: number
           total_delivery_lbp: number
@@ -321,6 +322,7 @@ export type Database = {
           merchant_name: string
           net_payout_lbp?: number
           net_payout_usd?: number
+          status?: string | null
           total_amount_lbp?: number
           total_amount_usd?: number
           total_delivery_lbp?: number
@@ -335,6 +337,7 @@ export type Database = {
           merchant_name?: string
           net_payout_lbp?: number
           net_payout_usd?: number
+          status?: string | null
           total_amount_lbp?: number
           total_amount_usd?: number
           total_delivery_lbp?: number

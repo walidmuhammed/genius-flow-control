@@ -59,8 +59,12 @@ const InvoiceDetailsDialog: React.FC<InvoiceDetailsDialogProps> = ({
           <DialogTitle className="text-xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span>Invoice {invoice.invoice_id}</span>
-              <Badge variant="outline" className="text-emerald-600 bg-emerald-50">
-                Paid
+              <Badge variant="outline" className={
+                invoice.status === 'Paid' ? "text-emerald-600 bg-emerald-50" :
+                invoice.status === 'In Progress' ? "text-blue-600 bg-blue-50" :
+                "text-gray-600 bg-gray-50"
+              }>
+                {invoice.status}
               </Badge>
             </div>
             <Button onClick={handlePrint} className="gap-2">
@@ -133,10 +137,12 @@ const InvoiceDetailsDialog: React.FC<InvoiceDetailsDialogProps> = ({
                         <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Order ID</th>
                         <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Reference</th>
                         <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Type</th>
+                        <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Package</th>
                         <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Customer</th>
                         <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Location</th>
                         <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Amount</th>
                         <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Delivery Fee</th>
+                        <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Net Payout</th>
                         <th className="text-left p-3 text-xs font-medium text-gray-500 uppercase">Status</th>
                       </tr>
                     </thead>
@@ -159,6 +165,11 @@ const InvoiceDetailsDialog: React.FC<InvoiceDetailsDialogProps> = ({
                             </span>
                           </td>
                           <td className="p-3">
+                            <span className="inline-flex px-2 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-800">
+                              {order.package_type || 'Standard'}
+                            </span>
+                          </td>
+                          <td className="p-3">
                             <div>
                               <div className="font-medium text-gray-900">{order.customer.name}</div>
                               <div className="text-sm text-gray-500">{order.customer.phone}</div>
@@ -172,11 +183,11 @@ const InvoiceDetailsDialog: React.FC<InvoiceDetailsDialogProps> = ({
                           </td>
                           <td className="p-3">
                             <div>
-                              {order.cash_collection_usd > 0 && (
-                                <div className="font-medium">${order.cash_collection_usd.toFixed(2)}</div>
+                              {order.collected_amount_usd > 0 && (
+                                <div className="font-medium">${order.collected_amount_usd.toFixed(2)}</div>
                               )}
-                              {order.cash_collection_lbp > 0 && (
-                                <div className="text-sm text-gray-500">{order.cash_collection_lbp.toLocaleString()} LBP</div>
+                              {order.collected_amount_lbp > 0 && (
+                                <div className="text-sm text-gray-500">{order.collected_amount_lbp.toLocaleString()} LBP</div>
                               )}
                             </div>
                           </td>
@@ -188,6 +199,16 @@ const InvoiceDetailsDialog: React.FC<InvoiceDetailsDialogProps> = ({
                               {order.delivery_fees_lbp > 0 && (
                                 <div className="text-sm text-gray-500">{order.delivery_fees_lbp.toLocaleString()} LBP</div>
                               )}
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <div>
+                              <div className="font-medium text-green-600">
+                                ${(order.collected_amount_usd - order.delivery_fees_usd).toFixed(2)}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {(order.collected_amount_lbp - order.delivery_fees_lbp).toLocaleString()} LBP
+                              </div>
                             </div>
                           </td>
                           <td className="p-3">

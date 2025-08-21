@@ -149,12 +149,21 @@ const Wallet: React.FC = () => {
                           <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{invoice.merchant_name}</p>
                         </div>
                         <div className="text-right ml-3">
-                          <p className="font-medium text-gray-900 dark:text-gray-100">${invoice.total_amount_usd.toFixed(2)}</p>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">${invoice.net_payout_usd.toFixed(2)}</p>
                           <p className="text-xs text-gray-600 dark:text-gray-400">{format(new Date(invoice.created_at), 'MMM dd')}</p>
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{invoice.total_amount_lbp.toLocaleString()} LBP</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{invoice.net_payout_lbp.toLocaleString()} LBP</p>
+                          <span className={cn("text-xs px-2 py-1 rounded-full", 
+                            invoice.status === 'Paid' ? "bg-green-100 text-green-800" :
+                            invoice.status === 'In Progress' ? "bg-blue-100 text-blue-800" :
+                            "bg-yellow-100 text-yellow-800"
+                          )}>
+                            {invoice.status}
+                          </span>
+                        </div>
                         <div className="flex gap-1">
                           <Button 
                             variant="ghost" 
@@ -208,6 +217,7 @@ const Wallet: React.FC = () => {
                         <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Merchant Name</TableHead>
                         <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Amount USD</TableHead>
                         <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Amount LBP</TableHead>
+                        <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Status</TableHead>
                         <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider">Creation Date</TableHead>
                         <TableHead className="font-medium text-xs text-gray-500 uppercase tracking-wider text-center">Actions</TableHead>
                       </TableRow>
@@ -229,10 +239,19 @@ const Wallet: React.FC = () => {
                             {invoice.merchant_name}
                           </TableCell>
                           <TableCell>
-                            ${invoice.total_amount_usd.toFixed(2)}
+                            ${invoice.net_payout_usd.toFixed(2)}
                           </TableCell>
                           <TableCell>
-                            {invoice.total_amount_lbp.toLocaleString()} LBP
+                            {invoice.net_payout_lbp.toLocaleString()} LBP
+                          </TableCell>
+                          <TableCell>
+                            <span className={cn("text-xs px-2 py-1 rounded-full", 
+                              invoice.status === 'Paid' ? "bg-green-100 text-green-800" :
+                              invoice.status === 'In Progress' ? "bg-blue-100 text-blue-800" :
+                              "bg-yellow-100 text-yellow-800"
+                            )}>
+                              {invoice.status}
+                            </span>
                           </TableCell>
                           <TableCell>
                             {format(new Date(invoice.created_at), 'PPP')}
