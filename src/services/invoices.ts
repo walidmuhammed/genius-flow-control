@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Invoice {
@@ -136,35 +135,32 @@ export async function createInvoice(orderIds: string[], merchantName?: string) {
     throw new Error('No orders selected');
   }
 
-  // Use a transaction for atomic invoice creation
-  const { data, error } = await supabase.rpc('create_invoice_with_items', {
-    p_order_ids: orderIds,
-    p_merchant_name: merchantName
-  });
+  try {
+    // Call the database function through SQL RPC
+    const { data, error } = await supabase
+      .rpc('create_invoice_with_items', {
+        p_order_ids: orderIds,
+        p_merchant_name: merchantName
+      });
 
-  if (error) {
-    console.error('Error creating invoice:', error);
-    // Return specific error messages based on the error type
-    if (error.message.includes('already invoiced')) {
-      throw new Error(`One or more orders are already invoiced: ${error.message}`);
-    } else if (error.message.includes('multiple clients')) {
-      throw new Error('Selected orders belong to multiple clients. Please select orders from the same client.');
-    } else if (error.message.includes('not found')) {
-      throw new Error('One or more orders were not found or are not eligible for invoicing');
-    } else if (error.message.includes('already paid')) {
-      throw new Error('One or more orders are already paid and cannot be invoiced');
+    if (error) {
+      console.error('Error creating invoice:', error);
+      // Return specific error messages based on the error type
+      if (error.message.includes('already invoiced')) {
+        throw new Error(`One or more orders are already invoiced: ${error.message}`);
+      } else if (error.message.includes('multiple clients')) {
+        throw new Error('Selected orders belong to multiple clients. Please select orders from the same client.');
+      } else if (error.message.includes('not found')) {
+        throw new Error('One or more orders were not found or are not eligible for invoicing');
+      } else if (error.message.includes('already paid')) {
+        throw new Error('One or more orders are already paid and cannot be invoiced');
+      }
+      throw new Error(`Failed to create invoice: ${error.message}`);
     }
-    throw new Error(`Failed to create invoice: ${error.message}`);
-  }
 
-  return data;
-}
-
-// Database function to handle invoice creation atomically
-export async function createInvoiceFunction() {
-  const { error } = await supabase.rpc('create_invoice_function');
-  if (error) {
-    console.error('Error creating invoice function:', error);
-    throw error;
+    return data;
+  } catch (err: any) {
+    console.error('Error in createInvoice:', err);
+    throw new Error(err.message || 'Failed to create invoice');
   }
 }

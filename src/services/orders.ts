@@ -254,7 +254,7 @@ export async function createOrder(order: Omit<Order, 'id' | 'order_id' | 'refere
     throw error;
   }
   
-  return data as Order;
+  return data as unknown as Order;
 }
 
 export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' | 'order_id' | 'reference_number' | 'created_at' | 'updated_at' | 'archived'>>) {
@@ -276,7 +276,7 @@ export async function updateOrder(id: string, updates: Partial<Omit<Order, 'id' 
     throw error;
   }
   
-  return data as Order;
+  return data as unknown as Order;
 }
 
 export async function getOrdersWithDateRange(startDate: string, endDate: string) {
@@ -348,7 +348,7 @@ export async function assignCourierToOrder(orderId: string, courierId: string, c
     delivery_photo_url: data.delivery_photo_url,
     collection_timestamp: data.collection_timestamp,
     payout_status: data.payout_status || 'Pending',
-  } as Order;
+  } as unknown as Order;
 }
 
 export async function deleteOrder(id: string) {
@@ -372,5 +372,5 @@ export async function deleteOrder(id: string) {
     throw error;
   }
   
-  return data as Order;
+  return data as unknown as Order;
 }

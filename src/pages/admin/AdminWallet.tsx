@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { DollarSign, CreditCard, Users, FileText } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ClientPayoutsTab from '@/components/admin/wallet/ClientPayoutsTab';
 import CourierSettlementsTab from '@/components/admin/wallet/CourierSettlementsTab';
-import InvoicesListTab from '@/components/admin/wallet/InvoicesListTab';
+import GeneratedInvoicesTab from '@/components/admin/wallet/GeneratedInvoicesTab';
 import { useOrders } from '@/hooks/use-orders';
 import { useInvoices } from '@/hooks/use-invoices';
-import { markInvoiceAsPaid } from '@/services/invoice-status';
 
 const AdminWallet = () => {
   document.title = "Financial Operations - Admin Panel";
@@ -16,7 +15,7 @@ const AdminWallet = () => {
   const { data: orders = [] } = useOrders();
   const { data: invoices = [] } = useInvoices();
   
-  // Calculate KPIs
+  // Calculate KPIs based on successful orders
   const paidOrders = orders.filter(order => order.status === 'Successful');
   const totalCollectedUSD = paidOrders.reduce((sum, order) => sum + (order.collected_amount_usd || 0), 0);
   const totalCollectedLBP = paidOrders.reduce((sum, order) => sum + (order.collected_amount_lbp || 0), 0);
@@ -93,20 +92,20 @@ const AdminWallet = () => {
         <Tabs defaultValue="payouts" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="payouts">Client Payouts</TabsTrigger>
-            <TabsTrigger value="settlements">Courier Settlements</TabsTrigger>
             <TabsTrigger value="invoices">Generated Invoices</TabsTrigger>
+            <TabsTrigger value="settlements">Courier Settlements</TabsTrigger>
           </TabsList>
           
           <TabsContent value="payouts" className="space-y-6">
             <ClientPayoutsTab />
           </TabsContent>
           
-          <TabsContent value="settlements" className="space-y-6">
-            <CourierSettlementsTab />
+          <TabsContent value="invoices" className="space-y-6">
+            <GeneratedInvoicesTab />
           </TabsContent>
           
-          <TabsContent value="invoices" className="space-y-6">
-            <InvoicesListTab />
+          <TabsContent value="settlements" className="space-y-6">
+            <CourierSettlementsTab />
           </TabsContent>
         </Tabs>
       </div>

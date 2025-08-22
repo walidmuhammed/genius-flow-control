@@ -1379,6 +1379,10 @@ export type Database = {
           rule_type: string
         }[]
       }
+      create_invoice_with_items: {
+        Args: { p_merchant_name?: string; p_order_ids: string[] }
+        Returns: Json
+      }
       delete_client_pricing_configuration: {
         Args: { p_client_id: string }
         Returns: undefined
@@ -1440,6 +1444,10 @@ export type Database = {
       log_security_event: {
         Args: { details?: Json; entity_id: string; event_type: string }
         Returns: undefined
+      }
+      mark_invoice_as_paid: {
+        Args: { p_invoice_id: string }
+        Returns: Json
       }
       update_user_role: {
         Args: { new_role: string; target_user_id: string }

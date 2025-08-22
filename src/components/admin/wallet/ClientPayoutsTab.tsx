@@ -95,7 +95,7 @@ const ClientPayoutsTab = () => {
       await updatePayoutStatus.mutateAsync({
         payoutIds: selectedPayouts,
         status: 'In Progress',
-        invoiceId: invoice.id
+        invoiceId: (invoice as any)?.id || invoice
       });
       
       setSelectedPayouts([]);
