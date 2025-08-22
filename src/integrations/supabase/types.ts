@@ -262,6 +262,84 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_counters: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          next_number: number
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          next_number?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          next_number?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      invoice_items: {
+        Row: {
+          amount_collected_lbp: number
+          amount_collected_usd: number
+          created_at: string
+          delivery_fee_lbp: number
+          delivery_fee_usd: number
+          id: string
+          invoice_id: string
+          net_payout_lbp: number
+          net_payout_usd: number
+          order_id: string
+        }
+        Insert: {
+          amount_collected_lbp?: number
+          amount_collected_usd?: number
+          created_at?: string
+          delivery_fee_lbp?: number
+          delivery_fee_usd?: number
+          id?: string
+          invoice_id: string
+          net_payout_lbp?: number
+          net_payout_usd?: number
+          order_id: string
+        }
+        Update: {
+          amount_collected_lbp?: number
+          amount_collected_usd?: number
+          created_at?: string
+          delivery_fee_lbp?: number
+          delivery_fee_usd?: number
+          id?: string
+          invoice_id?: string
+          net_payout_lbp?: number
+          net_payout_usd?: number
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_orders: {
         Row: {
           created_at: string
@@ -437,6 +515,7 @@ export type Database = {
           order_id: number
           package_description: string | null
           package_type: string | null
+          payment_status: string | null
           payout_status: string | null
           pricing_source: string | null
           reason_unsuccessful: string | null
@@ -474,6 +553,7 @@ export type Database = {
           order_id?: number
           package_description?: string | null
           package_type?: string | null
+          payment_status?: string | null
           payout_status?: string | null
           pricing_source?: string | null
           reason_unsuccessful?: string | null
@@ -511,6 +591,7 @@ export type Database = {
           order_id?: number
           package_description?: string | null
           package_type?: string | null
+          payment_status?: string | null
           payout_status?: string | null
           pricing_source?: string | null
           reason_unsuccessful?: string | null
@@ -544,6 +625,13 @@ export type Database = {
           },
           {
             foreignKeyName: "orders_invoice_id_fk"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_invoice_id_fkey"
             columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "invoices"
@@ -1305,6 +1393,10 @@ export type Database = {
       }
       generate_reference_number: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_sequential_invoice_id: {
+        Args: { p_company_id?: string }
         Returns: string
       }
       generate_ticket_number: {
