@@ -200,6 +200,8 @@ export function useGroupedFilteredClientPayouts() {
             type,
             package_type,
             status,
+            invoice_id,
+            payment_status,
             customer:customer_id(
               name,
               phone,
@@ -216,11 +218,15 @@ export function useGroupedFilteredClientPayouts() {
         throw payoutsError;
       }
 
-      // Filter out payouts for orders that have been marked as 'paid'
+      // Filter out payouts for orders that are already invoiced or paid
       const filteredPayouts = payouts?.filter(payout => {
         const order = payout.order as any;
-        return order && order.status !== 'paid';
+        // Exclude orders that already have an invoice_id or are paid
+        return order && !order.invoice_id && order.payment_status !== 'paid';
       }) || [];
+
+      console.log('🔍 Total payouts fetched:', payouts?.length);
+      console.log('🔍 Filtered payouts (excluding invoiced/paid):', filteredPayouts.length);
 
       // Get unique client IDs from filtered payouts
       const clientIds = [...new Set(filteredPayouts.map(p => p.client_id))];
