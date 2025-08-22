@@ -132,93 +132,39 @@ export async function getInvoiceWithOrders(invoiceId: string): Promise<InvoiceWi
 export async function createInvoice(orderIds: string[], merchantName?: string) {
   console.log('Creating invoice for orders:', orderIds);
   
-  // First, fetch the orders with client info to calculate totals and get merchant name
-  const { data: orders, error: ordersError } = await supabase
-    .from('orders')
-    .select(`
-      id,
-      client_id,
-      collected_amount_usd,
-      collected_amount_lbp,
-      delivery_fees_usd,
-      delivery_fees_lbp,
-      profiles:client_id (
-        business_name,
-        full_name
-      )
-    `)
-    .in('id', orderIds);
-  
-  if (ordersError) {
-    console.error('Error fetching orders for invoice:', ordersError);
-    throw ordersError;
-  }
-  
-  if (!orders || orders.length === 0) {
-    throw new Error('No orders found for the provided IDs');
+  if (!orderIds || orderIds.length === 0) {
+    throw new Error('No orders selected');
   }
 
-  // Auto-detect merchant name from first order's client if not provided
-  const firstOrder = orders[0] as any;
-  const autoMerchantName = merchantName || 
-    firstOrder.profiles?.business_name || 
-    firstOrder.profiles?.full_name || 
-    'Unknown Merchant';
-
-  // Calculate totals
-  const totals = orders.reduce((acc, order) => {
-    return {
-      total_amount_usd: acc.total_amount_usd + (order.collected_amount_usd || 0),
-      total_amount_lbp: acc.total_amount_lbp + (order.collected_amount_lbp || 0),
-      total_delivery_usd: acc.total_delivery_usd + (order.delivery_fees_usd || 0),
-      total_delivery_lbp: acc.total_delivery_lbp + (order.delivery_fees_lbp || 0)
-    };
-  }, {
-    total_amount_usd: 0,
-    total_amount_lbp: 0,
-    total_delivery_usd: 0,
-    total_delivery_lbp: 0
+  // Use a transaction for atomic invoice creation
+  const { data, error } = await supabase.rpc('create_invoice_with_items', {
+    p_order_ids: orderIds,
+    p_merchant_name: merchantName
   });
 
-  // Calculate net payout (total collection minus delivery fees)
-  const net_payout_usd = totals.total_amount_usd - totals.total_delivery_usd;
-  const net_payout_lbp = totals.total_amount_lbp - totals.total_delivery_lbp;
-
-  // Create the invoice - the trigger will automatically generate invoice_id
-  const { data: invoice, error: invoiceError } = await supabase
-    .from('invoices')
-    .insert({
-      merchant_name: autoMerchantName,
-      total_amount_usd: totals.total_amount_usd,
-      total_amount_lbp: totals.total_amount_lbp,
-      total_delivery_usd: totals.total_delivery_usd,
-      total_delivery_lbp: totals.total_delivery_lbp,
-      net_payout_usd,
-      net_payout_lbp,
-      status: 'Pending'
-    } as any)
-    .select()
-    .single();
-
-  if (invoiceError) {
-    console.error('Error creating invoice:', invoiceError);
-    throw invoiceError;
+  if (error) {
+    console.error('Error creating invoice:', error);
+    // Return specific error messages based on the error type
+    if (error.message.includes('already invoiced')) {
+      throw new Error(`One or more orders are already invoiced: ${error.message}`);
+    } else if (error.message.includes('multiple clients')) {
+      throw new Error('Selected orders belong to multiple clients. Please select orders from the same client.');
+    } else if (error.message.includes('not found')) {
+      throw new Error('One or more orders were not found or are not eligible for invoicing');
+    } else if (error.message.includes('already paid')) {
+      throw new Error('One or more orders are already paid and cannot be invoiced');
+    }
+    throw new Error(`Failed to create invoice: ${error.message}`);
   }
 
-  // Link orders to the invoice
-  const invoiceOrdersData = orderIds.map(orderId => ({
-    invoice_id: invoice.id,
-    order_id: orderId
-  }));
+  return data;
+}
 
-  const { error: linkError } = await supabase
-    .from('invoice_orders')
-    .insert(invoiceOrdersData);
-
-  if (linkError) {
-    console.error('Error linking orders to invoice:', linkError);
-    throw linkError;
+// Database function to handle invoice creation atomically
+export async function createInvoiceFunction() {
+  const { error } = await supabase.rpc('create_invoice_function');
+  if (error) {
+    console.error('Error creating invoice function:', error);
+    throw error;
   }
-
-  return invoice;
 }

@@ -48,29 +48,41 @@ export interface GroupedClientPayouts {
 }
 
 async function getFilteredClientPayouts(): Promise<ClientPayout[]> {
+  // Get orders that are eligible for invoicing:
+  // - Status is 'Successful' (completed deliveries)
+  // - payment_status is 'pending' (not yet invoiced or paid)
+  // - invoice_id is NULL (not already in an invoice)
   const { data, error } = await supabase
-    .from('client_payouts')
+    .from('orders')
     .select(`
-      *,
-      order:order_id (
-        order_id,
-        reference_number,
-        type,
-        status,
-        customer:customer_id (
-          name,
-          phone,
-          cities:city_id(name),
-          governorates:governorate_id(name)
-        )
+      id,
+      order_id,
+      reference_number,
+      type,
+      status,
+      payment_status,
+      invoice_id,
+      client_id,
+      collected_amount_usd,
+      collected_amount_lbp,
+      delivery_fees_usd,
+      delivery_fees_lbp,
+      created_at,
+      customer:customer_id (
+        name,
+        phone,
+        cities:city_id(name),
+        governorates:governorate_id(name)
       ),
-      client:client_id (
+      profiles:client_id (
         id,
         business_name,
         full_name
       )
     `)
-    .in('payout_status', ['Pending', 'Processing'])
+    .eq('status', 'Successful')
+    .eq('payment_status', 'pending')
+    .is('invoice_id', null)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -78,28 +90,40 @@ async function getFilteredClientPayouts(): Promise<ClientPayout[]> {
     throw error;
   }
 
-  // Filter out payouts for orders that have been marked as 'paid'
-  const filteredData = data?.filter(payout => {
-    const order = payout.order as any;
-    return order && order.status !== 'paid';
-  }) || [];
-
-  return filteredData.map(payout => {
-    const order = payout.order as any;
-    const client = payout.client as any;
+  // Transform the data to match the expected ClientPayout format
+  return (data || []).map(order => {
+    const customer = order.customer as any;
+    const client = order.profiles as any;
+    
+    const collected_usd = order.collected_amount_usd || 0;
+    const collected_lbp = order.collected_amount_lbp || 0;
+    const delivery_usd = order.delivery_fees_usd || 0;
+    const delivery_lbp = order.delivery_fees_lbp || 0;
     
     return {
-      ...payout,
+      id: order.id,
+      order_id: order.id,
+      client_id: order.client_id,
+      collected_amount_usd: collected_usd,
+      collected_amount_lbp: collected_lbp,
+      delivery_fee_usd: delivery_usd,
+      delivery_fee_lbp: delivery_lbp,
+      net_payout_usd: collected_usd - delivery_usd,
+      net_payout_lbp: collected_lbp - delivery_lbp,
+      payout_status: 'Pending',
+      invoice_id: null,
+      created_at: order.created_at,
+      updated_at: order.created_at,
       order: {
-        order_id: order?.order_id || 0,
-        reference_number: order?.reference_number || '',
-        type: order?.type || '',
-        status: order?.status || '',
+        order_id: order.order_id || 0,
+        reference_number: order.reference_number || '',
+        type: order.type || '',
+        status: order.status || '',
         customer: {
-          name: order?.customer?.name || '',
-          phone: order?.customer?.phone || '',
-          city_name: order?.customer?.cities?.name || '',
-          governorate_name: order?.customer?.governorates?.name || ''
+          name: customer?.name || '',
+          phone: customer?.phone || '',
+          city_name: customer?.cities?.name || '',
+          governorate_name: customer?.governorates?.name || ''
         }
       },
       client: {
