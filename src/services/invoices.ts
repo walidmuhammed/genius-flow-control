@@ -59,17 +59,23 @@ export async function getInvoices() {
 }
 
 export async function getClientInvoices() {
+  const { data: user } = await supabase.auth.getUser();
+  
+  if (!user.user?.id) {
+    throw new Error('User not authenticated');
+  }
+
   const { data, error } = await supabase
     .from('invoices')
     .select(`
       *,
-      invoice_orders!inner (
+      invoice_items!inner (
         orders!inner (
           client_id
         )
       )
     `)
-    .eq('invoice_orders.orders.client_id', (await supabase.auth.getUser()).data.user?.id)
+    .eq('invoice_items.orders.client_id', user.user.id)
     .order('created_at', { ascending: false });
   
   if (error) {
@@ -92,8 +98,8 @@ export async function getInvoiceWithOrders(invoiceId: string): Promise<InvoiceWi
     throw invoiceError;
   }
 
-  const { data: invoiceOrders, error: ordersError } = await supabase
-    .from('invoice_orders')
+  const { data: invoiceItems, error: ordersError } = await supabase
+    .from('invoice_items')
     .select(`
       order_id,
       orders:order_id (
@@ -122,7 +128,7 @@ export async function getInvoiceWithOrders(invoiceId: string): Promise<InvoiceWi
     throw ordersError;
   }
 
-  const orders = invoiceOrders?.map(item => {
+  const orders = invoiceItems?.map(item => {
     const order = item.orders as any;
     return {
       id: order.id,

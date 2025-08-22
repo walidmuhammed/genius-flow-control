@@ -108,23 +108,24 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
             {/* Order Details */}
             <div>
               <h4 className="font-semibold mb-4">Order Details</h4>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Order ID</TableHead>
-                    <TableHead>Reference</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Package</TableHead>
-                    <TableHead>Amount (USD)</TableHead>
-                    <TableHead>Amount (LBP)</TableHead>
-                    <TableHead>Delivery Fee (USD)</TableHead>
-                    <TableHead>Delivery Fee (LBP)</TableHead>
-                    <TableHead>Net Payout (USD)</TableHead>
-                    <TableHead>Net Payout (LBP)</TableHead>
-                  </TableRow>
-                </TableHeader>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Order ID</TableHead>
+                          <TableHead>Reference</TableHead>
+                          <TableHead>Customer</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Package</TableHead>
+                          <TableHead>Amount (USD)</TableHead>
+                          <TableHead>Amount (LBP)</TableHead>
+                          <TableHead>Delivery Fee (USD)</TableHead>
+                          <TableHead>Delivery Fee (LBP)</TableHead>
+                          <TableHead>Net Payout (USD)</TableHead>
+                          <TableHead>Net Payout (LBP)</TableHead>
+                        </TableRow>
+                      </TableHeader>
                 <TableBody>
                   {invoice.orders.map((order) => (
                     <TableRow key={order.id}>
@@ -176,8 +177,9 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
                       </TableCell>
                     </TableRow>
                   ))}
-                </TableBody>
-              </Table>
+                      </TableBody>
+                    </Table>
+                  </div>
             </div>
 
             <Separator />
