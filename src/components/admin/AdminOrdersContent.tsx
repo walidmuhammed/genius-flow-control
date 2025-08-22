@@ -266,14 +266,14 @@ const AdminOrdersContent = () => {
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             onClick={() => {
-                              if (order.status !== 'Paid') {
+                              if (order.status !== 'paid') {
                                 window.location.href = `/create-order?edit=true&id=${order.id}`;
                               }
                             }}
-                            disabled={order.status === 'Paid'}
+                            disabled={order.status === 'paid'}
                           >
                             <Edit className="h-4 w-4 mr-2" />
-                            {order.status === 'Paid' ? 'Cannot Edit (Paid)' : 'Edit Order'}
+                            {order.status === 'paid' ? 'Cannot Edit (Paid)' : 'Edit Order'}
                           </DropdownMenuItem>
                           <DropdownMenuItem>
                             <User className="h-4 w-4 mr-2" />

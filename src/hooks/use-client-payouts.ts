@@ -183,6 +183,105 @@ export function useGroupedClientPayouts() {
   });
 }
 
+// Fetch client payouts grouped by client (filtered - excluding paid orders)
+export function useGroupedFilteredClientPayouts() {
+  return useQuery({
+    queryKey: ['grouped-filtered-client-payouts'],
+    queryFn: async () => {
+      // First fetch payouts with order details, excluding paid payouts and paid orders
+      const { data: payouts, error: payoutsError } = await supabase
+        .from('client_payouts')
+        .select(`
+          *,
+          order:order_id(
+            id,
+            order_id,
+            reference_number,
+            type,
+            package_type,
+            status,
+            customer:customer_id(
+              name,
+              phone,
+              cities:city_id(name),
+              governorates:governorate_id(name)
+            )
+          )
+        `)
+        .in('payout_status', ['Pending', 'In Progress'])
+        .order('created_at', { ascending: false });
+
+      if (payoutsError) {
+        console.error('Error fetching filtered client payouts:', payoutsError);
+        throw payoutsError;
+      }
+
+      // Filter out payouts for orders that have been marked as 'paid'
+      const filteredPayouts = payouts?.filter(payout => {
+        const order = payout.order as any;
+        return order && order.status !== 'paid';
+      }) || [];
+
+      // Get unique client IDs from filtered payouts
+      const clientIds = [...new Set(filteredPayouts.map(p => p.client_id))];
+      
+      if (clientIds.length === 0) {
+        return {};
+      }
+      
+      // Fetch client details
+      const { data: clients, error: clientsError } = await supabase
+        .from('profiles')
+        .select('id, full_name, business_name, phone')
+        .in('id', clientIds);
+
+      if (clientsError) {
+        console.error('Error fetching clients:', clientsError);
+        throw clientsError;
+      }
+
+      // Group payouts by client
+      const grouped: Record<string, GroupedClientPayouts> = {};
+
+      filteredPayouts.forEach(payout => {
+        if (!grouped[payout.client_id]) {
+          const client = clients?.find(c => c.id === payout.client_id);
+          grouped[payout.client_id] = {
+            client: client || { id: payout.client_id },
+            payouts: [],
+            totalPendingUSD: 0,
+            totalPendingLBP: 0,
+            orderCount: 0
+          };
+        }
+
+        const group = grouped[payout.client_id];
+        group.payouts.push({
+          ...payout,
+          order: payout.order ? {
+            ...payout.order,
+            customer: payout.order.customer ? {
+              ...payout.order.customer,
+              city_name: payout.order.customer.cities?.name,
+              governorate_name: payout.order.customer.governorates?.name
+            } : undefined
+          } : undefined,
+          client: group.client
+        } as ClientPayout);
+
+        // Add to totals if status is Pending
+        if (payout.payout_status === 'Pending') {
+          group.totalPendingUSD += payout.net_payout_usd || 0;
+          group.totalPendingLBP += payout.net_payout_lbp || 0;
+        }
+        group.orderCount++;
+      });
+
+      return grouped;
+    }
+  });
+}
+
 // Update payout status
 export function useUpdatePayoutStatus() {
   const queryClient = useQueryClient();

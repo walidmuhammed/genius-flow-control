@@ -7,13 +7,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useGroupedClientPayouts, useUpdatePayoutStatus } from '@/hooks/use-client-payouts';
+import { useGroupedFilteredClientPayouts, useUpdatePayoutStatus } from '@/hooks/use-client-payouts';
 import { createInvoice } from '@/services/invoices';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 const ClientPayoutsTab = () => {
-  const { data: groupedPayouts = [], isLoading } = useGroupedClientPayouts();
+  const { data: groupedPayouts = {}, isLoading } = useGroupedFilteredClientPayouts();
   const updatePayoutStatus = useUpdatePayoutStatus();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPayouts, setSelectedPayouts] = useState<string[]>([]);
@@ -21,7 +21,7 @@ const ClientPayoutsTab = () => {
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
 
   // Filter grouped payouts based on search
-  const filteredGroupedPayouts = groupedPayouts.filter(group => {
+  const filteredGroupedPayouts = Object.entries(groupedPayouts || {}).filter(([clientId, group]) => {
     if (!searchTerm) return true;
     
     const businessName = group.client.business_name?.toLowerCase() || '';
@@ -83,9 +83,9 @@ const ClientPayoutsTab = () => {
       
       // Create invoice for selected orders
       const orderIds = selectedPayouts.map(payoutId => {
-        const group = filteredGroupedPayouts.find(g => 
+        const [, group] = filteredGroupedPayouts.find(([, g]) => 
           g.payouts.some(p => p.id === payoutId)
-        );
+        ) || [];
         return group?.payouts.find(p => p.id === payoutId)?.order_id;
       }).filter(Boolean);
 
@@ -116,7 +116,7 @@ const ClientPayoutsTab = () => {
     try {
       await updatePayoutStatus.mutateAsync({
         payoutIds: selectedPayouts,
-        status: 'Paid'
+        status: 'In Progress'
       });
       setSelectedPayouts([]);
       toast.success('Payouts marked as paid');
@@ -130,9 +130,9 @@ const ClientPayoutsTab = () => {
     let totalLBP = 0;
     
     selectedPayouts.forEach(payoutId => {
-      const group = filteredGroupedPayouts.find(g => 
+      const [, group] = filteredGroupedPayouts.find(([, g]) => 
         g.payouts.some(p => p.id === payoutId)
-      );
+      ) || [];
       const payout = group?.payouts.find(p => p.id === payoutId);
       if (payout) {
         totalUSD += payout.net_payout_usd || 0;
@@ -217,17 +217,17 @@ const ClientPayoutsTab = () => {
 
       {/* Grouped Client Payouts */}
       <div className="space-y-4">
-        {filteredGroupedPayouts.map((group) => (
-          <Card key={group.client.id}>
+        {filteredGroupedPayouts.map(([clientId, group]) => (
+          <Card key={clientId}>
             <Collapsible 
-              open={expandedClients.has(group.client.id)}
-              onOpenChange={() => toggleClientExpansion(group.client.id)}
+              open={expandedClients.has(clientId)}
+              onOpenChange={() => toggleClientExpansion(clientId)}
             >
               <CollapsibleTrigger asChild>
                 <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      {expandedClients.has(group.client.id) ? (
+                      {expandedClients.has(clientId) ? (
                         <ChevronDown className="h-5 w-5 text-muted-foreground" />
                       ) : (
                         <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -236,7 +236,7 @@ const ClientPayoutsTab = () => {
                         <Building2 className="h-5 w-5 text-muted-foreground" />
                         <div>
                           <h3 className="font-semibold text-lg">
-                            {group.client.business_name || group.client.full_name || `Client ${group.client.id.slice(-8)}`}
+                            {group.client.business_name || group.client.full_name || `Client ${clientId.slice(-8)}`}
                           </h3>
                           <p className="text-sm text-muted-foreground flex items-center gap-2">
                             <Phone className="h-3 w-3" />

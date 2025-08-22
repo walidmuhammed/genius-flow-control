@@ -68,7 +68,7 @@ export function useCourierAwaitingPaymentOrders() {
 }
 
 export function useCourierPaidOrders() {
-  return useCourierOrdersByStatus('Paid');
+  return useCourierOrdersByStatus('paid');
 }
 
 export function useUpdateOrderStatus() {

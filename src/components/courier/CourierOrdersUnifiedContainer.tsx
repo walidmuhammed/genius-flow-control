@@ -74,7 +74,7 @@ export const CourierOrdersUnifiedContainer: React.FC<CourierOrdersUnifiedContain
       unsuccessful: orders.filter(o => o.status === 'Unsuccessful').length,
       returned: orders.filter(o => o.status === 'Returned').length,
       awaiting_payment: orders.filter(o => o.status === 'Awaiting Payment').length,
-      paid: orders.filter(o => o.status === 'Paid').length
+      paid: orders.filter(o => o.status === 'paid').length
     };
   }, [orders]);
 

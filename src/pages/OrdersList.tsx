@@ -44,7 +44,7 @@ const OrdersList: React.FC = () => {
   const { data: unsuccessfulOrders } = useOrdersByStatus('Unsuccessful');
   const { data: returnedOrders } = useOrdersByStatus('Returned');
   const { data: onHoldOrders } = useOnHoldOrders();
-  const { data: paidOrders } = useOrdersByStatus('Paid');
+  const { data: paidOrders } = useOrdersByStatus('paid');
   
   // FIX: Call useDeleteOrder
   const deleteOrderMutation = useDeleteOrder();

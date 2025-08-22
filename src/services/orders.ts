@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerWithLocation } from "./customers";
 
-export type OrderStatus = 'New' | 'Pending Pickup' | 'Assigned' | 'In Progress' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Awaiting Payment' | 'Paid' | 'On Hold';
+export type OrderStatus = 'New' | 'Pending Pickup' | 'Assigned' | 'In Progress' | 'Successful' | 'Unsuccessful' | 'Returned' | 'Awaiting Payment' | 'paid' | 'On Hold';
 export type OrderType = 'Shipment' | 'Exchange' | 'Cash Collection' | 'Return';
 export type PackageType = 'parcel' | 'document' | 'bulky';
 

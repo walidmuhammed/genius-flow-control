@@ -26,8 +26,8 @@ const OrderProgressBar: React.FC<OrderProgressBarProps> = ({ status, type }) => 
     if (status === 'Awaiting Payment') {
       return ['New', 'Pending Pickup', 'Assigned', 'In Progress', 'Awaiting Payment'];
     }
-    if (status === 'Paid') {
-      return ['New', 'Pending Pickup', 'Assigned', 'In Progress', 'Successful', 'Paid'];
+    if (status === 'paid') {
+      return ['New', 'Pending Pickup', 'Assigned', 'In Progress', 'Successful', 'paid'];
     }
     
     // Exchange type special flow

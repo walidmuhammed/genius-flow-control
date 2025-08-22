@@ -41,5 +41,31 @@ export async function markInvoiceAsPaid(invoiceId: string) {
     throw payoutsError;
   }
 
+  // Update all orders in this invoice to 'paid' status
+  // First get the order IDs
+  const { data: invoiceOrders, error: fetchOrdersError } = await supabase
+    .from('invoice_orders')
+    .select('order_id')
+    .eq('invoice_id', invoiceId);
+
+  if (fetchOrdersError) {
+    console.error('Error fetching invoice orders:', fetchOrdersError);
+    throw fetchOrdersError;
+  }
+
+  if (invoiceOrders && invoiceOrders.length > 0) {
+    const orderIds = invoiceOrders.map(io => io.order_id).filter(Boolean);
+    
+    const { error: ordersError } = await supabase
+      .from('orders')
+      .update({ status: 'paid' })
+      .in('id', orderIds);
+
+    if (ordersError) {
+      console.error('Error updating orders status to paid:', ordersError);
+      throw ordersError;
+    }
+  }
+
   return invoice;
 }

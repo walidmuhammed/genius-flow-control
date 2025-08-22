@@ -163,7 +163,7 @@ export async function createInvoice(orderIds: string[], merchantName?: string) {
   const autoMerchantName = merchantName || 
     firstOrder.profiles?.business_name || 
     firstOrder.profiles?.full_name || 
-    'WIXX';
+    'Unknown Merchant';
 
   // Calculate totals
   const totals = orders.reduce((acc, order) => {

@@ -45,7 +45,7 @@ const AdminOrders: React.FC = () => {
   const { data: unsuccessfulOrders } = useOrdersByStatus('Unsuccessful');
   const { data: returnedOrders } = useOrdersByStatus('Returned');
   const { data: awaitingPaymentOrders } = useAwaitingPaymentOrders();
-  const { data: paidOrders } = useOrdersByStatus('Paid');
+  const { data: paidOrders } = useOrdersByStatus('paid');
   const { data: onHoldOrders } = useOnHoldOrders();
   
   // FIX: Call useDeleteOrder

@@ -136,7 +136,7 @@ export const AdminOrderDetailsDialog: React.FC<AdminOrderDetailsDialogProps> = (
   };
 
   // Check if order can be edited/deleted (admins can edit any order except "Paid")
-  const canEditDelete = order?.status !== 'Paid';
+  const canEditDelete = order?.status !== 'paid';
 
   // Get shop information
   const getShopInfo = () => {
