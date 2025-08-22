@@ -49,12 +49,13 @@ const ClientWallet = () => {
   const handleExport = () => {
     // Create CSV content
     const csvContent = [
-      ['Invoice ID', 'Merchant', 'Amount USD', 'Amount LBP', 'Status', 'Date'].join(','),
+      ['Invoice ID', 'Merchant', 'Collected USD', 'Collected LBP', 'Net Payout USD', 'Status', 'Date'].join(','),
       ...filteredInvoices.map(invoice => [
         invoice.invoice_id,
         invoice.merchant_name,
+        invoice.total_amount_usd,
+        invoice.total_amount_lbp,
         invoice.net_payout_usd,
-        invoice.net_payout_lbp,
         invoice.status,
         new Date(invoice.created_at).toLocaleDateString()
       ].join(','))
@@ -141,11 +142,12 @@ const ClientWallet = () => {
                 {/* Desktop Table View */}
                 <div className="hidden md:block">
                   <div className="border rounded-lg overflow-hidden">
-                    <div className="grid grid-cols-6 gap-4 p-4 bg-muted/50 font-medium text-sm">
+                    <div className="grid grid-cols-7 gap-4 p-4 bg-muted/50 font-medium text-sm">
                       <div>Invoice ID</div>
-                      <div>Merchant Name</div>
-                      <div>Amount (USD)</div>
-                      <div>Amount (LBP)</div>
+                      <div>Merchant</div>
+                      <div>Collected (USD)</div>
+                      <div>Collected (LBP)</div>
+                      <div>Net Payout (USD)</div>
                       <div>Status</div>
                       <div>Actions</div>
                     </div>
@@ -156,15 +158,18 @@ const ClientWallet = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="grid grid-cols-6 gap-4 p-4 hover:bg-muted/20 transition-colors border-b last:border-b-0"
+                        className="grid grid-cols-7 gap-4 p-4 hover:bg-muted/20 transition-colors border-b last:border-b-0"
                       >
                         <div className="font-medium">{invoice.invoice_id}</div>
                         <div>{invoice.merchant_name}</div>
-                        <div className="font-medium text-green-600">
-                          {formatCurrency(invoice.net_payout_usd, 'USD')}
+                        <div className="font-medium text-primary">
+                          {formatCurrency(invoice.total_amount_usd, 'USD')}
+                        </div>
+                        <div className="font-medium text-primary">
+                          {formatCurrency(invoice.total_amount_lbp, 'LBP')}
                         </div>
                         <div className="font-medium text-green-600">
-                          {formatCurrency(invoice.net_payout_lbp, 'LBP')}
+                          {formatCurrency(invoice.net_payout_usd, 'USD')}
                         </div>
                         <div>{getStatusBadge(invoice.status)}</div>
                         <div className="flex items-center gap-2">
@@ -213,15 +218,21 @@ const ClientWallet = () => {
                           
                           <div className="space-y-2 mb-4">
                             <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Amount (USD):</span>
-                              <span className="font-medium text-green-600">
-                                {formatCurrency(invoice.net_payout_usd, 'USD')}
+                              <span className="text-sm text-muted-foreground">Collected (USD):</span>
+                              <span className="font-medium text-primary">
+                                {formatCurrency(invoice.total_amount_usd, 'USD')}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">Amount (LBP):</span>
+                              <span className="text-sm text-muted-foreground">Collected (LBP):</span>
+                              <span className="font-medium text-primary">
+                                {formatCurrency(invoice.total_amount_lbp, 'LBP')}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">Net Payout (USD):</span>
                               <span className="font-medium text-green-600">
-                                {formatCurrency(invoice.net_payout_lbp, 'LBP')}
+                                {formatCurrency(invoice.net_payout_usd, 'USD')}
                               </span>
                             </div>
                             <div className="flex justify-between">

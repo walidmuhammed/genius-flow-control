@@ -7,11 +7,12 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useInvoiceWithOrders } from '@/hooks/use-invoices';
 import { formatCurrency } from '@/utils/format';
-import { Check, Printer } from 'lucide-react';
+import { Check, Printer, Package, MapPin, User, DollarSign } from 'lucide-react';
 import { markInvoiceAsPaid } from '@/services/invoice-status';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
@@ -51,206 +52,313 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
 
   const getStatusBadge = (status: string) => {
     const statusMap = {
-      'Pending': { color: 'bg-yellow-100 text-yellow-800' },
-      'In Progress': { color: 'bg-blue-100 text-blue-800' },
-      'Paid': { color: 'bg-green-100 text-green-800' },
-      'On Hold': { color: 'bg-red-100 text-red-800' }
+      'Pending': { color: 'bg-warning/10 text-warning border-warning/20' },
+      'In Progress': { color: 'bg-primary/10 text-primary border-primary/20' },
+      'Paid': { color: 'bg-success/10 text-success border-success/20' },
+      'On Hold': { color: 'bg-destructive/10 text-destructive border-destructive/20' }
     };
     
     const config = statusMap[status as keyof typeof statusMap] || statusMap['Pending'];
     
     return (
-      <Badge className={config.color}>
+      <Badge className={`${config.color} border`}>
         {status}
       </Badge>
     );
   };
 
+  // Calculate totals for verification
+  const calculateTotals = () => {
+    if (!invoice?.orders) return null;
+    
+    const totals = invoice.orders.reduce((acc, order) => ({
+      collectedUSD: acc.collectedUSD + Number(order.collected_amount_usd || 0),
+      collectedLBP: acc.collectedLBP + Number(order.collected_amount_lbp || 0),
+      deliveryUSD: acc.deliveryUSD + Number(order.delivery_fees_usd || 0),
+      deliveryLBP: acc.deliveryLBP + Number(order.delivery_fees_lbp || 0),
+    }), { collectedUSD: 0, collectedLBP: 0, deliveryUSD: 0, deliveryLBP: 0 });
+
+    return {
+      ...totals,
+      netPayoutUSD: totals.collectedUSD - totals.deliveryUSD,
+      netPayoutLBP: totals.collectedLBP - totals.deliveryLBP,
+    };
+  };
+
+  const totals = calculateTotals();
+
   if (!open) return null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Invoice Details</DialogTitle>
+      <DialogContent className="max-w-5xl max-h-[90vh] p-0">
+        <DialogHeader className="p-6 pb-0">
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-2xl font-bold">
+                {invoice?.invoice_id || 'Invoice Details'}
+              </DialogTitle>
+              <p className="text-muted-foreground">
+                View detailed breakdown of invoice items
+              </p>
+            </div>
+            {invoice && getStatusBadge(invoice.status)}
+          </div>
         </DialogHeader>
 
-        {isLoading ? (
-          <div className="py-8 text-center">Loading invoice details...</div>
-        ) : invoice ? (
-          <div className="space-y-6">
-            {/* Invoice Header */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="font-semibold text-lg">{invoice.invoice_id}</h3>
-                <p className="text-muted-foreground">Invoice ID</p>
+        <ScrollArea className="max-h-[calc(90vh-140px)]">
+          <div className="p-6">
+            {isLoading ? (
+              <div className="py-12 text-center">
+                <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading invoice details...</p>
               </div>
-              <div className="text-right">
-                {getStatusBadge(invoice.status)}
-              </div>
-            </div>
+            ) : invoice ? (
+              <div className="space-y-6">
+                {/* Invoice Header */}
+                <Card>
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2">
+                      <DollarSign className="h-5 w-5" />
+                      Invoice Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Merchant</p>
+                        <p className="font-semibold">{invoice.merchant_name}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Created Date</p>
+                        <p className="font-semibold">
+                          {new Date(invoice.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total Orders</p>
+                        <p className="font-semibold">{invoice.orders?.length || 0}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="font-medium">{invoice.merchant_name}</p>
-                <p className="text-sm text-muted-foreground">Merchant</p>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">
-                  {new Date(invoice.created_at).toLocaleDateString()}
-                </p>
-                <p className="text-sm text-muted-foreground">Created Date</p>
-              </div>
-            </div>
+                {/* Order Details - Responsive Cards */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Package className="h-5 w-5" />
+                      Order Breakdown
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {invoice.orders?.map((order, index) => (
+                        <Card key={order.id} className="border-l-4 border-l-primary/20">
+                          <CardContent className="p-4">
+                            {/* Mobile-First Responsive Layout */}
+                            <div className="space-y-4">
+                              {/* Order Header */}
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-semibold">Order #{order.order_id}</h4>
+                                  <Badge variant="outline" className="text-xs">
+                                    {order.type}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {order.reference_number}
+                                </p>
+                              </div>
 
-            <Separator />
+                              {/* Customer & Location */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="flex items-start gap-2">
+                                  <User className="h-4 w-4 mt-1 text-muted-foreground" />
+                                  <div>
+                                    <p className="font-medium text-sm">{order.customer.name}</p>
+                                    <p className="text-xs text-muted-foreground">{order.customer.phone}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
+                                  <div>
+                                    <p className="font-medium text-sm">{order.customer.city_name}</p>
+                                    <p className="text-xs text-muted-foreground">{order.customer.governorate_name}</p>
+                                  </div>
+                                </div>
+                              </div>
 
-            {/* Order Details */}
-            <div>
-              <h4 className="font-semibold mb-4">Order Details</h4>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Order ID</TableHead>
-                          <TableHead>Reference</TableHead>
-                          <TableHead>Customer</TableHead>
-                          <TableHead>Location</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Package</TableHead>
-                          <TableHead>Amount (USD)</TableHead>
-                          <TableHead>Amount (LBP)</TableHead>
-                          <TableHead>Delivery Fee (USD)</TableHead>
-                          <TableHead>Delivery Fee (LBP)</TableHead>
-                          <TableHead>Net Payout (USD)</TableHead>
-                          <TableHead>Net Payout (LBP)</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                <TableBody>
-                  {invoice.orders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">
-                        #{order.order_id}
-                      </TableCell>
-                      <TableCell>{order.reference_number}</TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{order.customer.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {order.customer.phone}
-                          </p>
+                              {/* Package Info */}
+                              {order.package_type && (
+                                <div className="flex items-center gap-2">
+                                  <Package className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm">{order.package_type}</span>
+                                </div>
+                              )}
+
+                              {/* Financial Details */}
+                              <div className="bg-muted/30 rounded-lg p-3">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                  <div>
+                                    <p className="text-muted-foreground mb-1">Collected Amount</p>
+                                    <div className="space-y-1">
+                                      <p className="font-medium text-primary">
+                                        {formatCurrency(order.collected_amount_usd, 'USD')}
+                                      </p>
+                                      <p className="font-medium text-primary">
+                                        {formatCurrency(order.collected_amount_lbp, 'LBP')}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <p className="text-muted-foreground mb-1">Delivery Fee</p>
+                                    <div className="space-y-1">
+                                      <p className="font-medium text-orange-600">
+                                        {formatCurrency(order.delivery_fees_usd, 'USD')}
+                                      </p>
+                                      <p className="font-medium text-orange-600">
+                                        {formatCurrency(order.delivery_fees_lbp, 'LBP')}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="col-span-2 pt-2 border-t">
+                                    <p className="text-muted-foreground mb-1">Net Payout</p>
+                                    <div className="flex gap-4">
+                                      <p className="font-bold text-success">
+                                        {formatCurrency(
+                                          Number(order.collected_amount_usd || 0) - Number(order.delivery_fees_usd || 0),
+                                          'USD'
+                                        )}
+                                      </p>
+                                      <p className="font-bold text-success">
+                                        {formatCurrency(
+                                          Number(order.collected_amount_lbp || 0) - Number(order.delivery_fees_lbp || 0),
+                                          'LBP'
+                                        )}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Invoice Summary */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <DollarSign className="h-5 w-5" />
+                      Invoice Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* USD Column */}
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-primary">USD Amounts</h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between py-1">
+                            <span className="text-muted-foreground">Total Collected:</span>
+                            <span className="font-medium">
+                              {formatCurrency(invoice.total_amount_usd, 'USD')}
+                            </span>
+                          </div>
+                          <div className="flex justify-between py-1">
+                            <span className="text-muted-foreground">Total Delivery Fees:</span>
+                            <span className="font-medium text-orange-600">
+                              -{formatCurrency(invoice.total_delivery_usd, 'USD')}
+                            </span>
+                          </div>
+                          <Separator />
+                          <div className="flex justify-between py-2 text-lg">
+                            <span className="font-bold">Net Payout:</span>
+                            <span className="font-bold text-success">
+                              {formatCurrency(invoice.net_payout_usd, 'USD')}
+                            </span>
+                          </div>
+                          {totals && (
+                            <div className="text-xs text-muted-foreground">
+                              Calculated: {formatCurrency(totals.netPayoutUSD, 'USD')}
+                              {Math.abs(totals.netPayoutUSD - invoice.net_payout_usd) > 0.01 && (
+                                <span className="text-destructive ml-1">⚠ Mismatch</span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p>{order.customer.city_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {order.customer.governorate_name}
-                          </p>
+                      </div>
+
+                      {/* LBP Column */}
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-primary">LBP Amounts</h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between py-1">
+                            <span className="text-muted-foreground">Total Collected:</span>
+                            <span className="font-medium">
+                              {formatCurrency(invoice.total_amount_lbp, 'LBP')}
+                            </span>
+                          </div>
+                          <div className="flex justify-between py-1">
+                            <span className="text-muted-foreground">Total Delivery Fees:</span>
+                            <span className="font-medium text-orange-600">
+                              -{formatCurrency(invoice.total_delivery_lbp, 'LBP')}
+                            </span>
+                          </div>
+                          <Separator />
+                          <div className="flex justify-between py-2 text-lg">
+                            <span className="font-bold">Net Payout:</span>
+                            <span className="font-bold text-success">
+                              {formatCurrency(invoice.net_payout_lbp, 'LBP')}
+                            </span>
+                          </div>
+                          {totals && (
+                            <div className="text-xs text-muted-foreground">
+                              Calculated: {formatCurrency(totals.netPayoutLBP, 'LBP')}
+                              {Math.abs(totals.netPayoutLBP - invoice.net_payout_lbp) > 0.01 && (
+                                <span className="text-destructive ml-1">⚠ Mismatch</span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      </TableCell>
-                      <TableCell>{order.type}</TableCell>
-                      <TableCell>{order.package_type}</TableCell>
-                      <TableCell>
-                        {formatCurrency(order.collected_amount_usd, 'USD')}
-                      </TableCell>
-                      <TableCell>
-                        {formatCurrency(order.collected_amount_lbp, 'LBP')}
-                      </TableCell>
-                      <TableCell>
-                        {formatCurrency(order.delivery_fees_usd, 'USD')}
-                      </TableCell>
-                      <TableCell>
-                        {formatCurrency(order.delivery_fees_lbp, 'LBP')}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {formatCurrency(
-                          order.collected_amount_usd - order.delivery_fees_usd,
-                          'USD'
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {formatCurrency(
-                          order.collected_amount_lbp - order.delivery_fees_lbp,
-                          'LBP'
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-            </div>
-
-            <Separator />
-
-            {/* Invoice Summary */}
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <h4 className="font-semibold mb-3">Invoice Summary</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span>Total Collected (USD):</span>
-                    <span className="font-medium">
-                      {formatCurrency(invoice.total_amount_usd, 'USD')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between mb-2">
-                    <span>Total Delivery Fees (USD):</span>
-                    <span className="font-medium">
-                      {formatCurrency(invoice.total_delivery_usd, 'USD')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg border-t pt-2">
-                    <span>Net Payout (USD):</span>
-                    <span>{formatCurrency(invoice.net_payout_usd, 'USD')}</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span>Total Collected (LBP):</span>
-                    <span className="font-medium">
-                      {formatCurrency(invoice.total_amount_lbp, 'LBP')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between mb-2">
-                    <span>Total Delivery Fees (LBP):</span>
-                    <span className="font-medium">
-                      {formatCurrency(invoice.total_delivery_lbp, 'LBP')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg border-t pt-2">
-                    <span>Net Payout (LBP):</span>
-                    <span>{formatCurrency(invoice.net_payout_lbp, 'LBP')}</span>
-                  </div>
-                </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-between">
-              <Button
-                variant="outline"
-                onClick={() => window.print()}
-              >
-                <Printer className="h-4 w-4 mr-2" />
-                Print Invoice
-              </Button>
-              
-              {invoice.status !== 'Paid' && (
-                <Button
-                  onClick={handleMarkAsPaid}
-                  disabled={markingAsPaid}
-                >
-                  <Check className="h-4 w-4 mr-2" />
-                  {markingAsPaid ? 'Marking as Paid...' : 'Mark as Paid'}
-                </Button>
-              )}
-            </div>
+            ) : (
+              <div className="py-12 text-center text-muted-foreground">
+                <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Invoice not found</p>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="py-8 text-center text-muted-foreground">
-            Invoice not found
+        </ScrollArea>
+
+        {/* Actions Footer */}
+        {invoice && (
+          <div className="flex items-center justify-between p-6 border-t bg-muted/20">
+            <Button
+              variant="outline"
+              onClick={() => window.print()}
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Print Invoice
+            </Button>
+            
+            {invoice.status !== 'Paid' && (
+              <Button
+                onClick={handleMarkAsPaid}
+                disabled={markingAsPaid}
+              >
+                <Check className="h-4 w-4 mr-2" />
+                {markingAsPaid ? 'Marking as Paid...' : 'Mark as Paid'}
+              </Button>
+            )}
           </div>
         )}
       </DialogContent>
