@@ -5,8 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ClientPayoutsTab from '@/components/admin/wallet/ClientPayoutsTab';
 import CourierSettlementsTab from '@/components/admin/wallet/CourierSettlementsTab';
+import InvoicesListTab from '@/components/admin/wallet/InvoicesListTab';
 import { useOrders } from '@/hooks/use-orders';
 import { useInvoices } from '@/hooks/use-invoices';
+import { markInvoiceAsPaid } from '@/services/invoice-status';
 
 const AdminWallet = () => {
   document.title = "Financial Operations - Admin Panel";
@@ -16,8 +18,8 @@ const AdminWallet = () => {
   
   // Calculate KPIs
   const paidOrders = orders.filter(order => order.status === 'Successful');
-  const totalCollectedUSD = paidOrders.reduce((sum, order) => sum + (order.cash_collection_usd || 0), 0);
-  const totalCollectedLBP = paidOrders.reduce((sum, order) => sum + (order.cash_collection_lbp || 0), 0);
+  const totalCollectedUSD = paidOrders.reduce((sum, order) => sum + (order.collected_amount_usd || 0), 0);
+  const totalCollectedLBP = paidOrders.reduce((sum, order) => sum + (order.collected_amount_lbp || 0), 0);
   const totalDeliveryFeesUSD = paidOrders.reduce((sum, order) => sum + (order.delivery_fees_usd || 0), 0);
   const totalDeliveryFeesLBP = paidOrders.reduce((sum, order) => sum + (order.delivery_fees_lbp || 0), 0);
   const pendingPayoutUSD = totalCollectedUSD - totalDeliveryFeesUSD;
@@ -89,9 +91,10 @@ const AdminWallet = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="payouts" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="payouts">Client Payouts</TabsTrigger>
             <TabsTrigger value="settlements">Courier Settlements</TabsTrigger>
+            <TabsTrigger value="invoices">Generated Invoices</TabsTrigger>
           </TabsList>
           
           <TabsContent value="payouts" className="space-y-6">
@@ -100,6 +103,10 @@ const AdminWallet = () => {
           
           <TabsContent value="settlements" className="space-y-6">
             <CourierSettlementsTab />
+          </TabsContent>
+          
+          <TabsContent value="invoices" className="space-y-6">
+            <InvoicesListTab />
           </TabsContent>
         </Tabs>
       </div>
