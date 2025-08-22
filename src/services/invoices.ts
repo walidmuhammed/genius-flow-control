@@ -129,13 +129,16 @@ export async function getInvoiceWithOrders(invoiceId: string): Promise<InvoiceWi
 }
 
 export async function createInvoice(orderIds: string[], merchantName?: string) {
-  console.log('Creating invoice for orders:', orderIds);
+  console.log('🔵 createInvoice called with:', { orderIds, merchantName });
   
   if (!orderIds || orderIds.length === 0) {
+    console.error('❌ No orders provided');
     throw new Error('No orders selected');
   }
 
   try {
+    console.log('🔄 Calling database function create_invoice_with_items...');
+    
     // Call the database function through SQL RPC
     const { data, error } = await supabase
       .rpc('create_invoice_with_items', {
@@ -144,7 +147,7 @@ export async function createInvoice(orderIds: string[], merchantName?: string) {
       });
 
     if (error) {
-      console.error('Error creating invoice:', error);
+      console.error('❌ Database function error:', error);
       // Return specific error messages based on the error type
       if (error.message.includes('already invoiced')) {
         throw new Error(`One or more orders are already invoiced: ${error.message}`);
@@ -158,9 +161,10 @@ export async function createInvoice(orderIds: string[], merchantName?: string) {
       throw new Error(`Failed to create invoice: ${error.message}`);
     }
 
+    console.log('✅ Invoice created successfully:', data);
     return data;
   } catch (err: any) {
-    console.error('Error in createInvoice:', err);
+    console.error('❌ Error in createInvoice:', err);
     throw new Error(err.message || 'Failed to create invoice');
   }
 }
