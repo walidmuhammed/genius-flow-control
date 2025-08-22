@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useGroupedFilteredClientPayouts } from '@/hooks/use-filtered-client-payouts';
+import { useGroupedFilteredClientPayouts } from '@/hooks/use-client-payouts';
 import { useQueryClient } from '@tanstack/react-query';
 import { createInvoice } from '@/services/invoices';
 import { toast } from 'sonner';
@@ -91,7 +91,7 @@ const ClientPayoutsTab = () => {
           g.payouts.some(p => p.id === payoutId)
         ) || [];
         const payout = group?.payouts.find(p => p.id === payoutId);
-        return payout?.id; // Use the UUID id, which is the actual order UUID
+        return payout?.order_id; // Use the order_id field which contains the actual order UUID
       }).filter(Boolean);
 
       console.log('🔵 Creating invoice for order IDs:', orderIds);
@@ -106,7 +106,7 @@ const ClientPayoutsTab = () => {
       setSelectedPayouts([]);
       
       // Refresh the client payouts data
-      queryClient.invalidateQueries({ queryKey: ['filtered-client-payouts'] });
+      queryClient.invalidateQueries({ queryKey: ['grouped-filtered-client-payouts'] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       
       toast.success(`Invoice ${(invoice as any)?.invoice_id || 'generated'} created successfully`);
@@ -207,14 +207,14 @@ const ClientPayoutsTab = () => {
                       </span>
                     )}
                   </p>
-                  <div className="flex items-center gap-4 mt-2">
-                    <span className="text-sm">
-                      Total: <strong>{formatCurrency(selectedTotals.totalUSD, 'USD')}</strong>
-                    </span>
-                    <span className="text-sm">
-                      <strong>{formatCurrency(selectedTotals.totalLBP, 'LBP')}</strong>
-                    </span>
-                  </div>
+                   <div className="flex items-center gap-4 mt-2">
+                     <span className={`text-sm ${selectedTotals.totalUSD < 0 ? 'text-destructive' : ''}`}>
+                       Total: <strong>{formatCurrency(selectedTotals.totalUSD, 'USD')}</strong>
+                     </span>
+                     <span className={`text-sm ${selectedTotals.totalLBP < 0 ? 'text-destructive' : ''}`}>
+                       <strong>{formatCurrency(selectedTotals.totalLBP, 'LBP')}</strong>
+                     </span>
+                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button 
@@ -289,11 +289,11 @@ const ClientPayoutsTab = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-semibold">
-                          {formatCurrency(group.totalUSD, 'USD')}
+                        <div className={`text-lg font-semibold ${group.totalPendingUSD < 0 ? 'text-destructive' : ''}`}>
+                          {formatCurrency(group.totalPendingUSD, 'USD')}
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {formatCurrency(group.totalLBP, 'LBP')}
+                        <div className={`text-sm ${group.totalPendingLBP < 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                          {formatCurrency(group.totalPendingLBP, 'LBP')}
                         </div>
                         <Badge variant="secondary" className="mt-1">
                           {group.payouts.length} orders
@@ -371,10 +371,10 @@ const ClientPayoutsTab = () => {
                             <TableCell>
                               {formatCurrency(payout.delivery_fee_lbp, 'LBP')}
                             </TableCell>
-                            <TableCell className="font-medium text-green-600">
+                            <TableCell className={`font-medium ${(payout.net_payout_usd || 0) < 0 ? 'text-destructive' : 'text-green-600'}`}>
                               {formatCurrency(payout.net_payout_usd, 'USD')}
                             </TableCell>
-                            <TableCell className="font-medium text-green-600">
+                            <TableCell className={`font-medium ${(payout.net_payout_lbp || 0) < 0 ? 'text-destructive' : 'text-green-600'}`}>
                               {formatCurrency(payout.net_payout_lbp, 'LBP')}
                             </TableCell>
                           </TableRow>
