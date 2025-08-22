@@ -58,6 +58,28 @@ export async function getInvoices() {
   return data as Invoice[];
 }
 
+export async function getClientInvoices() {
+  const { data, error } = await supabase
+    .from('invoices')
+    .select(`
+      *,
+      invoice_orders!inner (
+        orders!inner (
+          client_id
+        )
+      )
+    `)
+    .eq('invoice_orders.orders.client_id', (await supabase.auth.getUser()).data.user?.id)
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Error fetching client invoices:', error);
+    throw error;
+  }
+  
+  return data as Invoice[];
+}
+
 export async function getInvoiceWithOrders(invoiceId: string): Promise<InvoiceWithOrders> {
   const { data: invoice, error: invoiceError } = await supabase
     .from('invoices')

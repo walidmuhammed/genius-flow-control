@@ -22,7 +22,7 @@ import CreateOrder from '@/pages/CreateOrder';
 import Pickups from '@/pages/Pickups';
 import SchedulePickup from '@/pages/SchedulePickup';
 import Customers from '@/pages/Customers';
-import Wallet from '@/pages/Wallet';
+import ClientWallet from '@/pages/ClientWallet';
 import Support from '@/pages/Support';
 import Analytics from '@/pages/Analytics';
 import Settings from '@/pages/Settings';
@@ -87,7 +87,7 @@ function App() {
               <Route path="/dashboard/client/pickups" element={<Pickups />} />
               <Route path="/dashboard/client/schedule-pickup" element={<SchedulePickup />} />
               <Route path="/dashboard/client/customers" element={<Customers />} />
-              <Route path="/dashboard/client/wallet" element={<Wallet />} />
+              <Route path="/dashboard/client/wallet" element={<ClientWallet />} />
               <Route path="/dashboard/client/support" element={<Support />} />
               <Route path="/dashboard/client/analytics" element={<Analytics />} />
               <Route path="/dashboard/client/settings" element={<Settings />} />
