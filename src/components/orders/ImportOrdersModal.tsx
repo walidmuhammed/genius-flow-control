@@ -8,25 +8,51 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Download, Upload } from 'lucide-react';
+import { AlertCircle, Download, Upload, FileSpreadsheet } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
+import { OrderImportPreview } from './OrderImportPreview';
+import { useGovernoratesAndCities } from '@/hooks/use-governorates-and-cities';
+import { useCreateOrUpdateCustomer } from '@/hooks/use-customers';
+import { useCreateOrder } from '@/hooks/use-orders';
+import { useAuth } from '@/hooks/useAuth';
+import { parseCSVFile, downloadCSVTemplate, CSVParseResult, ParsedOrderRow } from '@/utils/csvParser';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface ImportOrdersModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+type ImportStep = 'upload' | 'preview' | 'creating' | 'success';
+
 export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({ 
   open, 
   onOpenChange 
 }) => {
+  const { user } = useAuth();
+  const [step, setStep] = useState<ImportStep>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
-  
+  const [parseResult, setParseResult] = useState<CSVParseResult | null>(null);
+  const [creationProgress, setCreationProgress] = useState(0);
+  const [successCount, setSuccessCount] = useState(0);
+
+  // Hooks for data fetching and mutations
+  const { data: governoratesData, isLoading: locationLoading } = useGovernoratesAndCities();
+  const createOrUpdateCustomer = useCreateOrUpdateCustomer();
+  const createOrder = useCreateOrder();
+
+  const resetModal = () => {
+    setStep('upload');
+    setFile(null);
+    setParseResult(null);
+    setCreationProgress(0);
+    setSuccessCount(0);
+  };
+
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -45,8 +71,13 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
     setIsDragging(false);
     
     const files = e.dataTransfer.files;
-    if (files.length > 0 && files[0].type === 'text/csv') {
-      setFile(files[0]);
+    if (files.length > 0) {
+      const droppedFile = files[0];
+      if (droppedFile.type === 'text/csv' || droppedFile.name.endsWith('.csv')) {
+        setFile(droppedFile);
+      } else {
+        toast.error('Please select a CSV file');
+      }
     }
   };
   
@@ -55,101 +86,164 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
       setFile(e.target.files[0]);
     }
   };
-  
-  const handleUpload = () => {
-    if (!file) return;
-    
-    setUploadState('uploading');
-    
-    // Simulate upload progress
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
+
+  const parseFile = async () => {
+    if (!file || !governoratesData) {
+      toast.error('Please select a file and wait for location data to load');
+      return;
+    }
+
+    try {
+      const fileContent = await file.text();
+      const result = parseCSVFile(fileContent, governoratesData);
+      setParseResult(result);
+      setStep('preview');
       
-      if (progress >= 100) {
-        clearInterval(interval);
-        setUploadState('success');
-        setTimeout(() => {
-          onOpenChange(false);
-          setFile(null);
-          setUploadProgress(0);
-          setUploadState('idle');
-        }, 1500);
-      }
-    }, 300);
+      toast.success(`Parsed ${result.totalRows} rows: ${result.validRows} valid, ${result.invalidRows} invalid`);
+    } catch (error: any) {
+      console.error('Error parsing CSV:', error);
+      toast.error(`Failed to parse CSV: ${error.message}`);
+    }
   };
-  
-  const downloadTemplate = () => {
-    // In a real app, this would download a CSV template file
-    const csvContent = 'reference_number,customer_name,customer_phone,city,area,type,amount_usd,amount_lbp,delivery_charge_usd,delivery_charge_lbp,note\n,,,,,,,,,,';
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'orders_template.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+
+  const createOrdersFromData = async () => {
+    if (!parseResult || !governoratesData) return;
+
+    setStep('creating');
+    const validOrders = parseResult.orders.filter(order => order.isValid);
+    let successCount = 0;
+    let failedCount = 0;
+
+    for (let i = 0; i < validOrders.length; i++) {
+      try {
+        const orderData = validOrders[i];
+        
+        // Find governorate and city data
+        const governorate = governoratesData.find(g => 
+          g.name.toLowerCase() === orderData.governorate.toLowerCase()
+        );
+        const city = governorate?.cities?.find((c: any) => 
+          c.name.toLowerCase() === orderData.city.toLowerCase()
+        );
+
+        if (!governorate || !city) {
+          throw new Error(`Location data not found for ${orderData.governorate}, ${orderData.city}`);
+        }
+
+        // Create or update customer
+        const customerPayload = {
+          name: orderData.fullName,
+          phone: orderData.phone,
+          address: orderData.address,
+          city_id: city.id,
+          governorate_id: governorate.id,
+          is_work_address: orderData.isWorkAddress,
+        };
+
+        const customer = await createOrUpdateCustomer.mutateAsync(customerPayload);
+
+        // Use comprehensive pricing service directly instead of fetch
+        const deliveryFeesResponse = await supabase
+          .rpc('calculate_comprehensive_delivery_fee', {
+            p_client_id: user?.id,
+            p_governorate_id: governorate.id,
+            p_city_id: city.id,
+            p_package_type: orderData.packageType === 'parcel' ? 'Parcel' : 
+                          orderData.packageType === 'document' ? 'Document' : 'Bulky'
+          });
+
+        const deliveryFees = deliveryFeesResponse.data?.[0] || { 
+          total_fee_usd: 5, 
+          total_fee_lbp: 150000 
+        };
+
+        // Create order
+        const orderPayload = {
+          type: orderData.orderType === 'Shipment' ? 'Deliver' : orderData.orderType,
+          customer_id: customer.id,
+          package_type: orderData.packageType,
+          package_description: orderData.packageDescription || undefined,
+          items_count: orderData.itemsCount,
+          allow_opening: orderData.allowInspection,
+          cash_collection_enabled: orderData.usdAmount > 0 || orderData.lbpAmount > 0,
+          cash_collection_usd: orderData.usdAmount,
+          cash_collection_lbp: orderData.lbpAmount,
+          delivery_fees_usd: deliveryFees.total_fee_usd || 5,
+          delivery_fees_lbp: deliveryFees.total_fee_lbp || 150000,
+          note: orderData.deliveryNotes || undefined,
+          ...(orderData.orderReference && { reference_number: orderData.orderReference }),
+          status: 'New'
+        };
+
+        await createOrder.mutateAsync(orderPayload as any);
+        successCount++;
+        
+      } catch (error) {
+        console.error(`Error creating order ${i + 1}:`, error);
+        failedCount++;
+      }
+
+      setCreationProgress(((i + 1) / validOrders.length) * 100);
+    }
+
+    setSuccessCount(successCount);
+    setStep('success');
+    
+    if (successCount > 0) {
+      toast.success(`Successfully imported ${successCount} orders!`);
+    }
+    if (failedCount > 0) {
+      toast.error(`Failed to import ${failedCount} orders`);
+    }
+  };
+
+  const onCloseModal = () => {
+    resetModal();
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px]">
+    <Dialog open={open} onOpenChange={onCloseModal}>
+      <DialogContent className={step === 'preview' ? "sm:max-w-7xl" : "sm:max-w-2xl"}>
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">Import Orders</DialogTitle>
+          <DialogTitle className="text-lg font-semibold flex items-center gap-2">
+            <FileSpreadsheet className="h-5 w-5" />
+            Import Orders
+            {step === 'preview' && parseResult && (
+              <span className="text-sm font-normal text-muted-foreground">
+                - {parseResult.totalRows} rows detected
+              </span>
+            )}
+          </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="max-h-[70vh]">
-          <div className="space-y-6 py-4">
-            {uploadState !== 'success' && (
+        {step === 'upload' && (
+          <ScrollArea className="max-h-[70vh]">
+            <div className="space-y-6 py-4">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">
-                  Import orders by uploading a CSV file with the required format.
+                  Import orders by uploading a CSV file. Use our template for the correct format.
                 </p>
                 <div className="flex items-center gap-2">
                   <p className="text-sm text-muted-foreground">
-                    Don't have the template?
+                    Need the template?
                   </p>
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     className="text-sm h-8 px-2 flex items-center gap-1"
-                    onClick={downloadTemplate}
+                    onClick={downloadCSVTemplate}
                   >
                     <Download className="h-3.5 w-3.5" /> 
-                    Download CSV template
+                    Download CSV Template
                   </Button>
                 </div>
               </div>
-            )}
-            
-            {uploadState === 'uploading' ? (
-              <div className="space-y-4 py-8">
-                <p className="text-center font-medium">Uploading file...</p>
-                <Progress value={uploadProgress} className="h-2" />
-                <p className="text-center text-sm text-muted-foreground">
-                  {uploadProgress}% complete
-                </p>
-              </div>
-            ) : uploadState === 'success' ? (
-              <div className="space-y-4 py-8 text-center">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mx-auto">
-                  <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-base">Upload Successful</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Your orders have been imported successfully.
-                  </p>
-                </div>
-              </div>
-            ) : (
+              
               <div 
-                className={`border-2 border-dashed rounded-lg p-8 ${isDragging ? 'border-[#DB271E] bg-[#DB271E]/5' : 'border-gray-300'} ${file ? 'bg-blue-50' : 'bg-white'} transition-colors duration-200 text-center`}
+                className={`border-2 border-dashed rounded-lg p-8 ${
+                  isDragging ? 'border-primary bg-primary/5' : 'border-gray-300'
+                } ${file ? 'bg-blue-50' : 'bg-white'} transition-colors duration-200 text-center`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -169,20 +263,20 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
                   ) : (
                     <div className="space-y-1">
                       <p className="font-medium">Drag and drop your CSV file</p>
-                      <p className="text-sm text-muted-foreground">or</p>
+                      <p className="text-sm text-muted-foreground">or click to browse</p>
                     </div>
                   )}
                   
                   <div>
                     <label htmlFor="file-upload" className="cursor-pointer">
-                      <span className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#DB271E] hover:bg-[#c0211a]">
-                        {file ? 'Choose different file' : 'Browse files'}
+                      <span className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90">
+                        {file ? 'Choose different file' : 'Browse Files'}
                       </span>
                       <input
                         id="file-upload"
                         name="file-upload"
                         type="file"
-                        accept=".csv"
+                        accept=".csv,.xlsx"
                         className="sr-only"
                         onChange={handleFileChange}
                       />
@@ -191,48 +285,100 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
                   
                   {!file && (
                     <p className="text-xs text-muted-foreground">
-                      Supported format: CSV
+                      Supported formats: CSV, Excel (.xlsx)
                     </p>
                   )}
                 </div>
               </div>
-            )}
+              
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium">Required Fields:</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                  <div>• Full Name*</div>
+                  <div>• Phone Number*</div>
+                  <div>• Governorate*</div>
+                  <div>• City*</div>
+                  <div>• Address Details*</div>
+                  <div>• Order Type* (Shipment/Exchange)</div>
+                </div>
+                <h4 className="text-sm font-medium mt-4">Optional Fields:</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                  <div>• Package Type</div>
+                  <div>• Package Description</div>
+                  <div>• USD/LBP Amounts</div>
+                  <div>• Work Address (true/false)</div>
+                  <div>• Allow Inspection</div>
+                  <div>• Order Reference</div>
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+        )}
+
+        {step === 'preview' && parseResult && (
+          <OrderImportPreview
+            parseResult={parseResult}
+            onProceed={createOrdersFromData}
+            onCancel={() => setStep('upload')}
+            isCreating={false}
+          />
+        )}
+
+        {step === 'creating' && (
+          <div className="space-y-6 py-8">
+            <div className="text-center">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mb-4">
+                <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+              <p className="font-medium text-lg">Creating Orders...</p>
+              <p className="text-sm text-muted-foreground">
+                Please wait while we create your orders
+              </p>
+            </div>
             
-            {uploadState === 'error' && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  There was an error uploading your file. Please try again.
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="space-y-2 mt-4">
-              <h4 className="text-sm font-medium">Guidelines for importing orders:</h4>
-              <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
-                <li>The CSV file must contain all required fields.</li>
-                <li>Customer details must include full name and valid phone number.</li>
-                <li>Make sure to specify the correct order type (Deliver, Exchange, Cash Collection, Return).</li>
-                <li>Use the template for the correct format.</li>
-              </ul>
+            <div className="space-y-2">
+              <Progress value={creationProgress} className="h-2" />
+              <p className="text-center text-sm text-muted-foreground">
+                {Math.round(creationProgress)}% complete
+              </p>
             </div>
           </div>
-        </ScrollArea>
+        )}
+
+        {step === 'success' && (
+          <div className="space-y-6 py-8 text-center">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+              <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-medium text-lg">Import Complete!</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Successfully imported {successCount} orders.
+              </p>
+            </div>
+          </div>
+        )}
         
-        <DialogFooter>
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-          >
-            Cancel
-          </Button>
-          <Button 
-            disabled={!file || uploadState === 'uploading' || uploadState === 'success'}
-            onClick={handleUpload}
-          >
-            Import Orders
-          </Button>
-        </DialogFooter>
+        {(step === 'upload' || step === 'success') && (
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={onCloseModal}
+            >
+              {step === 'success' ? 'Close' : 'Cancel'}
+            </Button>
+            {step === 'upload' && (
+              <Button 
+                disabled={!file || locationLoading}
+                onClick={parseFile}
+              >
+                {locationLoading ? 'Loading...' : 'Continue'}
+              </Button>
+            )}
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
