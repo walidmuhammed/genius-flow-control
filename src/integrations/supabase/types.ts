@@ -187,6 +187,39 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_history: {
+        Row: {
+          change_reason: string | null
+          changed_at: string
+          changed_by: string
+          customer_id: string
+          field_name: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_at?: string
+          changed_by: string
+          customer_id: string
+          field_name: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Update: {
+          change_reason?: string | null
+          changed_at?: string
+          changed_by?: string
+          customer_id?: string
+          field_name?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: string | null
@@ -1440,6 +1473,16 @@ export type Database = {
       is_current_user_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      log_customer_change: {
+        Args: {
+          p_change_reason?: string
+          p_customer_id: string
+          p_field_name: string
+          p_new_value: string
+          p_old_value: string
+        }
+        Returns: undefined
       }
       log_security_event: {
         Args: { details?: Json; entity_id: string; event_type: string }
