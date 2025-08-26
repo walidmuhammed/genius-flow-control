@@ -204,13 +204,13 @@ export async function searchCustomersByPhone(phone: string) {
     throw new Error('User not authenticated');
   }
 
-  console.log('🔍 Searching for phone:', phone);
+  console.log('🔍 [SEARCH] User ID:', user.id, 'Searching for phone:', phone);
   
-  // Normalize the search phone for matching
+  // Normalize the search phone for exact matching
   const normalizedSearchPhone = normalizePhoneForMatching(phone);
-  console.log('📱 Normalized search phone:', normalizedSearchPhone);
+  console.log('📱 [SEARCH] Normalized search phone:', normalizedSearchPhone);
 
-  // Get all customers for this user first, then filter by normalized phone
+  // Search only within current user's customers using exact normalized phone match
   const { data, error } = await supabase
     .from('customers')
     .select(`
@@ -221,31 +221,34 @@ export async function searchCustomersByPhone(phone: string) {
     .eq('created_by', user.id);
   
   if (error) {
-    console.error(`Error fetching customers for phone search:`, error);
+    console.error(`[SEARCH] Error fetching customers:`, error);
     throw error;
   }
   
-  // Filter customers by normalized phone matching
+  console.log(`🗂️ [SEARCH] Total customers for user ${user.id}:`, data.length);
+  
+  // Filter customers by exact normalized phone matching (no bidirectional)
   const matchingCustomers = data.filter(customer => {
     const customerPrimaryNorm = normalizePhoneForMatching(customer.phone || '');
     const customerSecondaryNorm = normalizePhoneForMatching(customer.secondary_phone || '');
     
-    const primaryMatch = customerPrimaryNorm.includes(normalizedSearchPhone) || normalizedSearchPhone.includes(customerPrimaryNorm);
-    const secondaryMatch = customerSecondaryNorm.includes(normalizedSearchPhone) || normalizedSearchPhone.includes(customerSecondaryNorm);
+    // Simple exact match - no contains logic to prevent cross-contamination
+    const primaryMatch = customerPrimaryNorm === normalizedSearchPhone;
+    const secondaryMatch = customerSecondaryNorm === normalizedSearchPhone;
     
-    console.log('📞 Phone match check:', {
-      customer: customer.name,
-      primaryPhone: customer.phone,
-      primaryNorm: customerPrimaryNorm,
-      secondaryPhone: customer.secondary_phone,
-      secondaryNorm: customerSecondaryNorm,
-      searchNorm: normalizedSearchPhone,
-      primaryMatch,
-      secondaryMatch
-    });
+    if (primaryMatch || secondaryMatch) {
+      console.log('✅ [MATCH]', {
+        customer: customer.name,
+        customerPhone: customer.phone,
+        customerPhoneNorm: customerPrimaryNorm,
+        searchPhoneNorm: normalizedSearchPhone,
+        exactMatch: true,
+        createdBy: customer.created_by
+      });
+    }
     
     return primaryMatch || secondaryMatch;
-  }).slice(0, 5); // Limit to 5 results
+  }).slice(0, 5);
   
   const customers: CustomerWithLocation[] = matchingCustomers.map(customer => ({
     ...customer,
@@ -253,7 +256,7 @@ export async function searchCustomersByPhone(phone: string) {
     governorate_name: customer.governorates?.name
   }));
   
-  console.log('✅ Found matching customers:', customers.length);
+  console.log('🎯 [RESULT] Found matching customers:', customers.length);
   return customers;
 }
 
@@ -264,15 +267,12 @@ export async function findCustomerByExactPhone(phone: string) {
     throw new Error('User not authenticated');
   }
 
-  // Try to normalize the phone for exact matching
-  let normalizedPhone: string;
-  try {
-    normalizedPhone = formatPhoneForStorage(phone);
-  } catch {
-    // If normalization fails, try to match with the original phone
-    normalizedPhone = phone;
-  }
-
+  console.log('🔍 [EXACT] User ID:', user.id, 'Finding exact phone:', phone);
+  
+  const normalizedPhone = normalizePhoneForMatching(phone);
+  console.log('📱 [EXACT] Normalized phone:', normalizedPhone);
+  
+  // Get all customers for this user and find exact match
   const { data, error } = await supabase
     .from('customers')
     .select(`
@@ -280,26 +280,34 @@ export async function findCustomerByExactPhone(phone: string) {
       cities:city_id(name),
       governorates:governorate_id(name)
     `)
-    .eq('created_by', user.id)
-    .eq('phone', normalizedPhone)
-    .maybeSingle();
+    .eq('created_by', user.id);
   
   if (error) {
-    console.error(`Error finding customer with exact phone ${phone}:`, error);
+    console.error(`[EXACT] Error fetching customers:`, error);
     throw error;
   }
   
-  if (!data) {
-    return null;
+  // Find exact normalized phone match
+  const exactMatch = data.find(customer => {
+    const customerPrimaryNorm = normalizePhoneForMatching(customer.phone || '');
+    const customerSecondaryNorm = normalizePhoneForMatching(customer.secondary_phone || '');
+    
+    return customerPrimaryNorm === normalizedPhone || customerSecondaryNorm === normalizedPhone;
+  });
+  
+  if (exactMatch) {
+    console.log('✅ [EXACT] Found customer:', exactMatch.name, 'created_by:', exactMatch.created_by);
+    const customerWithLocation: CustomerWithLocation = {
+      ...exactMatch,
+      city_name: exactMatch.cities?.name,
+      governorate_name: exactMatch.governorates?.name
+    };
+    
+    return customerWithLocation;
   }
   
-  const customer: CustomerWithLocation = {
-    ...data,
-    city_name: data.cities?.name,
-    governorate_name: data.governorates?.name
-  };
-  
-  return customer;
+  console.log('❌ [EXACT] No customer found');
+  return null;
 }
 
 export async function findCustomerByNormalizedPhone(phone: string) {

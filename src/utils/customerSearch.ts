@@ -58,31 +58,14 @@ export function filterCustomers(customers: CustomerWithLocation[], query: string
       let cityScore = fuzzyMatch(customer.city_name || '', cleanedQuery);
       let govScore = fuzzyMatch(customer.governorate_name || '', cleanedQuery);
 
-      // Phone normalized substring - Use the new normalization utility with better bidirectional matching
+      // Phone normalized exact matching only - no contains logic to prevent cross-contamination
       let primaryPhoneNorm = normalizePhoneForMatching(customer.phone || "");
       let secondaryPhoneNorm = normalizePhoneForMatching(customer.secondary_phone || "");
       let searchNorm = normalizePhoneForMatching(cleanedQuery);
       
-      // Bidirectional phone matching - search can be subset of customer phone or vice versa
-      const primaryMatch = searchNorm && searchNorm.length >= 2 && 
-        (primaryPhoneNorm.includes(searchNorm) || searchNorm.includes(primaryPhoneNorm));
-      const secondaryMatch = searchNorm && searchNorm.length >= 2 && 
-        (secondaryPhoneNorm.includes(searchNorm) || searchNorm.includes(secondaryPhoneNorm));
-      
-      // Debug phone matching
-      if (searchNorm && searchNorm.length >= 2) {
-        console.log('🔍 Phone search debug:', {
-          customer: customer.name,
-          primary: customer.phone,
-          primaryNorm: primaryPhoneNorm,
-          secondary: customer.secondary_phone,
-          secondaryNorm: secondaryPhoneNorm,
-          search: cleanedQuery,
-          searchNorm: searchNorm,
-          primaryMatch,
-          secondaryMatch
-        });
-      }
+      // Exact phone matching only
+      const primaryMatch = searchNorm && searchNorm.length >= 8 && primaryPhoneNorm === searchNorm;
+      const secondaryMatch = searchNorm && searchNorm.length >= 8 && secondaryPhoneNorm === searchNorm;
 
       const phoneScore = primaryMatch || secondaryMatch;
 
