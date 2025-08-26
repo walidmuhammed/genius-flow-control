@@ -101,8 +101,9 @@ export function useCreateOrUpdateCustomer() {
   
   return useMutation({
     mutationFn: async (customerData: any) => {
-      // First, try to find an existing customer with the exact phone number
-      const existingCustomer = await findCustomerByExactPhone(customerData.phone);
+      // First, try to find an existing customer with normalized phone matching
+      const { findCustomerByNormalizedPhone } = await import('@/services/customers');
+      const existingCustomer = await findCustomerByNormalizedPhone(customerData.phone);
       
       if (existingCustomer) {
         // Update existing customer with new information

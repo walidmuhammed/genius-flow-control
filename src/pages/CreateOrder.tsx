@@ -29,6 +29,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import OrderTypeSelector from '@/components/dashboard/OrderTypeSelector';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import IntegratedCashCollectionFields from '@/components/orders/IntegratedCashCollectionFields';
+import { formatPhoneForStorage } from '@/utils/phoneNormalization';
 
 // Create a unique form key for forcing re-render
 const getUniqueFormKey = () => `order-form-${Date.now()}`;
@@ -371,8 +372,8 @@ const CreateOrder = () => {
       if (!customerId) {
         const customerData = {
           name,
-          phone,
-          secondary_phone: isSecondaryPhone ? secondaryPhone : undefined,
+          phone: formatPhoneForStorage(phone), // Normalize phone for storage
+          secondary_phone: isSecondaryPhone ? formatPhoneForStorage(secondaryPhone) : undefined,
           ...fullAddressData
         };
         

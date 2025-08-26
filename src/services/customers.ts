@@ -1,5 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { formatPhoneForStorage, normalizePhoneForMatching, arePhoneNumbersEqual } from "@/utils/phoneNormalization";
+import { logCustomerChange } from "./customerHistory";
 
 export interface Customer {
   id: string;
@@ -84,8 +86,18 @@ export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at
     throw new Error('User not authenticated');
   }
 
+  // Normalize phone number for storage
+  let normalizedPhone = customer.phone;
+  try {
+    normalizedPhone = formatPhoneForStorage(customer.phone);
+  } catch (error) {
+    throw new Error(`Invalid phone number format: ${customer.phone}`);
+  }
+
   const customerWithCreatedBy = {
     ...customer,
+    phone: normalizedPhone,
+    secondary_phone: customer.secondary_phone ? formatPhoneForStorage(customer.secondary_phone) : undefined,
     created_by: user.id
   };
 
@@ -110,9 +122,29 @@ export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at
 }
 
 export async function updateCustomer(id: string, updates: Partial<Omit<Customer, 'id' | 'created_at' | 'updated_at'>>) {
+  // Get the existing customer to log changes
+  const existingCustomer = await getCustomerById(id);
+  
+  // Normalize phone numbers if provided
+  const normalizedUpdates = { ...updates };
+  if (updates.phone) {
+    try {
+      normalizedUpdates.phone = formatPhoneForStorage(updates.phone);
+    } catch (error) {
+      throw new Error(`Invalid phone number format: ${updates.phone}`);
+    }
+  }
+  if (updates.secondary_phone) {
+    try {
+      normalizedUpdates.secondary_phone = formatPhoneForStorage(updates.secondary_phone);
+    } catch (error) {
+      throw new Error(`Invalid secondary phone number format: ${updates.secondary_phone}`);
+    }
+  }
+
   const { data, error } = await supabase
     .from('customers')
-    .update(updates)
+    .update(normalizedUpdates)
     .eq('id', id)
     .select()
     .single();
@@ -120,6 +152,24 @@ export async function updateCustomer(id: string, updates: Partial<Omit<Customer,
   if (error) {
     console.error(`Error updating customer with id ${id}:`, error);
     throw error;
+  }
+
+  // Log changes to customer history
+  try {
+    const fieldsToTrack = ['name', 'phone', 'secondary_phone', 'address', 'city_id', 'governorate_id'];
+    for (const field of fieldsToTrack) {
+      if (field in normalizedUpdates) {
+        const oldValue = existingCustomer[field as keyof Customer] as string;
+        const newValue = normalizedUpdates[field as keyof typeof normalizedUpdates] as string;
+        
+        if (oldValue !== newValue) {
+          await logCustomerChange(id, field, oldValue || null, newValue || null, 'user_edit');
+        }
+      }
+    }
+  } catch (historyError) {
+    console.warn('Failed to log customer history:', historyError);
+    // Don't fail the update if history logging fails
   }
   
   return data as Customer;
@@ -164,6 +214,15 @@ export async function findCustomerByExactPhone(phone: string) {
     throw new Error('User not authenticated');
   }
 
+  // Try to normalize the phone for exact matching
+  let normalizedPhone: string;
+  try {
+    normalizedPhone = formatPhoneForStorage(phone);
+  } catch {
+    // If normalization fails, try to match with the original phone
+    normalizedPhone = phone;
+  }
+
   const { data, error } = await supabase
     .from('customers')
     .select(`
@@ -172,7 +231,7 @@ export async function findCustomerByExactPhone(phone: string) {
       governorates:governorate_id(name)
     `)
     .eq('created_by', user.id)
-    .eq('phone', phone)
+    .eq('phone', normalizedPhone)
     .maybeSingle();
   
   if (error) {
@@ -188,6 +247,47 @@ export async function findCustomerByExactPhone(phone: string) {
     ...data,
     city_name: data.cities?.name,
     governorate_name: data.governorates?.name
+  };
+  
+  return customer;
+}
+
+export async function findCustomerByNormalizedPhone(phone: string) {
+  // Get current user for proper tenant isolation
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  // Get all customers for this user
+  const { data: customers, error } = await supabase
+    .from('customers')
+    .select(`
+      *,
+      cities:city_id(name),
+      governorates:governorate_id(name)
+    `)
+    .eq('created_by', user.id);
+  
+  if (error) {
+    console.error('Error fetching customers for phone matching:', error);
+    throw error;
+  }
+
+  // Find customer with matching normalized phone
+  const targetNormalized = normalizePhoneForMatching(phone);
+  const matchingCustomer = customers?.find(customer => 
+    arePhoneNumbersEqual(customer.phone, phone)
+  );
+
+  if (!matchingCustomer) {
+    return null;
+  }
+
+  const customer: CustomerWithLocation = {
+    ...matchingCustomer,
+    city_name: matchingCustomer.cities?.name,
+    governorate_name: matchingCustomer.governorates?.name
   };
   
   return customer;

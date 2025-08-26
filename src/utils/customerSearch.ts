@@ -1,4 +1,5 @@
 import { CustomerWithLocation } from "@/services/customers";
+import { normalizePhoneForMatching } from './phoneNormalization';
 
 // Normalize phone number: remove country code, spaces, special chars, leading zeros
 export function normalizePhone(phone: string) {
@@ -57,10 +58,10 @@ export function filterCustomers(customers: CustomerWithLocation[], query: string
       let cityScore = fuzzyMatch(customer.city_name || '', cleanedQuery);
       let govScore = fuzzyMatch(customer.governorate_name || '', cleanedQuery);
 
-      // Phone normalized substring
-      let primaryPhoneNorm = normalizePhone(customer.phone || "");
-      let secondaryPhoneNorm = normalizePhone(customer.secondary_phone || "");
-      let searchNorm = normalizePhone(cleanedQuery);
+      // Phone normalized substring - Use the new normalization utility
+      let primaryPhoneNorm = normalizePhoneForMatching(customer.phone || "");
+      let secondaryPhoneNorm = normalizePhoneForMatching(customer.secondary_phone || "");
+      let searchNorm = normalizePhoneForMatching(cleanedQuery);
 
       const phoneScore = (searchNorm && searchNorm.length >= 2)
         ? (

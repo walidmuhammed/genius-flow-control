@@ -1,4 +1,6 @@
 import { isValidLebaneseMobileNumber } from './customerSearch';
+import { correctOrderType, correctPackageType } from './smartValidation';
+import { formatPhoneForStorage } from './phoneNormalization';
 
 export interface ParsedOrderRow {
   row: number;
@@ -275,16 +277,66 @@ export function parseCSVFile(csvContent: string, governoratesData: any[]): CSVPa
       }
     }
 
-    // Validate order type
-    const validOrderTypes = ['Shipment', 'Exchange'];
-    if (orderType && !validOrderTypes.includes(orderType)) {
-      errors.push(`Order Type must be one of: ${validOrderTypes.join(', ')}`);
+    // Smart order type validation and correction
+    let correctedOrderType = orderType;
+    if (orderType) {
+      const orderTypeResult = correctOrderType(orderType);
+      if (orderTypeResult.confidence > 0.5) {
+        correctedOrderType = orderTypeResult.corrected;
+        if (orderTypeResult.confidence < 1.0) {
+          suggestions.push({
+            field: 'orderType',
+            original: orderType,
+            suggestions: [orderTypeResult.corrected],
+            corrected: orderTypeResult.corrected
+          });
+        }
+      } else {
+        errors.push(`Order Type "${orderType}" is invalid. Suggestions: ${orderTypeResult.suggestions.join(', ')}`);
+        suggestions.push({
+          field: 'orderType',
+          original: orderType,
+          suggestions: orderTypeResult.suggestions
+        });
+      }
+    } else {
+      correctedOrderType = 'Shipment'; // default
     }
 
-    // Validate package type
-    const validPackageTypes = ['parcel', 'document', 'bulky'];
-    if (packageType && !validPackageTypes.includes(packageType.toLowerCase())) {
-      errors.push(`Package Type must be one of: ${validPackageTypes.join(', ')}`);
+    // Smart package type validation and correction
+    let correctedPackageType = packageType;
+    if (packageType) {
+      const packageTypeResult = correctPackageType(packageType);
+      if (packageTypeResult.confidence > 0.5) {
+        correctedPackageType = packageTypeResult.corrected;
+        if (packageTypeResult.confidence < 1.0) {
+          suggestions.push({
+            field: 'packageType',
+            original: packageType,
+            suggestions: [packageTypeResult.corrected],
+            corrected: packageTypeResult.corrected
+          });
+        }
+      } else {
+        errors.push(`Package Type "${packageType}" is invalid. Suggestions: ${packageTypeResult.suggestions.join(', ')}`);
+        suggestions.push({
+          field: 'packageType',
+          original: packageType,
+          suggestions: packageTypeResult.suggestions
+        });
+      }
+    } else {
+      correctedPackageType = 'parcel'; // default
+    }
+
+    // Normalize phone number for storage
+    let normalizedPhone = phone;
+    if (phone) {
+      try {
+        normalizedPhone = formatPhoneForStorage(phone);
+      } catch (phoneError) {
+        errors.push(`Invalid phone format: ${phone}. Please use Lebanese mobile format.`);
+      }
     }
 
     const isValid = errors.length === 0;
@@ -294,13 +346,13 @@ export function parseCSVFile(csvContent: string, governoratesData: any[]): CSVPa
     orders.push({
       row: rowNum,
       fullName,
-      phone,
+      phone: normalizedPhone,
       governorate: correctedGovernorate,
       city: correctedCity,
       address,
       itemsCount,
-      orderType,
-      packageType: packageType.toLowerCase(),
+      orderType: correctedOrderType,
+      packageType: correctedPackageType,
       isWorkAddress,
       packageDescription,
       usdAmount,

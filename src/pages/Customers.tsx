@@ -565,6 +565,7 @@ const Customers: React.FC = () => {
         title="Customer Details"
         isEditing={isEditing && !isMobile}
         headerActions={getHeaderActions()}
+        customerId={selectedCustomerId} // Add customerId for history tracking
       >
         {isLoadingCustomer ? (
           <div className="flex justify-center items-center min-h-[120px]">
