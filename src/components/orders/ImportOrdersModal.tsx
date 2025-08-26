@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { OrderImportPreview } from './OrderImportPreview';
+import { ImportProgressIndicator } from './ImportProgressIndicator';
 import { useGovernoratesAndCities } from '@/hooks/use-governorates-and-cities';
 import { useCreateOrUpdateCustomer } from '@/hooks/use-customers';
 import { useCreateOrder } from '@/hooks/use-orders';
@@ -223,10 +224,10 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
-      <DialogContent className={step === 'preview' ? "sm:max-w-5xl max-h-[90vh]" : "sm:max-w-2xl"}>
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5" />
+      <DialogContent className={step === 'preview' ? "sm:max-w-6xl max-h-[95vh]" : "sm:max-w-2xl max-h-[90vh]"}>
+        <DialogHeader className="pb-2 border-b">
+          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+            <FileSpreadsheet className="h-6 w-6 text-primary" />
             Import Orders
             {step === 'preview' && parseResult && (
               <span className="text-sm font-normal text-muted-foreground">
@@ -234,62 +235,73 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
               </span>
             )}
           </DialogTitle>
+          
+          {/* Progress Indicator */}
+          <ImportProgressIndicator currentStep={step} />
         </DialogHeader>
         
         {step === 'upload' && (
-          <ScrollArea className="max-h-[70vh]">
-            <div className="space-y-6 py-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">
-                  Import orders by uploading a CSV file. Use our template for the correct format.
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-6 py-6">
+              <div className="text-center space-y-2">
+                <h3 className="text-lg font-medium">Upload Your Orders</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  Import multiple orders at once using a CSV file. Make sure your data follows our template format.
                 </p>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm text-muted-foreground">
-                    Need the template?
-                  </p>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-sm h-8 px-2 flex items-center gap-1"
-                    onClick={downloadCSVTemplate}
-                  >
-                    <Download className="h-3.5 w-3.5" /> 
-                    Download CSV Template
-                  </Button>
-                </div>
+              </div>
+              
+              <div className="flex items-center justify-center">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-2"
+                  onClick={downloadCSVTemplate}
+                >
+                  <Download className="h-4 w-4" /> 
+                  Download CSV Template
+                </Button>
               </div>
               
               <div 
-                className={`border-2 border-dashed rounded-lg p-8 ${
-                  isDragging ? 'border-primary bg-primary/5' : 'border-gray-300'
-                } ${file ? 'bg-blue-50' : 'bg-white'} transition-colors duration-200 text-center`}
+                className={`border-2 border-dashed rounded-xl p-10 transition-all duration-300 text-center ${
+                  isDragging 
+                    ? 'border-primary bg-primary/5 scale-[1.02]' 
+                    : file 
+                      ? 'border-green-300 bg-green-50' 
+                      : 'border-border bg-background hover:border-primary/40 hover:bg-accent/20'
+                }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
               >
-                <div className="flex flex-col items-center justify-center space-y-4">
-                  <div className={`rounded-full p-3 ${file ? 'bg-blue-100' : 'bg-gray-100'}`}>
-                    <Upload className={`h-6 w-6 ${file ? 'text-blue-600' : 'text-gray-500'}`} />
+                <div className="flex flex-col items-center justify-center space-y-5">
+                  <div className={`rounded-full p-4 transition-colors ${
+                    file 
+                      ? 'bg-green-100 text-green-600' 
+                      : 'bg-primary/10 text-primary'
+                  }`}>
+                    <Upload className="h-8 w-8" />
                   </div>
                   
                   {file ? (
                     <div className="space-y-2">
-                      <p className="font-medium">File Selected: {file.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {(file.size / 1024).toFixed(2)} KB
+                      <p className="font-semibold text-green-800">File Selected</p>
+                      <p className="text-sm font-medium">{file.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {(file.size / 1024).toFixed(1)} KB • Ready to process
                       </p>
                     </div>
                   ) : (
-                    <div className="space-y-1">
-                      <p className="font-medium">Drag and drop your CSV file</p>
-                      <p className="text-sm text-muted-foreground">or click to browse</p>
+                    <div className="space-y-2">
+                      <p className="font-semibold text-foreground">Drag and drop your CSV file here</p>
+                      <p className="text-sm text-muted-foreground">or click the button below to browse</p>
                     </div>
                   )}
                   
                   <div>
                     <label htmlFor="file-upload" className="cursor-pointer">
-                      <span className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90">
-                        {file ? 'Choose different file' : 'Browse Files'}
+                      <span className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-primary-foreground bg-primary hover:bg-primary/90 transition-colors shadow-sm">
+                        {file ? 'Choose Different File' : 'Browse Files'}
                       </span>
                       <input
                         id="file-upload"
@@ -304,7 +316,7 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
                   
                   {!file && (
                     <p className="text-xs text-muted-foreground">
-                      Supported formats: CSV, Excel (.xlsx)
+                      Supports CSV and Excel files up to 10MB
                     </p>
                   )}
                 </div>
@@ -335,7 +347,7 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
         )}
 
         {step === 'preview' && parseResult && (
-          <div className="max-h-[70vh] overflow-hidden">
+          <div className="max-h-[65vh] overflow-hidden">
             <OrderImportPreview
               parseResult={parseResult}
               onProceed={createOrdersFromData}
@@ -347,44 +359,53 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
         )}
 
         {step === 'creating' && (
-          <div className="space-y-6 py-8">
+          <div className="space-y-8 py-12">
             <div className="text-center">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mb-4">
-                <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-6">
+                <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
-              <p className="font-medium text-lg">Creating Orders...</p>
-              <p className="text-sm text-muted-foreground">
-                Please wait while we create your orders
+              <h3 className="font-semibold text-xl mb-2">Creating Your Orders</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                We're processing your orders and setting up customer profiles. This may take a few moments.
               </p>
             </div>
             
-            <div className="space-y-2">
-              <Progress value={creationProgress} className="h-2" />
-              <p className="text-center text-sm text-muted-foreground">
-                {Math.round(creationProgress)}% complete
-              </p>
+            <div className="space-y-3 max-w-md mx-auto">
+              <Progress value={creationProgress} className="h-3 rounded-full" />
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{Math.round(creationProgress)}% complete</span>
+                <span className="text-muted-foreground">
+                  {parseResult ? `${Math.ceil((creationProgress / 100) * parseResult.validRows)} of ${parseResult.validRows}` : ''}
+                </span>
+              </div>
             </div>
           </div>
         )}
 
         {step === 'success' && (
-          <div className="space-y-6 py-8 text-center">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-              <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          <div className="space-y-8 py-12 text-center">
+            <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-green-100 mb-4">
+              <svg className="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <div>
-              <p className="font-medium text-lg">Import Complete!</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Successfully imported {successCount} orders.
+            <div className="space-y-3">
+              <h3 className="font-semibold text-2xl text-green-800">Import Successful!</h3>
+              <p className="text-base text-muted-foreground max-w-md mx-auto">
+                Successfully imported <span className="font-semibold text-green-700">{successCount}</span> orders. 
+                They're now ready for processing and delivery.
+              </p>
+            </div>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 max-w-md mx-auto">
+              <p className="text-sm text-green-800">
+                Your orders have been added to your dashboard and are visible in the Orders section.
               </p>
             </div>
           </div>
         )}
         
         {(step === 'upload' || step === 'success') && (
-          <DialogFooter>
+          <DialogFooter className="pt-6 border-t">
             <Button 
               variant="outline" 
               onClick={onCloseModal}
@@ -395,8 +416,16 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
               <Button 
                 disabled={!file || locationLoading}
                 onClick={parseFile}
+                className="bg-primary hover:bg-primary/90"
               >
-                {locationLoading ? 'Loading...' : 'Continue'}
+                {locationLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                    Loading locations...
+                  </div>
+                ) : (
+                  'Validate & Preview'
+                )}
               </Button>
             )}
           </DialogFooter>

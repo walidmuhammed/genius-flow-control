@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { Check, AlertTriangle, X, Edit2, Save, XCircle, ChevronDown, ChevronRight } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ParsedOrderRow, CSVParseResult } from '@/utils/csvParser';
-import { AreaSelector } from './AreaSelector';
+import { ImprovedAreaSelector } from './ImprovedAreaSelector';
 import { isValidLebaneseMobileNumber } from '@/utils/customerSearch';
 import { toast } from 'sonner';
 
@@ -98,12 +96,14 @@ export const OrderImportPreview: React.FC<OrderImportPreviewProps> = ({
     setEditedOrder(null);
   };
 
-  const handleAreaSelected = (governorate: string, city: string) => {
+  const handleAreaSelected = (governorateId: string, cityId: string) => {
     if (editedOrder) {
+      // We need to find the actual names from the IDs
+      // For now, we'll just update with the IDs and let the parent handle the mapping
       setEditedOrder({
         ...editedOrder,
-        governorate,
-        city
+        governorate: governorateId,
+        city: cityId
       });
     }
   };
@@ -157,20 +157,20 @@ export const OrderImportPreview: React.FC<OrderImportPreviewProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Summary */}
+    <div className="space-y-6">
+      {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <div className="text-2xl font-bold text-gray-900">{totalRows}</div>
-          <div className="text-sm text-gray-600">Total Rows</div>
+        <div className="text-center p-4 bg-background border rounded-lg">
+          <div className="text-2xl font-bold text-foreground">{totalRows}</div>
+          <div className="text-sm text-muted-foreground">Total Rows</div>
         </div>
-        <div className="text-center p-3 bg-green-50 rounded-lg">
+        <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
           <div className="text-2xl font-bold text-green-600">{validRows}</div>
           <div className="text-sm text-green-600">Valid Orders</div>
         </div>
-        <div className="text-center p-3 bg-red-50 rounded-lg">
+        <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg">
           <div className="text-2xl font-bold text-red-600">{invalidRows}</div>
-          <div className="text-sm text-red-600">Invalid Orders</div>
+          <div className="text-sm text-red-600">Needs Review</div>
         </div>
       </div>
 
@@ -179,19 +179,22 @@ export const OrderImportPreview: React.FC<OrderImportPreviewProps> = ({
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Found {invalidRows} invalid {invalidRows === 1 ? 'row' : 'rows'}. Please fix the errors below before proceeding with import.
+            {invalidRows} {invalidRows === 1 ? 'order needs' : 'orders need'} attention. Review the issues below and make corrections before importing.
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Orders Table */}
-      <div className="border rounded-lg">
-        <div className="p-3 bg-gray-50 border-b">
-          <h3 className="font-medium text-sm">Import Preview</h3>
+      {/* Orders List */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium text-sm text-foreground">Order Preview</h3>
+          <div className="text-xs text-muted-foreground">
+            Click on any order to expand and edit details
+          </div>
         </div>
         
-        <ScrollArea className="h-[500px]">
-          <div className="space-y-2">
+        <ScrollArea className="h-[450px] rounded-lg border">
+          <div className="p-4 space-y-3">
             {orders.map((order) => {
               const isEditing = editingRow === order.row;
               const displayOrder = isEditing && editedOrder ? editedOrder : order;
@@ -201,66 +204,61 @@ export const OrderImportPreview: React.FC<OrderImportPreviewProps> = ({
               return (
                 <div 
                   key={order.row}
-                  className={`border rounded-lg ${!displayOrder.isValid ? 'border-red-200 bg-red-50' : 'border-gray-200 bg-white'}`}
+                  className={`border rounded-lg transition-all duration-200 ${
+                    !displayOrder.isValid 
+                      ? 'border-red-200 bg-red-50/30' 
+                      : 'border-border bg-card'
+                  }`}
                 >
                   {/* Main Order Row */}
                   <div className="p-4">
-                    <div className="grid grid-cols-12 gap-4 items-center">
-                      {/* Row Number */}
-                      <div className="col-span-1">
-                        <span className="font-mono text-xs text-gray-500">#{order.row}</span>
-                      </div>
-                      
-                      {/* Status */}
-                      <div className="col-span-1">
-                        {getStatusBadge(displayOrder)}
-                      </div>
-                      
-                      {/* Customer */}
-                      <div className="col-span-2">
-                        {isEditing ? (
-                          <Input
-                            value={displayOrder.fullName}
-                            onChange={(e) => setEditedOrder(prev => prev ? {...prev, fullName: e.target.value} : null)}
-                            className="h-8 text-sm"
-                            placeholder="Full Name"
-                          />
-                        ) : (
-                          <div className="text-sm font-medium">{displayOrder.fullName}</div>
-                        )}
-                      </div>
-                      
-                      {/* Phone */}
-                      <div className="col-span-2">
-                        {isEditing ? (
-                          <Input
-                            value={displayOrder.phone}
-                            onChange={(e) => setEditedOrder(prev => prev ? {...prev, phone: e.target.value} : null)}
-                            className="h-8 text-sm"
-                            placeholder="Phone"
-                          />
-                        ) : (
-                          <div className="text-sm font-mono">{displayOrder.phone}</div>
-                        )}
-                      </div>
-                      
-                      {/* Location */}
-                      <div className="col-span-2">
-                        {isEditing ? (
-                          <AreaSelector
-                            selectedArea={displayOrder.city}
-                            selectedGovernorate={displayOrder.governorate}
-                            onAreaSelected={handleAreaSelected}
-                          />
-                        ) : (
-                          <div className="text-sm">{displayOrder.city}, {displayOrder.governorate}</div>
-                        )}
-                      </div>
-                      
-                      {/* Type & Amount */}
-                      <div className="col-span-2">
-                        {isEditing ? (
-                          <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      {/* Left: Order Info */}
+                      <div className="flex-1 grid grid-cols-12 gap-3 items-center">
+                        {/* Row Number & Status */}
+                        <div className="col-span-1 flex flex-col items-center gap-1">
+                          <span className="font-mono text-xs text-muted-foreground">#{order.row}</span>
+                          {getStatusBadge(displayOrder)}
+                        </div>
+                        
+                        {/* Customer */}
+                        <div className="col-span-3">
+                          {isEditing ? (
+                            <Input
+                              value={displayOrder.fullName}
+                              onChange={(e) => setEditedOrder(prev => prev ? {...prev, fullName: e.target.value} : null)}
+                              className="h-8 text-sm"
+                              placeholder="Full Name"
+                            />
+                          ) : (
+                            <div>
+                              <div className="text-sm font-medium">{displayOrder.fullName}</div>
+                              <div className="text-xs text-muted-foreground font-mono">{displayOrder.phone}</div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Location */}
+                        <div className="col-span-3">
+                          {isEditing ? (
+                           <ImprovedAreaSelector
+                             selectedGovernorateId=""
+                             selectedCityId=""
+                             onGovernorateChange={(id, name) => setEditedOrder(prev => prev ? {...prev, governorate: name} : null)}
+                             onCityChange={(id, name, govName) => setEditedOrder(prev => prev ? {...prev, city: name, governorate: govName} : null)}
+                             placeholder="Select location"
+                           />
+                          ) : (
+                            <div>
+                              <div className="text-sm font-medium">{displayOrder.city}</div>
+                              <div className="text-xs text-muted-foreground">{displayOrder.governorate}</div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Order Details */}
+                        <div className="col-span-3">
+                          {isEditing ? (
                             <Select
                               value={displayOrder.orderType}
                               onValueChange={(value) => setEditedOrder(prev => prev ? {...prev, orderType: value} : null)}
@@ -273,32 +271,41 @@ export const OrderImportPreview: React.FC<OrderImportPreviewProps> = ({
                                 <SelectItem value="Exchange">Exchange</SelectItem>
                               </SelectContent>
                             </Select>
-                          </div>
-                        ) : (
-                          <div className="space-y-1">
-                            <Badge variant="outline" className="text-xs">
-                              {displayOrder.orderType}
+                          ) : (
+                            <div>
+                              <Badge variant="outline" className="text-xs mb-1">
+                                {displayOrder.orderType}
+                              </Badge>
+                              {(displayOrder.usdAmount > 0 || displayOrder.lbpAmount > 0) && (
+                                <div className="text-xs text-muted-foreground">
+                                  {displayOrder.usdAmount > 0 && `$${displayOrder.usdAmount}`}
+                                  {displayOrder.lbpAmount > 0 && ` ${displayOrder.lbpAmount.toLocaleString()} LBP`}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Error Indicator */}
+                        <div className="col-span-2 flex items-center justify-end gap-2">
+                          {hasErrors && (
+                            <Badge variant="destructive" className="text-xs">
+                              {displayOrder.errors.length} issue{displayOrder.errors.length > 1 ? 's' : ''}
                             </Badge>
-                            {(displayOrder.usdAmount > 0 || displayOrder.lbpAmount > 0) && (
-                              <div className="text-xs text-gray-600">
-                                {displayOrder.usdAmount > 0 && `$${displayOrder.usdAmount}`}
-                                {displayOrder.lbpAmount > 0 && ` ${displayOrder.lbpAmount.toLocaleString()} LBP`}
-                              </div>
-                            )}
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                      
-                      {/* Actions */}
-                      <div className="col-span-2 flex items-center justify-end gap-2">
+
+                      {/* Right: Actions */}
+                      <div className="flex items-center gap-2 ml-4">
                         {hasErrors && (
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => toggleRowExpansion(order.row)}
-                            className="h-7 w-7 p-0 text-red-600"
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                           >
-                            {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                           </Button>
                         )}
                         
@@ -308,17 +315,17 @@ export const OrderImportPreview: React.FC<OrderImportPreviewProps> = ({
                               size="sm"
                               variant="ghost"
                               onClick={handleSaveEdit}
-                              className="h-7 w-7 p-0 text-green-600"
+                              className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
                             >
-                              <Save className="h-3 w-3" />
+                              <Save className="h-4 w-4" />
                             </Button>
                             <Button
                               size="sm"
                               variant="ghost"
                               onClick={handleCancelEdit}
-                              className="h-7 w-7 p-0 text-gray-600"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                             >
-                              <XCircle className="h-3 w-3" />
+                              <XCircle className="h-4 w-4" />
                             </Button>
                           </div>
                         ) : (
@@ -326,9 +333,9 @@ export const OrderImportPreview: React.FC<OrderImportPreviewProps> = ({
                             size="sm"
                             variant="ghost"
                             onClick={() => handleEditClick(order)}
-                            className="h-7 w-7 p-0 text-blue-600"
+                            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                           >
-                            <Edit2 className="h-3 w-3" />
+                            <Edit2 className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
@@ -336,51 +343,52 @@ export const OrderImportPreview: React.FC<OrderImportPreviewProps> = ({
                     
                     {/* Expanded Editing Fields */}
                     {isEditing && (
-                      <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 mb-1 block">Address</label>
-                          <Input
-                            value={displayOrder.address}
-                            onChange={(e) => setEditedOrder(prev => prev ? {...prev, address: e.target.value} : null)}
-                            className="h-8 text-sm"
-                            placeholder="Address Details"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 mb-1 block">Package Type</label>
-                          <Select
-                            value={displayOrder.packageType}
-                            onValueChange={(value) => setEditedOrder(prev => prev ? {...prev, packageType: value} : null)}
-                          >
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="parcel">Parcel</SelectItem>
-                              <SelectItem value="document">Document</SelectItem>
-                              <SelectItem value="bulky">Bulky</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 mb-1 block">USD Amount</label>
-                          <Input
-                            type="number"
-                            value={displayOrder.usdAmount || ''}
-                            onChange={(e) => setEditedOrder(prev => prev ? {...prev, usdAmount: parseFloat(e.target.value) || 0} : null)}
-                            className="h-8 text-sm"
-                            placeholder="0"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 mb-1 block">LBP Amount</label>
-                          <Input
-                            type="number"
-                            value={displayOrder.lbpAmount || ''}
-                            onChange={(e) => setEditedOrder(prev => prev ? {...prev, lbpAmount: parseFloat(e.target.value) || 0} : null)}
-                            className="h-8 text-sm"
-                            placeholder="0"
-                          />
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs font-medium text-foreground mb-1 block">Phone Number</label>
+                            <Input
+                              value={displayOrder.phone}
+                              onChange={(e) => setEditedOrder(prev => prev ? {...prev, phone: e.target.value} : null)}
+                              className="h-8 text-sm"
+                              placeholder="Phone"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-foreground mb-1 block">Address Details</label>
+                            <Input
+                              value={displayOrder.address}
+                              onChange={(e) => setEditedOrder(prev => prev ? {...prev, address: e.target.value} : null)}
+                              className="h-8 text-sm"
+                              placeholder="Address Details"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-foreground mb-1 block">Package Type</label>
+                            <Select
+                              value={displayOrder.packageType}
+                              onValueChange={(value) => setEditedOrder(prev => prev ? {...prev, packageType: value} : null)}
+                            >
+                              <SelectTrigger className="h-8 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="parcel">Parcel</SelectItem>
+                                <SelectItem value="document">Document</SelectItem>
+                                <SelectItem value="bulky">Bulky</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-foreground mb-1 block">USD Amount</label>
+                            <Input
+                              type="number"
+                              value={displayOrder.usdAmount || ''}
+                              onChange={(e) => setEditedOrder(prev => prev ? {...prev, usdAmount: parseFloat(e.target.value) || 0} : null)}
+                              className="h-8 text-sm"
+                              placeholder="0"
+                            />
+                          </div>
                         </div>
                       </div>
                     )}
@@ -403,33 +411,26 @@ export const OrderImportPreview: React.FC<OrderImportPreviewProps> = ({
 
       {/* Action Buttons */}
       <div className="flex justify-between items-center pt-4 border-t">
-        <button
+        <Button
+          variant="outline"
           onClick={onCancel}
-          className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
         >
           Back to Upload
-        </button>
+        </Button>
         
         <div className="flex items-center gap-3">
           {hasErrors && (
-            <span className="text-sm text-red-600">
-              Fix errors to proceed
+            <span className="text-sm text-muted-foreground">
+              Review and fix {invalidRows} {invalidRows === 1 ? 'issue' : 'issues'} to proceed
             </span>
           )}
-          <button
+          <Button 
             onClick={onProceed}
             disabled={hasErrors || isCreating || validRows === 0}
-            className="px-6 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            {isCreating ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Creating {validRows} Orders...
-              </>
-            ) : (
-              `Create ${validRows} Orders`
-            )}
-          </button>
+            {isCreating ? 'Creating Orders...' : `Import ${validRows} Valid Orders`}
+          </Button>
         </div>
       </div>
     </div>
