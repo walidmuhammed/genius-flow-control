@@ -39,6 +39,25 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
   const [parseResult, setParseResult] = useState<CSVParseResult | null>(null);
   const [creationProgress, setCreationProgress] = useState(0);
   const [successCount, setSuccessCount] = useState(0);
+  
+  const handleUpdateOrder = (rowIndex: number, updatedOrder: ParsedOrderRow) => {
+    if (!parseResult) return;
+    
+    const newOrders = [...parseResult.orders];
+    newOrders[rowIndex] = updatedOrder;
+    
+    // Recalculate counts
+    const validRows = newOrders.filter(o => o.isValid).length;
+    const invalidRows = newOrders.length - validRows;
+    
+    setParseResult({
+      ...parseResult,
+      orders: newOrders,
+      validRows,
+      invalidRows,
+      hasErrors: invalidRows > 0
+    });
+  };
 
   // Hooks for data fetching and mutations
   const { data: governoratesData, isLoading: locationLoading } = useGovernoratesAndCities();
@@ -321,6 +340,7 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
             onProceed={createOrdersFromData}
             onCancel={() => setStep('upload')}
             isCreating={false}
+            onUpdateOrder={handleUpdateOrder}
           />
         )}
 

@@ -18,7 +18,15 @@ export interface ParsedOrderRow {
   orderReference: string;
   deliveryNotes: string;
   errors: string[];
+  suggestions: FieldSuggestion[];
   isValid: boolean;
+}
+
+export interface FieldSuggestion {
+  field: string;
+  original: string;
+  suggestions: string[];
+  corrected?: string;
 }
 
 export interface CSVParseResult {
@@ -30,6 +38,63 @@ export interface CSVParseResult {
 }
 
 // Generate correct CSV template based on CreateOrder.tsx fields
+// Levenshtein distance for fuzzy matching
+function levenshteinDistance(str1: string, str2: string): number {
+  const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+  
+  for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
+  for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
+  
+  for (let j = 1; j <= str2.length; j++) {
+    for (let i = 1; i <= str1.length; i++) {
+      const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
+      matrix[j][i] = Math.min(
+        matrix[j][i - 1] + 1,     // deletion
+        matrix[j - 1][i] + 1,     // insertion
+        matrix[j - 1][i - 1] + indicator  // substitution
+      );
+    }
+  }
+  
+  return matrix[str2.length][str1.length];
+}
+
+// Find fuzzy matches for governorates/cities
+function findFuzzyMatches(input: string, options: string[], maxDistance: number = 2): string[] {
+  const matches = options
+    .map(option => ({
+      value: option,
+      distance: levenshteinDistance(input.toLowerCase(), option.toLowerCase())
+    }))
+    .filter(match => match.distance <= maxDistance)
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, 3)
+    .map(match => match.value);
+    
+  return matches;
+}
+
+// Common misspelling corrections
+const governorateCorrections: Record<string, string> = {
+  'berut': 'Beirut',
+  'beroth': 'Beirut', 
+  'beirot': 'Beirut',
+  'shmal': 'North Lebanon',
+  'shamal': 'North Lebanon',
+  'bekaa': 'Beqaa',
+  'beka': 'Beqaa',
+  'janub': 'South Lebanon',
+  'jnoub': 'South Lebanon',
+  'nabatieh': 'Nabatieh',
+  'nabatiye': 'Nabatieh'
+};
+
+// Auto-correct common misspellings
+function autoCorrect(input: string, corrections: Record<string, string>): string | null {
+  const lowerInput = input.toLowerCase();
+  return corrections[lowerInput] || null;
+}
+
 export function generateCSVTemplate(): string {
   const headers = [
     'Full Name*',
@@ -82,14 +147,17 @@ export function parseCSVFile(csvContent: string, governoratesData: any[]): CSVPa
   let validCount = 0;
   let invalidCount = 0;
 
-  // Create governorate lookup maps
+  // Create governorate lookup maps and lists for fuzzy matching
   const governorateMap = new Map<string, any>();
   const cityMap = new Map<string, any>();
+  const governorateNames = governoratesData.map(g => g.name);
+  const allCityNames: string[] = [];
   
   governoratesData.forEach(gov => {
     governorateMap.set(gov.name.toLowerCase(), gov);
     if (gov.cities) {
       gov.cities.forEach((city: any) => {
+        allCityNames.push(city.name);
         cityMap.set(`${gov.name.toLowerCase()}:${city.name.toLowerCase()}`, {
           ...city,
           governorate_id: gov.id,
@@ -105,6 +173,7 @@ export function parseCSVFile(csvContent: string, governoratesData: any[]): CSVPa
     if (values.length === 0 || values.every(v => !v)) continue; // Skip empty rows
 
     const errors: string[] = [];
+    const suggestions: FieldSuggestion[] = [];
     const rowNum = i + 1;
 
     // Extract and validate required fields
@@ -147,15 +216,62 @@ export function parseCSVFile(csvContent: string, governoratesData: any[]): CSVPa
       errors.push('Address Details is required');
     }
 
-    // Validate governorate and city existence
+    // Validate and suggest corrections for governorate and city
+    let correctedGovernorate = governorate;
+    let correctedCity = city;
+    
     if (governorate && city) {
       const govKey = governorate.toLowerCase();
       const cityKey = `${govKey}:${city.toLowerCase()}`;
       
       if (!governorateMap.has(govKey)) {
-        errors.push(`Governorate "${governorate}" not found`);
-      } else if (!cityMap.has(cityKey)) {
-        errors.push(`City "${city}" not found in ${governorate}`);
+        // Try auto-correction first
+        const autoCorrection = autoCorrect(governorate, governorateCorrections);
+        if (autoCorrection && governorateMap.has(autoCorrection.toLowerCase())) {
+          correctedGovernorate = autoCorrection;
+          suggestions.push({
+            field: 'governorate',
+            original: governorate,
+            suggestions: [autoCorrection],
+            corrected: autoCorrection
+          });
+        } else {
+          // Try fuzzy matching
+          const fuzzyMatches = findFuzzyMatches(governorate, governorateNames);
+          if (fuzzyMatches.length > 0) {
+            suggestions.push({
+              field: 'governorate',
+              original: governorate,
+              suggestions: fuzzyMatches
+            });
+            errors.push(`Governorate "${governorate}" not found. Did you mean: ${fuzzyMatches.join(', ')}?`);
+          } else {
+            errors.push(`Governorate "${governorate}" not found`);
+          }
+        }
+      }
+      
+      // Check city validity with corrected governorate
+      const finalGovKey = correctedGovernorate.toLowerCase();
+      const finalCityKey = `${finalGovKey}:${city.toLowerCase()}`;
+      
+      if (governorateMap.has(finalGovKey) && !cityMap.has(finalCityKey)) {
+        // Get cities for this governorate
+        const govData = governorateMap.get(finalGovKey);
+        const govCities = govData?.cities?.map((c: any) => c.name) || [];
+        
+        // Try fuzzy matching for city
+        const cityMatches = findFuzzyMatches(city, govCities);
+        if (cityMatches.length > 0) {
+          suggestions.push({
+            field: 'city',
+            original: city,
+            suggestions: cityMatches
+          });
+          errors.push(`City "${city}" not found in ${correctedGovernorate}. Did you mean: ${cityMatches.join(', ')}?`);
+        } else {
+          errors.push(`City "${city}" not found in ${correctedGovernorate}`);
+        }
       }
     }
 
@@ -179,8 +295,8 @@ export function parseCSVFile(csvContent: string, governoratesData: any[]): CSVPa
       row: rowNum,
       fullName,
       phone,
-      governorate,
-      city,
+      governorate: correctedGovernorate,
+      city: correctedCity,
       address,
       itemsCount,
       orderType,
@@ -193,6 +309,7 @@ export function parseCSVFile(csvContent: string, governoratesData: any[]): CSVPa
       orderReference,
       deliveryNotes,
       errors,
+      suggestions,
       isValid
     });
   }
