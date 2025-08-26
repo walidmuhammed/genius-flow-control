@@ -345,7 +345,9 @@ const AdminCreateOrder = () => {
         };
         
         try {
-          const customer = await createOrUpdateCustomer.mutateAsync(customerData);
+          const customer = await createOrUpdateCustomer.mutateAsync({ 
+            customer: customerData 
+          });
           customerId = customer.id;
         } catch (error: any) {
           // If there's still a conflict even with our smart logic, show user-friendly error

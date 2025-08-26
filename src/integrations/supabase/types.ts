@@ -1420,6 +1420,13 @@ export type Database = {
         Args: { p_client_id: string }
         Returns: undefined
       }
+      fix_customer_ownership: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          details: Json
+          fixed_count: number
+        }[]
+      }
       generate_invoice_id: {
         Args: Record<PropertyKey, never>
         Returns: string

@@ -34,7 +34,7 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
   const [showSecondaryPhone, setShowSecondaryPhone] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { mutate: createCustomer } = useCreateCustomer();
+    const { mutate: createCustomer } = useCreateCustomer();
 
   const formRef = useRef<HTMLFormElement | null>(null);
 
@@ -70,13 +70,15 @@ export default function AddCustomerModal({ open, onOpenChange }: AddCustomerModa
     setLoading(true);
     createCustomer(
       {
-        name: form.name.trim(),
-        phone: form.phone.trim(),
-        secondary_phone: showSecondaryPhone && form.secondary_phone.trim() ? form.secondary_phone.trim() : null,
-        address: form.address.trim(),
-        governorate_id: form.governorateId,
-        city_id: form.cityId,
-        is_work_address: form.is_work_address,
+        customer: {
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          secondary_phone: showSecondaryPhone && form.secondary_phone.trim() ? form.secondary_phone.trim() : null,
+          address: form.address.trim(),
+          governorate_id: form.governorateId,
+          city_id: form.cityId,
+          is_work_address: form.is_work_address,
+        }
       },
       {
         onSuccess: () => {

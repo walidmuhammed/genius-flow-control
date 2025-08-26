@@ -15,12 +15,13 @@ import { Progress } from '@/components/ui/progress';
 import { OrderImportPreview } from './OrderImportPreview';
 import { ImportProgressIndicator } from './ImportProgressIndicator';
 import { useGovernoratesAndCities } from '@/hooks/use-governorates-and-cities';
-import { useCreateOrUpdateCustomer } from '@/hooks/use-customers';
+import { useSearchCustomersByPhone, useCreateOrUpdateCustomer } from '@/hooks/use-customers';
 import { useCreateOrder } from '@/hooks/use-orders';
 import { useAuth } from '@/hooks/useAuth';
 import { parseCSVFile, downloadCSVTemplate, CSVParseResult, ParsedOrderRow } from '@/utils/csvParser';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logCustomerSearchDebug } from '@/utils/customerDebug';
 
 interface ImportOrdersModalProps {
   open: boolean;
@@ -150,7 +151,7 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
           throw new Error(`Location data not found for ${orderData.governorate}, ${orderData.city}`);
         }
 
-        // Create or update customer
+        // Create or update customer with proper client association
         const customerPayload = {
           name: orderData.fullName,
           phone: orderData.phone,
@@ -160,7 +161,16 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
           is_work_address: orderData.isWorkAddress,
         };
 
-        const customer = await createOrUpdateCustomer.mutateAsync(customerPayload);
+        // For imports, we need to determine the target client
+        // If we're an admin importing for a specific client, use that client ID
+        // Otherwise, use the current user's ID
+        let targetClientId = user?.id;
+        
+        console.log('📦 Import: Creating customer for target client:', targetClientId);
+        const customer = await createOrUpdateCustomer.mutateAsync({ 
+          customer: customerPayload, 
+          targetClientId 
+        });
 
         // Use comprehensive pricing service directly instead of fetch
         const deliveryFeesResponse = await supabase

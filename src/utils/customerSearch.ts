@@ -58,10 +58,25 @@ export function filterCustomers(customers: CustomerWithLocation[], query: string
       let cityScore = fuzzyMatch(customer.city_name || '', cleanedQuery);
       let govScore = fuzzyMatch(customer.governorate_name || '', cleanedQuery);
 
-      // Phone normalized substring - Use the new normalization utility
+      // Phone normalized substring - Use the new normalization utility with debugging
       let primaryPhoneNorm = normalizePhoneForMatching(customer.phone || "");
       let secondaryPhoneNorm = normalizePhoneForMatching(customer.secondary_phone || "");
       let searchNorm = normalizePhoneForMatching(cleanedQuery);
+      
+      // Debug phone matching
+      if (searchNorm && searchNorm.length >= 2) {
+        console.log('🔍 Phone search debug:', {
+          customer: customer.name,
+          primary: customer.phone,
+          primaryNorm: primaryPhoneNorm,
+          secondary: customer.secondary_phone,
+          secondaryNorm: secondaryPhoneNorm,
+          search: cleanedQuery,
+          searchNorm: searchNorm,
+          primaryMatch: primaryPhoneNorm.includes(searchNorm),
+          secondaryMatch: secondaryPhoneNorm.includes(searchNorm)
+        });
+      }
 
       const phoneScore = (searchNorm && searchNorm.length >= 2)
         ? (

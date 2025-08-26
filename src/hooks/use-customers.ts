@@ -30,13 +30,13 @@ export function useCreateCustomer() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (customer: Omit<Customer, 'id' | 'created_at' | 'updated_at'>) => 
-      createCustomer(customer),
+    mutationFn: ({ customer, targetClientId }: { customer: Omit<Customer, 'id' | 'created_at' | 'updated_at' | 'created_by'>, targetClientId?: string }) => 
+      createCustomer(customer, targetClientId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       toast.success("Customer created successfully");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`Error creating customer: ${error.message}`);
     }
   });
@@ -100,24 +100,34 @@ export function useCreateOrUpdateCustomer() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (customerData: any) => {
+    mutationFn: async ({ 
+      customer, 
+      targetClientId 
+    }: { 
+      customer: Omit<Customer, 'id' | 'created_at' | 'updated_at' | 'created_by'>, 
+      targetClientId?: string 
+    }) => {
       // First, try to find an existing customer with normalized phone matching
       const { findCustomerByNormalizedPhone } = await import('@/services/customers');
-      const existingCustomer = await findCustomerByNormalizedPhone(customerData.phone);
+      
+      console.log('🔍 Looking for existing customer with phone:', customer.phone);
+      const existingCustomer = await findCustomerByNormalizedPhone(customer.phone);
       
       if (existingCustomer) {
+        console.log('✅ Found existing customer, updating:', existingCustomer.id);
         // Update existing customer with new information
         return await updateCustomer(existingCustomer.id, {
-          name: customerData.name,
-          secondary_phone: customerData.secondary_phone,
-          address: customerData.address,
-          city_id: customerData.city_id,
-          governorate_id: customerData.governorate_id,
-          is_work_address: customerData.is_work_address
+          name: customer.name,
+          secondary_phone: customer.secondary_phone,
+          address: customer.address,
+          city_id: customer.city_id,
+          governorate_id: customer.governorate_id,
+          is_work_address: customer.is_work_address
         });
       } else {
-        // Create new customer
-        return await createCustomer(customerData);
+        console.log('➕ Creating new customer with targetClientId:', targetClientId);
+        // Create new customer with proper ownership
+        return await createCustomer(customer, targetClientId);
       }
     },
     onSuccess: (data, variables) => {
@@ -128,6 +138,7 @@ export function useCreateOrUpdateCustomer() {
       toast.success("Customer saved successfully");
     },
     onError: (error: any) => {
+      console.error('❌ Customer create/update error:', error);
       toast.error(`Error with customer: ${error.message}`);
     }
   });

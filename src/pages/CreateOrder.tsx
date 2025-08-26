@@ -278,10 +278,29 @@ const CreateOrder = () => {
       initialRenderRef.current = false;
       return;
     }
-    // Skip auto-fill if we're in edit mode since we manually load the data
-    if (isEditMode) return;
-    
-    if (foundCustomers && foundCustomers.length > 0) {
+  // Skip auto-fill if we're in edit mode since we manually load the data
+  if (isEditMode) return;
+  
+  // Debug customer search results
+  console.group('🔍 Customer Auto-fill Debug');
+  console.log('📱 Phone:', phone);
+  console.log('🔢 Found customers:', foundCustomers?.length || 0);
+  console.log('👤 Current user:', user?.id);
+  
+  if (foundCustomers && foundCustomers.length > 0) {
+    foundCustomers.forEach((customer, index) => {
+      console.log(`Customer ${index + 1}:`, {
+        id: customer.id,
+        name: customer.name,
+        phone: customer.phone,
+        created_by: customer.created_by,
+        belongsToCurrentUser: customer.created_by === user?.id
+      });
+    });
+  }
+  console.groupEnd();
+  
+  if (foundCustomers && foundCustomers.length > 0) {
       const customer = foundCustomers[0];
       setExistingCustomer(customer);
       setName(customer.name);
@@ -378,7 +397,9 @@ const CreateOrder = () => {
         };
         
         try {
-          const customer = await createOrUpdateCustomer.mutateAsync(customerData);
+          const customer = await createOrUpdateCustomer.mutateAsync({ 
+            customer: customerData 
+          });
           customerId = customer.id;
         } catch (error: any) {
           // If there's still a conflict even with our smart logic, show user-friendly error

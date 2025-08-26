@@ -79,11 +79,31 @@ export async function getCustomerById(id: string) {
   return customer;
 }
 
-export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at' | 'updated_at' | 'created_by'>) {
+export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at' | 'updated_at' | 'created_by'>, targetClientId?: string) {
   // Get current user for proper tenant isolation
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     throw new Error('User not authenticated');
+  }
+
+  // Determine who should own this customer
+  let customerId = user.id;
+  
+  // If targetClientId is provided and current user is admin, create customer for the target client
+  if (targetClientId && user.id !== targetClientId) {
+    // Verify current user is admin
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('user_type')
+      .eq('id', user.id)
+      .single();
+    
+    if (profile?.user_type === 'admin') {
+      customerId = targetClientId;
+      console.log('👑 Admin creating customer for client:', targetClientId);
+    } else {
+      console.warn('⚠️ Non-admin trying to create customer for different user, using own ID');
+    }
   }
 
   // Normalize phone number for storage
@@ -98,8 +118,10 @@ export async function createCustomer(customer: Omit<Customer, 'id' | 'created_at
     ...customer,
     phone: normalizedPhone,
     secondary_phone: customer.secondary_phone ? formatPhoneForStorage(customer.secondary_phone) : undefined,
-    created_by: user.id
+    created_by: customerId
   };
+
+  console.log('📝 Creating customer with created_by:', customerId, 'for user:', user.id);
 
   const { data, error } = await supabase
     .from('customers')
