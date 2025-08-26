@@ -223,7 +223,7 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
-      <DialogContent className={step === 'preview' ? "sm:max-w-7xl" : "sm:max-w-2xl"}>
+      <DialogContent className={step === 'preview' ? "sm:max-w-5xl max-h-[90vh]" : "sm:max-w-2xl"}>
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5" />
@@ -335,13 +335,15 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
         )}
 
         {step === 'preview' && parseResult && (
-          <OrderImportPreview
-            parseResult={parseResult}
-            onProceed={createOrdersFromData}
-            onCancel={() => setStep('upload')}
-            isCreating={false}
-            onUpdateOrder={handleUpdateOrder}
-          />
+          <div className="max-h-[70vh] overflow-hidden">
+            <OrderImportPreview
+              parseResult={parseResult}
+              onProceed={createOrdersFromData}
+              onCancel={() => setStep('upload')}
+              isCreating={false}
+              onUpdateOrder={handleUpdateOrder}
+            />
+          </div>
         )}
 
         {step === 'creating' && (
