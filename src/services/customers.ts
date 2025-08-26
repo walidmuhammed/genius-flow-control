@@ -204,6 +204,13 @@ export async function searchCustomersByPhone(phone: string) {
     throw new Error('User not authenticated');
   }
 
+  console.log('🔍 Searching for phone:', phone);
+  
+  // Normalize the search phone for matching
+  const normalizedSearchPhone = normalizePhoneForMatching(phone);
+  console.log('📱 Normalized search phone:', normalizedSearchPhone);
+
+  // Get all customers for this user first, then filter by normalized phone
   const { data, error } = await supabase
     .from('customers')
     .select(`
@@ -211,21 +218,42 @@ export async function searchCustomersByPhone(phone: string) {
       cities:city_id(name),
       governorates:governorate_id(name)
     `)
-    .eq('created_by', user.id)
-    .ilike('phone', `%${phone}%`)
-    .limit(5);
+    .eq('created_by', user.id);
   
   if (error) {
-    console.error(`Error searching customers with phone ${phone}:`, error);
+    console.error(`Error fetching customers for phone search:`, error);
     throw error;
   }
   
-  const customers: CustomerWithLocation[] = data.map(customer => ({
+  // Filter customers by normalized phone matching
+  const matchingCustomers = data.filter(customer => {
+    const customerPrimaryNorm = normalizePhoneForMatching(customer.phone || '');
+    const customerSecondaryNorm = normalizePhoneForMatching(customer.secondary_phone || '');
+    
+    const primaryMatch = customerPrimaryNorm.includes(normalizedSearchPhone) || normalizedSearchPhone.includes(customerPrimaryNorm);
+    const secondaryMatch = customerSecondaryNorm.includes(normalizedSearchPhone) || normalizedSearchPhone.includes(customerSecondaryNorm);
+    
+    console.log('📞 Phone match check:', {
+      customer: customer.name,
+      primaryPhone: customer.phone,
+      primaryNorm: customerPrimaryNorm,
+      secondaryPhone: customer.secondary_phone,
+      secondaryNorm: customerSecondaryNorm,
+      searchNorm: normalizedSearchPhone,
+      primaryMatch,
+      secondaryMatch
+    });
+    
+    return primaryMatch || secondaryMatch;
+  }).slice(0, 5); // Limit to 5 results
+  
+  const customers: CustomerWithLocation[] = matchingCustomers.map(customer => ({
     ...customer,
     city_name: customer.cities?.name,
     governorate_name: customer.governorates?.name
   }));
   
+  console.log('✅ Found matching customers:', customers.length);
   return customers;
 }
 
