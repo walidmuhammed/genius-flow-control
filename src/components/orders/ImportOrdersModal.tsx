@@ -40,6 +40,7 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
   const [parseResult, setParseResult] = useState<CSVParseResult | null>(null);
   const [creationProgress, setCreationProgress] = useState(0);
   const [successCount, setSuccessCount] = useState(0);
+  const [isCreating, setIsCreating] = useState(false);
   
   const handleUpdateOrder = (rowIndex: number, updatedOrder: ParsedOrderRow) => {
     if (!parseResult) return;
@@ -71,6 +72,7 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
     setParseResult(null);
     setCreationProgress(0);
     setSuccessCount(0);
+    setIsCreating(false);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -130,6 +132,7 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
     if (!parseResult || !governoratesData) return;
 
     setStep('creating');
+    setIsCreating(true);
     const validOrders = parseResult.orders.filter(order => order.isValid);
     let successCount = 0;
     let failedCount = 0;
@@ -217,6 +220,7 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
 
     setSuccessCount(successCount);
     setStep('success');
+    setIsCreating(false);
     
     if (successCount > 0) {
       toast.success(`Successfully imported ${successCount} orders!`);
@@ -234,8 +238,8 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={onCloseModal}>
       <DialogContent className={`
-        flex flex-col h-[95vh] max-h-[95vh] w-[95vw] max-w-none p-0
-        ${step === 'preview' ? 'lg:max-w-[90vw] xl:max-w-7xl' : 'sm:max-w-2xl'}
+        flex flex-col max-h-[90vh] w-[95vw] max-w-none p-0
+        ${step === 'preview' ? 'lg:max-w-[90vw] xl:max-w-7xl h-[85vh]' : 'sm:max-w-2xl max-h-[80vh]'}
       `}>
         {/* Fixed Header */}
         <DialogHeader className="flex-shrink-0 px-6 py-4 border-b bg-background">
@@ -367,7 +371,7 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
                 parseResult={parseResult}
                 onProceed={createOrdersFromData}
                 onCancel={() => setStep('upload')}
-                isCreating={false}
+                isCreating={isCreating}
                 onUpdateOrder={handleUpdateOrder}
               />
             </div>
@@ -422,36 +426,79 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
           )}
         </div>
         
-        {/* Fixed Footer */}
-        {(step === 'upload' || step === 'success') && (
-          <DialogFooter className="flex-shrink-0 px-6 py-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex gap-2 w-full sm:w-auto sm:justify-end">
-              <Button 
-                variant="outline" 
-                onClick={onCloseModal}
-                className="flex-1 sm:flex-none"
-              >
-                {step === 'success' ? 'Close' : 'Cancel'}
-              </Button>
-              {step === 'upload' && (
+        {/* Fixed Footer - Always Visible */}
+        <DialogFooter className="flex-shrink-0 px-6 py-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="flex gap-3 w-full justify-between items-center">
+            {step === 'upload' && (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={onCloseModal}
+                  className="min-w-20"
+                >
+                  Cancel
+                </Button>
                 <Button 
                   disabled={!file || locationLoading}
                   onClick={parseFile}
-                  className="flex-1 sm:flex-none bg-primary hover:bg-primary/90"
+                  className="min-w-32 bg-primary hover:bg-primary/90"
                 >
                   {locationLoading ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                      Loading locations...
+                      Loading...
                     </div>
                   ) : (
                     'Validate & Preview'
                   )}
                 </Button>
-              )}
-            </div>
-          </DialogFooter>
-        )}
+              </>
+            )}
+            
+            {step === 'preview' && parseResult && (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setStep('upload')}
+                  className="min-w-28"
+                >
+                  Back to Upload
+                </Button>
+                <div className="flex items-center gap-3">
+                  <div className="text-sm text-muted-foreground">
+                    {parseResult.validRows} valid orders ready
+                  </div>
+                  <Button 
+                    onClick={createOrdersFromData}
+                    disabled={parseResult.validRows === 0 || isCreating}
+                    className="min-w-36 bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    {isCreating ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Importing...
+                      </div>
+                    ) : (
+                      `Import ${parseResult.validRows} Orders`
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
+            
+            {step === 'success' && (
+              <>
+                <div className="flex-1" />
+                <Button 
+                  onClick={onCloseModal}
+                  className="min-w-20 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  Done
+                </Button>
+              </>
+            )}
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

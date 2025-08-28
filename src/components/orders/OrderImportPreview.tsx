@@ -157,43 +157,48 @@ export const OrderImportPreview: React.FC<OrderImportPreviewProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="text-center p-4 bg-background border rounded-lg">
-          <div className="text-2xl font-bold text-foreground">{totalRows}</div>
-          <div className="text-sm text-muted-foreground">Total Rows</div>
-        </div>
-        <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="text-2xl font-bold text-green-600">{validRows}</div>
-          <div className="text-sm text-green-600">Valid Orders</div>
-        </div>
-        <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div className="text-2xl font-bold text-red-600">{invalidRows}</div>
-          <div className="text-sm text-red-600">Needs Review</div>
+    <div className="flex flex-col h-full">
+      {/* Summary Cards - Fixed */}
+      <div className="flex-shrink-0 px-6 py-4 border-b bg-background">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="text-center p-3 bg-background border rounded-lg">
+            <div className="text-xl font-bold text-foreground">{totalRows}</div>
+            <div className="text-xs text-muted-foreground">Total Rows</div>
+          </div>
+          <div className="text-center p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="text-xl font-bold text-green-600">{validRows}</div>
+            <div className="text-xs text-green-600">Valid Orders</div>
+          </div>
+          <div className="text-center p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="text-xl font-bold text-red-600">{invalidRows}</div>
+            <div className="text-xs text-red-600">Needs Review</div>
+          </div>
         </div>
       </div>
 
-      {/* Error Alert */}
-      {hasErrors && (
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            {invalidRows} {invalidRows === 1 ? 'order needs' : 'orders need'} attention. Review the issues below and make corrections before importing.
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-hidden px-6 py-4 space-y-4">
 
-      {/* Orders List */}
-      <div className="space-y-3">
+        {/* Error Alert */}
+        {hasErrors && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              {invalidRows} {invalidRows === 1 ? 'order needs' : 'orders need'} attention. Review the issues below and make corrections before importing.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Orders List Header */}
         <div className="flex items-center justify-between">
-          <h3 className="font-medium text-sm text-foreground">Order Preview</h3>
+          <h3 className="font-medium text-foreground">Order Preview</h3>
           <div className="text-xs text-muted-foreground">
-            Click on any order to expand and edit details
+            Click edit button to modify order details
           </div>
         </div>
         
-        <ScrollArea className="h-[450px] rounded-lg border">
+        {/* Scrollable Orders */}
+        <ScrollArea className="flex-1 h-full rounded-lg border">
           <div className="p-4 space-y-3">
             {orders.map((order) => {
               const isEditing = editingRow === order.row;
@@ -213,181 +218,190 @@ export const OrderImportPreview: React.FC<OrderImportPreviewProps> = ({
                   {/* Main Order Row */}
                   <div className="p-4">
                     <div className="flex items-center justify-between">
-                      {/* Left: Order Info */}
-                      <div className="flex-1 grid grid-cols-12 gap-3 items-center">
-                        {/* Row Number & Status */}
-                        <div className="col-span-1 flex flex-col items-center gap-1">
-                          <span className="font-mono text-xs text-muted-foreground">#{order.row}</span>
-                          {getStatusBadge(displayOrder)}
-                        </div>
-                        
-                        {/* Customer */}
-                        <div className="col-span-3">
-                          {isEditing ? (
-                            <Input
-                              value={displayOrder.fullName}
-                              onChange={(e) => setEditedOrder(prev => prev ? {...prev, fullName: e.target.value} : null)}
-                              className="h-8 text-sm"
-                              placeholder="Full Name"
-                            />
-                          ) : (
-                            <div>
-                              <div className="text-sm font-medium">{displayOrder.fullName}</div>
-                              <div className="text-xs text-muted-foreground font-mono">{displayOrder.phone}</div>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Location */}
-                        <div className="col-span-3">
-                          {isEditing ? (
-                           <ImprovedAreaSelector
-                             selectedGovernorateId=""
-                             selectedCityId=""
-                             onGovernorateChange={(id, name) => setEditedOrder(prev => prev ? {...prev, governorate: name} : null)}
-                             onCityChange={(id, name, govName) => setEditedOrder(prev => prev ? {...prev, city: name, governorate: govName} : null)}
-                             placeholder="Select location"
-                           />
-                          ) : (
-                            <div>
-                              <div className="text-sm font-medium">{displayOrder.city}</div>
-                              <div className="text-xs text-muted-foreground">{displayOrder.governorate}</div>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Order Details */}
-                        <div className="col-span-3">
-                          {isEditing ? (
-                            <Select
-                              value={displayOrder.orderType}
-                              onValueChange={(value) => setEditedOrder(prev => prev ? {...prev, orderType: value} : null)}
-                            >
-                              <SelectTrigger className="h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Shipment">Shipment</SelectItem>
-                                <SelectItem value="Exchange">Exchange</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          ) : (
-                            <div>
-                              <Badge variant="outline" className="text-xs mb-1">
-                                {displayOrder.orderType}
+                        {/* Left: Order Info */}
+                        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+                          {/* Row Number & Status */}
+                          <div className="lg:col-span-1 flex flex-row lg:flex-col items-center gap-2 lg:gap-1">
+                            <span className="font-mono text-xs text-muted-foreground">#{order.row}</span>
+                            {getStatusBadge(displayOrder)}
+                          </div>
+                          
+                          {/* Customer */}
+                          <div className="lg:col-span-3">
+                            {isEditing ? (
+                              <Input
+                                value={displayOrder.fullName}
+                                onChange={(e) => setEditedOrder(prev => prev ? {...prev, fullName: e.target.value} : null)}
+                                className="h-9 text-sm"
+                                placeholder="Full Name"
+                              />
+                            ) : (
+                              <div>
+                                <div className="text-sm font-medium truncate">{displayOrder.fullName}</div>
+                                <div className="text-xs text-muted-foreground font-mono">{displayOrder.phone}</div>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Location */}
+                          <div className="lg:col-span-3">
+                            {isEditing ? (
+                             <ImprovedAreaSelector
+                               selectedGovernorateId=""
+                               selectedCityId=""
+                               onGovernorateChange={(id, name) => setEditedOrder(prev => prev ? {...prev, governorate: name} : null)}
+                               onCityChange={(id, name, govName) => setEditedOrder(prev => prev ? {...prev, city: name, governorate: govName} : null)}
+                               placeholder="Select location"
+                             />
+                            ) : (
+                              <div>
+                                <div className="text-sm font-medium truncate">{displayOrder.city}</div>
+                                <div className="text-xs text-muted-foreground truncate">{displayOrder.governorate}</div>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Order Details */}
+                          <div className="lg:col-span-3">
+                            {isEditing ? (
+                              <Select
+                                value={displayOrder.orderType}
+                                onValueChange={(value) => setEditedOrder(prev => prev ? {...prev, orderType: value} : null)}
+                              >
+                                <SelectTrigger className="h-9 text-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Shipment">Shipment</SelectItem>
+                                  <SelectItem value="Exchange">Exchange</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <div>
+                                <Badge variant="outline" className="text-xs mb-1">
+                                  {displayOrder.orderType}
+                                </Badge>
+                                {(displayOrder.usdAmount > 0 || displayOrder.lbpAmount > 0) && (
+                                  <div className="text-xs text-muted-foreground">
+                                    {displayOrder.usdAmount > 0 && `$${displayOrder.usdAmount}`}
+                                    {displayOrder.lbpAmount > 0 && ` ${displayOrder.lbpAmount.toLocaleString()} LBP`}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Error Indicator */}
+                          <div className="lg:col-span-2 flex items-center justify-end gap-2">
+                            {hasErrors && (
+                              <Badge variant="destructive" className="text-xs">
+                                {displayOrder.errors.length} issue{displayOrder.errors.length > 1 ? 's' : ''}
                               </Badge>
-                              {(displayOrder.usdAmount > 0 || displayOrder.lbpAmount > 0) && (
-                                <div className="text-xs text-muted-foreground">
-                                  {displayOrder.usdAmount > 0 && `$${displayOrder.usdAmount}`}
-                                  {displayOrder.lbpAmount > 0 && ` ${displayOrder.lbpAmount.toLocaleString()} LBP`}
-                                </div>
-                              )}
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
-                        
-                        {/* Error Indicator */}
-                        <div className="col-span-2 flex items-center justify-end gap-2">
-                          {hasErrors && (
-                            <Badge variant="destructive" className="text-xs">
-                              {displayOrder.errors.length} issue{displayOrder.errors.length > 1 ? 's' : ''}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
 
-                      {/* Right: Actions */}
-                      <div className="flex items-center gap-2 ml-4">
-                        {hasErrors && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => toggleRowExpansion(order.row)}
-                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                          >
-                            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                          </Button>
-                        )}
-                        
-                        {isEditing ? (
-                          <div className="flex gap-1">
+                        {/* Right: Actions */}
+                        <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+                          {hasErrors && (
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={handleSaveEdit}
-                              className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
-                            >
-                              <Save className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={handleCancelEdit}
+                              onClick={() => toggleRowExpansion(order.row)}
                               className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                             >
-                              <XCircle className="h-4 w-4" />
+                              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                             </Button>
-                          </div>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleEditClick(order)}
-                            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
+                          )}
+                          
+                          {isEditing ? (
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={handleSaveEdit}
+                                className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                title="Save changes"
+                              >
+                                <Save className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={handleCancelEdit}
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                                title="Cancel editing"
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleEditClick(order)}
+                              className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              title="Edit order"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                     </div>
                     
                     {/* Expanded Editing Fields */}
                     {isEditing && (
-                      <div className="mt-4 pt-4 border-t border-border">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-xs font-medium text-foreground mb-1 block">Phone Number</label>
-                            <Input
-                              value={displayOrder.phone}
-                              onChange={(e) => setEditedOrder(prev => prev ? {...prev, phone: e.target.value} : null)}
-                              className="h-8 text-sm"
-                              placeholder="Phone"
-                            />
+                      <div className="mt-4 pt-4 border-t border-border bg-muted/30 -mx-4 px-4 pb-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          <div className="space-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-foreground mb-1.5 block">Phone Number</label>
+                              <Input
+                                value={displayOrder.phone}
+                                onChange={(e) => setEditedOrder(prev => prev ? {...prev, phone: e.target.value} : null)}
+                                className="h-9 text-sm"
+                                placeholder="Phone Number"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-foreground mb-1.5 block">Address Details</label>
+                              <Input
+                                value={displayOrder.address}
+                                onChange={(e) => setEditedOrder(prev => prev ? {...prev, address: e.target.value} : null)}
+                                className="h-9 text-sm"
+                                placeholder="Address Details"
+                              />
+                            </div>
                           </div>
-                          <div>
-                            <label className="text-xs font-medium text-foreground mb-1 block">Address Details</label>
-                            <Input
-                              value={displayOrder.address}
-                              onChange={(e) => setEditedOrder(prev => prev ? {...prev, address: e.target.value} : null)}
-                              className="h-8 text-sm"
-                              placeholder="Address Details"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-foreground mb-1 block">Package Type</label>
-                            <Select
-                              value={displayOrder.packageType}
-                              onValueChange={(value) => setEditedOrder(prev => prev ? {...prev, packageType: value} : null)}
-                            >
-                              <SelectTrigger className="h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="parcel">Parcel</SelectItem>
-                                <SelectItem value="document">Document</SelectItem>
-                                <SelectItem value="bulky">Bulky</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-foreground mb-1 block">USD Amount</label>
-                            <Input
-                              type="number"
-                              value={displayOrder.usdAmount || ''}
-                              onChange={(e) => setEditedOrder(prev => prev ? {...prev, usdAmount: parseFloat(e.target.value) || 0} : null)}
-                              className="h-8 text-sm"
-                              placeholder="0"
-                            />
+                          <div className="space-y-3">
+                            <div>
+                              <label className="text-xs font-medium text-foreground mb-1.5 block">Package Type</label>
+                              <Select
+                                value={displayOrder.packageType}
+                                onValueChange={(value) => setEditedOrder(prev => prev ? {...prev, packageType: value} : null)}
+                              >
+                                <SelectTrigger className="h-9 text-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="parcel">Parcel</SelectItem>
+                                  <SelectItem value="document">Document</SelectItem>
+                                  <SelectItem value="bulky">Bulky</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <label className="text-xs font-medium text-foreground mb-1.5 block">USD Amount</label>
+                              <Input
+                                type="number"
+                                value={displayOrder.usdAmount || ''}
+                                onChange={(e) => setEditedOrder(prev => prev ? {...prev, usdAmount: parseFloat(e.target.value) || 0} : null)}
+                                className="h-9 text-sm"
+                                placeholder="0.00"
+                                min="0"
+                                step="0.01"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -407,31 +421,6 @@ export const OrderImportPreview: React.FC<OrderImportPreviewProps> = ({
             })}
           </div>
         </ScrollArea>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-between items-center pt-4 border-t">
-        <Button
-          variant="outline"
-          onClick={onCancel}
-        >
-          Back to Upload
-        </Button>
-        
-        <div className="flex items-center gap-3">
-          {hasErrors && (
-            <span className="text-sm text-muted-foreground">
-              Review and fix {invalidRows} {invalidRows === 1 ? 'issue' : 'issues'} to proceed
-            </span>
-          )}
-          <Button 
-            onClick={onProceed}
-            disabled={hasErrors || isCreating || validRows === 0}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            {isCreating ? 'Creating Orders...' : `Import ${validRows} Valid Orders`}
-          </Button>
-        </div>
       </div>
     </div>
   );
