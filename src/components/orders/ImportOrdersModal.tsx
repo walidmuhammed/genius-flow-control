@@ -261,7 +261,7 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
         <div className="flex-1 overflow-hidden">
           {step === 'upload' && (
             <ScrollArea className="h-full">
-              <div className="space-y-6 p-6">
+              <div className="space-y-6 p-6 min-h-0">
                 <div className="text-center space-y-2">
                   <h3 className="text-lg font-medium">Upload Your Orders</h3>
                   <p className="text-sm text-muted-foreground max-w-md mx-auto">
@@ -341,24 +341,61 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
                   </div>
                 </div>
                 
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium">Required Fields:</h4>
-                  <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
-                    <div>• Full Name*</div>
-                    <div>• Phone Number*</div>
-                    <div>• Governorate*</div>
-                    <div>• City*</div>
-                    <div>• Address Details*</div>
-                    <div>• Order Type* (Shipment/Exchange)</div>
+                <div className="space-y-4 bg-muted/30 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-foreground">Required Fields:</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                      <span>Full Name</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                      <span>Phone Number</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                      <span>Governorate</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                      <span>City</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                      <span>Address Details</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                      <span>Order Type (Shipment/Exchange)</span>
+                    </div>
                   </div>
-                  <h4 className="text-sm font-medium mt-4">Optional Fields:</h4>
-                  <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
-                    <div>• Package Type</div>
-                    <div>• Package Description</div>
-                    <div>• USD/LBP Amounts</div>
-                    <div>• Work Address (true/false)</div>
-                    <div>• Allow Inspection</div>
-                    <div>• Order Reference</div>
+                  
+                  <h4 className="text-sm font-medium text-foreground pt-2 border-t">Optional Fields:</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                      <span>Package Type</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                      <span>Package Description</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                      <span>USD/LBP Amounts</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                      <span>Work Address (true/false)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                      <span>Allow Inspection</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
+                      <span>Order Reference</span>
+                    </div>
                   </div>
                 </div>
               </div>
