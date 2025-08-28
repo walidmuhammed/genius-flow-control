@@ -261,8 +261,8 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
         <div className="flex-1 overflow-hidden">
           {step === 'upload' && (
             <ScrollArea className="h-full">
-              <div className="space-y-6 p-6 min-h-0">
-                <div className="text-center space-y-2">
+              <div className="space-y-4 p-6">
+                <div className="text-center space-y-1">
                   <h3 className="text-lg font-medium">Upload Your Orders</h3>
                   <p className="text-sm text-muted-foreground max-w-md mx-auto">
                     Import multiple orders at once using a CSV file. Make sure your data follows our template format.
@@ -282,7 +282,7 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
                 </div>
                 
                 <div 
-                  className={`border-2 border-dashed rounded-xl p-10 transition-all duration-300 text-center ${
+                  className={`border-2 border-dashed rounded-xl p-6 transition-all duration-300 text-center ${
                     isDragging 
                       ? 'border-primary bg-primary/5 scale-[1.02]' 
                       : file 
@@ -293,33 +293,33 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                 >
-                  <div className="flex flex-col items-center justify-center space-y-5">
-                    <div className={`rounded-full p-4 transition-colors ${
+                  <div className="flex flex-col items-center justify-center space-y-3">
+                    <div className={`rounded-full p-3 transition-colors ${
                       file 
                         ? 'bg-green-100 text-green-600' 
                         : 'bg-primary/10 text-primary'
                     }`}>
-                      <Upload className="h-8 w-8" />
+                      <Upload className="h-6 w-6" />
                     </div>
                     
                     {file ? (
-                      <div className="space-y-2">
-                        <p className="font-semibold text-green-800">File Selected</p>
+                      <div className="space-y-1">
+                        <p className="font-semibold text-green-800 text-sm">File Selected</p>
                         <p className="text-sm font-medium">{file.name}</p>
                         <p className="text-xs text-muted-foreground">
                           {(file.size / 1024).toFixed(1)} KB • Ready to process
                         </p>
                       </div>
                     ) : (
-                      <div className="space-y-2">
-                        <p className="font-semibold text-foreground">Drag and drop your CSV file here</p>
-                        <p className="text-sm text-muted-foreground">or click the button below to browse</p>
+                      <div className="space-y-1">
+                        <p className="font-semibold text-foreground text-sm">Drag and drop your CSV file here</p>
+                        <p className="text-xs text-muted-foreground">or click the button below to browse</p>
                       </div>
                     )}
                     
                     <div>
                       <label htmlFor="file-upload" className="cursor-pointer">
-                        <span className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-primary-foreground bg-primary hover:bg-primary/90 transition-colors shadow-sm">
+                        <span className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-primary-foreground bg-primary hover:bg-primary/90 transition-colors shadow-sm">
                           {file ? 'Choose Different File' : 'Browse Files'}
                         </span>
                         <input
@@ -341,60 +341,30 @@ export const ImportOrdersModal: React.FC<ImportOrdersModalProps> = ({
                   </div>
                 </div>
                 
-                <div className="space-y-4 bg-muted/30 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-foreground">Required Fields:</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                      <span>Full Name</span>
+                <div className="space-y-3 bg-muted/20 rounded-lg p-3">
+                  <h4 className="text-sm font-medium text-foreground">CSV Field Requirements:</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="bg-background rounded p-2">
+                      <div className="text-xs font-medium text-foreground mb-1">Required Fields:</div>
+                      <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
+                        <span>• Full Name</span>
+                        <span>• Phone Number</span>
+                        <span>• Governorate</span>
+                        <span>• City</span>
+                        <span>• Address Details</span>
+                        <span>• Order Type</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                      <span>Phone Number</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                      <span>Governorate</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                      <span>City</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                      <span>Address Details</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                      <span>Order Type (Shipment/Exchange)</span>
-                    </div>
-                  </div>
-                  
-                  <h4 className="text-sm font-medium text-foreground pt-2 border-t">Optional Fields:</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                      <span>Package Type</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                      <span>Package Description</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                      <span>USD/LBP Amounts</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                      <span>Work Address (true/false)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                      <span>Allow Inspection</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                      <span>Order Reference</span>
+                    <div className="bg-background rounded p-2">
+                      <div className="text-xs font-medium text-foreground mb-1">Optional Fields:</div>
+                      <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
+                        <span>• Package Type</span>
+                        <span>• Package Description</span>
+                        <span>• USD/LBP Amounts</span>
+                        <span>• Work Address</span>
+                        <span>• Allow Inspection</span>
+                        <span>• Order Reference</span>
+                      </div>
                     </div>
                   </div>
                 </div>
