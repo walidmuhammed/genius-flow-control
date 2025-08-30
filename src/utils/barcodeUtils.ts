@@ -26,12 +26,14 @@ export const generateQRCode = async (text: string): Promise<string> => {
 };
 
 /**
- * Generate Code128 barcode as SVG string
+ * Generate Code128 barcode as data URL
  */
 export const generateCode128 = (text: string): string => {
   try {
-    // Create a temporary canvas element
+    // Create a temporary canvas element with proper sizing
     const canvas = document.createElement('canvas');
+    canvas.width = 300;
+    canvas.height = 100;
     
     JsBarcode(canvas, text, {
       format: "CODE128",
@@ -49,16 +51,8 @@ export const generateCode128 = (text: string): string => {
       margin: 10
     });
     
-    // Convert canvas to SVG
-    const svg = `
-      <svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">
-        <foreignObject width="100%" height="100%">
-          <img src="${canvas.toDataURL()}" />
-        </foreignObject>
-      </svg>
-    `;
-    
-    return svg;
+    // Return data URL directly
+    return canvas.toDataURL('image/png');
   } catch (error) {
     console.error('Error generating Code128 barcode:', error);
     return '';

@@ -132,8 +132,9 @@ export const ShippingLabel: React.FC<ShippingLabelProps> = ({ data, size }) => {
         {/* Barcode Footer */}
         <div className="mt-auto">
           {barcode && (
-            <div className="flex justify-center" 
-                 dangerouslySetInnerHTML={{ __html: barcode }} />
+            <div className="flex justify-center">
+              <img src={barcode} alt={`Barcode: ${data.trackingNumber}`} className="max-w-full h-auto" />
+            </div>
           )}
         </div>
       </div>
@@ -240,7 +241,7 @@ export const ShippingLabel: React.FC<ShippingLabelProps> = ({ data, size }) => {
         {/* Barcode Footer */}
         <div className="mt-auto flex justify-center">
           {barcode && (
-            <div dangerouslySetInnerHTML={{ __html: barcode }} />
+            <img src={barcode} alt={`Barcode: ${data.trackingNumber}`} className="max-w-full h-auto" />
           )}
         </div>
       </div>
@@ -354,7 +355,7 @@ export const ShippingLabel: React.FC<ShippingLabelProps> = ({ data, size }) => {
       {/* Barcode Footer */}
       <div className="mt-auto flex justify-center pt-4">
         {barcode && (
-          <div dangerouslySetInnerHTML={{ __html: barcode }} />
+          <img src={barcode} alt={`Barcode: ${data.trackingNumber}`} className="max-w-full h-auto" />
         )}
       </div>
     </div>
