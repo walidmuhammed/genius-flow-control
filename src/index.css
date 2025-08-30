@@ -404,22 +404,194 @@
   background-color: rgba(0, 0, 0, 0.2);
 }
 
-/* Print Styles */
+/* Print Styles for Shipping Labels */
 @media print {
   @page {
     margin: 0;
   }
   
-  body {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  /* Ensure colors are preserved */
+  body, * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
   
+  /* Page break controls */
   .page-break-before {
-    page-break-before: always;
+    page-break-before: always !important;
+    break-before: page !important;
   }
   
+  .page-break-after {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+  
+  .page-break-inside-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  /* Hide non-essential elements */
+  .print\:hidden {
+    display: none !important;
+  }
+  
+  /* Ensure borders are visible */
   .print\:border-0 {
     border: none !important;
+  }
+  
+  .print\:border-black {
+    border-color: #000000 !important;
+  }
+  
+  /* Font improvements for print */
+  .font-mono {
+    font-family: 'Courier New', Consolas, monospace !important;
+  }
+  
+  /* Ensure background colors print correctly */
+  .bg-yellow-100,
+  .bg-yellow-50 {
+    background-color: #fef3c7 !important;
+  }
+  
+  .bg-yellow-400 {
+    background-color: #fbbf24 !important;
+  }
+  
+  .bg-blue-100,
+  .bg-blue-50 {
+    background-color: #dbeafe !important;
+  }
+  
+  .bg-green-100 {
+    background-color: #dcfce7 !important;
+  }
+  
+  .bg-gray-100,
+  .bg-gray-50 {
+    background-color: #f3f4f6 !important;
+  }
+  
+  .bg-gray-900 {
+    background-color: #111827 !important;
+    color: #ffffff !important;
+  }
+  
+  .bg-white {
+    background-color: #ffffff !important;
+  }
+  
+  /* Text colors for print */
+  .text-white {
+    color: #ffffff !important;
+  }
+  
+  .text-yellow-800,
+  .text-yellow-900 {
+    color: #92400e !important;
+  }
+  
+  .text-blue-800,
+  .text-blue-900 {
+    color: #1e40af !important;
+  }
+  
+  .text-blue-700 {
+    color: #1d4ed8 !important;
+  }
+  
+  .text-gray-700 {
+    color: #374151 !important;
+  }
+  
+  .text-gray-600 {
+    color: #4b5563 !important;
+  }
+  
+  .text-gray-500 {
+    color: #6b7280 !important;
+  }
+  
+  .text-gray-800 {
+    color: #1f2937 !important;
+  }
+  
+  /* Border colors for print */
+  .border-yellow-400 {
+    border-color: #fbbf24 !important;
+  }
+  
+  .border-blue-300 {
+    border-color: #93c5fd !important;
+  }
+  
+  .border-gray-900 {
+    border-color: #111827 !important;
+  }
+  
+  .border-gray-300 {
+    border-color: #d1d5db !important;
+  }
+  
+  .border-gray-100 {
+    border-color: #f3f4f6 !important;
+  }
+  
+  /* Ensure proper sizing for mm units on print */
+  .w-\\[105mm\\] {
+    width: 105mm !important;
+  }
+  
+  .h-\\[148mm\\] {
+    height: 148mm !important;
+  }
+  
+  .w-\\[148mm\\] {
+    width: 148mm !important;
+  }
+  
+  .h-\\[210mm\\] {
+    height: 210mm !important;
+  }
+  
+  .w-\\[210mm\\] {
+    width: 210mm !important;
+  }
+  
+  .h-\\[297mm\\] {
+    height: 297mm !important;
+  }
+  
+  /* Ensure visibility of essential print elements */
+  .border-2 {
+    border-width: 2px !important;
+  }
+  
+  .border-4 {
+    border-width: 4px !important;
+  }
+  
+  /* Remove unnecessary shadows and effects for print */
+  .shadow-md,
+  .shadow-lg,
+  .shadow-xl {
+    box-shadow: none !important;
+  }
+  
+  /* Ensure proper font weights are preserved */
+  .font-black {
+    font-weight: 900 !important;
+  }
+  
+  .font-bold {
+    font-weight: 700 !important;
+  }
+  
+  .font-semibold {
+    font-weight: 600 !important;
   }
 }

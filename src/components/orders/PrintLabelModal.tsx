@@ -48,9 +48,21 @@ export const PrintLabelModal: React.FC<PrintLabelModalProps> = ({
       @page {
         size: ${size === 'A6' ? '105mm 148mm' : size === 'A5' ? '148mm 210mm' : '210mm 297mm'};
         margin: 0;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
       }
       @media print {
-        body { -webkit-print-color-adjust: exact; }
+        body { 
+          -webkit-print-color-adjust: exact;
+          color-adjust: exact;
+        }
+        * {
+          -webkit-print-color-adjust: exact;
+          color-adjust: exact;
+        }
+        .page-break-before {
+          page-break-before: always;
+        }
       }
     `,
     onAfterPrint: () => {
@@ -108,23 +120,23 @@ export const PrintLabelModal: React.FC<PrintLabelModalProps> = ({
 
         <div className="flex gap-6 h-full">
           {/* Controls */}
-          <div className="w-64 flex-shrink-0 space-y-4">
+          <div className="w-72 flex-shrink-0 space-y-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Label Size</label>
+              <label className="text-sm font-medium mb-2 block">Label Format</label>
               <Select value={size} onValueChange={(value: LabelSize) => setSize(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="A6">A6 (105×148mm) - Thermal</SelectItem>
+                  <SelectItem value="A6">A6 (105×148mm) - Thermal Printer</SelectItem>
                   <SelectItem value="A5">A5 (148×210mm) - Half Page</SelectItem>
-                  <SelectItem value="A4">A4 (210×297mm) - Full Page</SelectItem>
+                  <SelectItem value="A4">A4 (210×297mm) - Full Page Waybill</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Zoom</label>
+              <label className="text-sm font-medium mb-2 block">Preview Zoom</label>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={zoomOut}>
                   <ZoomOut className="h-4 w-4" />
@@ -150,10 +162,15 @@ export const PrintLabelModal: React.FC<PrintLabelModalProps> = ({
               </Button>
             </div>
 
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-muted-foreground space-y-1 p-3 bg-muted/50 rounded">
+              <div className="font-semibold mb-2">Print Guidelines:</div>
               <p>• Both QR Code and Barcode included</p>
-              <p>• Ready for {size === 'A6' ? 'thermal printers' : size === 'A5' ? 'half-page printing' : 'full-page printing'}</p>
-              <p>• Print at 100% scale</p>
+              <p>• {size === 'A6' ? 'Optimized for thermal printers' : size === 'A5' ? 'Perfect for half-page printing' : 'Professional full-page waybill'}</p>
+              <p>• Print at 100% scale for best results</p>
+              <p>• All merchant and customer info included</p>
+              {size === 'A6' && <p>• Compact format with essential details</p>}
+              {size === 'A5' && <p>• Balanced layout with comprehensive info</p>}
+              {size === 'A4' && <p>• Complete waybill with branding</p>}
             </div>
           </div>
 
