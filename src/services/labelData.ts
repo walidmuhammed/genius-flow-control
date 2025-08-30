@@ -132,7 +132,7 @@ export const transformOrderToLabelData = async (order: OrderWithCustomer): Promi
     // Identifiers
     orderId: order.order_id.toString().padStart(3, '0'),
     trackingNumber: formatTrackingNumber(order.order_id),
-    referenceNumber: order.reference_number || '—',
+    referenceNumber: order.reference_number || (order.order_id.toString().padStart(4, '0')),
     
     // Order details
     orderType: order.type as 'Shipment' | 'Exchange' | 'Cash Collection' | 'Return',
