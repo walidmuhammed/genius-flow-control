@@ -23,8 +23,8 @@ export const PrintLabelModal: React.FC<PrintLabelModalProps> = ({
   isOpen,
   onClose
 }) => {
-  const [size, setSize] = useState<LabelSize>('A6');
-  const [zoom, setZoom] = useState(1);
+  const [size, setSize] = useState<LabelSize>('A5');
+  const [zoom, setZoom] = useState(0.8);
   const [labelData, setLabelData] = useState<LabelData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
@@ -53,15 +53,28 @@ export const PrintLabelModal: React.FC<PrintLabelModalProps> = ({
       }
       @media print {
         body { 
+          margin: 0;
+          padding: 0;
           -webkit-print-color-adjust: exact;
           color-adjust: exact;
         }
         * {
           -webkit-print-color-adjust: exact;
           color-adjust: exact;
+          box-sizing: border-box;
         }
         .page-break-before {
           page-break-before: always;
+        }
+        .waybill-container {
+          width: 100% !important;
+          height: 100% !important;
+          margin: 0 !important;
+          padding: ${size === 'A6' ? '4mm' : size === 'A5' ? '5mm' : '6mm'} !important;
+          border: 1px solid #000 !important;
+          box-sizing: border-box !important;
+          overflow: hidden !important;
+          page-break-inside: avoid !important;
         }
       }
     `,
@@ -80,24 +93,39 @@ export const PrintLabelModal: React.FC<PrintLabelModalProps> = ({
       
       if (!printRef.current) return;
 
+      // Configure canvas for high quality capture
       const canvas = await html2canvas.default(printRef.current, {
-        scale: 2,
+        scale: 3, // Higher scale for better quality
         useCORS: true,
-        allowTaint: true
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        removeContainer: true,
+        foreignObjectRendering: true,
+        logging: false,
+        width: printRef.current.scrollWidth,
+        height: printRef.current.scrollHeight
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      
+      // Configure PDF with exact page size
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: size === 'A6' ? [105, 148] : size === 'A5' ? [148, 210] : 'a4'
+        format: size === 'A6' ? [105, 148] : size === 'A5' ? [148, 210] : 'a4',
+        compress: true,
+        precision: 16
       });
 
-      const imgWidth = size === 'A6' ? 105 : size === 'A5' ? 148 : 210;
-      const imgHeight = size === 'A6' ? 148 : size === 'A5' ? 210 : 297;
+      const pageWidth = size === 'A6' ? 105 : size === 'A5' ? 148 : 210;
+      const pageHeight = size === 'A6' ? 148 : size === 'A5' ? 210 : 297;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(`shipping-labels-${size.toLowerCase()}.pdf`);
+      // Add image to PDF with exact dimensions
+      pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, undefined, 'MEDIUM');
+      
+      // Save with descriptive filename
+      const filename = `waybill-${orders.map(o => o.order_id).join('-')}-${size.toLowerCase()}.pdf`;
+      pdf.save(filename);
       
       toast.success('PDF downloaded successfully');
     } catch (error) {

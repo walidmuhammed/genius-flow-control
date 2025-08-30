@@ -889,3 +889,371 @@
     height: 2.5rem !important;
   }
 }
+
+/* Waybill Print-Ready Styles */
+.waybill-container {
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  padding: 4mm;
+  border: 1px solid #000;
+}
+
+/* A6 Specific Styles */
+.w-\[105mm\].waybill-container {
+  font-size: 8pt;
+  line-height: 1.2;
+}
+
+.w-\[105mm\] .waybill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2mm;
+  padding-bottom: 1.5mm;
+}
+
+.w-\[105mm\] .company-name {
+  font-size: 12pt;
+  font-weight: bold;
+  color: #000;
+}
+
+.w-\[105mm\] .order-number {
+  font-size: 9pt;
+  font-weight: bold;
+}
+
+.w-\[105mm\] .reference-number {
+  font-size: 7pt;
+  color: #000;
+}
+
+.w-\[105mm\] .barcode-image {
+  height: 8mm;
+  max-width: 25mm;
+}
+
+.w-\[105mm\] .tracking-pill-container {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 2mm;
+}
+
+.w-\[105mm\] .tracking-pill {
+  background-color: #000;
+  color: #fff;
+  padding: 1mm 3mm;
+  border-radius: 10px;
+  font-size: 8pt;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.w-\[105mm\] .main-separator {
+  height: 1.5px;
+  background-color: #000;
+  margin-bottom: 3mm;
+}
+
+.w-\[105mm\] .section-header {
+  display: flex;
+  align-items: center;
+  gap: 1mm;
+  margin-bottom: 1.5mm;
+}
+
+.w-\[105mm\] .section-icon {
+  width: 2.5mm;
+  height: 2.5mm;
+  color: #000;
+}
+
+.w-\[105mm\] .section-title {
+  font-size: 8pt;
+  font-weight: bold;
+}
+
+.w-\[105mm\] .customer-section {
+  margin-bottom: 3mm;
+}
+
+.w-\[105mm\] .customer-name {
+  font-size: 9pt;
+  font-weight: bold;
+  margin-bottom: 0.5mm;
+}
+
+.w-\[105mm\] .customer-phone,
+.w-\[105mm\] .customer-phone-secondary {
+  font-size: 7pt;
+  font-family: monospace;
+  margin-bottom: 0.5mm;
+}
+
+.w-\[105mm\] .customer-location,
+.w-\[105mm\] .customer-address {
+  font-size: 7pt;
+  line-height: 1.3;
+  margin-bottom: 0.5mm;
+}
+
+.w-\[105mm\] .package-qr-section {
+  display: flex;
+  gap: 3mm;
+  margin-bottom: 3mm;
+}
+
+.w-\[105mm\] .package-column {
+  flex: 1;
+}
+
+.w-\[105mm\] .qr-column {
+  flex-shrink: 0;
+  width: 18mm;
+}
+
+.w-\[105mm\] .qr-container {
+  width: 18mm;
+  height: 18mm;
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.w-\[105mm\] .qr-container svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.w-\[105mm\] .package-type-container {
+  margin-bottom: 1.5mm;
+}
+
+.w-\[105mm\] .package-type-label {
+  font-size: 7pt;
+  margin-right: 2mm;
+}
+
+.w-\[105mm\] .exchange-pill {
+  background-color: #000;
+  color: #fff;
+  padding: 0.5mm 2mm;
+  border-radius: 8px;
+  font-size: 6pt;
+  font-weight: bold;
+}
+
+.w-\[105mm\] .package-flags {
+  margin-bottom: 1.5mm;
+}
+
+.w-\[105mm\] .flag-item {
+  display: flex;
+  align-items: center;
+  gap: 1mm;
+  margin-bottom: 0.5mm;
+  font-size: 6pt;
+}
+
+.w-\[105mm\] .checkbox {
+  width: 2.5mm;
+  height: 2.5mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6pt;
+  font-weight: bold;
+}
+
+.w-\[105mm\] .package-details {
+  font-size: 6pt;
+  line-height: 1.2;
+}
+
+.w-\[105mm\] .package-details div {
+  margin-bottom: 0.5mm;
+}
+
+.w-\[105mm\] .financials-section {
+  margin-bottom: 3mm;
+}
+
+.w-\[105mm\] .cash-collection-label {
+  font-size: 7pt;
+  font-weight: bold;
+  margin-bottom: 0.5mm;
+}
+
+.w-\[105mm\] .cash-amounts {
+  font-size: 8pt;
+  font-weight: bold;
+}
+
+.w-\[105mm\] .bottom-section {
+  display: flex;
+  gap: 4mm;
+}
+
+.w-\[105mm\] .notes-column,
+.w-\[105mm\] .business-column {
+  flex: 1;
+}
+
+.w-\[105mm\] .notes-content,
+.w-\[105mm\] .business-name,
+.w-\[105mm\] .business-phone,
+.w-\[105mm\] .business-location {
+  font-size: 6pt;
+  line-height: 1.2;
+  margin-bottom: 0.5mm;
+}
+
+.w-\[105mm\] .business-name {
+  font-weight: bold;
+}
+
+/* A5 Specific Styles */
+.w-\[148mm\].waybill-container {
+  font-size: 9pt;
+  line-height: 1.3;
+  padding: 5mm;
+}
+
+.w-\[148mm\] .waybill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3mm;
+  padding-bottom: 2mm;
+}
+
+.w-\[148mm\] .company-name {
+  font-size: 16pt;
+  font-weight: bold;
+}
+
+.w-\[148mm\] .order-number {
+  font-size: 11pt;
+  font-weight: bold;
+}
+
+.w-\[148mm\] .reference-number {
+  font-size: 9pt;
+}
+
+.w-\[148mm\] .barcode-image {
+  height: 10mm;
+  max-width: 30mm;
+}
+
+.w-\[148mm\] .tracking-pill {
+  background-color: #000;
+  color: #fff;
+  padding: 1.5mm 4mm;
+  border-radius: 12px;
+  font-size: 9pt;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.w-\[148mm\] .main-separator {
+  height: 2px;
+  background-color: #000;
+  margin-bottom: 4mm;
+}
+
+.w-\[148mm\] .section-icon {
+  width: 3mm;
+  height: 3mm;
+}
+
+.w-\[148mm\] .section-title {
+  font-size: 9pt;
+  font-weight: bold;
+}
+
+.w-\[148mm\] .customer-name {
+  font-size: 11pt;
+  font-weight: bold;
+  margin-bottom: 1mm;
+}
+
+.w-\[148mm\] .qr-container {
+  width: 22mm;
+  height: 22mm;
+}
+
+.w-\[148mm\] .cash-amounts {
+  font-size: 10pt;
+  font-weight: bold;
+}
+
+/* A4 Specific Styles */
+.w-\[210mm\].waybill-container {
+  font-size: 11pt;
+  line-height: 1.4;
+  padding: 6mm;
+}
+
+.w-\[210mm\] .company-name {
+  font-size: 20pt;
+  font-weight: bold;
+}
+
+.w-\[210mm\] .order-number {
+  font-size: 14pt;
+  font-weight: bold;
+}
+
+.w-\[210mm\] .reference-number {
+  font-size: 11pt;
+}
+
+.w-\[210mm\] .barcode-image {
+  height: 12mm;
+  max-width: 35mm;
+}
+
+.w-\[210mm\] .tracking-pill {
+  background-color: #000;
+  color: #fff;
+  padding: 2mm 5mm;
+  border-radius: 15px;
+  font-size: 11pt;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.w-\[210mm\] .main-separator {
+  height: 2.5px;
+  background-color: #000;
+  margin-bottom: 5mm;
+}
+
+.w-\[210mm\] .section-icon {
+  width: 4mm;
+  height: 4mm;
+}
+
+.w-\[210mm\] .section-title {
+  font-size: 11pt;
+  font-weight: bold;
+}
+
+.w-\[210mm\] .customer-name {
+  font-size: 13pt;
+  font-weight: bold;
+  margin-bottom: 1.5mm;
+}
+
+.w-\[210mm\] .qr-container {
+  width: 26mm;
+  height: 26mm;
+}
+
+.w-\[210mm\] .cash-amounts {
+  font-size: 12pt;
+  font-weight: bold;
+}
