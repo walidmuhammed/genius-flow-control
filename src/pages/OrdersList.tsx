@@ -292,6 +292,7 @@ const OrdersList: React.FC = () => {
             {/* Bulk Actions Bar - Outside container */}
             <BulkActionsBar
               selectedCount={selectedOrders.length}
+              selectedOrders={selectedOrders.map(id => filteredOrders.find(order => order.id === id)).filter(Boolean) as OrderWithCustomer[]}
               onClearSelection={() => setSelectedOrders([])}
               onBulkPrint={handleBulkActions.print}
               onBulkExport={handleBulkActions.export}

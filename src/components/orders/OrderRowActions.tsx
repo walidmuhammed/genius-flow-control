@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Edit, Printer } from 'lucide-react';
 import { Order } from './OrdersTableRow';
 import OrderActionsMenu from './OrderActionsMenu';
+import { PrintLabelModal } from './PrintLabelModal';
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -37,12 +38,17 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
   onDeleteOrder,
 }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
   const isNewStatus = order.status === 'New';
 
   // Use the onEditOrder prop instead of direct navigation
   const handleEdit = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     onEditOrder && onEditOrder(originalOrder || order);
+  };
+
+  const handlePrintLabel = () => {
+    setShowPrintModal(true);
   };
 
   return (
@@ -64,7 +70,7 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
             aria-label="Print Label"
             onClick={e => {
               e.stopPropagation();
-              onPrintLabel();
+              handlePrintLabel();
             }}
             tabIndex={isRowHovered ? 0 : -1}
             style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -92,7 +98,7 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
           order={order}
           onViewDetails={onViewDetails}
           onEditOrder={handleEdit}
-          onPrintLabel={onPrintLabel}
+          onPrintLabel={handlePrintLabel}
           onCreateTicket={onCreateTicket}
           onDeleteOrder={() => setShowDeleteDialog(true)}
         />
@@ -120,6 +126,13 @@ const OrderRowActions: React.FC<OrderRowActionsProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Print Label Modal */}
+      <PrintLabelModal
+        orders={originalOrder ? [originalOrder] : []}
+        isOpen={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+      />
     </div>
   );
 };

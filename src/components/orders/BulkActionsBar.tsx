@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, Printer, Download, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PrintLabelModal } from './PrintLabelModal';
+import { OrderWithCustomer } from '@/services/orders';
 import { cn } from '@/lib/utils';
 interface BulkActionsBarProps {
   selectedCount: number;
+  selectedOrders: OrderWithCustomer[];
   onClearSelection: () => void;
   onBulkPrint: () => void;
   onBulkExport: () => void;
@@ -13,12 +16,18 @@ interface BulkActionsBarProps {
 }
 export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
   selectedCount,
+  selectedOrders,
   onClearSelection,
   onBulkPrint,
   onBulkExport,
   onBulkDelete,
   canDelete
 }) => {
+  const [showPrintModal, setShowPrintModal] = useState(false);
+
+  const handleBulkPrint = () => {
+    setShowPrintModal(true);
+  };
   return <AnimatePresence>
       {selectedCount > 0 && <motion.div initial={{
       opacity: 0,
@@ -49,7 +58,7 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
 
               {/* Actions */}
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={onBulkPrint} className="h-9 px-3 bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-lg">
+                <Button variant="ghost" size="sm" onClick={handleBulkPrint} className="h-9 px-3 bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-lg">
                   <Printer className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">Print Labels</span>
                   <span className="sm:hidden">Print</span>
@@ -69,6 +78,13 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
               </div>
             </div>
           </div>
+          
+          {/* Print Label Modal */}
+          <PrintLabelModal
+            orders={selectedOrders}
+            isOpen={showPrintModal}
+            onClose={() => setShowPrintModal(false)}
+          />
         </motion.div>}
     </AnimatePresence>;
 };
