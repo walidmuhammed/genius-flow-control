@@ -139,6 +139,217 @@ export type Database = {
           },
         ]
       }
+      courier_pricing_defaults: {
+        Row: {
+          after_hours_multiplier: number | null
+          base_fee_lbp: number | null
+          base_fee_usd: number | null
+          created_at: string
+          governorate_id: string | null
+          id: string
+          is_active: boolean | null
+          package_type: string
+          remote_area_extra_lbp: number | null
+          remote_area_extra_usd: number | null
+          return_fee_lbp: number | null
+          return_fee_usd: number | null
+          unsuccessful_fee_lbp: number | null
+          unsuccessful_fee_usd: number | null
+          updated_at: string
+          vehicle_multiplier: number | null
+          vehicle_type: string | null
+        }
+        Insert: {
+          after_hours_multiplier?: number | null
+          base_fee_lbp?: number | null
+          base_fee_usd?: number | null
+          created_at?: string
+          governorate_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          package_type: string
+          remote_area_extra_lbp?: number | null
+          remote_area_extra_usd?: number | null
+          return_fee_lbp?: number | null
+          return_fee_usd?: number | null
+          unsuccessful_fee_lbp?: number | null
+          unsuccessful_fee_usd?: number | null
+          updated_at?: string
+          vehicle_multiplier?: number | null
+          vehicle_type?: string | null
+        }
+        Update: {
+          after_hours_multiplier?: number | null
+          base_fee_lbp?: number | null
+          base_fee_usd?: number | null
+          created_at?: string
+          governorate_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          package_type?: string
+          remote_area_extra_lbp?: number | null
+          remote_area_extra_usd?: number | null
+          return_fee_lbp?: number | null
+          return_fee_usd?: number | null
+          unsuccessful_fee_lbp?: number | null
+          unsuccessful_fee_usd?: number | null
+          updated_at?: string
+          vehicle_multiplier?: number | null
+          vehicle_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_pricing_defaults_governorate_id_fkey"
+            columns: ["governorate_id"]
+            isOneToOne: false
+            referencedRelation: "governorates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courier_pricing_overrides: {
+        Row: {
+          after_hours_multiplier: number | null
+          base_fee_lbp: number | null
+          base_fee_usd: number | null
+          courier_id: string
+          created_at: string
+          effective_date: string | null
+          governorate_id: string | null
+          id: string
+          is_active: boolean | null
+          package_type: string | null
+          remote_area_extra_lbp: number | null
+          remote_area_extra_usd: number | null
+          return_fee_lbp: number | null
+          return_fee_usd: number | null
+          unsuccessful_fee_lbp: number | null
+          unsuccessful_fee_usd: number | null
+          updated_at: string
+          vehicle_multiplier: number | null
+        }
+        Insert: {
+          after_hours_multiplier?: number | null
+          base_fee_lbp?: number | null
+          base_fee_usd?: number | null
+          courier_id: string
+          created_at?: string
+          effective_date?: string | null
+          governorate_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          package_type?: string | null
+          remote_area_extra_lbp?: number | null
+          remote_area_extra_usd?: number | null
+          return_fee_lbp?: number | null
+          return_fee_usd?: number | null
+          unsuccessful_fee_lbp?: number | null
+          unsuccessful_fee_usd?: number | null
+          updated_at?: string
+          vehicle_multiplier?: number | null
+        }
+        Update: {
+          after_hours_multiplier?: number | null
+          base_fee_lbp?: number | null
+          base_fee_usd?: number | null
+          courier_id?: string
+          created_at?: string
+          effective_date?: string | null
+          governorate_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          package_type?: string | null
+          remote_area_extra_lbp?: number | null
+          remote_area_extra_usd?: number | null
+          return_fee_lbp?: number | null
+          return_fee_usd?: number | null
+          unsuccessful_fee_lbp?: number | null
+          unsuccessful_fee_usd?: number | null
+          updated_at?: string
+          vehicle_multiplier?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_pricing_overrides_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_pricing_overrides_governorate_id_fkey"
+            columns: ["governorate_id"]
+            isOneToOne: false
+            referencedRelation: "governorates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courier_settlements: {
+        Row: {
+          balance_lbp: number | null
+          balance_usd: number | null
+          courier_id: string
+          created_at: string
+          created_by: string | null
+          direction: string
+          id: string
+          notes: string | null
+          payment_method: string | null
+          settlement_id: string
+          status: string | null
+          total_collected_lbp: number | null
+          total_collected_usd: number | null
+          total_courier_fees_lbp: number | null
+          total_courier_fees_usd: number | null
+          updated_at: string
+        }
+        Insert: {
+          balance_lbp?: number | null
+          balance_usd?: number | null
+          courier_id: string
+          created_at?: string
+          created_by?: string | null
+          direction: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          settlement_id: string
+          status?: string | null
+          total_collected_lbp?: number | null
+          total_collected_usd?: number | null
+          total_courier_fees_lbp?: number | null
+          total_courier_fees_usd?: number | null
+          updated_at?: string
+        }
+        Update: {
+          balance_lbp?: number | null
+          balance_usd?: number | null
+          courier_id?: string
+          created_at?: string
+          created_by?: string | null
+          direction?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          settlement_id?: string
+          status?: string | null
+          total_collected_lbp?: number | null
+          total_collected_usd?: number | null
+          total_courier_fees_lbp?: number | null
+          total_courier_fees_usd?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_settlements_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       couriers: {
         Row: {
           address: string | null
@@ -526,13 +737,18 @@ export type Database = {
           cash_collection_enabled: boolean | null
           cash_collection_lbp: number | null
           cash_collection_usd: number | null
+          cash_handover_status: string | null
           client_id: string | null
           collected_amount_lbp: number | null
           collected_amount_usd: number | null
           collected_currency: string | null
           collection_timestamp: string | null
+          courier_fee_lbp: number | null
+          courier_fee_usd: number | null
           courier_id: string | null
           courier_name: string | null
+          courier_settlement_id: string | null
+          courier_settlement_status: string | null
           created_at: string
           created_by: string | null
           customer_id: string
@@ -564,13 +780,18 @@ export type Database = {
           cash_collection_enabled?: boolean | null
           cash_collection_lbp?: number | null
           cash_collection_usd?: number | null
+          cash_handover_status?: string | null
           client_id?: string | null
           collected_amount_lbp?: number | null
           collected_amount_usd?: number | null
           collected_currency?: string | null
           collection_timestamp?: string | null
+          courier_fee_lbp?: number | null
+          courier_fee_usd?: number | null
           courier_id?: string | null
           courier_name?: string | null
+          courier_settlement_id?: string | null
+          courier_settlement_status?: string | null
           created_at?: string
           created_by?: string | null
           customer_id: string
@@ -602,13 +823,18 @@ export type Database = {
           cash_collection_enabled?: boolean | null
           cash_collection_lbp?: number | null
           cash_collection_usd?: number | null
+          cash_handover_status?: string | null
           client_id?: string | null
           collected_amount_lbp?: number | null
           collected_amount_usd?: number | null
           collected_currency?: string | null
           collection_timestamp?: string | null
+          courier_fee_lbp?: number | null
+          courier_fee_usd?: number | null
           courier_id?: string | null
           courier_name?: string | null
+          courier_settlement_id?: string | null
+          courier_settlement_status?: string | null
           created_at?: string
           created_by?: string | null
           customer_id?: string
@@ -640,6 +866,13 @@ export type Database = {
             columns: ["courier_id"]
             isOneToOne: false
             referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_courier_settlement_id_fkey"
+            columns: ["courier_settlement_id"]
+            isOneToOne: false
+            referencedRelation: "courier_settlements"
             referencedColumns: ["id"]
           },
           {
@@ -1399,6 +1632,18 @@ export type Database = {
           total_fee_usd: number
         }[]
       }
+      calculate_courier_fee: {
+        Args: {
+          p_courier_id: string
+          p_governorate_id?: string
+          p_order_status?: string
+          p_package_type: string
+        }
+        Returns: {
+          fee_lbp: number
+          fee_usd: number
+        }[]
+      }
       calculate_delivery_fee: {
         Args: {
           p_city_id?: string
@@ -1441,6 +1686,10 @@ export type Database = {
       }
       generate_sequential_invoice_id: {
         Args: { p_company_id?: string }
+        Returns: string
+      }
+      generate_settlement_id: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       generate_ticket_number: {
