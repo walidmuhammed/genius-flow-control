@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { X, Printer, Download, Trash2 } from 'lucide-react';
+import { X, Printer, Download, Trash2, UserCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -10,6 +10,7 @@ interface AdminBulkActionsBarProps {
   onBulkPrint: () => void;
   onBulkExport: () => void;
   onBulkDelete: () => void;
+  onBulkAssignCourier: () => void;
   canDelete: boolean;
 }
 
@@ -19,6 +20,7 @@ export const AdminBulkActionsBar: React.FC<AdminBulkActionsBarProps> = ({
   onBulkPrint,
   onBulkExport,
   onBulkDelete,
+  onBulkAssignCourier,
   canDelete,
 }) => {
   return (
@@ -64,6 +66,17 @@ export const AdminBulkActionsBar: React.FC<AdminBulkActionsBarProps> = ({
 
               {/* Actions */}
               <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onBulkAssignCourier}
+                  className="h-9 px-3 bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-lg"
+                >
+                  <UserCheck className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Assign Courier</span>
+                  <span className="sm:hidden">Assign</span>
+                </Button>
+                
                 <Button
                   variant="ghost"
                   size="sm"

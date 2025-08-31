@@ -351,6 +351,32 @@ export async function assignCourierToOrder(orderId: string, courierId: string, c
   } as unknown as Order;
 }
 
+// Assigns a courier to multiple orders in bulk
+export async function assignCourierToOrders(orderIds: string[], courierId: string, courierName: string): Promise<{ 
+  successfulOrders: Order[], 
+  errors: { orderId: string, error: string }[] 
+}> {
+  const results = await Promise.allSettled(
+    orderIds.map(orderId => assignCourierToOrder(orderId, courierId, courierName))
+  );
+  
+  const successfulOrders: Order[] = [];
+  const errors: { orderId: string, error: string }[] = [];
+  
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      successfulOrders.push(result.value);
+    } else {
+      errors.push({
+        orderId: orderIds[index],
+        error: result.reason.message || 'Unknown error'
+      });
+    }
+  });
+  
+  return { successfulOrders, errors };
+}
+
 export async function deleteOrder(id: string) {
   // Check authentication
   const { data: { user } } = await supabase.auth.getUser();

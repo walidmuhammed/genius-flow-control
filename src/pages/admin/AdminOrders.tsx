@@ -18,6 +18,7 @@ import { AdminEnhancedOrdersTable } from '@/components/admin/AdminEnhancedOrders
 import { AdminBulkActionsBar } from '@/components/admin/AdminBulkActionsBar';
 import { AdminOrdersUnifiedContainer } from '@/components/admin/AdminOrdersUnifiedContainer';
 import { AdminOrderDetailsDialog } from '@/components/admin/AdminOrderDetailsDialog';
+import BulkOrderCourierAssignmentDialog from '@/components/admin/BulkOrderCourierAssignmentDialog';
 import cn from 'classnames';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 
@@ -33,6 +34,7 @@ const AdminOrders: React.FC = () => {
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [orderPendingDelete, setOrderPendingDelete] = useState<OrderWithCustomer | null>(null);
+  const [bulkAssignDialogOpen, setBulkAssignDialogOpen] = useState(false);
   const { isMobile, isTablet } = useScreenSize();
   
   // Fetch orders from the database using our hooks
@@ -207,6 +209,7 @@ const AdminOrders: React.FC = () => {
     print: () => console.log('Bulk print:', selectedOrders),
     export: () => console.log('Bulk export:', selectedOrders),
     delete: () => console.log('Bulk delete:', selectedOrders),
+    assignCourier: () => setBulkAssignDialogOpen(true),
   };
 
   const canDeleteSelected = selectedOrders.every(id => 
@@ -290,6 +293,7 @@ const AdminOrders: React.FC = () => {
               onBulkPrint={handleBulkActions.print}
               onBulkExport={handleBulkActions.export}
               onBulkDelete={handleBulkActions.delete}
+              onBulkAssignCourier={handleBulkActions.assignCourier}
               canDelete={canDeleteSelected}
             />
 
@@ -409,6 +413,19 @@ const AdminOrders: React.FC = () => {
           order={selectedOrder}
           open={orderDetailsOpen}
           onOpenChange={setOrderDetailsOpen}
+        />
+
+        {/* Bulk Courier Assignment Dialog */}
+        <BulkOrderCourierAssignmentDialog
+          orderIds={selectedOrders}
+          orderCount={selectedOrders.length}
+          open={bulkAssignDialogOpen}
+          onOpenChange={(open) => {
+            setBulkAssignDialogOpen(open);
+            if (!open) {
+              setSelectedOrders([]); // Clear selection after assignment
+            }
+          }}
         />
 
         {/* Deletion Confirmation Dialog */}
