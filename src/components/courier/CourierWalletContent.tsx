@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Wallet, 
   DollarSign, 
@@ -14,85 +15,68 @@ import {
   Package,
   ArrowUpRight,
   ArrowDownLeft,
-  Eye
+  Eye,
+  Loader2
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useCourierBalance, useCourierSettlements, useOpenOrdersByCourier } from '@/hooks/use-courier-settlements';
+import { format } from 'date-fns';
 
 const CourierWalletContent = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('thisMonth');
+  const { user } = useAuth();
+  
+  // Fetch real data using hooks
+  const { data: balance, isLoading: balanceLoading } = useCourierBalance(user?.id);
+  const { data: settlements, isLoading: settlementsLoading } = useCourierSettlements();
+  const { data: openOrders, isLoading: ordersLoading } = useOpenOrdersByCourier(user?.id);
 
-  // Mock data - in real app this would come from hooks
-  const balanceData = {
-    currentBalanceUSD: 245.75,
-    currentBalanceLBP: 3686250,
-    pendingPayoutUSD: 125.50,
-    pendingPayoutLBP: 1882500
-  };
+  // Filter settlements for current courier
+  const courierSettlements = settlements?.filter(s => s.courier_id === user?.id) || [];
 
+  // Calculate earnings summary from balance data
   const earningsSummary = {
-    totalDeliveries: 47,
-    totalEarningsUSD: 542.25,
-    totalEarningsLBP: 8133750,
-    totalPaidToAdmin: 0,
-    totalPendingPayout: 245.75
+    totalDeliveries: balance?.orderCount || 0,
+    totalEarningsUSD: (balance?.totalCourierFeesUSD || 0),
+    totalEarningsLBP: (balance?.totalCourierFeesLBP || 0),
+    balanceUSD: balance?.balanceUSD || 0,
+    balanceLBP: balance?.balanceLBP || 0
   };
 
-  const transactions = [
-    {
-      id: 'TXN-001',
-      date: '2024-01-15',
-      type: 'Delivery Fee Earned',
-      amount: { usd: 12.50, lbp: 187500 },
-      orderId: 'ORD-001',
-      description: 'Delivery from Beirut to Jounieh',
-      status: 'Completed'
+  // Transform open orders to transaction-like format
+  const transactions = openOrders?.map(order => ({
+    id: order.id,
+    date: format(new Date(order.created_at), 'yyyy-MM-dd'),
+    type: 'Delivery Fee Earned',
+    amount: { 
+      usd: order.courier_fee_usd || 0, 
+      lbp: order.courier_fee_lbp || 0 
     },
-    {
-      id: 'TXN-002',
-      date: '2024-01-15',
-      type: 'Delivery Fee Earned',
-      amount: { usd: 18.00, lbp: 270000 },
-      orderId: 'ORD-002',
-      description: 'Delivery from Tripoli to Beirut',
-      status: 'Completed'
-    },
-    {
-      id: 'TXN-003',
-      date: '2024-01-14',
-      type: 'Payout Received',
-      amount: { usd: -200.00, lbp: -3000000 },
-      orderId: null,
-      description: 'Weekly payout - January Week 2',
-      status: 'Completed'
-    },
-    {
-      id: 'TXN-004',
-      date: '2024-01-14',
-      type: 'Delivery Fee Earned',
-      amount: { usd: 15.75, lbp: 236250 },
-      orderId: 'ORD-003',
-      description: 'Delivery from Sidon to Tyre',
-      status: 'Completed'
-    }
-  ];
+    orderId: `ORD-${order.order_id}`,
+    description: `Order ${order.reference_number} - ${order.customer?.name || 'Unknown Customer'}`,
+    status: order.status === 'Successful' ? 'Completed' : 'Pending'
+  })) || [];
 
-  const invoices = [
-    {
-      id: 'INV-001',
-      period: 'January 2024 - Week 2',
-      totalEarnings: { usd: 385.50, lbp: 5782500 },
-      payout: { usd: 200.00, lbp: 3000000 },
-      status: 'Paid',
-      date: '2024-01-14'
-    },
-    {
-      id: 'INV-002',
-      period: 'January 2024 - Week 1',
-      totalEarnings: { usd: 298.75, lbp: 4481250 },
-      payout: { usd: 150.00, lbp: 2250000 },
-      status: 'Paid',
-      date: '2024-01-07'
-    }
-  ];
+  if (balanceLoading || settlementsLoading || ordersLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Wallet</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Track your earnings and manage payouts
+            </p>
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
+        </div>
+        <Skeleton className="h-48" />
+      </div>
+    );
+  }
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
@@ -143,9 +127,9 @@ const CourierWalletContent = () => {
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${balanceData.currentBalanceUSD}</div>
+            <div className="text-2xl font-bold">${earningsSummary.balanceUSD.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">
-              {balanceData.currentBalanceLBP.toLocaleString()} LBP
+              {earningsSummary.balanceLBP.toLocaleString()} LBP
             </p>
           </CardContent>
         </Card>
@@ -156,9 +140,9 @@ const CourierWalletContent = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${balanceData.pendingPayoutUSD}</div>
+            <div className="text-2xl font-bold">${earningsSummary.balanceUSD.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">
-              {balanceData.pendingPayoutLBP.toLocaleString()} LBP
+              {earningsSummary.balanceLBP.toLocaleString()} LBP
             </p>
           </CardContent>
         </Card>
@@ -198,12 +182,12 @@ const CourierWalletContent = () => {
               <p className="text-sm text-gray-500">Total Earnings</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">${earningsSummary.totalPaidToAdmin}</div>
+              <div className="text-2xl font-bold text-blue-600">$0.00</div>
               <p className="text-sm text-gray-500">Paid to Admin</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">${earningsSummary.totalPendingPayout}</div>
-              <p className="text-sm text-gray-500">Pending Payout</p>
+              <div className="text-2xl font-bold text-yellow-600">${earningsSummary.balanceUSD.toFixed(2)}</div>
+              <p className="text-sm text-gray-500">Pending Balance</p>
             </div>
           </div>
         </CardContent>
@@ -212,8 +196,8 @@ const CourierWalletContent = () => {
       {/* Tabs for Transactions and Invoices */}
       <Tabs defaultValue="transactions" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="transactions">Recent Transactions</TabsTrigger>
-          <TabsTrigger value="invoices">Invoice History</TabsTrigger>
+          <TabsTrigger value="transactions">Unsettled Orders</TabsTrigger>
+          <TabsTrigger value="invoices">Settlement History</TabsTrigger>
         </TabsList>
 
         <TabsContent value="transactions">
@@ -221,12 +205,17 @@ const CourierWalletContent = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Recent Transactions
+                Unsettled Orders
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {transactions.map((transaction) => (
+                {transactions.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No unsettled orders found
+                  </div>
+                ) : (
+                  transactions.map((transaction) => (
                   <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
@@ -259,7 +248,8 @@ const CourierWalletContent = () => {
                       </Badge>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -270,44 +260,50 @@ const CourierWalletContent = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                Invoice History
+                Settlement History
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {invoices.map((invoice) => (
-                  <div key={invoice.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <div>
-                      <h4 className="font-medium">{invoice.id}</h4>
-                      <p className="text-sm text-gray-500">{invoice.period}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Calendar className="h-3 w-3 text-gray-400" />
-                        <span className="text-xs text-gray-400">{invoice.date}</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold">
-                        Earnings: ${invoice.totalEarnings.usd}
-                      </div>
-                      <div className="text-sm text-blue-600">
-                        Payout: ${invoice.payout.usd}
-                      </div>
-                      <Badge className={`text-xs mt-1 ${getStatusBadge(invoice.status)}`}>
-                        {invoice.status}
-                      </Badge>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-3 w-3 mr-1" />
-                        View
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Download className="h-3 w-3 mr-1" />
-                        Download
-                      </Button>
-                    </div>
+                {courierSettlements.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No settlements yet
                   </div>
-                ))}
+                ) : (
+                  courierSettlements.map((settlement) => (
+                    <div key={settlement.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <div>
+                        <h4 className="font-medium">{settlement.settlement_id}</h4>
+                        <p className="text-sm text-gray-500">
+                          Balance: ${settlement.balance_usd} / {settlement.balance_lbp.toLocaleString()} LBP
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Calendar className="h-3 w-3 text-gray-400" />
+                          <span className="text-xs text-gray-400">
+                            {format(new Date(settlement.created_at), 'yyyy-MM-dd')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">
+                          Collected: ${settlement.total_collected_usd}
+                        </div>
+                        <div className="text-sm text-blue-600">
+                          Fee: ${settlement.total_courier_fees_usd}
+                        </div>
+                        <Badge className={`text-xs mt-1 ${getStatusBadge(settlement.status)}`}>
+                          {settlement.status}
+                        </Badge>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-3 w-3 mr-1" />
+                          View
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
