@@ -295,6 +295,7 @@ export type Database = {
           direction: string
           id: string
           notes: string | null
+          paid_at: string | null
           payment_method: string | null
           settlement_id: string
           status: string | null
@@ -313,6 +314,7 @@ export type Database = {
           direction: string
           id?: string
           notes?: string | null
+          paid_at?: string | null
           payment_method?: string | null
           settlement_id: string
           status?: string | null
@@ -331,6 +333,7 @@ export type Database = {
           direction?: string
           id?: string
           notes?: string | null
+          paid_at?: string | null
           payment_method?: string | null
           settlement_id?: string
           status?: string | null

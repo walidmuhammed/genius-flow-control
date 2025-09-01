@@ -8,6 +8,7 @@ import {
   recordCashHandover,
   markSettlementPaid,
   getCourierBalance,
+  getCouriersWithOpenOrders,
   CreateSettlementData
 } from "@/services/courier-settlements";
 import { toast } from "sonner";
@@ -51,6 +52,13 @@ export function useCourierBalance(courierId: string | undefined) {
   });
 }
 
+export function useCouriersWithOpenOrders() {
+  return useQuery({
+    queryKey: ['couriers-with-open-orders'],
+    queryFn: getCouriersWithOpenOrders
+  });
+}
+
 export function useCreateCourierSettlement() {
   const queryClient = useQueryClient();
   
@@ -60,6 +68,7 @@ export function useCreateCourierSettlement() {
       queryClient.invalidateQueries({ queryKey: ['courier-settlements'] });
       queryClient.invalidateQueries({ queryKey: ['open-orders-by-courier'] });
       queryClient.invalidateQueries({ queryKey: ['courier-balance'] });
+      queryClient.invalidateQueries({ queryKey: ['couriers-with-open-orders'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       toast.success(`Settlement ${settlement.settlement_id} created successfully`);
     },
@@ -73,7 +82,8 @@ export function useRecordCashHandover() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (settlementId: string) => recordCashHandover(settlementId),
+    mutationFn: ({ settlementId, orderIds }: { settlementId: string; orderIds?: string[] }) => 
+      recordCashHandover(settlementId, orderIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courier-settlements'] });
       queryClient.invalidateQueries({ queryKey: ['settlement-orders'] });
@@ -100,6 +110,7 @@ export function useMarkSettlementPaid() {
       queryClient.invalidateQueries({ queryKey: ['settlement-orders'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['courier-balance'] });
+      queryClient.invalidateQueries({ queryKey: ['couriers-with-open-orders'] });
       toast.success("Settlement marked as paid");
     },
     onError: (error) => {

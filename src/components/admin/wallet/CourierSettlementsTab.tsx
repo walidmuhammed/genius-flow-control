@@ -1,50 +1,49 @@
 import React, { useState } from 'react';
-import { Calculator, Search, Settings, HandCoins, CheckCircle, Clock, DollarSign, Plus } from 'lucide-react';
+import { Search, Calculator, HandCoins, CheckCircle, Clock, DollarSign, User, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import { useCouriers } from '@/hooks/use-couriers';
-import { useCourierSettlements, useCourierBalance, useOpenOrdersByCourier, useCreateCourierSettlement, useRecordCashHandover, useMarkSettlementPaid } from '@/hooks/use-courier-settlements';
-import { useCourierPricingDefaults, useUpdateCourierPricingDefaults } from '@/hooks/use-courier-pricing';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { 
+  useCouriersWithOpenOrders, 
+  useCourierSettlements, 
+  useOpenOrdersByCourier, 
+  useCreateCourierSettlement, 
+  useRecordCashHandover, 
+  useMarkSettlementPaid 
+} from '@/hooks/use-courier-settlements';
 import CurrencyDisplay from '@/components/orders/CurrencyDisplay';
 import { toast } from 'sonner';
 
 const CourierSettlementsTab = () => {
-  const { data: couriers = [] } = useCouriers();
+  const { data: couriersWithOpenOrders = [], isLoading } = useCouriersWithOpenOrders();
   const { data: settlements = [] } = useCourierSettlements();
-  const { data: pricingDefaults = [] } = useCourierPricingDefaults();
-  const updatePricingDefaults = useUpdateCourierPricingDefaults();
   const createSettlement = useCreateCourierSettlement();
   const recordCashHandover = useRecordCashHandover();
   const markAsPaid = useMarkSettlementPaid();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCourier, setSelectedCourier] = useState<string>('all');
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedCourierForDetails, setSelectedCourierForDetails] = useState<string | null>(null);
   const [isCreateSettlementOpen, setIsCreateSettlementOpen] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [settlementNotes, setSettlementNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('Cash Handover');
-  const [paymentNotes, setPaymentNotes] = useState('');
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [selectedSettlementId, setSelectedSettlementId] = useState<string | null>(null);
-  
-  // Get pricing defaults for settings
-  const parcelPricing = pricingDefaults.find(p => p.package_type === 'parcel');
-  const documentPricing = pricingDefaults.find(p => p.package_type === 'document');
-  const bulkyPricing = pricingDefaults.find(p => p.package_type === 'bulky');
+  const [paymentMethod, setPaymentMethod] = useState('Cash Handover');
+  const [paymentNotes, setPaymentNotes] = useState('');
+
+  const { data: openOrders = [] } = useOpenOrdersByCourier(selectedCourierForDetails || undefined);
 
   // Filter couriers based on search
-  const filteredCouriers = couriers.filter(courier => {
+  const filteredCouriers = couriersWithOpenOrders.filter(courier => {
     const matchesSearch = !searchTerm || 
       courier.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       courier.phone?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -53,10 +52,6 @@ const CourierSettlementsTab = () => {
     
     return matchesSearch && matchesCourier;
   });
-
-  // Hook for selected courier details
-  const { data: courierBalance } = useCourierBalance(selectedCourierForDetails || undefined);
-  const { data: openOrders = [] } = useOpenOrdersByCourier(selectedCourierForDetails || undefined);
 
   const handleCreateSettlement = async () => {
     if (!selectedCourierForDetails || selectedOrders.length === 0) {
@@ -82,7 +77,7 @@ const CourierSettlementsTab = () => {
 
   const handleCashHandover = async (settlementId: string) => {
     try {
-      await recordCashHandover.mutateAsync(settlementId);
+      await recordCashHandover.mutateAsync({ settlementId });
     } catch (error) {
       console.error('Error recording cash handover:', error);
     }
@@ -105,23 +100,6 @@ const CourierSettlementsTab = () => {
     }
   };
 
-  const handleUpdateCourierFees = async () => {
-    try {
-      if (parcelPricing) {
-        await updatePricingDefaults.mutateAsync({
-          id: parcelPricing.id,
-          updates: {
-            base_fee_usd: parcelPricing.base_fee_usd,
-            base_fee_lbp: parcelPricing.base_fee_lbp
-          }
-        });
-      }
-      setIsSettingsOpen(false);
-    } catch (error) {
-      console.error('Error updating pricing defaults:', error);
-    }
-  };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Pending':
@@ -135,93 +113,55 @@ const CourierSettlementsTab = () => {
     }
   };
 
-  const getDirectionBadge = (direction: string, balance: { usd: number; lbp: number }) => {
-    if (direction === 'courier_to_admin') {
+  const getDirectionBadge = (direction: string, balanceUSD: number, balanceLBP: number) => {
+    const isPositive = balanceUSD >= 0 && balanceLBP >= 0;
+    
+    if (direction === 'courier_to_admin' || isPositive) {
       return (
         <div className="text-right">
-          <Badge variant="default" className="bg-green-100 text-green-800">
-            Courier owes Admin
+          <Badge variant="default" className="bg-green-100 text-green-800 mb-1">
+            Courier → Admin
           </Badge>
-          <div className="text-sm mt-1">
-            <CurrencyDisplay valueUSD={Math.abs(balance.usd)} valueLBP={Math.abs(balance.lbp)} />
+          <div className="text-sm">
+            <CurrencyDisplay valueUSD={Math.abs(balanceUSD)} valueLBP={Math.abs(balanceLBP)} />
           </div>
         </div>
       );
     } else {
       return (
         <div className="text-right">
-          <Badge variant="destructive" className="bg-red-100 text-red-800">
-            Admin owes Courier
+          <Badge variant="destructive" className="bg-red-100 text-red-800 mb-1">
+            Admin → Courier
           </Badge>
-          <div className="text-sm mt-1">
-            <CurrencyDisplay valueUSD={Math.abs(balance.usd)} valueLBP={Math.abs(balance.lbp)} />
+          <div className="text-sm">
+            <CurrencyDisplay valueUSD={Math.abs(balanceUSD)} valueLBP={Math.abs(balanceLBP)} />
           </div>
         </div>
       );
     }
   };
 
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-64">Loading...</div>;
+  }
+
   return (
     <div className="space-y-6">
-      {/* Filters and Actions */}
+      {/* Filters */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Courier Settlements</CardTitle>
-            <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Courier Settings
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Default Courier Fees</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Parcel Fee (USD)</Label>
-                    <Input
-                      type="number"
-                      step="0.5"
-                      value={parcelPricing?.base_fee_usd || 2}
-                      readOnly
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Document Fee (USD)</Label>
-                    <Input
-                      type="number"
-                      step="0.5"
-                      value={documentPricing?.base_fee_usd || 1.5}
-                      readOnly
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Bulky Fee (USD)</Label>
-                    <Input
-                      type="number"
-                      step="0.5"
-                      value={bulkyPricing?.base_fee_usd || 3}
-                      readOnly
-                    />
-                  </div>
-                  <Button onClick={handleUpdateCourierFees} className="w-full">
-                    Update Fees
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <HandCoins className="h-5 w-5" />
+            Courier Settlements
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Search by courier name..."
+                  placeholder="Search by courier name or phone..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -235,7 +175,7 @@ const CourierSettlementsTab = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Couriers</SelectItem>
-                {couriers.map(courier => (
+                {couriersWithOpenOrders.map(courier => (
                   <SelectItem key={courier.id} value={courier.id}>
                     {courier.full_name}
                   </SelectItem>
@@ -246,200 +186,276 @@ const CourierSettlementsTab = () => {
         </CardContent>
       </Card>
 
-      {/* Courier List */}
-      <div className="space-y-4">
-        {filteredCouriers.map((courier) => {
-          const courierSettlements = settlements.filter(s => s.courier_id === courier.id);
-          
-          return (
-            <Card key={courier.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg">
-                      {courier.full_name}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {courier.phone} • {courier.vehicle_type}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedCourierForDetails(courier.id)}
-                      className="flex items-center gap-2"
-                    >
-                      View Details
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              {courierSettlements.length > 0 && (
-                <CardContent>
-                  <div className="space-y-2">
-                    <h4 className="font-medium">Recent Settlements</h4>
-                    {courierSettlements.slice(0, 3).map((settlement) => (
-                      <div key={settlement.id} className="flex items-center justify-between p-2 border rounded">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{settlement.settlement_id}</span>
-                          {getStatusBadge(settlement.status)}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {getDirectionBadge(settlement.direction, {
-                            usd: settlement.balance_usd,
-                            lbp: settlement.balance_lbp
-                          })}
-                          {settlement.status === 'Pending' && settlement.direction === 'courier_to_admin' && (
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => handleCashHandover(settlement.id)}
-                            >
-                              <HandCoins className="h-3 w-3 mr-1" />
-                              Record Cash
-                            </Button>
-                          )}
-                          {settlement.status === 'In Progress' && (
-                            <Button 
-                              size="sm"
-                              onClick={() => {
-                                setSelectedSettlementId(settlement.id);
-                                setIsPaymentDialogOpen(true);
-                              }}
-                            >
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Mark Paid
-                            </Button>
-                          )}
-                        </div>
+      {/* Couriers List */}
+      {filteredCouriers.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">No Couriers with Open Orders</h3>
+            <p className="text-muted-foreground">
+              All couriers have settled their orders or there are no delivered orders.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {filteredCouriers.map((courier) => {
+            const courierSettlements = settlements.filter(s => s.courier_id === courier.id);
+            const direction = courier.balanceUSD >= 0 && courier.balanceLBP >= 0 ? 'courier_to_admin' : 'admin_to_courier';
+            
+            return (
+              <Card key={courier.id} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={courier.avatar_url} />
+                        <AvatarFallback>
+                          <User className="h-6 w-6" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle className="text-lg">{courier.full_name}</CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                          {courier.phone} • {courier.vehicle_type || 'Motorcycle'}
+                        </p>
                       </div>
-                    ))}
+                    </div>
+                    <div className="text-right">
+                      <Button 
+                        variant="outline"
+                        onClick={() => setSelectedCourierForDetails(courier.id)}
+                        className="mb-2"
+                      >
+                        View Details
+                      </Button>
+                      {getDirectionBadge(direction, courier.balanceUSD, courier.balanceLBP)}
+                    </div>
                   </div>
+                </CardHeader>
+                
+                <CardContent>
+                  <div className="grid grid-cols-4 gap-4 mb-4">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{courier.orderCount}</div>
+                      <div className="text-sm text-muted-foreground">Open Orders</div>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="text-sm font-medium text-green-600">Collected</div>
+                      <CurrencyDisplay 
+                        valueUSD={courier.totalCollectedUSD} 
+                        valueLBP={courier.totalCollectedLBP} 
+                      />
+                    </div>
+                    <div className="text-center p-3 bg-orange-50 rounded-lg">
+                      <div className="text-sm font-medium text-orange-600">Courier Fees</div>
+                      <CurrencyDisplay 
+                        valueUSD={courier.totalCourierFeesUSD} 
+                        valueLBP={courier.totalCourierFeesLBP} 
+                      />
+                    </div>
+                    <div className="text-center p-3 bg-purple-50 rounded-lg">
+                      <div className="text-sm font-medium text-purple-600">Net Balance</div>
+                      <CurrencyDisplay 
+                        valueUSD={courier.balanceUSD} 
+                        valueLBP={courier.balanceLBP} 
+                      />
+                    </div>
+                  </div>
+
+                  {courierSettlements.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Recent Settlements</h4>
+                      {courierSettlements.slice(0, 2).map((settlement) => (
+                        <div key={settlement.id} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
+                          <div className="flex items-center gap-3">
+                            <span className="font-medium">{settlement.settlement_id}</span>
+                            {getStatusBadge(settlement.status)}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {getDirectionBadge(settlement.direction, settlement.balance_usd, settlement.balance_lbp)}
+                            {settlement.status === 'Pending' && settlement.direction === 'courier_to_admin' && (
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleCashHandover(settlement.id)}
+                              >
+                                <HandCoins className="h-3 w-3 mr-1" />
+                                Record Cash
+                              </Button>
+                            )}
+                            {settlement.status === 'In Progress' && (
+                              <Button 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedSettlementId(settlement.id);
+                                  setIsPaymentDialogOpen(true);
+                                }}
+                              >
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Mark Paid
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
-              )}
-            </Card>
-          );
-        })}
-      </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       {/* Courier Details Dialog */}
       <Dialog open={!!selectedCourierForDetails} onOpenChange={() => setSelectedCourierForDetails(null)}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {couriers.find(c => c.id === selectedCourierForDetails)?.full_name} - Open Orders
+            <DialogTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              {couriersWithOpenOrders.find(c => c.id === selectedCourierForDetails)?.full_name} - Settlement Details
             </DialogTitle>
           </DialogHeader>
           
-          {courierBalance && (
-            <div className="grid grid-cols-4 gap-4 mb-4">
-              <div className="text-center p-3 bg-secondary/20 rounded-lg">
-                <div className="text-sm text-muted-foreground">Cash to Hand Over</div>
-                <CurrencyDisplay 
-                  valueUSD={courierBalance.totalCollectedUSD} 
-                  valueLBP={courierBalance.totalCollectedLBP} 
-                />
-              </div>
-              <div className="text-center p-3 bg-secondary/20 rounded-lg">
-                <div className="text-sm text-muted-foreground">Fees Owed</div>
-                <CurrencyDisplay 
-                  valueUSD={courierBalance.totalCourierFeesUSD} 
-                  valueLBP={courierBalance.totalCourierFeesLBP} 
-                />
-              </div>
-              <div className="text-center p-3 bg-secondary/20 rounded-lg">
-                <div className="text-sm text-muted-foreground">Net Balance</div>
-                <CurrencyDisplay 
-                  valueUSD={courierBalance.balanceUSD} 
-                  valueLBP={courierBalance.balanceLBP} 
-                />
-              </div>
-              <div className="text-center p-3 bg-secondary/20 rounded-lg">
-                <div className="text-sm text-muted-foreground">Open Orders</div>
-                <div className="text-2xl font-bold">{courierBalance.orderCount}</div>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">Open Orders</h3>
-            <Button 
-              onClick={() => setIsCreateSettlementOpen(true)}
-              disabled={selectedOrders.length === 0}
-              className="flex items-center gap-2"
-            >
-              <Calculator className="h-4 w-4" />
-              Create Settlement ({selectedOrders.length})
-            </Button>
-          </div>
-
-          <div className="overflow-auto max-h-96">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
-                    <Checkbox
-                      checked={selectedOrders.length === openOrders.length && openOrders.length > 0}
-                      onCheckedChange={(checked) => {
-                        setSelectedOrders(checked ? openOrders.map(o => o.id) : []);
-                      }}
+          <div className="space-y-6">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">{openOrders.length}</div>
+                    <div className="text-sm text-muted-foreground">Open Orders</div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="text-center">
+                    <div className="text-sm font-medium text-green-600">Cash to Hand Over</div>
+                    <CurrencyDisplay 
+                      valueUSD={couriersWithOpenOrders.find(c => c.id === selectedCourierForDetails)?.totalCollectedUSD || 0} 
+                      valueLBP={couriersWithOpenOrders.find(c => c.id === selectedCourierForDetails)?.totalCollectedLBP || 0} 
                     />
-                  </TableHead>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Collected</TableHead>
-                  <TableHead>Courier Fee</TableHead>
-                  <TableHead>Net</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {openOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="text-center">
+                    <div className="text-sm font-medium text-orange-600">Fees Owed</div>
+                    <CurrencyDisplay 
+                      valueUSD={couriersWithOpenOrders.find(c => c.id === selectedCourierForDetails)?.totalCourierFeesUSD || 0} 
+                      valueLBP={couriersWithOpenOrders.find(c => c.id === selectedCourierForDetails)?.totalCourierFeesLBP || 0} 
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="text-center">
+                    <div className="text-sm font-medium text-purple-600">Net Balance</div>
+                    <CurrencyDisplay 
+                      valueUSD={couriersWithOpenOrders.find(c => c.id === selectedCourierForDetails)?.balanceUSD || 0} 
+                      valueLBP={couriersWithOpenOrders.find(c => c.id === selectedCourierForDetails)?.balanceLBP || 0} 
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium">Open Orders</h3>
+              <Button 
+                onClick={() => setIsCreateSettlementOpen(true)}
+                disabled={selectedOrders.length === 0}
+                className="flex items-center gap-2"
+              >
+                <Calculator className="h-4 w-4" />
+                Create Settlement ({selectedOrders.length})
+              </Button>
+            </div>
+
+            {/* Orders Table */}
+            <div className="border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">
                       <Checkbox
-                        checked={selectedOrders.includes(order.id)}
+                        checked={selectedOrders.length === openOrders.length && openOrders.length > 0}
                         onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedOrders([...selectedOrders, order.id]);
-                          } else {
-                            setSelectedOrders(selectedOrders.filter(id => id !== order.id));
-                          }
+                          setSelectedOrders(checked ? openOrders.map(o => o.id) : []);
                         }}
                       />
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-medium">#{order.order_id}</div>
-                        <div className="text-sm text-muted-foreground">{order.reference_number}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{order.customer?.name || 'N/A'}</div>
-                    </TableCell>
-                    <TableCell>
-                      <CurrencyDisplay 
-                        valueUSD={order.collected_amount_usd || 0} 
-                        valueLBP={order.collected_amount_lbp || 0} 
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <CurrencyDisplay 
-                        valueUSD={order.courier_fee_usd || 0} 
-                        valueLBP={order.courier_fee_lbp || 0} 
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <CurrencyDisplay 
-                        valueUSD={(order.collected_amount_usd || 0) - (order.courier_fee_usd || 0)} 
-                        valueLBP={(order.collected_amount_lbp || 0) - (order.courier_fee_lbp || 0)} 
-                      />
-                    </TableCell>
+                    </TableHead>
+                    <TableHead>Order</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Collected</TableHead>
+                    <TableHead>Courier Fee</TableHead>
+                    <TableHead>Net</TableHead>
+                    <TableHead>Date</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {openOrders.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedOrders.includes(order.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedOrders([...selectedOrders, order.id]);
+                            } else {
+                              setSelectedOrders(selectedOrders.filter(id => id !== order.id));
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="font-medium">#{order.order_id}</div>
+                          <div className="text-sm text-muted-foreground">{order.reference_number}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{order.customer?.name || 'N/A'}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={order.status === 'Delivered' ? 'default' : 'secondary'}>
+                          {order.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <CurrencyDisplay 
+                          valueUSD={order.collected_amount_usd || 0} 
+                          valueLBP={order.collected_amount_lbp || 0} 
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <CurrencyDisplay 
+                          valueUSD={order.courier_fee_usd || 0} 
+                          valueLBP={order.courier_fee_lbp || 0} 
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <CurrencyDisplay 
+                          valueUSD={(order.collected_amount_usd || 0) - (order.courier_fee_usd || 0)} 
+                          valueLBP={(order.collected_amount_lbp || 0) - (order.courier_fee_lbp || 0)} 
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm text-muted-foreground">
+                          {new Date(order.created_at).toLocaleDateString()}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -448,37 +464,45 @@ const CourierSettlementsTab = () => {
       <Dialog open={isCreateSettlementOpen} onOpenChange={setIsCreateSettlementOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Settlement</DialogTitle>
+            <DialogTitle>Create New Settlement</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Notes (Optional)</Label>
+              <Label>Selected Orders: {selectedOrders.length}</Label>
+              <p className="text-sm text-muted-foreground">
+                Creating settlement for {selectedOrders.length} orders
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes (Optional)</Label>
               <Textarea
+                id="notes"
+                placeholder="Add any notes about this settlement..."
                 value={settlementNotes}
                 onChange={(e) => setSettlementNotes(e.target.value)}
-                placeholder="Add any notes about this settlement..."
+                rows={3}
               />
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsCreateSettlementOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleCreateSettlement}>
-                Create Settlement
+              <Button onClick={handleCreateSettlement} disabled={createSettlement.isPending}>
+                {createSettlement.isPending ? 'Creating...' : 'Create Settlement'}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Payment Dialog */}
+      {/* Mark as Paid Dialog */}
       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Mark Settlement as Paid</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label>Payment Method</Label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                 <SelectTrigger>
@@ -491,33 +515,27 @@ const CourierSettlementsTab = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label>Notes (Optional)</Label>
+            <div className="space-y-2">
+              <Label htmlFor="payment-notes">Notes (Optional)</Label>
               <Textarea
+                id="payment-notes"
+                placeholder="Add any notes about this payment..."
                 value={paymentNotes}
                 onChange={(e) => setPaymentNotes(e.target.value)}
-                placeholder="Add payment details or notes..."
+                rows={3}
               />
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleMarkAsPaid}>
-                Mark as Paid
+              <Button onClick={handleMarkAsPaid} disabled={markAsPaid.isPending}>
+                {markAsPaid.isPending ? 'Processing...' : 'Mark as Paid'}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-
-      {filteredCouriers.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <p className="text-muted-foreground">No couriers found</p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

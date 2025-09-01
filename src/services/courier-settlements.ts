@@ -201,7 +201,7 @@ export async function createCourierSettlement(data: CreateSettlementData): Promi
   return settlement as CourierSettlement;
 }
 
-export async function recordCashHandover(settlementId: string): Promise<void> {
+export async function recordCashHandover(settlementId: string, orderIds?: string[]): Promise<void> {
   const { error } = await supabase
     .from('courier_settlements')
     .update({
@@ -212,25 +212,34 @@ export async function recordCashHandover(settlementId: string): Promise<void> {
 
   if (error) throw error;
 
-  // Update orders cash handover status
-  const { error: ordersError } = await supabase
+  // Update orders cash handover status - either specific orders or all orders in settlement
+  let query = supabase
     .from('orders')
     .update({
       cash_handover_status: 'Confirmed'
-    })
-    .eq('courier_settlement_id', settlementId);
+    });
 
+  if (orderIds && orderIds.length > 0) {
+    query = query.in('id', orderIds);
+  } else {
+    query = query.eq('courier_settlement_id', settlementId);
+  }
+
+  const { error: ordersError } = await query;
   if (ordersError) throw ordersError;
 }
 
 export async function markSettlementPaid(settlementId: string, paymentMethod: string, notes?: string): Promise<void> {
+  const now = new Date().toISOString();
+  
   const { error } = await supabase
     .from('courier_settlements')
     .update({
       status: 'Paid',
       payment_method: paymentMethod,
       notes: notes,
-      updated_at: new Date().toISOString()
+      paid_at: now,
+      updated_at: now
     })
     .eq('id', settlementId);
 
@@ -240,11 +249,40 @@ export async function markSettlementPaid(settlementId: string, paymentMethod: st
   const { error: ordersError } = await supabase
     .from('orders')
     .update({
-      courier_settlement_status: 'Settled'
+      courier_settlement_status: 'Paid'
     })
     .eq('courier_settlement_id', settlementId);
 
   if (ordersError) throw ordersError;
+}
+
+export async function getCouriersWithOpenOrders() {
+  const { data: couriers, error } = await supabase
+    .from('couriers')
+    .select(`
+      id,
+      full_name,
+      phone,
+      email,
+      vehicle_type,
+      avatar_url
+    `)
+    .eq('status', 'active');
+
+  if (error) throw error;
+
+  // Get open orders for each courier
+  const couriersWithBalances = await Promise.all(
+    (couriers || []).map(async (courier) => {
+      const balance = await getCourierBalance(courier.id);
+      return {
+        ...courier,
+        ...balance
+      };
+    })
+  );
+
+  return couriersWithBalances.filter(courier => courier.orderCount > 0);
 }
 
 export async function getCourierBalance(courierId: string) {
