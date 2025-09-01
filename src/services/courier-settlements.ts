@@ -127,7 +127,7 @@ export async function getOpenOrdersByCourier(courierId: string) {
       )
     `)
     .eq('courier_id', courierId)
-    .in('status', ['Successful', 'Unsuccessful'])
+    .in('status', ['Delivered', 'Unsuccessful'])
     .eq('courier_settlement_status', 'None')
     .order('created_at', { ascending: false });
 
@@ -252,7 +252,7 @@ export async function getCourierBalance(courierId: string) {
     .from('orders')
     .select('collected_amount_usd, collected_amount_lbp, courier_fee_usd, courier_fee_lbp')
     .eq('courier_id', courierId)
-    .in('status', ['Successful', 'Unsuccessful'])
+    .in('status', ['Delivered', 'Unsuccessful'])
     .eq('courier_settlement_status', 'None');
 
   if (error) throw error;

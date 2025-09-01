@@ -54,7 +54,7 @@ const CourierWalletContent = () => {
     },
     orderId: `ORD-${order.order_id}`,
     description: `Order ${order.reference_number} - ${order.customer?.name || 'Unknown Customer'}`,
-    status: order.status === 'Successful' ? 'Completed' : 'Pending'
+    status: order.status === 'Delivered' ? 'Completed' : order.status === 'Unsuccessful' ? 'Failed' : 'Pending'
   })) || [];
 
   if (balanceLoading || settlementsLoading || ordersLoading) {
