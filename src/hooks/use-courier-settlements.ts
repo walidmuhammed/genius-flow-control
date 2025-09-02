@@ -111,10 +111,35 @@ export function useMarkSettlementPaid() {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['courier-balance'] });
       queryClient.invalidateQueries({ queryKey: ['couriers-with-open-orders'] });
-      toast.success("Settlement marked as paid");
+      queryClient.invalidateQueries({ queryKey: ['client-payouts'] });
+      toast.success("Settlement marked as paid. Client payouts created automatically.");
     },
     onError: (error) => {
       toast.error(`Error marking settlement as paid: ${error.message}`);
+    }
+  });
+}
+
+export function useAdjustCourierFee() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ orderId, feeUSD, feeLBP }: { 
+      orderId: string; 
+      feeUSD: number; 
+      feeLBP: number; 
+    }) => {
+      const { adjustCourierFeeInOrder } = await import('@/services/courier-settlements');
+      await adjustCourierFeeInOrder(orderId, feeUSD, feeLBP);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['open-orders-by-courier'] });
+      queryClient.invalidateQueries({ queryKey: ['courier-balance'] });
+      toast.success('Courier fee updated successfully');
+    },
+    onError: (error) => {
+      console.error('Error adjusting courier fee:', error);
+      toast.error('Failed to update courier fee');
     }
   });
 }

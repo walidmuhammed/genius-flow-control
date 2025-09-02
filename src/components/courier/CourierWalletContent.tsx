@@ -296,10 +296,10 @@ const CourierWalletContent = () => {
                         </Badge>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-3 w-3 mr-1" />
-                          View
-                        </Button>
+                         <Button variant="outline" size="sm">
+                           <Eye className="h-3 w-3 mr-1" />
+                           View Details
+                         </Button>
                       </div>
                     </div>
                   ))

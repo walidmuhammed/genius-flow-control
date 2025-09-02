@@ -20,6 +20,7 @@ import {
   useMarkSettlementPaid 
 } from '@/hooks/use-courier-settlements';
 import CurrencyDisplay from '@/components/orders/CurrencyDisplay';
+import CreateSettlementModal from '@/components/admin/wallet/CreateSettlementModal';
 import { toast } from 'sonner';
 
 const CourierSettlementsTab = () => {
@@ -53,26 +54,12 @@ const CourierSettlementsTab = () => {
     return matchesSearch && matchesCourier;
   });
 
-  const handleCreateSettlement = async () => {
+  const handleCreateSettlement = () => {
     if (!selectedCourierForDetails || selectedOrders.length === 0) {
       toast.error('Please select orders to create settlement');
       return;
     }
-
-    try {
-      await createSettlement.mutateAsync({
-        courier_id: selectedCourierForDetails,
-        order_ids: selectedOrders,
-        notes: settlementNotes
-      });
-      
-      setIsCreateSettlementOpen(false);
-      setSelectedOrders([]);
-      setSettlementNotes('');
-      setSelectedCourierForDetails(null);
-    } catch (error) {
-      console.error('Error creating settlement:', error);
-    }
+    setIsCreateSettlementOpen(true);
   };
 
   const handleCashHandover = async (settlementId: string) => {
@@ -368,7 +355,7 @@ const CourierSettlementsTab = () => {
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium">Open Orders</h3>
               <Button 
-                onClick={() => setIsCreateSettlementOpen(true)}
+                onClick={handleCreateSettlement}
                 disabled={selectedOrders.length === 0}
                 className="flex items-center gap-2"
               >
@@ -460,40 +447,19 @@ const CourierSettlementsTab = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Create Settlement Dialog */}
-      <Dialog open={isCreateSettlementOpen} onOpenChange={setIsCreateSettlementOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Settlement</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Selected Orders: {selectedOrders.length}</Label>
-              <p className="text-sm text-muted-foreground">
-                Creating settlement for {selectedOrders.length} orders
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes (Optional)</Label>
-              <Textarea
-                id="notes"
-                placeholder="Add any notes about this settlement..."
-                value={settlementNotes}
-                onChange={(e) => setSettlementNotes(e.target.value)}
-                rows={3}
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsCreateSettlementOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateSettlement} disabled={createSettlement.isPending}>
-                {createSettlement.isPending ? 'Creating...' : 'Create Settlement'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Create Settlement Modal */}
+      <CreateSettlementModal
+        isOpen={isCreateSettlementOpen}
+        onClose={() => {
+          setIsCreateSettlementOpen(false);
+          setSelectedOrders([]);
+          setSelectedCourierForDetails(null);
+        }}
+        courierId={selectedCourierForDetails || ''}
+        courierName={couriersWithOpenOrders.find(c => c.id === selectedCourierForDetails)?.full_name || ''}
+        orders={openOrders}
+        selectedOrderIds={selectedOrders}
+      />
 
       {/* Mark as Paid Dialog */}
       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>

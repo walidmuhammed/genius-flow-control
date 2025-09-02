@@ -232,6 +232,7 @@ export async function recordCashHandover(settlementId: string, orderIds?: string
 export async function markSettlementPaid(settlementId: string, paymentMethod: string, notes?: string): Promise<void> {
   const now = new Date().toISOString();
   
+  // Update settlement status - the database trigger will handle client payout creation
   const { error } = await supabase
     .from('courier_settlements')
     .update({
@@ -254,6 +255,68 @@ export async function markSettlementPaid(settlementId: string, paymentMethod: st
     .eq('courier_settlement_id', settlementId);
 
   if (ordersError) throw ordersError;
+}
+
+// Add fee adjustment capability for admins
+export async function adjustCourierFeeInOrder(orderId: string, newFeeUSD: number, newFeeLBP: number): Promise<void> {
+  const { error } = await supabase
+    .from('orders')
+    .update({
+      courier_fee_usd: newFeeUSD,
+      courier_fee_lbp: newFeeLBP,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', orderId);
+
+  if (error) throw error;
+}
+
+// Bulk update settlement totals after fee adjustments
+export async function updateSettlementTotals(settlementId: string): Promise<CourierSettlement> {
+  // First, get all orders in the settlement
+  const { data: orders, error: ordersError } = await supabase
+    .from('orders')
+    .select('collected_amount_usd, collected_amount_lbp, courier_fee_usd, courier_fee_lbp')
+    .eq('courier_settlement_id', settlementId);
+
+  if (ordersError) throw ordersError;
+
+  // Calculate new totals
+  let totalCollectedUSD = 0;
+  let totalCollectedLBP = 0;
+  let totalCourierFeesUSD = 0;
+  let totalCourierFeesLBP = 0;
+
+  orders?.forEach(order => {
+    totalCollectedUSD += (order.collected_amount_usd || 0);
+    totalCollectedLBP += (order.collected_amount_lbp || 0);
+    totalCourierFeesUSD += (order.courier_fee_usd || 0);
+    totalCourierFeesLBP += (order.courier_fee_lbp || 0);
+  });
+
+  const balanceUSD = totalCollectedUSD - totalCourierFeesUSD;
+  const balanceLBP = totalCollectedLBP - totalCourierFeesLBP;
+  const direction = (balanceUSD >= 0 && balanceLBP >= 0) ? 'courier_to_admin' : 'admin_to_courier';
+
+  // Update settlement with new totals
+  const { data: settlement, error: updateError } = await supabase
+    .from('courier_settlements')
+    .update({
+      total_collected_usd: totalCollectedUSD,
+      total_collected_lbp: totalCollectedLBP,
+      total_courier_fees_usd: totalCourierFeesUSD,
+      total_courier_fees_lbp: totalCourierFeesLBP,
+      balance_usd: balanceUSD,
+      balance_lbp: balanceLBP,
+      direction,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', settlementId)
+    .select()
+    .single();
+
+  if (updateError) throw updateError;
+  return settlement as CourierSettlement;
 }
 
 export async function getCouriersWithOpenOrders() {
