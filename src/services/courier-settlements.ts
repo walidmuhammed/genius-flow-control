@@ -128,8 +128,8 @@ export async function getOpenOrdersByCourier(courierId: string) {
       )
     `)
     .eq('courier_id', courierId)
-    .in('status', ['Delivered', 'Unsuccessful'])
-    .eq('courier_settlement_status', 'Pending Settlement')
+    .in('status', ['Successful', 'Unsuccessful'])
+    .eq('courier_settlement_status', 'Pending')
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -143,7 +143,7 @@ export async function createCourierSettlement(data: CreateSettlementData): Promi
     .select('*')
     .in('id', data.order_ids)
     .eq('courier_id', data.courier_id)
-    .eq('courier_settlement_status', 'Pending Settlement');
+    .eq('courier_settlement_status', 'Pending');
 
   if (ordersError) throw ordersError;
   if (!orders || orders.length === 0) {
@@ -354,8 +354,8 @@ export async function getCourierBalance(courierId: string) {
     .from('orders')
     .select('collected_amount_usd, collected_amount_lbp, courier_fee_usd, courier_fee_lbp')
     .eq('courier_id', courierId)
-    .in('status', ['Delivered', 'Unsuccessful'])
-    .eq('courier_settlement_status', 'Pending Settlement');
+    .in('status', ['Successful', 'Unsuccessful'])
+    .eq('courier_settlement_status', 'Pending');
 
   if (error) throw error;
 
@@ -382,7 +382,7 @@ export async function getCourierBalance(courierId: string) {
   };
 }
 
-// Get orders ready for settlement (Delivered/Unsuccessful with no settlement)
+// Get orders ready for settlement (Successful/Unsuccessful with no settlement)
 export async function getOrdersReadyForSettlement(courierId: string) {
   const { data, error } = await supabase
     .from('orders')
@@ -396,8 +396,8 @@ export async function getOrdersReadyForSettlement(courierId: string) {
       )
     `)
     .eq('courier_id', courierId)
-    .in('status', ['Delivered', 'Unsuccessful'])
-    .eq('courier_settlement_status', 'Pending Settlement')
+    .in('status', ['Successful', 'Unsuccessful'])
+    .eq('courier_settlement_status', 'Pending')
     .is('courier_settlement_id', null)
     .order('created_at', { ascending: false });
 
@@ -413,8 +413,8 @@ export async function requestSettlementPayout(courierId: string, orderIds: strin
     .select('id, status, courier_settlement_status, collected_amount_usd, collected_amount_lbp, courier_fee_usd, courier_fee_lbp')
     .eq('courier_id', courierId)
     .in('id', orderIds)
-    .in('status', ['Delivered', 'Unsuccessful'])
-    .eq('courier_settlement_status', 'Pending Settlement')
+    .in('status', ['Successful', 'Unsuccessful'])
+    .eq('courier_settlement_status', 'Pending')
     .is('courier_settlement_id', null);
 
   if (!orders || orders.length !== orderIds.length) {
