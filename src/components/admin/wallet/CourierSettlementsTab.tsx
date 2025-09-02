@@ -20,7 +20,7 @@ import {
   useMarkSettlementPaid 
 } from '@/hooks/use-courier-settlements';
 import CurrencyDisplay from '@/components/orders/CurrencyDisplay';
-import CreateSettlementModal from '@/components/admin/wallet/CreateSettlementModal';
+import EnhancedCreateSettlementModal from '@/components/admin/wallet/EnhancedCreateSettlementModal';
 import { toast } from 'sonner';
 
 const CourierSettlementsTab = () => {
@@ -411,7 +411,7 @@ const CourierSettlementsTab = () => {
                         <div className="font-medium">{order.customer?.name || 'N/A'}</div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={order.status === 'Delivered' ? 'default' : 'secondary'}>
+                        <Badge variant={order.status === 'Successful' ? 'default' : 'secondary'}>
                           {order.status}
                         </Badge>
                       </TableCell>
@@ -448,7 +448,7 @@ const CourierSettlementsTab = () => {
       </Dialog>
 
       {/* Create Settlement Modal */}
-      <CreateSettlementModal
+      <EnhancedCreateSettlementModal
         isOpen={isCreateSettlementOpen}
         onClose={() => {
           setIsCreateSettlementOpen(false);
