@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ImprovedAreaSelector } from '@/components/orders/ImprovedAreaSelector';
 import { Upload, X, User, Camera, FileText, CreditCard } from 'lucide-react';
-import { useCreateCourier, useUploadCourierFile } from '@/hooks/use-couriers';
+import { useUploadCourierFile } from '@/hooks/use-couriers';
 import { supabase } from '@/integrations/supabase/client';
 import { useGovernoratesAndCities } from '@/hooks/use-governorates';
 import { useForm } from 'react-hook-form';
@@ -44,9 +44,9 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
   const [idPhotoFile, setIdPhotoFile] = useState<File | null>(null);
   const [licensePhotoFile, setLicensePhotoFile] = useState<File | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string>('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const { data: governoratesAndCities } = useGovernoratesAndCities();
-  const createCourierMutation = useCreateCourier();
   const uploadFileMutation = useUploadCourierFile();
 
   const form = useForm<CourierFormData>({
@@ -76,6 +76,7 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
   };
 
   const onSubmit = async (data: CourierFormData) => {
+    setIsCreating(true);
     try {
       let avatarPublicUrl = '';
       let idPhotoPublicUrl = '';
@@ -110,22 +111,27 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
       const assignedZones = selectedGovernorate && selectedCity ? 
         [`${selectedGovernorate.name} - ${selectedCity.name}`] : [];
 
-      // Use admin function to create courier with auth credentials
-      const { data: result, error } = await supabase.rpc('admin_create_courier_with_auth', {
-        p_email: data.email,
-        p_password: data.password,
-        p_full_name: data.full_name,
-        p_phone: data.phone,
-        p_vehicle_type: data.vehicle_type,
-        p_address: data.address,
-        p_assigned_zones: assignedZones,
-        p_avatar_url: avatarPublicUrl || null,
-        p_id_photo_url: idPhotoPublicUrl || null,
-        p_license_photo_url: licensePhotoPublicUrl || null,
-        p_admin_notes: data.admin_notes
+      // Create auth user using Supabase Admin API
+      const { data: authResult, error: authError } = await supabase.auth.admin.createUser({
+        email: data.email,
+        password: data.password,
+        email_confirm: true, // Auto-confirm email for admin-created users
+        user_metadata: {
+          full_name: data.full_name,
+          phone: data.phone,
+          user_type: 'courier',
+          address: data.address,
+          vehicle_type: data.vehicle_type,
+          assigned_zones: assignedZones,
+          avatar_url: avatarPublicUrl || null,
+          id_photo_url: idPhotoPublicUrl || null,
+          license_photo_url: licensePhotoPublicUrl || null,
+          admin_notes: data.admin_notes,
+          admin_created: 'true' // Mark as admin-created for active status
+        }
       });
 
-      if (error) throw error;
+      if (authError) throw authError;
 
       toast.success("Courier created successfully with login credentials");
 
@@ -140,6 +146,8 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
     } catch (error) {
       console.error('Error creating courier:', error);
       toast.error(`Error creating courier: ${error.message}`);
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -416,9 +424,9 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
               <Button 
                 type="submit" 
                 className="flex-1"
-                disabled={createCourierMutation.isPending || uploadFileMutation.isPending}
+                disabled={isCreating || uploadFileMutation.isPending}
               >
-                {createCourierMutation.isPending || uploadFileMutation.isPending ? 'Creating...' : 'Create Courier'}
+                {isCreating || uploadFileMutation.isPending ? 'Creating...' : 'Create Courier'}
               </Button>
               <Button 
                 type="button" 

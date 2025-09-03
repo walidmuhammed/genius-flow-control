@@ -1617,22 +1617,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_create_courier_with_auth: {
-        Args: {
-          p_address?: string
-          p_admin_notes?: string
-          p_assigned_zones?: string[]
-          p_avatar_url?: string
-          p_email: string
-          p_full_name: string
-          p_id_photo_url?: string
-          p_license_photo_url?: string
-          p_password: string
-          p_phone?: string
-          p_vehicle_type?: string
-        }
-        Returns: Json
-      }
       approve_courier: {
         Args: { p_courier_id: string }
         Returns: boolean
