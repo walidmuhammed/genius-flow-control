@@ -111,27 +111,25 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
       const assignedZones = selectedGovernorate && selectedCity ? 
         [`${selectedGovernorate.name} - ${selectedCity.name}`] : [];
 
-      // Create auth user using Supabase Admin API
-      const { data: authResult, error: authError } = await supabase.auth.admin.createUser({
-        email: data.email,
-        password: data.password,
-        email_confirm: true, // Auto-confirm email for admin-created users
-        user_metadata: {
+      // Create auth user using edge function with service role access
+      const { data: result, error: authError } = await supabase.functions.invoke('admin-create-courier', {
+        body: {
+          email: data.email,
+          password: data.password,
           full_name: data.full_name,
           phone: data.phone,
-          user_type: 'courier',
-          address: data.address,
           vehicle_type: data.vehicle_type,
+          address: data.address,
           assigned_zones: assignedZones,
           avatar_url: avatarPublicUrl || null,
           id_photo_url: idPhotoPublicUrl || null,
           license_photo_url: licensePhotoPublicUrl || null,
-          admin_notes: data.admin_notes,
-          admin_created: 'true' // Mark as admin-created for active status
+          admin_notes: data.admin_notes
         }
       });
 
       if (authError) throw authError;
+      if (!result.success) throw new Error(result.error || 'Failed to create courier');
 
       toast.success("Courier created successfully with login credentials");
 
