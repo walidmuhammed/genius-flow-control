@@ -44,6 +44,15 @@ const CourierProtectedRoute: React.FC<CourierProtectedRouteProps> = ({ children 
     return <Navigate to="/auth/courier" state={{ from: location }} replace />;
   }
 
+  // Check if courier is pending approval
+  if (profile.user_type === 'courier') {
+    // For pending couriers, show pending approval screen
+    if (location.pathname !== '/dashboard/courier/pending') {
+      // We'll redirect to pending page later, for now just show message
+      console.log('Courier access granted but may be pending');
+    }
+  }
+
   console.log('Courier access granted');
   return <>{children}</>;
 };

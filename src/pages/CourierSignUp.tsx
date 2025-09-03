@@ -7,8 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Truck, Mail, Phone, User, Lock, MapPin, CreditCard } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Loader2, Truck, Mail, Phone, User, Lock, MapPin, CreditCard, Upload, Camera, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useGovernoratesAndCities } from '@/hooks/use-governorates';
+import { useUploadCourierFile } from '@/hooks/use-couriers';
 
 const vehicleTypes = [
   { value: 'motorcycle', label: 'Motorcycle', description: 'Small packages, fast delivery' },
@@ -26,11 +30,20 @@ const CourierSignUp = () => {
     licenseNumber: '',
     password: '',
     confirmPassword: '',
+    governorateId: '',
+    cityId: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [idPhotoFile, setIdPhotoFile] = useState<File | null>(null);
+  const [licensePhotoFile, setLicensePhotoFile] = useState<File | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string>('');
+  
   const navigate = useNavigate();
   const { signUp } = useAuth();
+  const { data: governoratesAndCities } = useGovernoratesAndCities();
+  const uploadFileMutation = useUploadCourierFile();
 
   const handleInputChange = (field: string, value: string) => {
     // Input sanitization and length limits
@@ -57,14 +70,35 @@ const CourierSignUp = () => {
     setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
   };
 
+  const handleFileUpload = (file: File, type: 'avatar' | 'id_photo' | 'license_photo') => {
+    if (type === 'avatar') {
+      setAvatarFile(file);
+      setAvatarUrl(URL.createObjectURL(file));
+    } else if (type === 'id_photo') {
+      setIdPhotoFile(file);
+    } else if (type === 'license_photo') {
+      setLicensePhotoFile(file);
+    }
+  };
+
   const validateForm = () => {
-    if (!formData.fullName || !formData.email || !formData.phone || !formData.address || !formData.password || !formData.licenseNumber) {
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.address || !formData.password || !formData.licenseNumber || !formData.governorateId || !formData.cityId) {
       setError('Please fill in all required fields');
       return false;
     }
 
     if (!formData.vehicleType) {
       setError('Please select your vehicle type');
+      return false;
+    }
+
+    if (!idPhotoFile) {
+      setError('Please upload your ID photo - this is required for verification');
+      return false;
+    }
+
+    if (!licensePhotoFile) {
+      setError('Please upload your driver license photo - this is required for verification');
       return false;
     }
 
@@ -96,16 +130,56 @@ const CourierSignUp = () => {
     setLoading(true);
 
     try {
+      // Upload documents first
+      let avatarPublicUrl = '';
+      let idPhotoPublicUrl = '';
+      let licensePhotoPublicUrl = '';
+
+      if (avatarFile) {
+        avatarPublicUrl = await uploadFileMutation.mutateAsync({ 
+          file: avatarFile, 
+          type: 'avatar' 
+        });
+      }
+      
+      if (idPhotoFile) {
+        idPhotoPublicUrl = await uploadFileMutation.mutateAsync({ 
+          file: idPhotoFile, 
+          type: 'id_photo' 
+        });
+      }
+      
+      if (licensePhotoFile) {
+        licensePhotoPublicUrl = await uploadFileMutation.mutateAsync({ 
+          file: licensePhotoFile, 
+          type: 'license_photo' 
+        });
+      }
+
+      // Find selected governorate and city names for assigned zones
+      const selectedGovernorate = governoratesAndCities?.find(g => g.id === formData.governorateId);
+      const selectedCity = selectedGovernorate?.cities?.find(c => c.id === formData.cityId);
+      const assignedZones = selectedGovernorate && selectedCity ? 
+        [`${selectedGovernorate.name} - ${selectedCity.name}`] : [];
+
       const { error: signUpError } = await signUp(formData.email, formData.password, {
         full_name: formData.fullName,
         phone: formData.phone,
-        user_type: 'courier'
+        user_type: 'courier',
+        address: formData.address,
+        vehicle_type: formData.vehicleType,
+        assigned_zones: assignedZones,
+        avatar_url: avatarPublicUrl,
+        id_photo_url: idPhotoPublicUrl,
+        license_photo_url: licensePhotoPublicUrl,
+        // Note: Self-registrations will be 'pending' by default via the trigger
       });
 
       if (signUpError) throw signUpError;
 
-      // Navigate to courier dashboard
-      navigate('/dashboard/courier');
+      // Show success message and redirect to signin with instructions
+      alert('Registration successful! Your account is pending approval. Please wait for admin confirmation before you can start delivering.');
+      navigate('/auth/courier');
     } catch (err: any) {
       setError(err.message || 'Sign up failed. Please try again.');
     } finally {
@@ -139,11 +213,38 @@ const CourierSignUp = () => {
           <CardHeader className="space-y-1 pb-6">
             <CardTitle className="text-xl font-semibold text-center">Courier Registration</CardTitle>
             <CardDescription className="text-center">
-              Complete your profile to start delivering packages
+              Complete your profile and upload required documents. Your account will be pending admin approval.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignUp} className="space-y-6">
+              {/* Profile Picture */}
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={avatarUrl} />
+                  <AvatarFallback>
+                    <User className="h-8 w-8" />
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <Label htmlFor="avatar-upload" className="cursor-pointer">
+                    <div className="flex items-center gap-2 px-3 py-2 border rounded-lg hover:bg-muted">
+                      <Camera className="h-4 w-4" />
+                      Profile Picture (Optional)
+                    </div>
+                  </Label>
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(file, 'avatar');
+                    }}
+                  />
+                </div>
+              </div>
               {/* Personal Information */}
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -216,6 +317,57 @@ const CourierSignUp = () => {
                 </div>
               </div>
 
+              {/* Location Selection */}
+              <div className="border-t pt-6 space-y-4">
+                <h4 className="font-medium text-sm">Preferred Work Location *</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="governorateId" className="text-sm font-medium">
+                      Governorate *
+                    </Label>
+                    <Select value={formData.governorateId} onValueChange={(value) => {
+                      handleInputChange('governorateId', value);
+                      setFormData(prev => ({ ...prev, cityId: '' })); // Reset city when governorate changes
+                    }}>
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Select governorate" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {governoratesAndCities?.map((gov) => (
+                          <SelectItem key={gov.id} value={gov.id}>
+                            {gov.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cityId" className="text-sm font-medium">
+                      City *
+                    </Label>
+                    <Select 
+                      value={formData.cityId} 
+                      onValueChange={(value) => handleInputChange('cityId', value)}
+                      disabled={!formData.governorateId}
+                    >
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Select city" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {governoratesAndCities
+                          ?.find(g => g.id === formData.governorateId)
+                          ?.cities?.map((city) => (
+                            <SelectItem key={city.id} value={city.id}>
+                              {city.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
               {/* Vehicle Information */}
               <div className="border-t pt-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -255,6 +407,56 @@ const CourierSignUp = () => {
                       maxLength={50}
                       required
                       className="h-11"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Required Documents */}
+              <div className="border-t pt-6 space-y-4">
+                <h4 className="font-medium text-sm">Required Documents *</h4>
+                <p className="text-xs text-muted-foreground">Please upload clear photos of your documents for verification</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* ID Photo Upload */}
+                  <div className="space-y-2">
+                    <Label htmlFor="id-upload" className="cursor-pointer">
+                      <div className="flex items-center gap-2 px-3 py-2 border rounded-lg hover:bg-muted">
+                        <FileText className="h-4 w-4" />
+                        ID Photo *
+                        {idPhotoFile && <Badge variant="secondary">Uploaded</Badge>}
+                      </div>
+                    </Label>
+                    <input
+                      id="id-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, 'id_photo');
+                      }}
+                    />
+                  </div>
+
+                  {/* License Photo Upload */}
+                  <div className="space-y-2">
+                    <Label htmlFor="license-upload" className="cursor-pointer">
+                      <div className="flex items-center gap-2 px-3 py-2 border rounded-lg hover:bg-muted">
+                        <CreditCard className="h-4 w-4" />
+                        Driver License *
+                        {licensePhotoFile && <Badge variant="secondary">Uploaded</Badge>}
+                      </div>
+                    </Label>
+                    <input
+                      id="license-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, 'license_photo');
+                      }}
                     />
                   </div>
                 </div>
@@ -310,18 +512,18 @@ const CourierSignUp = () => {
               {/* Sign Up Button */}
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || uploadFileMutation.isPending}
                 className="w-full h-12 font-medium transition-all duration-200"
               >
-                {loading ? (
+                {loading || uploadFileMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating Account...
+                    {uploadFileMutation.isPending ? 'Uploading Documents...' : 'Creating Account...'}
                   </>
                 ) : (
                   <>
                     <Truck className="mr-2 h-4 w-4" />
-                    Join as Courier
+                    Submit Application
                   </>
                 )}
               </Button>

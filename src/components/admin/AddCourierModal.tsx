@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { ImprovedAreaSelector } from '@/components/orders/ImprovedAreaSelector';
 import { Upload, X, User, Camera, FileText, CreditCard } from 'lucide-react';
 import { useCreateCourier, useUploadCourierFile } from '@/hooks/use-couriers';
+import { supabase } from '@/integrations/supabase/client';
 import { useGovernoratesAndCities } from '@/hooks/use-governorates';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,7 +23,8 @@ import { toast } from 'sonner';
 const courierSchema = z.object({
   full_name: z.string().min(2, "Name must be at least 2 characters"),
   phone: z.string().min(8, "Please enter a valid phone number"),
-  email: z.string().email("Please enter a valid email").optional().or(z.literal("")),
+  email: z.string().email("Please enter a valid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
   vehicle_type: z.enum(['motorcycle', 'car', 'van', 'bicycle']),
   governorate_id: z.string().min(1, "Please select a governorate"),
   city_id: z.string().min(1, "Please select a city"),
@@ -53,6 +55,7 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
       full_name: '',
       phone: '',
       email: '',
+      password: '',
       vehicle_type: 'motorcycle',
       governorate_id: '',
       city_id: '',
@@ -107,20 +110,24 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
       const assignedZones = selectedGovernorate && selectedCity ? 
         [`${selectedGovernorate.name} - ${selectedCity.name}`] : [];
 
-      // Create courier
-      await createCourierMutation.mutateAsync({
-        full_name: data.full_name,
-        phone: data.phone,
-        email: data.email || undefined,
-        vehicle_type: data.vehicle_type,
-        address: data.address,
-        assigned_zones: assignedZones,
-        avatar_url: avatarPublicUrl || undefined,
-        id_photo_url: idPhotoPublicUrl || undefined,
-        license_photo_url: licensePhotoPublicUrl || undefined,
-        admin_notes: data.admin_notes,
-        status: 'active'
+      // Use admin function to create courier with auth credentials
+      const { data: result, error } = await supabase.rpc('admin_create_courier_with_auth', {
+        p_email: data.email,
+        p_password: data.password,
+        p_full_name: data.full_name,
+        p_phone: data.phone,
+        p_vehicle_type: data.vehicle_type,
+        p_address: data.address,
+        p_assigned_zones: assignedZones,
+        p_avatar_url: avatarPublicUrl || null,
+        p_id_photo_url: idPhotoPublicUrl || null,
+        p_license_photo_url: licensePhotoPublicUrl || null,
+        p_admin_notes: data.admin_notes
       });
+
+      if (error) throw error;
+
+      toast.success("Courier created successfully with login credentials");
 
       // Reset form and close modal
       form.reset();
@@ -132,6 +139,7 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
       
     } catch (error) {
       console.error('Error creating courier:', error);
+      toast.error(`Error creating courier: ${error.message}`);
     }
   };
 
@@ -142,6 +150,7 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Courier</DialogTitle>
+          <p className="text-sm text-muted-foreground">Create a courier account with login credentials. The courier will be immediately active.</p>
         </DialogHeader>
 
         <Form {...form}>
@@ -215,9 +224,24 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Email *</FormLabel>
                     <FormControl>
                       <Input {...field} type="email" placeholder="courier@email.com" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Password */}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password *</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="password" placeholder="Secure password (min. 6 chars)" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import CourierApprovalActions from './CourierApprovalActions';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -314,9 +315,7 @@ const AdminCouriersContent = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={getStatusBadge(courier.status || 'active')}>
-                        {(courier.status || 'active').charAt(0).toUpperCase() + (courier.status || 'active').slice(1)}
-                      </Badge>
+                      <CourierApprovalActions courierId={courier.id} status={courier.status || 'active'} />
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>

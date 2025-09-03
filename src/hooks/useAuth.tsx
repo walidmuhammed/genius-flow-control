@@ -11,6 +11,13 @@ interface UserProfile {
   phone?: string;
   business_name?: string;
   business_type?: string;
+  // Courier-specific fields for signup
+  address?: string;
+  vehicle_type?: string;
+  assigned_zones?: string[];
+  avatar_url?: string;
+  id_photo_url?: string;
+  license_photo_url?: string;
 }
 
 interface AuthContextType {
@@ -184,6 +191,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         phone: userData.phone?.trim(),
         business_name: userData.business_name?.trim(),
         business_type: userData.business_type?.trim() || 'Fashion & Apparel',
+        // Include courier-specific fields
+        address: userData.address?.trim(),
+        vehicle_type: userData.vehicle_type,
+        assigned_zones: userData.assigned_zones || [],
+        avatar_url: userData.avatar_url,
+        id_photo_url: userData.id_photo_url,
+        license_photo_url: userData.license_photo_url
       };
 
       const redirectUrl = `${window.location.origin}/`;
