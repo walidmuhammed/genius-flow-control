@@ -20,12 +20,6 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Create anon client for RLS checks
-    const supabaseAnon = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
-
     // Get the authorization header
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
@@ -36,9 +30,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Set the auth for anon client to check permissions
-    supabaseAnon.auth.session = null;
-    const { data: { user }, error: userError } = await supabaseAnon.auth.getUser(authHeader.replace('Bearer ', ''));
+    // Verify user token and get user info using service role client
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
     
     if (userError || !user) {
       console.error('Invalid token:', userError);
@@ -48,20 +42,32 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if user is admin
-    const { data: profile, error: profileError } = await supabaseAnon
+    console.log('User verified:', user.id);
+
+    // Check if user is admin using service role client
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('user_type')
       .eq('id', user.id)
       .single();
 
-    if (profileError || profile?.user_type !== 'admin') {
-      console.error('User is not admin:', profileError);
+    if (profileError) {
+      console.error('Profile lookup error:', profileError);
+      return new Response(
+        JSON.stringify({ error: 'Unable to verify user permissions' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (profile?.user_type !== 'admin') {
+      console.error('User is not admin. User type:', profile?.user_type);
       return new Response(
         JSON.stringify({ error: 'Access denied: Only administrators can create couriers' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('Admin user verified successfully');
 
     // Parse request body
     const body = await req.json();

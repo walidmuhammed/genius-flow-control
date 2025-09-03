@@ -111,8 +111,10 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
       const assignedZones = selectedGovernorate && selectedCity ? 
         [`${selectedGovernorate.name} - ${selectedCity.name}`] : [];
 
+      console.log('Calling admin-create-courier function...');
+      
       // Create auth user using edge function with service role access
-      const { data: result, error: authError } = await supabase.functions.invoke('admin-create-courier', {
+      const { data: result, error: functionError } = await supabase.functions.invoke('admin-create-courier', {
         body: {
           email: data.email,
           password: data.password,
@@ -128,8 +130,25 @@ const AddCourierModal = ({ open, onOpenChange }: AddCourierModalProps) => {
         }
       });
 
-      if (authError) throw authError;
-      if (!result.success) throw new Error(result.error || 'Failed to create courier');
+      console.log('Edge function response:', result);
+      console.log('Edge function error:', functionError);
+
+      if (functionError) {
+        console.error('Function invocation error:', functionError);
+        throw new Error(`Function error: ${functionError.message}`);
+      }
+
+      if (!result) {
+        throw new Error('No response from courier creation function');
+      }
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      if (!result.success) {
+        throw new Error('Failed to create courier');
+      }
 
       toast.success("Courier created successfully with login credentials");
 
