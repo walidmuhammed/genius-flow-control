@@ -183,11 +183,11 @@ export const CourierOrderDetailsDialog: React.FC<CourierOrderDetailsDialogProps>
               <div className="space-y-2">
                 <div>
                   <Label className="text-sm text-gray-600">Business Name</Label>
-                  <div className="font-medium">{order.profiles?.business_name || 'N/A'}</div>
+                  <div className="font-medium">{order.profiles?.business_name || order.profiles?.full_name || 'Business Name'}</div>
                 </div>
                 <div>
                   <Label className="text-sm text-gray-600">Contact Phone</Label>
-                  <div className="font-medium">{order.profiles?.phone || '-'}</div>
+                  <div className="font-medium">{order.profiles?.phone || 'Not provided'}</div>
                 </div>
               </div>
             </div>

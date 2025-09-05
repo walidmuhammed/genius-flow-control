@@ -53,8 +53,11 @@ export interface Order {
 export interface OrderWithCustomer extends Order {
   customer: CustomerWithLocation;
   profiles?: {
+    id?: string;
     business_name?: string;
     phone?: string;
+    full_name?: string;
+    user_type?: string;
   };
 }
 

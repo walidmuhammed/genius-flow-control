@@ -87,8 +87,11 @@ export async function getCourierOrders() {
           governorates:governorate_id(name)
         ),
         profiles:created_by(
+          id,
           business_name,
-          phone
+          phone,
+          full_name,
+          user_type
         )
       `)
       .eq('courier_id', courier.id)
@@ -136,8 +139,11 @@ export async function getCourierOrdersByStatus(status: OrderStatus) {
           governorates:governorate_id(name)
         ),
         profiles:created_by(
+          id,
           business_name,
-          phone
+          phone,
+          full_name,
+          user_type
         )
       `)
       .eq('courier_id', courier.id)

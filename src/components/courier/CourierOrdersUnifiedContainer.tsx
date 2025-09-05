@@ -134,8 +134,8 @@ export const CourierOrdersUnifiedContainer: React.FC<CourierOrdersUnifiedContain
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full min-h-0">
-      <Card className="flex-1 flex flex-col bg-white dark:bg-gray-800 border-gray-200/30 dark:border-gray-700/30 shadow-sm rounded-xl overflow-hidden min-h-0">
+    <div className="flex-1 flex flex-col h-full min-h-0 max-w-full">
+      <Card className="flex-1 flex flex-col bg-white dark:bg-gray-800 border-gray-200/30 dark:border-gray-700/30 shadow-sm rounded-xl overflow-hidden min-h-0 max-w-full">
         <CourierOrdersSearchControls
           searchQuery={searchQuery}
           onSearchChange={(query) => {}} // This should be handled by parent
@@ -162,7 +162,7 @@ export const CourierOrdersUnifiedContainer: React.FC<CourierOrdersUnifiedContain
           ]}
         />
         
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden max-w-full">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
@@ -177,7 +177,7 @@ export const CourierOrdersUnifiedContainer: React.FC<CourierOrdersUnifiedContain
               description={searchQuery ? "Try adjusting your search terms." : "No orders match the selected filters."}
             />
           ) : (
-            <div className="h-full overflow-auto">
+            <div className="h-full overflow-auto max-w-full">
               {isMobile ? (
                 <CourierOrdersTableMobile
                   orders={filteredOrders}

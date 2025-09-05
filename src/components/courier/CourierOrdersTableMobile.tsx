@@ -158,10 +158,10 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
               <div className="mb-4">
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Shop Info</div>
                 <div className="font-medium text-gray-900 dark:text-gray-100">
-                  {order.profiles?.business_name || 'N/A'}
+                  {order.profiles?.business_name || order.profiles?.full_name || 'Business Name'}
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {order.profiles?.phone || '-'}
+                  {order.profiles?.phone || 'Not provided'}
                 </div>
               </div>
 
