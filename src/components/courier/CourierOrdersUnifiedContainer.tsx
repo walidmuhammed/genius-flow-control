@@ -134,15 +134,15 @@ export const CourierOrdersUnifiedContainer: React.FC<CourierOrdersUnifiedContain
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
-      <Card className="flex-1 flex flex-col bg-white dark:bg-gray-800 border-gray-200/30 dark:border-gray-700/30 shadow-sm rounded-xl overflow-hidden">
+    <div className="flex-1 flex flex-col h-full min-h-0">
+      <Card className="flex-1 flex flex-col bg-white dark:bg-gray-800 border-gray-200/30 dark:border-gray-700/30 shadow-sm rounded-xl overflow-hidden min-h-0">
         <CourierOrdersSearchControls
           searchQuery={searchQuery}
-          onSearchChange={() => {}} // Handled by parent
+          onSearchChange={(query) => {}} // This should be handled by parent
           dateRange={dateRange}
-          onDateRangeChange={() => {}} // Handled by parent
+          onDateRangeChange={(range) => {}} // This should be handled by parent
           packageTypeFilter={packageTypeFilter}
-          onPackageTypeChange={() => {}} // Handled by parent
+          onPackageTypeChange={(type) => {}} // This should be handled by parent
         />
         
         <CourierOrdersFilterTabs

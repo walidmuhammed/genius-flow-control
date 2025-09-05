@@ -52,6 +52,10 @@ export interface Order {
 
 export interface OrderWithCustomer extends Order {
   customer: CustomerWithLocation;
+  profiles?: {
+    business_name?: string;
+    phone?: string;
+  };
 }
 
 // Check if user is authenticated and get their ID
@@ -137,7 +141,8 @@ export const transformOrderData = (order: any): OrderWithCustomer => {
       ...customerData,
       city_name: customerData.cities?.name,
       governorate_name: customerData.governorates?.name
-    }
+    },
+    profiles: order.profiles || undefined
   };
 };
 

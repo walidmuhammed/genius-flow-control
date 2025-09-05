@@ -38,14 +38,14 @@ const CourierLayout: React.FC<CourierLayoutProps> = ({ children, className }) =>
       )}>
         <CourierTopBar />
         <main className={cn(
-          "flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-all",
+          "flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900 transition-all",
           isMobile ? "p-3 pb-6" : isTablet ? "p-4 pb-6" : "p-6",
           className
         )}>
           <motion.div 
             className={cn(
-              "w-full mx-auto space-y-4",
-              !isMobile && !isTablet && "max-w-[1600px] md:space-y-8"
+              "w-full h-full mx-auto flex flex-col",
+              !isMobile && !isTablet && "max-w-none"
             )}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

@@ -85,8 +85,8 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
     order.status === 'In Progress';
 
   return (
-    <div className="overflow-x-auto">
-      <Table>
+    <div className="overflow-x-auto min-w-0">
+      <Table className="min-w-full">
         <TableHeader>
           <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">ORDER ID & REF</TableHead>
@@ -185,10 +185,10 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
               <TableCell>
                 <div>
                   <div className="font-medium text-gray-900 dark:text-gray-100">
-                    {(order as any).profiles?.business_name || 'N/A'}
+                    {order.profiles?.business_name || 'N/A'}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {(order as any).profiles?.phone || '-'}
+                    {order.profiles?.phone || '-'}
                   </div>
                 </div>
               </TableCell>
