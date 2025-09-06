@@ -134,8 +134,8 @@ export const CourierOrdersUnifiedContainer: React.FC<CourierOrdersUnifiedContain
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full min-h-0 max-w-full">
-      <Card className="flex-1 flex flex-col bg-white dark:bg-gray-800 border-gray-200/30 dark:border-gray-700/30 shadow-sm rounded-xl overflow-hidden min-h-0 max-w-full">
+    <div className="flex-1 flex flex-col h-full min-h-0">
+      <Card className="flex-1 flex flex-col bg-white dark:bg-gray-800 border-gray-200/30 dark:border-gray-700/30 shadow-sm rounded-xl overflow-hidden min-h-0">
         <CourierOrdersSearchControls
           searchQuery={searchQuery}
           onSearchChange={(query) => {}} // This should be handled by parent
@@ -162,7 +162,7 @@ export const CourierOrdersUnifiedContainer: React.FC<CourierOrdersUnifiedContain
           ]}
         />
         
-        <div className="flex-1 overflow-hidden max-w-full">
+        <div className="flex-1 overflow-hidden">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
@@ -177,23 +177,27 @@ export const CourierOrdersUnifiedContainer: React.FC<CourierOrdersUnifiedContain
               description={searchQuery ? "Try adjusting your search terms." : "No orders match the selected filters."}
             />
           ) : (
-            <div className="h-full overflow-auto max-w-full">
+            <div className="h-full overflow-auto">
               {isMobile ? (
-                <CourierOrdersTableMobile
-                  orders={filteredOrders}
-                  onViewOrder={handleViewOrder}
-                  onMarkPickedUp={handleMarkPickedUp}
-                  onMarkDelivered={handleMarkDelivered}
-                  onMarkUnsuccessful={handleMarkUnsuccessful}
-                />
+                <div className="p-4">
+                  <CourierOrdersTableMobile
+                    orders={filteredOrders}
+                    onViewOrder={handleViewOrder}
+                    onMarkPickedUp={handleMarkPickedUp}
+                    onMarkDelivered={handleMarkDelivered}
+                    onMarkUnsuccessful={handleMarkUnsuccessful}
+                  />
+                </div>
               ) : (
-                <CourierOrdersTable
-                  orders={filteredOrders}
-                  onViewOrder={handleViewOrder}
-                  onMarkPickedUp={handleMarkPickedUp}
-                  onMarkDelivered={handleMarkDelivered}
-                  onMarkUnsuccessful={handleMarkUnsuccessful}
-                />
+                <div className="p-4">
+                  <CourierOrdersTable
+                    orders={filteredOrders}
+                    onViewOrder={handleViewOrder}
+                    onMarkPickedUp={handleMarkPickedUp}
+                    onMarkDelivered={handleMarkDelivered}
+                    onMarkUnsuccessful={handleMarkUnsuccessful}
+                  />
+                </div>
               )}
             </div>
           )}

@@ -83,19 +83,20 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
     order.status === 'In Progress';
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 max-w-full">
       {orders.map((order, index) => (
         <motion.div
           key={order.id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: index * 0.07 }}
+          className="w-full"
         >
-          <Card className="border border-gray-200/60 dark:border-gray-700/40 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200">
+          <Card className="border border-gray-200/60 dark:border-gray-700/40 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 w-full">
             <CardContent className="p-4">
               {/* Header - Order ID, Reference, Status */}
               <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold text-[#DB271E] text-lg">
                       #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
@@ -104,11 +105,11 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
                       <OrderNoteTooltip note={order.note} />
                     )}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
                     Ref: {order.reference_number || '-'}
                   </div>
                 </div>
-                <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border", getStatusColor(order.status))}>
+                <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border whitespace-nowrap ml-2", getStatusColor(order.status))}>
                   {order.status}
                 </Badge>
               </div>
@@ -116,58 +117,65 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
               {/* Customer Info */}
               <div className="mb-3">
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Customer</div>
-                <div className="font-medium text-gray-900 dark:text-gray-100">{order.customer?.name}</div>
+                <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{order.customer?.name}</div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer?.phone}</div>
               </div>
 
-              {/* Location */}
-              <div className="mb-3">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Delivery Location</div>
-                <div className="font-medium text-gray-900 dark:text-gray-100">{order.customer?.governorate_name}</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer?.city_name}</div>
-              </div>
-
-              {/* Package Type & COD */}
-              <div className="flex items-center justify-between mb-3">
+              {/* Location & Package Type Row */}
+              <div className="grid grid-cols-2 gap-4 mb-3">
                 <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Package Type</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Location</div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate" title={order.customer?.governorate_name}>
+                    {order.customer?.governorate_name}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate" title={order.customer?.city_name}>
+                    {order.customer?.city_name}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Type</div>
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-medium rounded-md border ${getTypeColor(order.package_type || 'parcel')}`}
                   >
                     {order.package_type || 'Parcel'}
                   </span>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">COD Amount</div>
-                  {order.cash_collection_usd > 0 || order.cash_collection_lbp > 0 ? (
-                    <div>
-                      {order.cash_collection_usd > 0 && (
-                        <div className="font-semibold text-gray-900 dark:text-gray-100">${order.cash_collection_usd}</div>
-                      )}
-                      {order.cash_collection_lbp > 0 && (
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-gray-400 text-sm">No COD</span>
-                  )}
-                </div>
               </div>
 
-              {/* Shop Info */}
-              <div className="mb-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Shop Info</div>
-                <div className="font-medium text-gray-900 dark:text-gray-100">
-                  {order.profiles?.business_name || order.profiles?.full_name || 'Business Name'}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {order.profiles?.phone || 'Not provided'}
-                </div>
+              {/* COD Amount */}
+              <div className="mb-3">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">COD Amount</div>
+                {order.cash_collection_usd > 0 || order.cash_collection_lbp > 0 ? (
+                  <div>
+                    {order.cash_collection_usd > 0 && (
+                      <div className="font-semibold text-gray-900 dark:text-gray-100">${order.cash_collection_usd}</div>
+                    )}
+                    {order.cash_collection_lbp > 0 && (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-gray-400 text-sm">No COD</span>
+                )}
               </div>
 
-              {/* Date */}
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                Assigned: {formatDate(new Date(order.created_at))}
+              {/* Shop Info & Date Row */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Shop Info</div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate" title={order.profiles?.business_name || order.profiles?.full_name}>
+                    {order.profiles?.business_name || order.profiles?.full_name || 'Business Name'}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                    {order.profiles?.phone || 'Not provided'}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Assigned</div>
+                  <div className="text-sm text-gray-900 dark:text-gray-100">
+                    {formatDate(new Date(order.created_at))}
+                  </div>
+                </div>
               </div>
 
               {/* Actions */}

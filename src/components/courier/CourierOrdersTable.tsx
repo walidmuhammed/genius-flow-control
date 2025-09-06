@@ -85,20 +85,20 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
     order.status === 'In Progress';
 
   return (
-    <div className="w-full overflow-x-auto">
-      <div className="min-w-[1200px]">
+    <div className="w-full">
+      <div className="w-full overflow-x-auto">
         <Table className="w-full">
           <TableHeader>
             <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">ORDER ID & REF</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[150px]">CUSTOMER</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[140px]">DELIVERY LOCATION</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">ORDER TYPE</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">COD AMOUNT</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">STATUS</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px]">ASSIGNED DATE</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[150px]">SHOP INFO</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px]">ACTIONS</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[140px]">ORDER & REF</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[180px]">CUSTOMER</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[140px] hidden lg:table-cell">LOCATION</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[100px] hidden lg:table-cell">TYPE</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[130px]">COD AMOUNT</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[110px]">STATUS</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[120px] hidden xl:table-cell">ASSIGNED</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[140px] hidden xl:table-cell">SHOP INFO</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[100px]">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>
         <TableBody>
@@ -122,7 +122,7 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
                       <OrderNoteTooltip note={order.note} />
                     )}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {order.reference_number || '-'}
                   </div>
                 </div>
@@ -131,23 +131,32 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
               {/* Customer Name & Phone */}
               <TableCell>
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100">{order.customer?.name}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer?.phone}</div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[160px]" title={order.customer?.name}>
+                    {order.customer?.name}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{order.customer?.phone}</div>
+                  <div className="text-xs text-gray-400 lg:hidden">
+                    {order.customer?.governorate_name}
+                  </div>
                 </div>
               </TableCell>
 
-              {/* Delivery Location */}
-              <TableCell>
+              {/* Delivery Location - Hidden on tablet and smaller */}
+              <TableCell className="hidden lg:table-cell">
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100">{order.customer?.governorate_name}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer?.city_name}</div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[120px]" title={order.customer?.governorate_name}>
+                    {order.customer?.governorate_name}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[120px]" title={order.customer?.city_name}>
+                    {order.customer?.city_name}
+                  </div>
                 </div>
               </TableCell>
 
-              {/* Order Type */}
-              <TableCell>
+              {/* Order Type - Hidden on tablet and smaller */}
+              <TableCell className="hidden lg:table-cell">
                 <span
-                  className={`inline-flex px-3 py-1 text-xs font-medium rounded-full border ${getTypeColor(order.package_type || 'parcel')}`}
+                  className={`inline-flex px-2 py-1 text-xs font-medium rounded-md border ${getTypeColor(order.package_type || 'parcel')}`}
                 >
                   {order.package_type || 'Parcel'}
                 </span>
@@ -163,32 +172,32 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
                     <div className="text-sm text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
                   )}
                   {order.cash_collection_usd === 0 && order.cash_collection_lbp === 0 && (
-                    <span className="text-gray-400">No COD</span>
+                    <span className="text-gray-400 text-sm">No COD</span>
                   )}
                 </div>
               </TableCell>
 
               {/* Status */}
               <TableCell>
-                <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border", getStatusColor(order.status))}>
+                <Badge className={cn("px-2 py-1 text-xs font-medium rounded-md border whitespace-nowrap", getStatusColor(order.status))}>
                   {order.status}
                 </Badge>
               </TableCell>
 
-              {/* Assigned Date */}
-              <TableCell>
+              {/* Assigned Date - Hidden on laptop and smaller */}
+              <TableCell className="hidden xl:table-cell">
                 <div className="text-sm text-gray-900 dark:text-gray-100">
                   {formatDate(new Date(order.created_at))}
                 </div>
               </TableCell>
 
-              {/* Shop Info */}
-              <TableCell>
+              {/* Shop Info - Hidden on laptop and smaller */}
+              <TableCell className="hidden xl:table-cell">
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
+                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[120px]" title={order.profiles?.business_name || order.profiles?.full_name}>
                     {order.profiles?.business_name || order.profiles?.full_name || 'Business Name'}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
                     {order.profiles?.phone || 'Not provided'}
                   </div>
                 </div>
