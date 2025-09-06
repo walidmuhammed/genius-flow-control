@@ -31,14 +31,14 @@ export const CourierOrdersPageHeader: React.FC<CourierOrdersPageHeaderProps> = (
   onPackageTypeChange
 }) => {
   return (
-    <div className="space-y-8 pt-8">
+    <div className="space-y-6">
       {/* Page Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-2">
+        <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
             My Orders
           </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Manage orders assigned to you
           </p>
         </div>
@@ -70,7 +70,7 @@ export const CourierOrdersSearchControls: React.FC<{
   onPackageTypeChange
 }) => {
   return (
-    <div className="p-4 sm:p-6 border-b border-gray-200/30 dark:border-gray-700/30 mt-6">
+    <div className="p-4 sm:p-6 border-b border-gray-200/30 dark:border-gray-700/30">
       {/* Mobile Layout - Stacked */}
       <div className="flex flex-col space-y-4 lg:hidden">
         {/* Search Bar */}

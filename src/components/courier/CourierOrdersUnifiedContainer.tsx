@@ -1,16 +1,15 @@
 import React, { useState, useMemo } from 'react';
+import { Card } from '@/components/ui/card';
+import { CourierOrdersSearchControls } from './CourierOrdersPageHeader';
 import { CourierOrdersFilterTabs } from './CourierOrdersFilterTabs';
 import { CourierOrdersTable } from './CourierOrdersTable';
 import { CourierOrdersTableMobile } from './CourierOrdersTableMobile';
 import { CourierOrderDetailsDialog } from './CourierOrderDetailsDialog';
-import MarkAsDeliveredModal from './MarkAsDeliveredModal';
-import MarkAsUnsuccessfulModal from './MarkAsUnsuccessfulModal';
-import { CourierOrdersSearchControls } from './CourierOrdersPageHeader';
-import { CourierBulkActionsBar } from './CourierBulkActionsBar';
-import { useCourierOrders, useUpdateOrderStatus } from '@/hooks/use-courier-orders';
+import { useCourierOrders, useUpdateOrderStatus, useAddDeliveryNote } from '@/hooks/use-courier-orders';
+import { OrderWithCustomer, OrderStatus } from '@/services/orders';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { OrderWithCustomer } from '@/services/orders';
-import { toast } from 'sonner';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Package } from 'lucide-react';
 
 interface CourierOrdersUnifiedContainerProps {
   searchQuery: string;
@@ -28,16 +27,13 @@ export const CourierOrdersUnifiedContainer: React.FC<CourierOrdersUnifiedContain
   packageTypeFilter,
   isLoading
 }) => {
-  const [activeTab, setActiveTab] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<OrderWithCustomer | null>(null);
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
-  const [showDeliveredModal, setShowDeliveredModal] = useState(false);
-  const [showUnsuccessfulModal, setShowUnsuccessfulModal] = useState(false);
-  
   const isMobile = useIsMobile();
+  
   const { data: orders = [] } = useCourierOrders();
   const updateOrderStatus = useUpdateOrderStatus();
+  const addDeliveryNote = useAddDeliveryNote();
 
   // Filter orders based on search, date range, package type, and status
   const filteredOrders = useMemo(() => {
@@ -59,213 +55,178 @@ export const CourierOrdersUnifiedContainer: React.FC<CourierOrdersUnifiedContain
         order.package_type?.toLowerCase() === packageTypeFilter.toLowerCase();
 
       // Status filter
-      const statusMatch = activeTab === 'all' || 
-        (activeTab === 'new' && order.status === 'New') ||
-        (activeTab === 'pending_pickup' && order.status === 'Pending Pickup') ||
-        (activeTab === 'assigned' && order.status === 'Assigned') ||
-        (activeTab === 'in_progress' && order.status === 'In Progress') ||
-        (activeTab === 'successful' && order.status === 'Successful') ||
-        (activeTab === 'unsuccessful' && order.status === 'Unsuccessful') ||
-        (activeTab === 'returned' && order.status === 'Returned') ||
-        (activeTab === 'awaiting_payment' && order.status === 'Awaiting Payment') ||
-        (activeTab === 'paid' && order.status === 'paid');
+      const statusMatch = selectedStatus === 'all' || 
+        order.status.toLowerCase().replace(' ', '_') === selectedStatus;
 
       return searchMatch && dateMatch && packageMatch && statusMatch;
     });
-  }, [orders, searchQuery, dateRange, packageTypeFilter, activeTab]);
+  }, [orders, searchQuery, dateRange, packageTypeFilter, selectedStatus]);
+
+  // Calculate status counts
+  const statusCounts = useMemo(() => {
+    return {
+      all: orders.length,
+      new: orders.filter(o => o.status === 'New').length,
+      pending_pickup: orders.filter(o => o.status === 'Pending Pickup').length,
+      assigned: orders.filter(o => o.status === 'Assigned').length,
+      in_progress: orders.filter(o => o.status === 'In Progress').length,
+      successful: orders.filter(o => o.status === 'Successful').length,
+      unsuccessful: orders.filter(o => o.status === 'Unsuccessful').length,
+      returned: orders.filter(o => o.status === 'Returned').length,
+      awaiting_payment: orders.filter(o => o.status === 'Awaiting Payment').length,
+      paid: orders.filter(o => o.status === 'paid').length
+    };
+  }, [orders]);
 
   const handleViewOrder = (order: OrderWithCustomer) => {
     setSelectedOrder(order);
-    setShowDetailsDialog(true);
   };
 
-  const handleMarkPickedUp = (order: OrderWithCustomer) => {
-    updateOrderStatus.mutate({
-      orderId: order.id,
-      status: 'In Progress'
-    });
+  const handleMarkPickedUp = async (order: OrderWithCustomer) => {
+    try {
+      await updateOrderStatus.mutateAsync({
+        orderId: order.id,
+        status: 'In Progress' as OrderStatus
+      });
+    } catch (error) {
+      console.error('Error marking order as picked up:', error);
+    }
   };
 
-  const handleMarkDelivered = (order: OrderWithCustomer) => {
-    setSelectedOrder(order);
-    setShowDeliveredModal(true);
+  const handleMarkDelivered = async (order: OrderWithCustomer, data?: any) => {
+    try {
+      await updateOrderStatus.mutateAsync({
+        orderId: order.id,
+        status: 'Successful' as OrderStatus,
+        collected_amount_usd: data?.collected_amount_usd,
+        collected_amount_lbp: data?.collected_amount_lbp,
+        collected_currency: data?.collected_currency,
+        note: data?.note
+      });
+    } catch (error) {
+      console.error('Error marking order as delivered:', error);
+    }
   };
 
-  const handleMarkUnsuccessful = (order: OrderWithCustomer) => {
-    setSelectedOrder(order);
-    setShowUnsuccessfulModal(true);
+  const handleMarkUnsuccessful = async (order: OrderWithCustomer, data?: any) => {
+    try {
+      await updateOrderStatus.mutateAsync({
+        orderId: order.id,
+        status: 'Unsuccessful' as OrderStatus,
+        unsuccessful_reason: data?.unsuccessful_reason,
+        collected_amount_usd: data?.collected_amount_usd || 0,
+        collected_amount_lbp: data?.collected_amount_lbp || 0,
+        collected_currency: data?.collected_currency,
+        note: data?.note,
+        reason: data?.unsuccessful_reason
+      });
+    } catch (error) {
+      console.error('Error marking order as unsuccessful:', error);
+    }
   };
 
-  // Bulk selection handlers
-  const handleOrderSelect = (orderId: string) => {
-    setSelectedOrders(prev => 
-      prev.includes(orderId) 
-        ? prev.filter(id => id !== orderId)
-        : [...prev, orderId]
-    );
-  };
-
-  const handleSelectAll = () => {
-    const visibleOrderIds = filteredOrders.map(order => order.id);
-    setSelectedOrders(prev => 
-      prev.length === visibleOrderIds.length 
-        ? [] 
-        : visibleOrderIds
-    );
-  };
-
-  const isAllSelected = selectedOrders.length === filteredOrders.length && filteredOrders.length > 0;
-
-  const handleClearSelection = () => {
-    setSelectedOrders([]);
-  };
-
-  const handleBulkMarkPickedUp = () => {
-    selectedOrders.forEach(orderId => {
-      const order = filteredOrders.find(o => o.id === orderId);
-      if (order && ['New', 'Assigned'].includes(order.status)) {
-        updateOrderStatus.mutate({
-          orderId,
-          status: 'In Progress'
-        });
-      }
-    });
-    handleClearSelection();
-    toast.success(`${selectedOrders.length} orders marked as picked up`);
-  };
-
-  const handleBulkMarkDelivered = () => {
-    selectedOrders.forEach(orderId => {
-      const order = filteredOrders.find(o => o.id === orderId);
-      if (order && order.status === 'In Progress') {
-        updateOrderStatus.mutate({
-          orderId,
-          status: 'Successful'
-        });
-      }
-    });
-    handleClearSelection();
-    toast.success(`${selectedOrders.length} orders marked as delivered`);
-  };
-
-  const handleBulkMarkUnsuccessful = () => {
-    selectedOrders.forEach(orderId => {
-      const order = filteredOrders.find(o => o.id === orderId);
-      if (order && order.status === 'In Progress') {
-        updateOrderStatus.mutate({
-          orderId,
-          status: 'Unsuccessful'
-        });
-      }
-    });
-    handleClearSelection();
-    toast.success(`${selectedOrders.length} orders marked as unsuccessful`);
+  const handleAddDeliveryNote = async (orderId: string, note: string) => {
+    try {
+      await addDeliveryNote.mutateAsync({ orderId, note });
+    } catch (error) {
+      console.error('Error adding delivery note:', error);
+    }
   };
 
   return (
-    <div className="space-y-4">
-      {/* Search Controls */}
-      <CourierOrdersSearchControls
-        searchQuery={searchQuery}
-        onSearchChange={() => {}} // Handled by parent
-        dateRange={dateRange}
-        onDateRangeChange={() => {}} // Handled by parent
-        packageTypeFilter={packageTypeFilter}
-        onPackageTypeChange={() => {}} // Handled by parent
-      />
-
-      {/* Filter Tabs */}
-      <div className="px-4 sm:px-6">
-        <CourierOrdersFilterTabs 
-          onTabChange={setActiveTab}
-          activeTab={activeTab}
+    <div className="flex-1 flex flex-col h-full min-h-0">
+      <Card className="flex-1 flex flex-col bg-white dark:bg-gray-800 border-gray-200/30 dark:border-gray-700/30 shadow-sm rounded-xl overflow-hidden min-h-0">
+        <CourierOrdersSearchControls
+          searchQuery={searchQuery}
+          onSearchChange={(query) => {}} // This should be handled by parent
+          dateRange={dateRange}
+          onDateRangeChange={(range) => {}} // This should be handled by parent
+          packageTypeFilter={packageTypeFilter}
+          onPackageTypeChange={(type) => {}} // This should be handled by parent
+        />
+        
+        <CourierOrdersFilterTabs
+          activeTab={selectedStatus}
+          onTabChange={setSelectedStatus}
           tabs={[
-            { key: 'all', label: 'All Orders', count: orders.length },
-            { key: 'new', label: 'New', count: orders.filter(o => o.status === 'New').length },
-            { key: 'pending_pickup', label: 'Pending Pickup', count: orders.filter(o => o.status === 'Pending Pickup').length },
-            { key: 'assigned', label: 'Assigned', count: orders.filter(o => o.status === 'Assigned').length },
-            { key: 'in_progress', label: 'In Progress', count: orders.filter(o => o.status === 'In Progress').length },
-            { key: 'successful', label: 'Successful', count: orders.filter(o => o.status === 'Successful').length },
-            { key: 'unsuccessful', label: 'Unsuccessful', count: orders.filter(o => o.status === 'Unsuccessful').length },
-            { key: 'returned', label: 'Returned', count: orders.filter(o => o.status === 'Returned').length },
-            { key: 'awaiting_payment', label: 'Awaiting Payment', count: orders.filter(o => o.status === 'Awaiting Payment').length },
-            { key: 'paid', label: 'Paid', count: orders.filter(o => o.status === 'paid').length }
+            { key: 'all', label: 'All Orders', count: statusCounts.all },
+            { key: 'new', label: 'New', count: statusCounts.new },
+            { key: 'pending_pickup', label: 'Pending Pickup', count: statusCounts.pending_pickup },
+            { key: 'assigned', label: 'Assigned', count: statusCounts.assigned },
+            { key: 'in_progress', label: 'In Progress', count: statusCounts.in_progress },
+            { key: 'successful', label: 'Successful', count: statusCounts.successful },
+            { key: 'unsuccessful', label: 'Unsuccessful', count: statusCounts.unsuccessful },
+            { key: 'returned', label: 'Returned', count: statusCounts.returned },
+            { key: 'awaiting_payment', label: 'Awaiting Payment', count: statusCounts.awaiting_payment },
+            { key: 'paid', label: 'Paid', count: statusCounts.paid }
           ]}
         />
-
-        {/* Bulk Actions Bar */}
-        <CourierBulkActionsBar
-          selectedCount={selectedOrders.length}
-          onClearSelection={handleClearSelection}
-          onBulkMarkPickedUp={handleBulkMarkPickedUp}
-          onBulkMarkDelivered={handleBulkMarkDelivered}
-          onBulkMarkUnsuccessful={handleBulkMarkUnsuccessful}
-        />
-
-        {/* Orders Table */}
-        <div className="flex-1 overflow-hidden bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/60 dark:border-gray-700/40 shadow-sm">
-          {isMobile ? (
-            <CourierOrdersTableMobile
-              orders={filteredOrders}
-              onViewOrder={handleViewOrder}
+        
+        <div className="flex-1 overflow-hidden">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4 animate-pulse" />
+                <p className="text-gray-500">Loading orders...</p>
+              </div>
+            </div>
+          ) : filteredOrders.length === 0 ? (
+            <EmptyState
+              icon={Package}
+              title="No orders found"
+              description={searchQuery ? "Try adjusting your search terms." : "No orders match the selected filters."}
             />
           ) : (
-            <CourierOrdersTable
-              orders={filteredOrders}
-              onViewOrder={handleViewOrder}
-              selectedOrders={selectedOrders}
-              onOrderSelect={handleOrderSelect}
-              onSelectAll={handleSelectAll}
-              isAllSelected={isAllSelected}
-            />
+            <div className="h-full overflow-auto">
+              {isMobile ? (
+                <div className="p-4">
+                  <CourierOrdersTableMobile
+                    orders={filteredOrders}
+                    onViewOrder={handleViewOrder}
+                    onMarkPickedUp={handleMarkPickedUp}
+                    onMarkDelivered={handleMarkDelivered}
+                    onMarkUnsuccessful={handleMarkUnsuccessful}
+                  />
+                </div>
+              ) : (
+                <div className="p-4">
+                  <CourierOrdersTable
+                    orders={filteredOrders}
+                    onViewOrder={handleViewOrder}
+                    onMarkPickedUp={handleMarkPickedUp}
+                    onMarkDelivered={handleMarkDelivered}
+                    onMarkUnsuccessful={handleMarkUnsuccessful}
+                  />
+                </div>
+              )}
+            </div>
           )}
         </div>
-      </div>
+      </Card>
 
-      {/* Dialogs */}
-      {selectedOrder && showDetailsDialog && (
+      {selectedOrder && (
         <CourierOrderDetailsDialog
           order={selectedOrder}
-          open={showDetailsDialog}
-          onOpenChange={setShowDetailsDialog}
-        />
-      )}
-
-      {selectedOrder && showDeliveredModal && (
-        <MarkAsDeliveredModal
-          open={showDeliveredModal}
-          onOpenChange={setShowDeliveredModal}
-          originalAmount={{
-            usd: selectedOrder.cash_collection_usd || 0,
-            lbp: selectedOrder.cash_collection_lbp || 0
-          }}
-          onConfirm={(data) => {
-            updateOrderStatus.mutate({
-              orderId: selectedOrder.id,
-              status: 'Successful',
-              collected_amount_usd: data.collectedAmountUSD,
-              collected_amount_lbp: data.collectedAmountLBP,
-              collected_currency: data.collectedAmountUSD > 0 ? 'USD' : 'LBP',
-              note: data.note
-            });
-            setShowDeliveredModal(false);
-          }}
-        />
-      )}
-
-      {selectedOrder && showUnsuccessfulModal && (
-        <MarkAsUnsuccessfulModal
-          open={showUnsuccessfulModal}
-          onOpenChange={setShowUnsuccessfulModal}
-          onConfirm={(data) => {
-            updateOrderStatus.mutate({
-              orderId: selectedOrder.id,
-              status: 'Unsuccessful',
-              unsuccessful_reason: data.reason,
-              note: data.note
-            });
-            setShowUnsuccessfulModal(false);
-          }}
+          open={!!selectedOrder}
+          onOpenChange={(open) => !open && setSelectedOrder(null)}
+        onMarkPickedUp={async (orderId: string) => {
+          const order = orders?.find(o => o.id === orderId);
+          if (order) {
+            await handleMarkPickedUp(order);
+          }
+        }}
+        onMarkDelivered={async (orderId: string, data: any) => {
+          const order = orders?.find(o => o.id === orderId);
+          if (order) {
+            await handleMarkDelivered(order, data);
+          }
+        }}
+        onMarkUnsuccessful={async (orderId: string, data: any) => {
+          const order = orders?.find(o => o.id === orderId);
+          if (order) {
+            await handleMarkUnsuccessful(order, data);
+          }
+        }}
         />
       )}
     </div>

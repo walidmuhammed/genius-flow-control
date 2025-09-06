@@ -1,9 +1,17 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Eye } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Eye, CheckCircle, Truck, XCircle, MoreHorizontal } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { OrderWithCustomer } from '@/services/orders';
+import { formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import OrderNoteTooltip from '../orders/OrderNoteTooltip';
@@ -11,11 +19,17 @@ import OrderNoteTooltip from '../orders/OrderNoteTooltip';
 interface CourierOrdersTableMobileProps {
   orders: OrderWithCustomer[];
   onViewOrder: (order: OrderWithCustomer) => void;
+  onMarkPickedUp: (order: OrderWithCustomer) => void;
+  onMarkDelivered: (order: OrderWithCustomer) => void;
+  onMarkUnsuccessful: (order: OrderWithCustomer) => void;
 }
 
 export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> = ({
   orders,
-  onViewOrder
+  onViewOrder,
+  onMarkPickedUp,
+  onMarkDelivered,
+  onMarkUnsuccessful
 }) => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -59,47 +73,67 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
     }
   };
 
+  const canMarkPickedUp = (order: OrderWithCustomer) => 
+    ['New', 'Assigned'].includes(order.status);
+  
+  const canMarkDelivered = (order: OrderWithCustomer) => 
+    order.status === 'In Progress';
+  
+  const canMarkUnsuccessful = (order: OrderWithCustomer) => 
+    order.status === 'In Progress';
+
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-3 max-w-full">
       {orders.map((order, index) => (
         <motion.div
           key={order.id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: index * 0.07, ease: [0.4, 0.0, 0.2, 1] }}
+          transition={{ duration: 0.35, delay: index * 0.07 }}
+          className="w-full"
         >
-          <Card className="border-gray-200/60 dark:border-gray-700/40 shadow-sm hover:shadow-md transition-all duration-200">
+          <Card className="border border-gray-200/60 dark:border-gray-700/40 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 w-full">
             <CardContent className="p-4">
-              {/* Header Row */}
+              {/* Header - Order ID, Reference, Status */}
               <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-[#DB271E]">
-                    #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
-                  </span>
-                  {order.note && order.note.trim() !== "" && (
-                    <OrderNoteTooltip note={order.note} />
-                  )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-[#DB271E] text-lg">
+                      #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+                    </span>
+                    {order.note && order.note.trim() !== "" && (
+                      <OrderNoteTooltip note={order.note} />
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                    Ref: {order.reference_number || '-'}
+                  </div>
                 </div>
-                <Badge className={cn("px-2 py-1 text-xs font-medium rounded-md border whitespace-nowrap", getStatusColor(order.status))}>
+                <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border whitespace-nowrap ml-2", getStatusColor(order.status))}>
                   {order.status}
                 </Badge>
               </div>
 
               {/* Customer Info */}
-              <div className="space-y-2 mb-3">
+              <div className="mb-3">
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Customer</div>
+                <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{order.customer?.name}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer?.phone}</div>
+              </div>
+
+              {/* Location & Package Type Row */}
+              <div className="grid grid-cols-2 gap-4 mb-3">
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
-                    {order.customer?.name}
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Location</div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate" title={order.customer?.governorate_name}>
+                    {order.customer?.governorate_name}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {order.customer?.phone}
+                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate" title={order.customer?.city_name}>
+                    {order.customer?.city_name}
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {order.customer?.governorate_name}, {order.customer?.city_name}
-                  </span>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Type</div>
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-medium rounded-md border ${getTypeColor(order.package_type || 'parcel')}`}
                   >
@@ -110,45 +144,42 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
 
               {/* COD Amount */}
               <div className="mb-3">
-                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">COD Amount:</div>
-                <div>
-                  {order.cash_collection_usd > 0 && (
-                    <div className="font-semibold text-gray-900 dark:text-gray-100">${order.cash_collection_usd}</div>
-                  )}
-                  {order.cash_collection_lbp > 0 && (
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
-                  )}
-                  {order.cash_collection_usd === 0 && order.cash_collection_lbp === 0 && (
-                    <span className="text-gray-400 text-sm">No COD</span>
-                  )}
-                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">COD Amount</div>
+                {order.cash_collection_usd > 0 || order.cash_collection_lbp > 0 ? (
+                  <div>
+                    {order.cash_collection_usd > 0 && (
+                      <div className="font-semibold text-gray-900 dark:text-gray-100">${order.cash_collection_usd}</div>
+                    )}
+                    {order.cash_collection_lbp > 0 && (
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-gray-400 text-sm">No COD</span>
+                )}
               </div>
 
-              {/* Shop Info */}
-              <div className="mb-3">
-                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Shop:</div>
+              {/* Shop Info & Date Row */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
-                    {order.profiles?.business_name || order.profiles?.full_name || 'N/A'}
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Shop Info</div>
+                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate" title={order.profiles?.business_name || order.profiles?.full_name}>
+                    {order.profiles?.business_name || order.profiles?.full_name || 'Business Name'}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {order.profiles?.phone || 'No phone'}
+                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                    {order.profiles?.phone || 'Not provided'}
                   </div>
                 </div>
-              </div>
-
-              {/* Reference */}
-              {order.reference_number && (
-                <div className="mb-3">
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Reference:</div>
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Assigned</div>
                   <div className="text-sm text-gray-900 dark:text-gray-100">
-                    {order.reference_number}
+                    {formatDate(new Date(order.created_at))}
                   </div>
                 </div>
-              )}
+              </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-between pt-3">
+              <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -158,6 +189,43 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
                   <Eye className="h-4 w-4 mr-2" />
                   View Details
                 </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="px-3">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => onViewOrder(order)}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Details
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuSeparator />
+                    
+                    {canMarkPickedUp(order) && (
+                      <DropdownMenuItem onClick={() => onMarkPickedUp(order)}>
+                        <Truck className="mr-2 h-4 w-4" />
+                        Mark as Picked Up
+                      </DropdownMenuItem>
+                    )}
+                    
+                    {canMarkDelivered(order) && (
+                      <DropdownMenuItem onClick={() => onMarkDelivered(order)}>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Mark as Delivered
+                      </DropdownMenuItem>
+                    )}
+                    
+                    {canMarkUnsuccessful(order) && (
+                      <DropdownMenuItem onClick={() => onMarkUnsuccessful(order)}>
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Mark as Unsuccessful
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </CardContent>
           </Card>

@@ -2,8 +2,14 @@ import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Eye } from 'lucide-react';
+import { Eye, CheckCircle, Truck, XCircle, MoreHorizontal } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { OrderWithCustomer } from '@/services/orders';
 import { formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
@@ -13,19 +19,17 @@ import OrderNoteTooltip from '../orders/OrderNoteTooltip';
 interface CourierOrdersTableProps {
   orders: OrderWithCustomer[];
   onViewOrder: (order: OrderWithCustomer) => void;
-  selectedOrders: string[];
-  onOrderSelect: (orderId: string) => void;
-  onSelectAll: () => void;
-  isAllSelected: boolean;
+  onMarkPickedUp: (order: OrderWithCustomer) => void;
+  onMarkDelivered: (order: OrderWithCustomer) => void;
+  onMarkUnsuccessful: (order: OrderWithCustomer) => void;
 }
 
 export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
   orders,
   onViewOrder,
-  selectedOrders,
-  onOrderSelect,
-  onSelectAll,
-  isAllSelected
+  onMarkPickedUp,
+  onMarkDelivered,
+  onMarkUnsuccessful
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -71,6 +75,14 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
     }
   };
 
+  const canMarkPickedUp = (order: OrderWithCustomer) => 
+    ['New', 'Assigned'].includes(order.status);
+  
+  const canMarkDelivered = (order: OrderWithCustomer) => 
+    order.status === 'In Progress';
+  
+  const canMarkUnsuccessful = (order: OrderWithCustomer) => 
+    order.status === 'In Progress';
 
   return (
     <div className="w-full">
@@ -78,13 +90,6 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
         <Table className="w-full">
           <TableHeader>
             <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-              <TableHead className="w-12">
-                <Checkbox
-                  checked={isAllSelected}
-                  onCheckedChange={onSelectAll}
-                  className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
-                />
-              </TableHead>
               <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[140px]">ORDER & REF</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[180px]">CUSTOMER</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[140px] hidden lg:table-cell">LOCATION</TableHead>
@@ -93,6 +98,7 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
               <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[110px]">STATUS</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[120px] hidden xl:table-cell">ASSIGNED</TableHead>
               <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[140px] hidden xl:table-cell">SHOP INFO</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[100px]">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>
         <TableBody>
@@ -107,15 +113,6 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              {/* Checkbox */}
-              <TableCell onClick={e => e.stopPropagation()}>
-                <Checkbox
-                  checked={selectedOrders.includes(order.id)}
-                  onCheckedChange={() => onOrderSelect(order.id)}
-                  className="data-[state=checked]:bg-[#DB271E] data-[state=checked]:border-[#DB271E]"
-                />
-              </TableCell>
-
               {/* Order ID & Reference */}
               <TableCell>
                 <div>
@@ -197,12 +194,63 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
               {/* Shop Info - Hidden on laptop and smaller */}
               <TableCell className="hidden xl:table-cell">
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[120px]" title={order.profiles?.business_name || order.profiles?.full_name || 'N/A'}>
-                    {order.profiles?.business_name || order.profiles?.full_name || 'N/A'}
+                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[120px]" title={order.profiles?.business_name || order.profiles?.full_name}>
+                    {order.profiles?.business_name || order.profiles?.full_name || 'Business Name'}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                    {order.profiles?.phone || 'No phone'}
+                    {order.profiles?.phone || 'Not provided'}
                   </div>
+                </div>
+              </TableCell>
+
+              {/* Actions */}
+              <TableCell className="text-right" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onViewOrder(order)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => onViewOrder(order)}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Details
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuSeparator />
+                      
+                      {canMarkPickedUp(order) && (
+                        <DropdownMenuItem onClick={() => onMarkPickedUp(order)}>
+                          <Truck className="mr-2 h-4 w-4" />
+                          Mark as Picked Up
+                        </DropdownMenuItem>
+                      )}
+                      
+                      {canMarkDelivered(order) && (
+                        <DropdownMenuItem onClick={() => onMarkDelivered(order)}>
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Mark as Delivered
+                        </DropdownMenuItem>
+                      )}
+                      
+                      {canMarkUnsuccessful(order) && (
+                        <DropdownMenuItem onClick={() => onMarkUnsuccessful(order)}>
+                          <XCircle className="mr-2 h-4 w-4" />
+                          Mark as Unsuccessful
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </TableCell>
             </motion.tr>
