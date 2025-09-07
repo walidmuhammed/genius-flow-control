@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, Menu, Plus, Package, Calendar, Ticket } from 'lucide-react';
+import { Bell, Menu, Plus, Package, Calendar, Ticket, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useScreenSize } from '@/hooks/useScreenSize';
 import useLayoutStore from '@/stores/layoutStore';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
-import GlobalSearch from '@/components/ui/global-search';
 
 const CourierTopBar: React.FC = () => {
   const { isMobile, isTablet } = useScreenSize();
@@ -68,10 +68,11 @@ const CourierTopBar: React.FC = () => {
           </Button>
           
           {/* Center - Search Bar for Mobile */}
-          <div className="flex-1 mx-4">
-            <GlobalSearch 
-              className="w-full"
+          <div className="flex-1 mx-4 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input 
               placeholder="Search..."
+              className="w-full pl-10 bg-gray-100 dark:bg-gray-800 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus-visible:border-gray-300 dark:focus-visible:border-gray-600 focus-visible:ring-0 rounded-lg h-10 transition-all"
             />
           </div>
           
@@ -186,11 +187,14 @@ const CourierTopBar: React.FC = () => {
           </Button>
         )}
         
-        {/* Enhanced Global Search Bar - Fixed Height */}
-        <GlobalSearch 
-          className="flex-1"
-          placeholder="Search orders, assignments..."
-        />
+        {/* Search Bar - Fixed Height */}
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input 
+            placeholder="Search orders, assignments..."
+            className="w-full pl-10 bg-gray-100 dark:bg-gray-800 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus-visible:border-gray-300 dark:focus-visible:border-gray-600 focus-visible:ring-0 rounded-lg h-10 transition-all"
+          />
+        </div>
       </div>
       
       <div className="flex items-center gap-3 shrink-0 ml-4">
