@@ -52,69 +52,71 @@ const CourierTopBar: React.FC = () => {
     return (
       <>
         <motion.header 
-          className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 h-16 flex items-center justify-between px-4 sticky top-0 z-40"
+          className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 h-16 sticky top-0 z-40"
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Left - Menu Button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleSidebar}
-            className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0 w-10 h-10"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-          
-          {/* Center - Search Bar for Mobile */}
-          <div className="flex-1 mx-4 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input 
-              placeholder="Search..."
-              className="w-full pl-10 bg-gray-100 dark:bg-gray-800 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus-visible:border-gray-300 dark:focus-visible:border-gray-600 focus-visible:ring-0 rounded-lg h-10 transition-all"
-            />
-          </div>
-          
-          {/* Right - Notifications + Create Button */}
-          <div className="flex items-center gap-2 shrink-0">
-            <div ref={notificationRef} className="relative">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 w-10 h-10"
-                onClick={() => setShowNotifications(!showNotifications)}
-              >
-                <Bell className="h-5 w-5" />
-              </Button>
-              
-              <AnimatePresence>
-                {showNotifications && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 z-50"
-                  >
-                    <div className="text-center">
-                      <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        No notifications yet. This feature will be enabled soon.
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+          <div className="h-full flex items-center justify-between px-4 gap-3">
+            {/* Left - Menu Button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleSidebar}
+              className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0 w-10 h-10"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            
+            {/* Center - Search Bar */}
+            <div className="flex-1 min-w-0 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input 
+                placeholder="Search..."
+                className="w-full pl-10 pr-4 bg-gray-100 dark:bg-gray-800 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus-visible:border-gray-300 dark:focus-visible:border-gray-600 focus-visible:ring-0 rounded-lg h-10 transition-all"
+              />
             </div>
             
-            <Button 
-              size="icon"
-              className="bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-xl w-10 h-10 shadow-lg"
-              onClick={() => setMobileCreateOpen(true)}
-            >
-              <Plus className="h-5 w-5" />
-            </Button>
+            {/* Right - Notifications + Create Button */}
+            <div className="flex items-center gap-2 shrink-0">
+              <div ref={notificationRef} className="relative">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 w-10 h-10"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                >
+                  <Bell className="h-5 w-5" />
+                </Button>
+                
+                <AnimatePresence>
+                  {showNotifications && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 z-[60]"
+                    >
+                      <div className="text-center">
+                        <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          No notifications yet. This feature will be enabled soon.
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              
+              <Button 
+                size="icon"
+                className="bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-xl w-10 h-10 shadow-lg"
+                onClick={() => setMobileCreateOpen(true)}
+              >
+                <Plus className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </motion.header>
 
@@ -126,7 +128,7 @@ const CourierTopBar: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 z-50"
+                className="fixed inset-0 bg-black/50 z-[55]"
                 onClick={() => setMobileCreateOpen(false)}
               />
               <motion.div
@@ -134,7 +136,7 @@ const CourierTopBar: React.FC = () => {
                 animate={{ y: 0 }}
                 exit={{ y: '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-3xl p-6 z-50 safe-area-pb"
+                className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-3xl p-6 z-[60] safe-area-pb"
               >
                 <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-6" />
                 <h3 className="text-xl font-bold mb-6 text-center">Create New</h3>
@@ -169,110 +171,113 @@ const CourierTopBar: React.FC = () => {
 
   return (
     <motion.header 
-      className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 h-16 flex items-center justify-between px-6 sticky top-0 z-40"
+      className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 h-16 sticky top-0 z-40"
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex items-center gap-6 flex-1">
-        {/*  Menu Button for Tablet */}
-        {isTablet && (
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleSidebar}
-            className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0 w-10 h-10"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-        )}
-        
-        {/* Search Bar - Fixed Height */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input 
-            placeholder="Search orders, assignments..."
-            className="w-full pl-10 bg-gray-100 dark:bg-gray-800 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus-visible:border-gray-300 dark:focus-visible:border-gray-600 focus-visible:ring-0 rounded-lg h-10 transition-all"
-          />
-        </div>
-      </div>
-      
-      <div className="flex items-center gap-3 shrink-0 ml-4">
-        {/* Notification Bell */}
-        <div ref={notificationRef} className="relative">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 w-10 h-10"
-            onClick={() => setShowNotifications(!showNotifications)}
-          >
-            <Bell className="h-5 w-5" />
-          </Button>
+      <div className="h-full flex items-center justify-between px-4 sm:px-6 gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+          {/* Menu Button for Tablet */}
+          {isTablet && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleSidebar}
+              className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0 w-10 h-10"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
           
-          <AnimatePresence>
-            {showNotifications && (
-              <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 z-50"
-              >
-                <div className="text-center">
-                  <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    No notifications yet. This feature will be enabled soon.
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Search Bar */}
+          <div className="flex-1 min-w-0 relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input 
+              placeholder="Search orders, assignments..."
+              className="w-full pl-10 pr-4 bg-gray-100 dark:bg-gray-800 border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus-visible:border-gray-300 dark:focus-visible:border-gray-600 focus-visible:ring-0 rounded-lg h-10 transition-all"
+            />
+          </div>
         </div>
         
-        {/* Create Button - Fixed Height */}
-        <div ref={createRef} className="relative">
-          <Button
-            className="bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-xl px-6 h-10 font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
-            onMouseEnter={() => setShowCreateMenu(true)}
-            onMouseLeave={() => setShowCreateMenu(false)}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create
-          </Button>
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Notification Bell */}
+          <div ref={notificationRef} className="relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 w-10 h-10"
+              onClick={() => setShowNotifications(!showNotifications)}
+            >
+              <Bell className="h-5 w-5" />
+            </Button>
+            
+            <AnimatePresence>
+              {showNotifications && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 z-[60]"
+                >
+                  <div className="text-center">
+                    <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      No notifications yet. This feature will be enabled soon.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           
-          <AnimatePresence>
-            {showCreateMenu && (
-              <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50"
-                onMouseEnter={() => setShowCreateMenu(true)}
-                onMouseLeave={() => setShowCreateMenu(false)}
-              >
-                {createActions.map((action) => (
-                  <button
-                    key={action.label}
-                    onClick={() => handleCreateAction(action.action)}
-                    className="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 text-left transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
-                      {action.icon}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-900 dark:text-gray-100">
-                        {action.label}
+          {/* Create Button */}
+          <div ref={createRef} className="relative">
+            <Button
+              className="bg-[#DC291E] hover:bg-[#DC291E]/90 text-white rounded-xl px-4 sm:px-6 h-10 font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+              onMouseEnter={() => setShowCreateMenu(true)}
+              onMouseLeave={() => setShowCreateMenu(false)}
+            >
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Create</span>
+            </Button>
+            
+            <AnimatePresence>
+              {showCreateMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-[60]"
+                  onMouseEnter={() => setShowCreateMenu(true)}
+                  onMouseLeave={() => setShowCreateMenu(false)}
+                >
+                  {createActions.map((action) => (
+                    <button
+                      key={action.label}
+                      onClick={() => handleCreateAction(action.action)}
+                      className="w-full flex items-center gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 text-left transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+                        {action.icon}
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {action.description}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-gray-900 dark:text-gray-100">
+                          {action.label}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {action.description}
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </motion.header>
