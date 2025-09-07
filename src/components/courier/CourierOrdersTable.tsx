@@ -6,18 +6,15 @@ import { formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import OrderNoteTooltip from '../orders/OrderNoteTooltip';
-
 interface CourierOrdersTableProps {
   orders: OrderWithCustomer[];
   onViewOrder: (order: OrderWithCustomer) => void;
 }
-
 export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
   orders,
   onViewOrder
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'new':
@@ -44,7 +41,6 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
-
   const getTypeColor = (type: string) => {
     switch (type.toLowerCase()) {
       case 'shipment':
@@ -59,9 +55,7 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
         return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
-
-  return (
-    <div className="w-full min-w-0">
+  return <div className="w-full min-w-0">
       <Table className="w-full">
         <TableHeader>
           <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
@@ -69,32 +63,30 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[140px] w-[20%]">CUSTOMER</TableHead>
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px] w-[15%] hidden lg:table-cell">LOCATION</TableHead>
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[80px] w-[10%] hidden lg:table-cell">TYPE</TableHead>
-            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px] w-[12%]">COD AMOUNT</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px] w-[12%]">AMOUNT</TableHead>
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[90px] w-[10%]">STATUS</TableHead>
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px] w-[10%] hidden xl:table-cell">ASSIGNED</TableHead>
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px] w-[12%] hidden xl:table-cell">SHOP INFO</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order, index) => (
-            <motion.tr
-              key={order.id}
-              className="border-b border-gray-100/50 dark:border-gray-700/30 transition-all duration-200 cursor-pointer hover:bg-gray-50/30 dark:hover:bg-gray-800/30"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: index * 0.07, ease: [0.4, 0.0, 0.2, 1] }}
-              onClick={() => onViewOrder(order)}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
-            >
+          {orders.map((order, index) => <motion.tr key={order.id} className="border-b border-gray-100/50 dark:border-gray-700/30 transition-all duration-200 cursor-pointer hover:bg-gray-50/30 dark:hover:bg-gray-800/30" initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.35,
+          delay: index * 0.07,
+          ease: [0.4, 0.0, 0.2, 1]
+        }} onClick={() => onViewOrder(order)} onMouseEnter={() => setHoveredIndex(index)} onMouseLeave={() => setHoveredIndex(null)}>
               {/* Order ID & Reference */}
               <TableCell className="min-w-0">
                 <div className="min-w-0">
                   <div className="font-semibold text-[#DB271E] flex items-center gap-1 min-w-0">
                     <span className="truncate">#{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}</span>
-                    {order.note && order.note.trim() !== "" && (
-                      <OrderNoteTooltip note={order.note} />
-                    )}
+                    {order.note && order.note.trim() !== "" && <OrderNoteTooltip note={order.note} />}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {order.reference_number || '-'}
@@ -129,9 +121,7 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
 
               {/* Order Type - Hidden on tablet and smaller */}
               <TableCell className="hidden lg:table-cell">
-                <span
-                  className={`inline-flex px-2 py-1 text-xs font-medium rounded-md border ${getTypeColor(order.package_type || 'parcel')}`}
-                >
+                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md border ${getTypeColor(order.package_type || 'parcel')}`}>
                   {order.package_type || 'Parcel'}
                 </span>
               </TableCell>
@@ -139,15 +129,9 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
               {/* COD Amount */}
               <TableCell>
                 <div>
-                  {order.cash_collection_usd > 0 && (
-                    <div className="font-semibold text-gray-900 dark:text-gray-100">${order.cash_collection_usd}</div>
-                  )}
-                  {order.cash_collection_lbp > 0 && (
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
-                  )}
-                  {order.cash_collection_usd === 0 && order.cash_collection_lbp === 0 && (
-                    <span className="text-gray-400 text-sm">No COD</span>
-                  )}
+                  {order.cash_collection_usd > 0 && <div className="font-semibold text-gray-900 dark:text-gray-100">${order.cash_collection_usd}</div>}
+                  {order.cash_collection_lbp > 0 && <div className="text-sm text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>}
+                  {order.cash_collection_usd === 0 && order.cash_collection_lbp === 0 && <span className="text-gray-400 text-sm">No COD</span>}
                 </div>
               </TableCell>
 
@@ -177,10 +161,8 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
                 </div>
               </TableCell>
 
-            </motion.tr>
-          ))}
+            </motion.tr>)}
         </TableBody>
       </Table>
-    </div>
-  );
+    </div>;
 };
