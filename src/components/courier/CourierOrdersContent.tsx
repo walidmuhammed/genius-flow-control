@@ -295,9 +295,6 @@ const CourierOrdersContent = () => {
                     <CourierOrdersTableMobile
                       orders={filteredOrders}
                       onViewOrder={handleViewOrder}
-                      onMarkPickedUp={handleMarkPickedUp}
-                      onMarkDelivered={handleMarkDelivered}
-                      onMarkUnsuccessful={handleMarkUnsuccessful}
                     />
                   </div>
                 ) : (
@@ -305,9 +302,6 @@ const CourierOrdersContent = () => {
                     <CourierOrdersTable
                       orders={filteredOrders}
                       onViewOrder={handleViewOrder}
-                      onMarkPickedUp={handleMarkPickedUp}
-                      onMarkDelivered={handleMarkDelivered}
-                      onMarkUnsuccessful={handleMarkUnsuccessful}
                     />
                   </div>
                 )

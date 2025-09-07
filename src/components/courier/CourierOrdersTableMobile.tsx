@@ -1,15 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Eye, CheckCircle, Truck, XCircle, MoreHorizontal } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
 import { OrderWithCustomer } from '@/services/orders';
 import { formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
@@ -19,17 +10,11 @@ import OrderNoteTooltip from '../orders/OrderNoteTooltip';
 interface CourierOrdersTableMobileProps {
   orders: OrderWithCustomer[];
   onViewOrder: (order: OrderWithCustomer) => void;
-  onMarkPickedUp: (order: OrderWithCustomer) => void;
-  onMarkDelivered: (order: OrderWithCustomer) => void;
-  onMarkUnsuccessful: (order: OrderWithCustomer) => void;
 }
 
 export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> = ({
   orders,
-  onViewOrder,
-  onMarkPickedUp,
-  onMarkDelivered,
-  onMarkUnsuccessful
+  onViewOrder
 }) => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -73,15 +58,6 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
     }
   };
 
-  const canMarkPickedUp = (order: OrderWithCustomer) => 
-    ['New', 'Assigned'].includes(order.status);
-  
-  const canMarkDelivered = (order: OrderWithCustomer) => 
-    order.status === 'In Progress';
-  
-  const canMarkUnsuccessful = (order: OrderWithCustomer) => 
-    order.status === 'In Progress';
-
   return (
     <div className="space-y-4 w-full">
       {orders.map((order, index) => (
@@ -92,7 +68,10 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
           transition={{ duration: 0.35, delay: index * 0.07 }}
           className="w-full"
         >
-          <Card className="border border-gray-200/60 dark:border-gray-700/40 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 w-full">
+          <Card 
+            className="border border-gray-200/60 dark:border-gray-700/40 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 w-full cursor-pointer"
+            onClick={() => onViewOrder(order)}
+          >
             <CardContent className="p-5">
               {/* Header - Order ID, Reference, Status */}
               <div className="flex items-start justify-between mb-4">
@@ -178,55 +157,6 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
                 </div>
               </div>
 
-              {/* Actions */}
-              <div className="flex items-center gap-3 pt-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onViewOrder(order)}
-                  className="flex-1 h-10"
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Details
-                </Button>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="px-3 h-10">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => onViewOrder(order)}>
-                      <Eye className="mr-2 h-4 w-4" />
-                      View Details
-                    </DropdownMenuItem>
-                    
-                    <DropdownMenuSeparator />
-                    
-                    {canMarkPickedUp(order) && (
-                      <DropdownMenuItem onClick={() => onMarkPickedUp(order)}>
-                        <Truck className="mr-2 h-4 w-4" />
-                        Mark as Picked Up
-                      </DropdownMenuItem>
-                    )}
-                    
-                    {canMarkDelivered(order) && (
-                      <DropdownMenuItem onClick={() => onMarkDelivered(order)}>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Mark as Delivered
-                      </DropdownMenuItem>
-                    )}
-                    
-                    {canMarkUnsuccessful(order) && (
-                      <DropdownMenuItem onClick={() => onMarkUnsuccessful(order)}>
-                        <XCircle className="mr-2 h-4 w-4" />
-                        Mark as Unsuccessful
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
             </CardContent>
           </Card>
         </motion.div>

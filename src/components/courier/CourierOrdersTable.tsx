@@ -1,15 +1,6 @@
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Eye, CheckCircle, Truck, XCircle, MoreHorizontal } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
 import { OrderWithCustomer } from '@/services/orders';
 import { formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
@@ -19,17 +10,11 @@ import OrderNoteTooltip from '../orders/OrderNoteTooltip';
 interface CourierOrdersTableProps {
   orders: OrderWithCustomer[];
   onViewOrder: (order: OrderWithCustomer) => void;
-  onMarkPickedUp: (order: OrderWithCustomer) => void;
-  onMarkDelivered: (order: OrderWithCustomer) => void;
-  onMarkUnsuccessful: (order: OrderWithCustomer) => void;
 }
 
 export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
   orders,
-  onViewOrder,
-  onMarkPickedUp,
-  onMarkDelivered,
-  onMarkUnsuccessful
+  onViewOrder
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -75,15 +60,6 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
     }
   };
 
-  const canMarkPickedUp = (order: OrderWithCustomer) => 
-    ['New', 'Assigned'].includes(order.status);
-  
-  const canMarkDelivered = (order: OrderWithCustomer) => 
-    order.status === 'In Progress';
-  
-  const canMarkUnsuccessful = (order: OrderWithCustomer) => 
-    order.status === 'In Progress';
-
   return (
     <div className="w-full min-w-0">
       <Table className="w-full">
@@ -97,7 +73,6 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[90px] w-[10%]">STATUS</TableHead>
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px] w-[10%] hidden xl:table-cell">ASSIGNED</TableHead>
             <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px] w-[12%] hidden xl:table-cell">SHOP INFO</TableHead>
-            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[80px] w-[8%]">ACTIONS</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -202,56 +177,6 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
                 </div>
               </TableCell>
 
-              {/* Actions */}
-              <TableCell className="text-right" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center justify-end gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onViewOrder(order)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={() => onViewOrder(order)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
-                      </DropdownMenuItem>
-                      
-                      <DropdownMenuSeparator />
-                      
-                      {canMarkPickedUp(order) && (
-                        <DropdownMenuItem onClick={() => onMarkPickedUp(order)}>
-                          <Truck className="mr-2 h-4 w-4" />
-                          Mark as Picked Up
-                        </DropdownMenuItem>
-                      )}
-                      
-                      {canMarkDelivered(order) && (
-                        <DropdownMenuItem onClick={() => onMarkDelivered(order)}>
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                          Mark as Delivered
-                        </DropdownMenuItem>
-                      )}
-                      
-                      {canMarkUnsuccessful(order) && (
-                        <DropdownMenuItem onClick={() => onMarkUnsuccessful(order)}>
-                          <XCircle className="mr-2 h-4 w-4" />
-                          Mark as Unsuccessful
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </TableCell>
             </motion.tr>
           ))}
         </TableBody>
