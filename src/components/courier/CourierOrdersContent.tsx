@@ -135,108 +135,187 @@ const CourierOrdersContent = () => {
   }, [updateOrderStatus]);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">My Orders</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage orders assigned to you
-          </p>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="flex flex-col lg:flex-row gap-4 mb-6">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input 
-            placeholder="Search by Order ID, Reference, Customer Phone, Name..." 
-            value={searchQuery} 
-            onChange={(e) => setSearchQuery(e.target.value)} 
-            className="pl-10" 
-          />
+    <div className="min-h-screen w-full">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-none">
+        {/* Header */}
+        <div className="mb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">My Orders</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+              Manage orders assigned to you
+            </p>
+          </div>
         </div>
 
-        {/* Package Type Filter */}
-        <Select value={packageTypeFilter} onValueChange={setPackageTypeFilter}>
-          <SelectTrigger className="w-full lg:w-48">
-            <div className="flex items-center gap-2">
-              <Package className="h-4 w-4" />
-              <SelectValue placeholder="Package Type" />
-            </div>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="parcel">Parcel</SelectItem>
-            <SelectItem value="document">Document</SelectItem>
-            <SelectItem value="bulky">Bulky</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Search and Filters - Fully Responsive */}
+      <div className="space-y-4 mb-6">
+        {/* Mobile: Stack everything vertically */}
+        <div className="block md:hidden space-y-4">
+          {/* Search - Full width */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input 
+              placeholder="Search orders..." 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+              className="pl-10 h-11 text-base" 
+            />
+          </div>
+          
+          {/* Filters row - Two columns */}
+          <div className="grid grid-cols-1 gap-3">
+            <Select value={packageTypeFilter} onValueChange={setPackageTypeFilter}>
+              <SelectTrigger className="h-11">
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  <SelectValue placeholder="Package Type" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="parcel">Parcel</SelectItem>
+                <SelectItem value="document">Document</SelectItem>
+                <SelectItem value="bulky">Bulky</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <OrdersDateFilter onDateChange={setDateRange} />
+          </div>
+        </div>
 
-        {/* Date Range Filter */}
-        <div className="flex items-center gap-2">
+        {/* Tablet: Two rows */}
+        <div className="hidden md:block lg:hidden space-y-3">
+          {/* Search - Full width */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input 
+              placeholder="Search by Order ID, Reference, Customer Phone, Name..." 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+              className="pl-10" 
+            />
+          </div>
+          
+          {/* Filters row */}
+          <div className="flex gap-4">
+            <Select value={packageTypeFilter} onValueChange={setPackageTypeFilter}>
+              <SelectTrigger className="w-48">
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  <SelectValue placeholder="Package Type" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="parcel">Parcel</SelectItem>
+                <SelectItem value="document">Document</SelectItem>
+                <SelectItem value="bulky">Bulky</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <OrdersDateFilter onDateChange={setDateRange} />
+          </div>
+        </div>
+
+        {/* Desktop: Single row */}
+        <div className="hidden lg:flex gap-4">
+          {/* Search */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input 
+              placeholder="Search by Order ID, Reference, Customer Phone, Name..." 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+              className="pl-10" 
+            />
+          </div>
+
+          {/* Package Type Filter */}
+          <Select value={packageTypeFilter} onValueChange={setPackageTypeFilter}>
+            <SelectTrigger className="w-48">
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                <SelectValue placeholder="Package Type" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="parcel">Parcel</SelectItem>
+              <SelectItem value="document">Document</SelectItem>
+              <SelectItem value="bulky">Bulky</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Date Range Filter */}
           <OrdersDateFilter onDateChange={setDateRange} />
         </div>
       </div>
 
-      {/* Single Container: Filters and Table */}
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          {/* Filter Tabs */}
-          <CourierOrdersFilterTabs
-            activeTab={statusFilter}
-            onTabChange={setStatusFilter}
-            tabs={[
-              { key: 'all', label: 'All Orders', count: statusCounts.all },
-              { key: 'new', label: 'New', count: statusCounts.new },
-              { key: 'pending_pickup', label: 'Pending Pickup', count: statusCounts.pending_pickup },
-              { key: 'assigned', label: 'Assigned', count: statusCounts.assigned },
-              { key: 'in_progress', label: 'In Progress', count: statusCounts.in_progress },
-              { key: 'successful', label: 'Successful', count: statusCounts.successful },
-              { key: 'unsuccessful', label: 'Unsuccessful', count: statusCounts.unsuccessful },
-              { key: 'returned', label: 'Returned', count: statusCounts.returned },
-              { key: 'awaiting_payment', label: 'Awaiting Payment', count: statusCounts.awaiting_payment },
-              { key: 'paid', label: 'Paid', count: statusCounts.paid }
-            ]}
-          />
-
-          {/* Table */}
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4 animate-pulse" />
-                <p className="text-gray-500">Loading orders...</p>
-              </div>
-            </div>
-          ) : filteredOrders.length === 0 ? (
-            <EmptyState
-              icon={Package}
-              title="No orders found"
-              description={searchQuery ? "Try adjusting your search terms." : "No orders match the selected filters."}
+        {/* Single Container: Filters and Table */}
+        <Card className="border-0 sm:border sm:border-gray-200/60 dark:sm:border-gray-700/40 rounded-none sm:rounded-xl shadow-none sm:shadow-sm">
+          <CardContent className="p-0 sm:p-6 space-y-4">
+            {/* Filter Tabs */}
+            <CourierOrdersFilterTabs
+              activeTab={statusFilter}
+              onTabChange={setStatusFilter}
+              tabs={[
+                { key: 'all', label: 'All Orders', count: statusCounts.all },
+                { key: 'new', label: 'New', count: statusCounts.new },
+                { key: 'pending_pickup', label: 'Pending Pickup', count: statusCounts.pending_pickup },
+                { key: 'assigned', label: 'Assigned', count: statusCounts.assigned },
+                { key: 'in_progress', label: 'In Progress', count: statusCounts.in_progress },
+                { key: 'successful', label: 'Successful', count: statusCounts.successful },
+                { key: 'unsuccessful', label: 'Unsuccessful', count: statusCounts.unsuccessful },
+                { key: 'returned', label: 'Returned', count: statusCounts.returned },
+                { key: 'awaiting_payment', label: 'Awaiting Payment', count: statusCounts.awaiting_payment },
+                { key: 'paid', label: 'Paid', count: statusCounts.paid }
+              ]}
             />
-          ) : (
-            isMobile ? (
-              <CourierOrdersTableMobile
-                orders={filteredOrders}
-                onViewOrder={handleViewOrder}
-                onMarkPickedUp={handleMarkPickedUp}
-                onMarkDelivered={handleMarkDelivered}
-                onMarkUnsuccessful={handleMarkUnsuccessful}
-              />
-            ) : (
-              <CourierOrdersTable
-                orders={filteredOrders}
-                onViewOrder={handleViewOrder}
-                onMarkPickedUp={handleMarkPickedUp}
-                onMarkDelivered={handleMarkDelivered}
-                onMarkUnsuccessful={handleMarkUnsuccessful}
-              />
-            )
-          )}
-        </CardContent>
-      </Card>
+
+            {/* Table Content */}
+            <div className="w-full">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4 animate-pulse" />
+                    <p className="text-gray-500">Loading orders...</p>
+                  </div>
+                </div>
+              ) : filteredOrders.length === 0 ? (
+                <div className="px-4 sm:px-6">
+                  <EmptyState
+                    icon={Package}
+                    title="No orders found"
+                    description={searchQuery ? "Try adjusting your search terms." : "No orders match the selected filters."}
+                  />
+                </div>
+              ) : (
+                isMobile ? (
+                  <div className="px-4 sm:px-6">
+                    <CourierOrdersTableMobile
+                      orders={filteredOrders}
+                      onViewOrder={handleViewOrder}
+                      onMarkPickedUp={handleMarkPickedUp}
+                      onMarkDelivered={handleMarkDelivered}
+                      onMarkUnsuccessful={handleMarkUnsuccessful}
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full overflow-x-auto">
+                    <CourierOrdersTable
+                      orders={filteredOrders}
+                      onViewOrder={handleViewOrder}
+                      onMarkPickedUp={handleMarkPickedUp}
+                      onMarkDelivered={handleMarkDelivered}
+                      onMarkUnsuccessful={handleMarkUnsuccessful}
+                    />
+                  </div>
+                )
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {selectedOrder && (
         <CourierOrderDetailsDialog

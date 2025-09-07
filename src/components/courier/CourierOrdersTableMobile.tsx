@@ -83,7 +83,7 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
     order.status === 'In Progress';
 
   return (
-    <div className="space-y-3 max-w-full">
+    <div className="space-y-4 w-full">
       {orders.map((order, index) => (
         <motion.div
           key={order.id}
@@ -93,10 +93,10 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
           className="w-full"
         >
           <Card className="border border-gray-200/60 dark:border-gray-700/40 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 w-full">
-            <CardContent className="p-4">
+            <CardContent className="p-5">
               {/* Header - Order ID, Reference, Status */}
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1 min-w-0 pr-3">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold text-[#DB271E] text-lg">
                       #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
@@ -109,7 +109,7 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
                     Ref: {order.reference_number || '-'}
                   </div>
                 </div>
-                <Badge className={cn("px-3 py-1 text-xs font-medium rounded-full border whitespace-nowrap ml-2", getStatusColor(order.status))}>
+                <Badge className={cn("px-3 py-1.5 text-xs font-medium rounded-full border whitespace-nowrap flex-shrink-0", getStatusColor(order.status))}>
                   {order.status}
                 </Badge>
               </div>
@@ -179,12 +179,12 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 pt-1">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onViewOrder(order)}
-                  className="flex-1"
+                  className="flex-1 h-10"
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   View Details
@@ -192,7 +192,7 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="px-3">
+                    <Button variant="outline" size="sm" className="px-3 h-10">
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>

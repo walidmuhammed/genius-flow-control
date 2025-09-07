@@ -80,8 +80,8 @@ export const CourierOrdersFilterTabs: React.FC<CourierOrdersFilterTabsProps> = (
 
   // Desktop/Tablet view - single row with horizontal scroll
   return (
-    <div className="px-4 sm:px-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30 py-[16px]">
-      <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+    <div className="px-0 sm:px-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30 py-4">
+      <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide px-4 sm:px-0">
         <style>{`
           .scrollbar-hide {
             scrollbar-width: none;

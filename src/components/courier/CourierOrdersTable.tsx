@@ -85,22 +85,21 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
     order.status === 'In Progress';
 
   return (
-    <div className="w-full">
-      <div className="w-full overflow-x-auto">
-        <Table className="w-full">
-          <TableHeader>
-            <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[140px]">ORDER & REF</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[180px]">CUSTOMER</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[140px] hidden lg:table-cell">LOCATION</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[100px] hidden lg:table-cell">TYPE</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[130px]">COD AMOUNT</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[110px]">STATUS</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[120px] hidden xl:table-cell">ASSIGNED</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[140px] hidden xl:table-cell">SHOP INFO</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[100px]">ACTIONS</TableHead>
-            </TableRow>
-          </TableHeader>
+    <div className="w-full min-w-0">
+      <Table className="w-full">
+        <TableHeader>
+          <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px] w-[15%]">ORDER & REF</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[140px] w-[20%]">CUSTOMER</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px] w-[15%] hidden lg:table-cell">LOCATION</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[80px] w-[10%] hidden lg:table-cell">TYPE</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px] w-[12%]">COD AMOUNT</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[90px] w-[10%]">STATUS</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[100px] w-[10%] hidden xl:table-cell">ASSIGNED</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[120px] w-[12%] hidden xl:table-cell">SHOP INFO</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[80px] w-[8%]">ACTIONS</TableHead>
+          </TableRow>
+        </TableHeader>
         <TableBody>
           {orders.map((order, index) => (
             <motion.tr
@@ -114,10 +113,10 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
               onMouseLeave={() => setHoveredIndex(null)}
             >
               {/* Order ID & Reference */}
-              <TableCell>
-                <div>
-                  <div className="font-semibold text-[#DB271E] flex items-center gap-2">
-                    #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
+              <TableCell className="min-w-0">
+                <div className="min-w-0">
+                  <div className="font-semibold text-[#DB271E] flex items-center gap-1 min-w-0">
+                    <span className="truncate">#{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}</span>
                     {order.note && order.note.trim() !== "" && (
                       <OrderNoteTooltip note={order.note} />
                     )}
@@ -129,25 +128,25 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
               </TableCell>
 
               {/* Customer Name & Phone */}
-              <TableCell>
-                <div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[160px]" title={order.customer?.name}>
+              <TableCell className="min-w-0">
+                <div className="min-w-0">
+                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate" title={order.customer?.name}>
                     {order.customer?.name}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400 truncate">{order.customer?.phone}</div>
-                  <div className="text-xs text-gray-400 lg:hidden">
+                  <div className="text-xs text-gray-400 lg:hidden truncate">
                     {order.customer?.governorate_name}
                   </div>
                 </div>
               </TableCell>
 
               {/* Delivery Location - Hidden on tablet and smaller */}
-              <TableCell className="hidden lg:table-cell">
-                <div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[120px]" title={order.customer?.governorate_name}>
+              <TableCell className="hidden lg:table-cell min-w-0">
+                <div className="min-w-0">
+                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate" title={order.customer?.governorate_name}>
                     {order.customer?.governorate_name}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[120px]" title={order.customer?.city_name}>
+                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate" title={order.customer?.city_name}>
                     {order.customer?.city_name}
                   </div>
                 </div>
@@ -192,9 +191,9 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
               </TableCell>
 
               {/* Shop Info - Hidden on laptop and smaller */}
-              <TableCell className="hidden xl:table-cell">
-                <div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[120px]" title={order.profiles?.business_name || order.profiles?.full_name}>
+              <TableCell className="hidden xl:table-cell min-w-0">
+                <div className="min-w-0">
+                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate" title={order.profiles?.business_name || order.profiles?.full_name}>
                     {order.profiles?.business_name || order.profiles?.full_name || 'Business Name'}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
@@ -205,7 +204,7 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
 
               {/* Actions */}
               <TableCell className="text-right" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-end gap-1">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -258,6 +257,5 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
         </TableBody>
       </Table>
     </div>
-  </div>
   );
 };
