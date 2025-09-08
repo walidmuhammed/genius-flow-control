@@ -59,101 +59,74 @@ export const CourierOrdersTableMobile: React.FC<CourierOrdersTableMobileProps> =
   };
 
   return (
-    <div className="space-y-4 w-full">
+    <div className="space-y-2 w-full">
       {orders.map((order, index) => (
         <motion.div
           key={order.id}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: index * 0.07 }}
+          transition={{ duration: 0.2, delay: index * 0.03 }}
           className="w-full"
         >
           <Card 
-            className="border border-gray-200/60 dark:border-gray-700/40 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 w-full cursor-pointer"
+            className="border border-gray-200/60 dark:border-gray-700/40 rounded-lg bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow duration-200 w-full cursor-pointer"
             onClick={() => onViewOrder(order)}
           >
-            <CardContent className="p-5">
+            <CardContent className="p-3">
               {/* Header - Order ID, Reference, Status */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1 min-w-0 pr-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-[#DB271E] text-lg">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1 min-w-0 pr-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-semibold text-[#DB271E] text-sm">
                       #{order.order_id?.toString().padStart(3, '0') || order.id.slice(0, 8)}
                     </span>
                     {order.note && order.note.trim() !== "" && (
                       <OrderNoteTooltip note={order.note} />
                     )}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     Ref: {order.reference_number || '-'}
                   </div>
                 </div>
-                <Badge className={cn("px-3 py-1.5 text-xs font-medium rounded-full border whitespace-nowrap flex-shrink-0", getStatusColor(order.status))}>
+                <Badge className={cn("px-1.5 py-0.5 text-xs font-medium rounded-md border whitespace-nowrap flex-shrink-0", getStatusColor(order.status))}>
                   {order.status}
                 </Badge>
               </div>
 
-              {/* Customer Info */}
-              <div className="mb-3">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Customer</div>
-                <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{order.customer?.name}</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">{order.customer?.phone}</div>
-              </div>
-
-              {/* Location & Package Type Row */}
-              <div className="grid grid-cols-2 gap-4 mb-3">
-                <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Location</div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate" title={order.customer?.governorate_name}>
-                    {order.customer?.governorate_name}
-                  </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate" title={order.customer?.city_name}>
-                    {order.customer?.city_name}
+              {/* Customer & Location Row */}
+              <div className="flex justify-between mb-2">
+                <div className="flex-1 min-w-0 pr-2">
+                  <div className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{order.customer?.name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{order.customer?.phone}</div>
+                  <div className="text-xs text-gray-400 truncate">
+                    {order.customer?.governorate_name} • {order.customer?.city_name}
                   </div>
                 </div>
-                <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Type</div>
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-md border ${getTypeColor(order.package_type || 'parcel')}`}
-                  >
+                <div className="text-right">
+                  {order.cash_collection_usd > 0 && (
+                    <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">${order.cash_collection_usd}</div>
+                  )}
+                  {order.cash_collection_lbp > 0 && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
+                  )}
+                  {order.cash_collection_usd === 0 && order.cash_collection_lbp === 0 && (
+                    <span className="text-gray-400 text-xs">No COD</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Bottom Row - Type, Shop, Date */}
+              <div className="flex justify-between items-center pt-1 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-2">
+                  <Badge className={`px-1.5 py-0.5 text-xs font-medium rounded-md border ${getTypeColor(order.package_type || 'parcel')}`}>
                     {order.package_type || 'Parcel'}
-                  </span>
-                </div>
-              </div>
-
-              {/* COD Amount */}
-              <div className="mb-3">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">COD Amount</div>
-                {order.cash_collection_usd > 0 || order.cash_collection_lbp > 0 ? (
-                  <div>
-                    {order.cash_collection_usd > 0 && (
-                      <div className="font-semibold text-gray-900 dark:text-gray-100">${order.cash_collection_usd}</div>
-                    )}
-                    {order.cash_collection_lbp > 0 && (
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{order.cash_collection_lbp.toLocaleString()} LBP</div>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-gray-400 text-sm">No COD</span>
-                )}
-              </div>
-
-              {/* Shop Info & Date Row */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Shop Info</div>
-                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate" title={order.profiles?.business_name || order.profiles?.full_name}>
-                    {order.profiles?.business_name || order.profiles?.full_name || 'Business Name'}
-                  </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                    {order.profiles?.phone || 'Not provided'}
+                  </Badge>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[120px]">
+                    {order.profiles?.business_name || order.profiles?.full_name || 'Business'}
                   </div>
                 </div>
-                <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Assigned</div>
-                  <div className="text-sm text-gray-900 dark:text-gray-100">
-                    {formatDate(new Date(order.created_at))}
-                  </div>
+                <div className="text-xs text-gray-400">
+                  {formatDate(new Date(order.created_at))}
                 </div>
               </div>
 
