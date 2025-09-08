@@ -171,7 +171,7 @@ const CourierTopBar: React.FC = () => {
 
   return (
     <motion.header 
-      className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 h-16 sticky top-0 z-40"
+      className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 h-16 sticky top-0 left-0 right-0 z-40"
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
