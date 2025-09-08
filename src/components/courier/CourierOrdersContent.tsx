@@ -136,8 +136,8 @@ const CourierOrdersContent = () => {
 
   return (
     <div className="flex flex-col h-full min-w-0">
-      <div className="flex-1 px-4 sm:px-6 lg:px-8 py-6 min-w-0">
-        {/* Header */}
+      {/* Header */}
+      <div className="px-4 sm:px-6 lg:px-8 py-6 min-w-0">
         <div className="mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold">My Orders</h1>
@@ -250,10 +250,12 @@ const CourierOrdersContent = () => {
           <OrdersDateFilter onDateChange={setDateRange} />
         </div>
       </div>
+      </div>
 
-        {/* Single Container: Filters and Table */}
-        <Card className="border-0 sm:border sm:border-gray-200/60 dark:sm:border-gray-700/40 rounded-none sm:rounded-xl shadow-none sm:shadow-sm">
-          <CardContent className="p-0 sm:p-6 space-y-4">
+      {/* Table Container - Separate from header */}
+      <div className="flex-1 px-4 sm:px-6 lg:px-8 pb-6 min-w-0 overflow-hidden">
+        <Card className="border-0 sm:border sm:border-gray-200/60 dark:sm:border-gray-700/40 rounded-none sm:rounded-xl shadow-none sm:shadow-sm h-full">
+          <CardContent className="p-0 sm:p-6 space-y-4 h-full flex flex-col">
             {/* Filter Tabs */}
             <CourierOrdersFilterTabs
               activeTab={statusFilter}
@@ -273,7 +275,7 @@ const CourierOrdersContent = () => {
             />
 
             {/* Table Content */}
-            <div className="w-full min-w-0 overflow-hidden">
+            <div className="flex-1 min-w-0 overflow-hidden">
               {isLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="text-center">
