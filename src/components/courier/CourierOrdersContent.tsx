@@ -135,8 +135,8 @@ const CourierOrdersContent = () => {
   }, [updateOrderStatus]);
 
   return (
-    <div className="min-h-screen w-full">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-none">
+    <div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
         <div className="mb-6">
           <div>
@@ -298,12 +298,10 @@ const CourierOrdersContent = () => {
                     />
                   </div>
                 ) : (
-                  <div className="w-full overflow-x-auto">
-                    <CourierOrdersTable
-                      orders={filteredOrders}
-                      onViewOrder={handleViewOrder}
-                    />
-                  </div>
+                  <CourierOrdersTable
+                    orders={filteredOrders}
+                    onViewOrder={handleViewOrder}
+                  />
                 )
               )}
             </div>

@@ -38,7 +38,7 @@ const CourierLayout: React.FC<CourierLayoutProps> = ({ children, className }) =>
       )}>
         <CourierTopBar />
         <main className={cn(
-          "flex-1 overflow-hidden bg-gray-50 dark:bg-gray-900 transition-all",
+          "flex-1 bg-gray-50 dark:bg-gray-900 transition-all",
           isMobile ? "p-2 pb-6" : isTablet ? "p-4 pb-6" : "p-6 pb-6",
           className
         )}>
