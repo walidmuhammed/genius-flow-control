@@ -59,14 +59,14 @@ export const CourierOrdersTable: React.FC<CourierOrdersTableProps> = ({
       <Table className="w-full">
         <TableHeader>
           <TableRow className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200/30 dark:border-gray-700/30 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 py-3 w-[12%]">ORDER & REF</TableHead>
-            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 py-3 w-[18%]">CUSTOMER</TableHead>
-            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 py-3 w-[14%] hidden lg:table-cell">LOCATION</TableHead>
-            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 py-3 w-[8%] hidden lg:table-cell">TYPE</TableHead>
-            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 py-3 w-[10%]">AMOUNT</TableHead>
-            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 py-3 w-[9%]">STATUS</TableHead>
-            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 py-3 w-[9%] hidden xl:table-cell">ASSIGNED</TableHead>
-            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 py-3 w-[11%] hidden xl:table-cell">SHOP INFO</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 pt-3 pb-1 w-[12%]">ORDER & REF</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 pt-3 pb-1 w-[18%]">CUSTOMER</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 pt-3 pb-1 w-[14%] hidden lg:table-cell">LOCATION</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 pt-3 pb-1 w-[8%] hidden lg:table-cell">TYPE</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 pt-3 pb-1 w-[10%]">AMOUNT</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 pt-3 pb-1 w-[9%]">STATUS</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 pt-3 pb-1 w-[9%] hidden xl:table-cell">ASSIGNED</TableHead>
+            <TableHead className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase px-0.5 pt-3 pb-1 w-[11%] hidden xl:table-cell">SHOP INFO</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
