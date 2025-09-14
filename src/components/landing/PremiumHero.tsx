@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import Hyperspeed from './Hyperspeed';
 
 export function PremiumHero() {
   const navigate = useNavigate();
@@ -21,20 +22,33 @@ export function PremiumHero() {
 
   return (
     <section className="relative min-h-screen pt-20 bg-background flex items-center justify-center overflow-hidden">
-      {/* Animated dot matrix background */}
-      <div className="absolute inset-0">
-        <div className="pattern-matrix opacity-30 w-full h-full" />
-        {dots.map((dot) => (
-          <div
-            key={dot.id}
-            className="absolute w-1 h-1 bg-primary/20 rounded-full animate-dot-matrix"
-            style={{
-              left: `${dot.x}%`,
-              top: `${dot.y}%`,
-              animationDelay: `${dot.delay}s`,
-            }}
-          />
-        ))}
+      {/* Hyperspeed Background */}
+      <div className="absolute inset-0 opacity-60">
+        <Hyperspeed
+          effectOptions={{
+            distortion: 'turbulentDistortion',
+            length: 400,
+            roadWidth: 10,
+            islandWidth: 2,
+            lanesPerRoad: 4,
+            fov: 90,
+            fovSpeedUp: 150,
+            speedUp: 2,
+            carLightsFade: 0.4,
+            totalSideLightSticks: 20,
+            lightPairsPerRoadWay: 40,
+            colors: {
+              roadColor: 0x080808,
+              islandColor: 0x0a0a0a,
+              background: 0x000000,
+              shoulderLines: 0x131318,
+              brokenLines: 0x131318,
+              leftCars: [0xd856bf, 0x6750a2, 0xc247ac],
+              rightCars: [0x03b3c3, 0x0e5ea5, 0x324555],
+              sticks: 0x03b3c3
+            }
+          }}
+        />
       </div>
 
       {/* Main content */}
